@@ -1,0 +1,19 @@
+#
+# For a description of the syntax of this configuration file,
+# see tools/kconfiglib/kconfig-language.txt.
+#
+
+mainmenu "Phytium FreeRTOS SDK Configuration"
+
+menu "Project Configuration"
+	menu "FT2000-4 Baremetal Configuration"
+	
+		config TARGET_NAME
+			string "Build Target Name"
+			default "ft2004_generic_timer_test"
+			help
+				Build Target name for the demo
+	endmenu
+endmenu
+
+source "$(FREERTOS_SDK_ROOT)/Kconfig"

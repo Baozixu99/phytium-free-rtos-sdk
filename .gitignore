@@ -1,5 +1,7 @@
 # Prerequisites
 *.d
+*.uimg
+*.img
 
 # Object files
 *.o
@@ -35,6 +37,9 @@
 *.i*86
 *.x86_64
 *.hex
+*.bin
+*.dis
+app*
 
 # Debug files
 *.dSYM/
@@ -50,3 +55,13 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+# Download gcc compiler
+/tools/gcc-*/*
+/tools/gcc-*
+/tools/gdb-*
+
+# Standalone sdk
+standalone-sdk
+sdk
+phytium-standalone-sdk

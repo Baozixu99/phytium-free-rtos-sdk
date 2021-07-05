@@ -1,0 +1,120 @@
+
+#
+# Project Configuration
+#
+
+#
+# FT2000-4 AARCH32 FreeRTOS Configuration
+#
+CONFIG_TARGET_NAME="ft2004_freertos"
+# CONFIG_DEMO_HELLO_WORLD is not set
+# CONFIG_DEMO_GET_CPU_STATS is not set
+CONFIG_DEMO_MSG_QUEUE=y
+# CONFIG_DEMO_SEMAPHORE is not set
+# end of FT2000-4 AARCH32 FreeRTOS Configuration
+# end of Project Configuration
+
+#
+# FreeRTOS Setting
+#
+CONFIG_BUILD_FREERTOS=y
+# end of FreeRTOS Setting
+
+#
+# Target Setting
+#
+CONFIG_TARGET_ARMV8_AARCH32=y
+# CONFIG_TARGET_ARMV8_AARCH64 is not set
+# CONFIG_TARGET_ARMV7 is not set
+CONFIG_TARGET_F2000_4=y
+# CONFIG_TARGET_AARCH32_QEMU is not set
+# CONFIG_TARGET_AARCH64_QEMU is not set
+# CONFIG_TARGET_E2000 is not set
+# end of Target Setting
+
+#
+# Building Option
+#
+CONFIG_ENVI_UBUNTU_20_04=y
+# CONFIG_ENVI_WINDOWS10_MINGW is not set
+
+#
+# Cross-Compiler Setting
+#
+CONFIG_COMPILER_NO_STD_STARUP=y
+# CONFIG_USE_EXT_COMPILER is not set
+# end of Cross-Compiler Setting
+
+#
+# GNU linker
+#
+CONFIG_E2000_FT2004_AARCH32_RAM_LD=y
+# CONFIG_E2000_FT20004_AARCH64_RAM_LD is not set
+# CONFIG_QEMU_AARCH32_RAM_LD is not set
+# CONFIG_USER_DEFINED_LD is not set
+# end of GNU linker
+# end of Building Option
+
+#
+# Board Configuration
+#
+
+#
+# Common Configuration
+#
+# CONFIG_LOG_VERBOS is not set
+# CONFIG_LOG_DEBUG is not set
+# CONFIG_LOG_INFO is not set
+# CONFIG_LOG_WARN is not set
+CONFIG_LOG_ERROR=y
+# end of Common Configuration
+
+#
+# Components Configuration
+#
+# CONFIG_USE_SPI is not set
+# CONFIG_USE_QSPI is not set
+CONFIG_USE_GIC=y
+
+#
+# Gic Configuration
+#
+CONFIG_EBABLE_GICV3=y
+# end of Gic Configuration
+
+CONFIG_USE_USART=y
+
+#
+# Usart Configuration
+#
+CONFIG_ENABLE_Pl011_UART=y
+# end of Usart Configuration
+# end of Components Configuration
+
+#
+# Arch Configuration
+#
+CONFIG_USE_CACHE=y
+CONFIG_USE_L3CACHE=y
+CONFIG_USE_MMU=y
+# end of Arch Configuration
+# end of Board Configuration
+
+#
+# Library Configuration
+#
+CONFIG_USE_NOSTD_LIBC=y
+# CONFIG_USE_LIBC is not set
+# end of Library Configuration
+
+#
+# Freertos Drivers
+#
+CONFIG_FREERTOS_USE_UART=y
+# end of Freertos Drivers
+
+#
+# Third-Party Configuration
+#
+CONFIG_USE_FREERTOS=y
+# end of Third-Party Configuration

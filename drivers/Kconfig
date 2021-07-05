@@ -1,0 +1,7 @@
+menu "Freertos Drivers"
+    config FREERTOS_USE_UART
+        bool
+        prompt "Use Freertos uart driver"
+        default y
+endmenu
+

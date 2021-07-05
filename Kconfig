@@ -1,0 +1,12 @@
+
+menu "FreeRTOS Setting"
+    config BUILD_FREERTOS
+        bool "Building FreeRTOS Application"
+        default y
+        help
+            Building FreeRTOS Application
+endmenu
+
+source "$(SDK_ROOT)/Kconfig"
+source "$(FREERTOS_SDK_ROOT)/drivers/Kconfig"
+source "$(FREERTOS_SDK_ROOT)/third-party/Kconfig"

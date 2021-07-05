@@ -1,0 +1,112 @@
+
+#
+# Build Target
+#
+# CONFIG_TARGET_ARMV8_AARCH32 is not set
+CONFIG_TARGET_ARMV8_AARCH64=y
+# CONFIG_TARGET_ARMV7 is not set
+CONFIG_TARGET_F2000_4=y
+# CONFIG_TARGET_AARCH32_QEMU is not set
+# CONFIG_TARGET_AARCH64_QEMU is not set
+# CONFIG_TARGET_E2000 is not set
+CONFIG_TARGET_BARE_METAL=y
+# CONFIG_TARGET_FREE_RTOS is not set
+# CONFIG_TARGET_RT_THREAD is not set
+# CONFIG_TARGET_U_BOOT is not set
+# end of Build Target
+
+#
+# General Setting
+#
+CONFIG_ENVI_UBUNTU_20_04=y
+# CONFIG_ENVI_WINDOWS10_MINGW is not set
+
+#
+# Cross-Compiler Setting
+#
+CONFIG_COMPILER_NO_STD_STARUP=y
+# end of Cross-Compiler Setting
+
+#
+# GNU linker
+#
+# CONFIG_E2000_FT2004_AARCH32_RAM_LD is not set
+# CONFIG_E2000_FT2004_AARCH32_FLASH_LD is not set
+CONFIG_E2000_FT20004_AARCH64_RAM_LD=y
+# CONFIG_E2000_FT20004_AARCH64_FLASH_LD is not set
+# end of GNU linker
+# end of General Setting
+
+#
+# Board Configuration
+#
+
+#
+# Common Configuration
+#
+# CONFIG_LOG_VERBOS is not set
+# CONFIG_LOG_DEBUG is not set
+# CONFIG_LOG_INFO is not set
+# CONFIG_LOG_WARN is not set
+CONFIG_LOG_ERROR=y
+# end of Common Configuration
+
+#
+# Components Configuration
+#
+# CONFIG_USE_SPI is not set
+# CONFIG_USE_QSPI is not set
+CONFIG_USE_GIC=y
+
+#
+# Gic Configuration
+#
+CONFIG_EBABLE_GICV3=y
+# end of Gic Configuration
+
+# CONFIG_USE_TIMER is not set
+CONFIG_USE_USART=y
+
+#
+# Usart Configuration
+#
+CONFIG_ENABLE_Pl011_UART=y
+# end of Usart Configuration
+# end of Components Configuration
+
+#
+# Arch Configuration
+#
+CONFIG_USE_CACHE=y
+CONFIG_USE_L3CACHE=y
+# CONFIG_USE_MMU is not set
+# end of Arch Configuration
+# end of Board Configuration
+
+#
+# Library Configuration
+#
+CONFIG_USE_NOSTD_LIBC=y
+# CONFIG_USE_LIBC is not set
+# end of Library Configuration
+
+#
+# SDK Port Configuration
+#
+# end of SDK Port Configuration
+
+#
+# Third-Party Configuration
+#
+# end of Third-Party Configuration
+
+#
+# Project Configuration
+#
+
+#
+# FT2000-4 Baremetal Configuration
+#
+CONFIG_TARGET_NAME="ft2004_freertos_buffer"
+# end of FT2000-4 Baremetal Configuration
+# end of Project Configuration

@@ -1,0 +1,9 @@
+{
+    "files.associations": {
+        "freertos.h": "c",
+        "generic_timer.h": "c",
+        "ft_types.h": "c",
+        "ft_assert.h": "c",
+        "queue.h": "c"
+    }
+}
