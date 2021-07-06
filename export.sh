@@ -31,7 +31,7 @@ if [ ! -d $STANDALONE_PATH ]; then
 fi
     
 # copy cc pack to standalone sdk tools path if it's offline install
-if [ OFFLINE_INSTALL ]; then
+if [ $OFFLINE_INSTALL = 1 ]; then
     cp $FREERTOS_SDK_ROOT/tools/gcc-* $STANDALONE_PATH/tools
     $STANDALONE_PATH/export.sh
 else
