@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0.
  * 
  * @Date: 2021-06-30 10:35:37
- * @LastEditTime: 2021-07-05 16:46:13
+ * @LastEditTime: 2021-07-06 09:15:37
  * @Description:  This files is for 
  * 
  * @Modify History: 
@@ -36,9 +36,9 @@ $ ./export.sh -online
 - 下载[Phytium FreeRTOS SDK](https://gitee.com/phytium_embedded/phytium-free-rtos-sdk)源代码
 - 下载[AARCH32](https://developer.arm.com/-/media/Files/downloads/gnu-rm/10-2020q4/gcc-arm-none-eabi-10-2020-q4-major-x86_64-linux.tar.bz)和[AARCH64](https://developer.arm.com/-/media/Files/downloads/gnu-a/10.2-2020.11/binrel/gcc-arm-10.2-2020.11-x86_64-aarch64-none-elf.tar.xz)编译器
 
-- 解压phytium_freertos_sdk.zip到'~/freertos_sdk'
-- 解压phytium_standalone_sdk.zip到'~/freertos_sdk/standalone-sdk'
-- 将AARCH32、AARCH64编译器压缩包放置在'~/freertos_sd/tools'
+- 解压phytium_freertos_sdk.zip到'~/freertos_sdk'（路径名可以自定义）
+- 解压phytium_standalone_sdk.zip到'~/freertos_sdk/standalone-sdk'（路径名以及相对位置可以自定义）
+- 将AARCH32、AARCH64编译器压缩包放置在'~/freertos_sd/tools'（必须放置在tools路径下）
 - 完成FreeRTOS SDK安装
 ```
 $ ./export.sh
@@ -51,7 +51,27 @@ $ source ~/.profile
 
 # 3. 使用FreeRTOS SDK
 
+## 3.1 快速使用例程
 
+### 3.1.1 使用FT2000-4开发板，启动FreeRTOS
+>freertos_sdk/example/ft2004_aarch32_start_up
+- 配置freertos aarch32例程
+```
+$ make menuconfig
+```
+![menuconfig](https://images.gitee.com/uploads/images/2021/0706/154259_223ae31f_8736513.png "menuconfig.png")
+
+- 进入Project Configuration→ FT2000-4 AARCH32 FreeRTOS Configuration→ Choose The Demo，选择Hello World
+
+- 编译例程
+```
+$ make
+```
+![building](https://images.gitee.com/uploads/images/2021/0706/154546_1a86b2f7_8736513.png "building.png")
+
+- 将*.bin通过TFTP服务器烧写到开发板，跳转启动
+
+![输入图片说明](https://images.gitee.com/uploads/images/2021/0706/155040_d294d992_8736513.png "屏幕截图.png")
 
 ## 参考资料
 

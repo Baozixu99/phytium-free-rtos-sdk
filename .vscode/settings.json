@@ -4,6 +4,8 @@
         "generic_timer.h": "c",
         "ft_types.h": "c",
         "ft_assert.h": "c",
-        "queue.h": "c"
+        "queue.h": "c",
+        "*.tcc": "c",
+        "ft_debug.h": "c"
     }
 }
