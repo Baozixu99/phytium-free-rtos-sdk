@@ -67,6 +67,7 @@ CONFIG_E2000_FT2004_AARCH32_RAM_LD=y
 # CONFIG_LOG_INFO is not set
 # CONFIG_LOG_WARN is not set
 CONFIG_LOG_ERROR=y
+# CONFIG_LOG_NONE is not set
 # end of Common Configuration
 
 #

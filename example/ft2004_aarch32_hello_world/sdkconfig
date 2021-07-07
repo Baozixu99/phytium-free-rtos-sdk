@@ -7,10 +7,6 @@
 # FT2000-4 AARCH32 FreeRTOS Configuration
 #
 CONFIG_TARGET_NAME="ft2004_freertos"
-# CONFIG_DEMO_HELLO_WORLD is not set
-# CONFIG_DEMO_GET_CPU_STATS is not set
-CONFIG_DEMO_MSG_QUEUE=y
-# CONFIG_DEMO_SEMAPHORE is not set
 # end of FT2000-4 AARCH32 FreeRTOS Configuration
 # end of Project Configuration
 
@@ -67,6 +63,7 @@ CONFIG_E2000_FT2004_AARCH32_RAM_LD=y
 # CONFIG_LOG_INFO is not set
 # CONFIG_LOG_WARN is not set
 CONFIG_LOG_ERROR=y
+# CONFIG_LOG_NONE is not set
 # end of Common Configuration
 
 #

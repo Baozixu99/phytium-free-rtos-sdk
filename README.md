@@ -28,7 +28,7 @@ $ cd ~/freertos_sdk
 
 - 在线下载源代码和编译环境，完成FreeRTOS SDK安装
 ```
-$ ./export.sh -online
+$ ./install.sh -online
 ```
 
 ### 2.2. 选择离线方式安装SDK
@@ -41,7 +41,7 @@ $ ./export.sh -online
 - 将AARCH32、AARCH64编译器压缩包放置在'~/freertos_sd/tools'（必须放置在tools路径下）
 - 完成FreeRTOS SDK安装
 ```
-$ ./export.sh
+$ ./install.sh
 ```
 
 - **通过离线/在线方式完成安装后，关闭当前窗口或者运行以下命令，立即生效SDK环境变量**
@@ -54,7 +54,7 @@ $ source ~/.profile
 ## 3.1 快速使用例程
 
 ### 3.1.1 使用FT2000-4开发板，启动FreeRTOS
->freertos_sdk/example/ft2004_aarch32_start_up
+>freertos_sdk/example/ft2004_aarch32_hello_world
 - 配置freertos aarch32例程
 ```
 $ make menuconfig
@@ -71,7 +71,7 @@ $ make
 
 - 将*.bin通过TFTP服务器烧写到开发板，跳转启动
 
-![输入图片说明](https://images.gitee.com/uploads/images/2021/0706/155040_d294d992_8736513.png "屏幕截图.png")
+![hello world](https://images.gitee.com/uploads/images/2021/0707/170359_b847c982_8736513.png "hello world.png")
 
 ## 参考资料
 

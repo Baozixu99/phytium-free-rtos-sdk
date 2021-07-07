@@ -4,7 +4,7 @@
  # SPDX-License-Identifier: Apache-2.0.
  # 
  # @Date: 2021-06-30 15:45:19
- # @LastEditTime: 2021-07-05 16:21:25
+ # @LastEditTime: 2021-07-07 17:09:14
  # @Description:  This files is for 
  # 
  # @Modify History: 
@@ -12,8 +12,8 @@
  # ----- ------     --------    --------------------------------------
 ### 
 #!/bin/sh
-STANDALONE_SDK_V=v0.0.2
-FREERTOS_SDK_V=v0.0.1
+STANDALONE_SDK_V=v0.0.3
+FREERTOS_SDK_V=v0.0.2
 
 export FREERTOS_SDK_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
@@ -33,9 +33,9 @@ fi
 # copy cc pack to standalone sdk tools path if it's offline install
 if [ $OFFLINE_INSTALL = 1 ]; then
     cp $FREERTOS_SDK_ROOT/tools/gcc-* $STANDALONE_PATH/tools
-    $STANDALONE_PATH/export.sh
+    $STANDALONE_PATH/install.sh
 else
-    $STANDALONE_PATH/export.sh $1
+    $STANDALONE_PATH/install.sh $1
 fi
 
 # save freertos sdk root path
