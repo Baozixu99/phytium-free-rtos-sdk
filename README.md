@@ -71,7 +71,7 @@ $ make
 
 - 将*.bin通过TFTP服务器烧写到开发板，跳转启动
 
-![hello world](https://images.gitee.com/uploads/images/2021/0707/170359_b847c982_8736513.png "hello world.png")
+![输入图片说明](https://images.gitee.com/uploads/images/2021/0709/150949_98bdb9cf_8736513.png "屏幕截图.png")
 
 ## 参考资料
 
