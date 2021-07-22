@@ -4,7 +4,7 @@
  # SPDX-License-Identifier: Apache-2.0.
  # 
  # @Date: 2021-06-30 15:45:19
- # @LastEditTime: 2021-07-22 15:09:45
+ # @LastEditTime: 2021-07-22 16:03:21
  # @Description:  This files is for 
  # 
  # @Modify History: 
@@ -40,11 +40,10 @@ sed -i '/export FREERTOS_SDK_ROOT=/d' $PROFILE_PATH
 echo "[2]: Reset Environment"
 
 #####################################Install BSP####################################################
-STANDALONE_SDK_V=catalogue_fix  #v0.0.3-a
+STANDALONE_SDK_V=v0.0.5
 STANDALONE_PATH=$FREERTOS_SDK_ROOT/standalone
 STANDALONE_BRANCHE=master
-STANDALONE_REMOTE=https://gitee.com/zhugengyu/phytium-standalone-sdk.git
-#https://gitee.com/phytium_embedded/phytium-standalone-sdk.git
+STANDALONE_REMOTE=https://gitee.com/phytium_embedded/phytium-standalone-sdk.git
 
 # no fetch history commits
 if [ ! -d $STANDALONE_PATH ]; then
@@ -81,7 +80,7 @@ chmod +x $FREERTOS_SDK_ROOT/*.sh --silent
 chmod +x $FREERTOS_SDK_ROOT/scripts/*.sh --silent
 chmod +x $FREERTOS_SDK_ROOT/make/*.mk --silent
 chmod +x $STANDALONE_PATH/lib/Kconfiglib/*.py --silent
-find $STANDALONE_PATH/lib/Kconfiglib/*.py -type f -exec dos2unix {} \;
+#find $STANDALONE_PATH/lib/Kconfiglib/*.py -type f -exec dos2unix {} \;
 if [ $? -ne 0 ]; then
     echo "[3]: Failed when assign file premission !!!"
     exit

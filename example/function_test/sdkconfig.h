@@ -12,8 +12,8 @@
 
 /* Arch Configuration */
 
-#define CONFIG_TARGET_ARMV8_AARCH32
-/* CONFIG_TARGET_ARMV8_AARCH64 is not set */
+/* CONFIG_TARGET_ARMV8_AARCH32 is not set */
+#define CONFIG_TARGET_ARMV8_AARCH64
 /* CONFIG_TARGET_ARMV7 is not set */
 #define CONFIG_USE_CACHE
 #define CONFIG_USE_L3CACHE
@@ -52,15 +52,15 @@
 /* end of Cross-Compiler Setting */
 /* CONFIG_LOG_VERBOS is not set */
 /* CONFIG_LOG_DEBUG is not set */
-/* CONFIG_LOG_INFO is not set */
+#define CONFIG_LOG_INFO
 /* CONFIG_LOG_WARN is not set */
-#define CONFIG_LOG_ERROR
+/* CONFIG_LOG_ERROR is not set */
 /* CONFIG_LOG_NONE is not set */
 
 /* GNU Linker Setting */
 
-#define CONFIG_E2000_FT2004_AARCH32_RAM_LD
-/* CONFIG_E2000_FT20004_AARCH64_RAM_LD is not set */
+/* CONFIG_E2000_FT2004_AARCH32_RAM_LD is not set */
+#define CONFIG_E2000_FT20004_AARCH64_RAM_LD
 /* CONFIG_USER_DEFINED_LD is not set */
 /* end of GNU Linker Setting */
 /* end of Building Option */
