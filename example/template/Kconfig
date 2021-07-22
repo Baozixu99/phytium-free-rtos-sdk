@@ -1,0 +1,14 @@
+mainmenu "Phytium Baremetal Configuration"
+
+menu "Project Configuration"
+	menu "Template Configuration"
+	
+		config TARGET_NAME
+			string "Build Target Name"
+			default "template"
+			help
+				Build Target name for the demo
+	endmenu
+endmenu
+
+source "$(FREERTOS_SDK_ROOT)/Kconfig"

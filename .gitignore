@@ -63,6 +63,6 @@ dkms.conf
 /tools/gdb-*
 
 # Standalone sdk
-standalone-sdk
+standalone
 sdk
 phytium-standalone-sdk

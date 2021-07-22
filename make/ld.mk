@@ -1,0 +1,18 @@
+LD_DIR := $(FREERTOS_SDK_ROOT)/make/ld
+
+
+ifdef CONFIG_E2000_FT20004_AARCH64_RAM_LD
+LDSNAME ?= $(LD_DIR)/e2000_ft2004_aarch64_ram.ld
+endif
+
+ifdef CONFIG_E2000_FT2004_AARCH32_RAM_LD
+LDSNAME ?= $(LD_DIR)/e2000_ft2004_aarch32_ram.ld
+endif
+
+ifdef CONFIG_QEMU_AARCH32_RAM_LD
+LDSNAME ?= $(LD_DIR)/qemu_aarch32_ram.ld
+endif
+
+ifdef CONFIG_USER_DEFINED_LD
+LDSNAME ?= $(EXT_LDSNAME)
+endif

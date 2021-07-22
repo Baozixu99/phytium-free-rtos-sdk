@@ -1,12 +1,30 @@
+# entry of menuconfig
+# mainmenu "Phytium FreeRTOS SDK Configuration"
 
-menu "FreeRTOS Setting"
-    config BUILD_FREERTOS
+STANDALONE_DIR := $(FREERTOS_STANDALONE)
+
+menu "Standalone Setting"
+    config USE_FREERTOS
         bool "Building FreeRTOS Application"
         default y
         help
             Building FreeRTOS Application
+
+    source "$(STANDALONE_DIR)/bsp/arch/Kconfig"
+    source "$(STANDALONE_DIR)/bsp/board/Kconfig"
+    source "$(STANDALONE_DIR)/bsp/drivers/Kconfig"
+    source "$(STANDALONE_DIR)/lib/Kconfig"
 endmenu
 
-source "$(SDK_ROOT)/Kconfig"
-source "$(FREERTOS_SDK_ROOT)/drivers/Kconfig"
-source "$(FREERTOS_SDK_ROOT)/third-party/Kconfig"
+menu "Building Option"
+    source "$(STANDALONE_DIR)/bsp/common/Kconfig"
+    source "$(FREERTOS_SDK_ROOT)/make/ld/Kconfig"
+endmenu
+
+menu "Component Configuration"  
+    source "$(FREERTOS_SDK_ROOT)/drivers/Kconfig"
+endmenu
+
+menu "FreeRTOS Setting"
+    source "$(FREERTOS_SDK_ROOT)/third-party/Kconfig"
+endmenu

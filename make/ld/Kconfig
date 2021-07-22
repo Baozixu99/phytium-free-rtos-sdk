@@ -1,0 +1,27 @@
+# entry of menuconfig
+
+menu  "GNU Linker Setting"
+    choice
+        prompt "Select GNU linker for project"
+        optional
+        default E2000_FT2004_AARCH32_RAM_LD if TARGET_ARMV8_AARCH32
+        default E2000_FT20004_AARCH64_RAM_LD if TARGET_ARMV8_AARCH64 
+
+        config E2000_FT2004_AARCH32_RAM_LD
+            bool "Use e2000_ft2004_aarch32_ram.ld"
+            help
+                Use linkscript booting AARCH32 E2000/FT2000-4 from DDR
+
+        config E2000_FT20004_AARCH64_RAM_LD
+            bool "Use e2000_ft2004_aarch64_ram.ld"
+            help
+                Use linkscript booting AARCH64 E2000/FT2000-4 from DDR  
+        
+        config USER_DEFINED_LD
+            bool "Other link script"
+            help
+                Use other link script provided by User
+
+    endchoice
+endmenu
+

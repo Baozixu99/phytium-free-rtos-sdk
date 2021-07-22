@@ -1,9 +1,2 @@
-menu "Third-Party Configuration"
 
-config USE_FREERTOS
-    bool
-    prompt "Use Freertos"
-    help
-        Include Freertos and enable Freertos
 
-endmenu

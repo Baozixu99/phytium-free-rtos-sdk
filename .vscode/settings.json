@@ -6,6 +6,12 @@
         "ft_assert.h": "c",
         "queue.h": "c",
         "*.tcc": "c",
-        "ft_debug.h": "c"
+        "ft_debug.h": "c",
+        "pl011_uart.h": "c",
+        "gicv3.h": "c",
+        "interrupt.h": "c",
+        "task.h": "c",
+        "trap.h": "c",
+        "parameters.h": "c"
     }
 }

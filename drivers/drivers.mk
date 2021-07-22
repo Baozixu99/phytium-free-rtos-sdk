@@ -1,0 +1,3 @@
+ifdef CONFIG_FREERTOS_USE_UART
+	
+endif

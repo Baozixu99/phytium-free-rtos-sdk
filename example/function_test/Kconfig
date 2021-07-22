@@ -1,0 +1,11 @@
+mainmenu "Phytium Baremetal Configuration"
+
+menu "Project Configuration"
+	config TARGET_NAME
+		string "Build Target Name"
+		default "freertos_test"
+		help
+			Build Target name for the demo
+endmenu
+
+source "$(FREERTOS_SDK_ROOT)/Kconfig"

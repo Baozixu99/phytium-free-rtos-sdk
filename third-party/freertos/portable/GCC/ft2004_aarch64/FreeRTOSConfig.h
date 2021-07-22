@@ -126,9 +126,10 @@ FreeRTOS/Source/tasks.c for limitations. */
 /* Run time stats are not generated.  portCONFIGURE_TIMER_FOR_RUN_TIME_STATS and
 portGET_RUN_TIME_COUNTER_VALUE must be defined if configGENERATE_RUN_TIME_STATS
 is set to 1. */
-#define configGENERATE_RUN_TIME_STATS 0
-#define portCONFIGURE_TIMER_FOR_RUN_TIME_STATS()
-#define portGET_RUN_TIME_COUNTER_VALUE()
+#define configGENERATE_RUN_TIME_STATS 1 //启用运行时间统计功能
+extern volatile unsigned int gCpuRuntime;
+#define portCONFIGURE_TIMER_FOR_RUN_TIME_STATS() (gCpuRuntime = 0ul)
+#define portGET_RUN_TIME_COUNTER_VALUE() gCpuRuntime
 
 /* The size of the global output buffer that is available for use when there
 are multiple command interpreters running at once (for example, one on a UART
