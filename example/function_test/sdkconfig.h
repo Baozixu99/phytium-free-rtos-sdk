@@ -18,12 +18,14 @@
 #define CONFIG_USE_CACHE
 #define CONFIG_USE_L3CACHE
 #define CONFIG_USE_MMU
+#define CONFIG_USE_SYS_TICK
 /* end of Arch Configuration */
 
 /* Board Configuration */
 
 #define CONFIG_TARGET_F2000_4
 /* CONFIG_TARGET_E2000 is not set */
+/* CONFIG_TARGET_D2000 is not set */
 /* end of Board Configuration */
 
 /* Components Configuration */
@@ -33,11 +35,34 @@
 #define CONFIG_USE_GIC
 #define CONFIG_EBABLE_GICV3
 #define CONFIG_USE_USART
+
+/* Usart Configuration */
+
 #define CONFIG_ENABLE_Pl011_UART
+/* end of Usart Configuration */
 /* CONFIG_USE_GPIO is not set */
 /* CONFIG_USE_IOMUX is not set */
+#define CONFIG_USE_ETH
+
+/* Eth Configuration */
+
+/* CONFIG_ENABLE_F_XMAC is not set */
+#define CONFIG_ENABLE_F_GMAC
+
+/* F_GMAC Configuration */
+
+/* CONFIG_F_GMAC_PHY_COMMON is not set */
+#define CONFIG_F_GMAC_PHY_AR803X
+/* end of F_GMAC Configuration */
+/* end of Eth Configuration */
+/* CONFIG_USE_CAN is not set */
+/* CONFIG_USE_I2C is not set */
+/* CONFIG_USE_TIMER is not set */
+/* CONFIG_USE_SDMMC is not set */
+/* CONFIG_USE_PCIE is not set */
+/* CONFIG_USE_WDT is not set */
+/* CONFIG_USE_DMA is not set */
 /* end of Components Configuration */
-/* CONFIG_USE_NOSTD_LIBC is not set */
 #define CONFIG_USE_LIBC
 /* end of Standalone Setting */
 
@@ -59,8 +84,8 @@
 
 /* GNU Linker Setting */
 
-/* CONFIG_E2000_FT2004_AARCH32_RAM_LD is not set */
-#define CONFIG_E2000_FT20004_AARCH64_RAM_LD
+/* CONFIG_AARCH32_RAM_LD is not set */
+#define CONFIG_AARCH64_RAM_LD
 /* CONFIG_USER_DEFINED_LD is not set */
 /* end of GNU Linker Setting */
 /* end of Building Option */
@@ -75,5 +100,7 @@
 
 /* FreeRTOS Setting */
 
+/* CONFIG_USE_LWIP is not set */
+/* end of FreeRTOS Setting */
 
 #endif

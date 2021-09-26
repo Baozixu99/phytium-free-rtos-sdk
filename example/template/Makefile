@@ -16,3 +16,4 @@ include $(FREERTOS_SDK_ROOT)/make/build_freertos.mk
 boot:
 	make
 	@cp ./$(CONFIG_TARGET_NAME).bin $(USR_BOOT_DIR)
+	cp ./$(CONFIG_TARGET_NAME).elf $(USR_BOOT_DIR)/freertos.elf

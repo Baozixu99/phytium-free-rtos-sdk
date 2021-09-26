@@ -1,0 +1,125 @@
+
+#
+# Project Configuration
+#
+CONFIG_TARGET_NAME="d2000_freertos"
+# end of Project Configuration
+
+#
+# Standalone Setting
+#
+CONFIG_USE_FREERTOS=y
+
+#
+# Arch Configuration
+#
+CONFIG_TARGET_ARMV8_AARCH32=y
+# CONFIG_TARGET_ARMV8_AARCH64 is not set
+# CONFIG_TARGET_ARMV7 is not set
+CONFIG_USE_CACHE=y
+CONFIG_USE_L3CACHE=y
+CONFIG_USE_MMU=y
+# end of Arch Configuration
+
+#
+# Board Configuration
+#
+# CONFIG_TARGET_F2000_4 is not set
+# CONFIG_TARGET_E2000 is not set
+CONFIG_TARGET_D2000=y
+# end of Board Configuration
+
+#
+# Components Configuration
+#
+# CONFIG_USE_SPI is not set
+# CONFIG_USE_QSPI is not set
+CONFIG_USE_GIC=y
+CONFIG_EBABLE_GICV3=y
+CONFIG_USE_USART=y
+
+#
+# Usart Configuration
+#
+CONFIG_ENABLE_Pl011_UART=y
+# end of Usart Configuration
+
+# CONFIG_USE_GPIO is not set
+# CONFIG_USE_IOMUX is not set
+CONFIG_USE_ETH=y
+
+#
+# Eth Configuration
+#
+# CONFIG_ENABLE_F_XMAC is not set
+CONFIG_ENABLE_F_GMAC=y
+
+#
+# F_GMAC Configuration
+#
+# CONFIG_F_GMAC_PHY_COMMON is not set
+# CONFIG_F_GMAC_PHY_AR803X is not set
+# end of F_GMAC Configuration
+# end of Eth Configuration
+
+# CONFIG_USE_CAN is not set
+# CONFIG_USE_I2C is not set
+# CONFIG_USE_TIMER is not set
+# CONFIG_USE_SDMMC is not set
+# CONFIG_USE_PCIE is not set
+# CONFIG_USE_DMA is not set
+# end of Components Configuration
+
+CONFIG_USE_LIBC=y
+# end of Standalone Setting
+
+#
+# Building Option
+#
+CONFIG_ENVI_UBUNTU_20_04=y
+
+#
+# Cross-Compiler Setting
+#
+CONFIG_COMPILER_NO_STD_STARUP=y
+# CONFIG_USE_EXT_COMPILER is not set
+# end of Cross-Compiler Setting
+
+# CONFIG_LOG_VERBOS is not set
+# CONFIG_LOG_DEBUG is not set
+CONFIG_LOG_INFO=y
+# CONFIG_LOG_WARN is not set
+# CONFIG_LOG_ERROR is not set
+# CONFIG_LOG_NONE is not set
+
+#
+# GNU Linker Setting
+#
+CONFIG_AARCH32_RAM_LD=y
+# CONFIG_AARCH64_RAM_LD is not set
+# CONFIG_USER_DEFINED_LD is not set
+# end of GNU Linker Setting
+# end of Building Option
+
+#
+# Component Configuration
+#
+
+#
+# Freertos Drivers
+#
+CONFIG_FREERTOS_USE_UART=y
+# end of Freertos Drivers
+# end of Component Configuration
+
+#
+# FreeRTOS Setting
+#
+# CONFIG_USE_LWIP=y
+
+#
+# LWIP Configuration
+#
+# CONFIG_LWIP_F_GMAC=y
+# end of LWIP Configuration
+# end of FreeRTOS Setting

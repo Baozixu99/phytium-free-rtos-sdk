@@ -1,0 +1,25 @@
+mainmenu "Phytium FreeRTOS Configuration"
+
+	menu "Project Configuration"
+
+		config TARGET_NAME
+			string "Build Target Name"
+			default "baremetal"
+			help
+				Build Target name for the demo
+		choice LWIP_TEST_ITEMS
+			prompt "Select Test Item"
+			default LWIP_POLL_TEST
+			help
+				Select arch for build
+
+			config LWIP_POLL_TEST
+				bool "Poll Wait"
+
+			config LWIP_INTRRUPT_TEST
+				bool "Poll Intrrupt"
+
+		endchoice #LWIP_TEST_ITEMS
+	endmenu
+
+source "$(FREERTOS_SDK_ROOT)/Kconfig"

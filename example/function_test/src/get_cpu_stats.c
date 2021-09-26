@@ -153,7 +153,7 @@ BaseType_t TestCpuStatsEntry()
 {
     BaseType_t xReturn = pdPASS;/* 定义一个创建信息返回值，默认为 pdPASS */
     
-    printf("get cpu stats \r\n");
+    printf("get cpu stats TestCpuStatsEntry\r\n");
     xReturn = xTaskCreate((TaskFunction_t )AppTaskCreate, /* 任务入口函数 */
                             (const char* )"AppTaskCreate",/* 任务名字 */
                             (uint16_t )512, /* 任务栈大小 */

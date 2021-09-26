@@ -402,6 +402,20 @@ void vListInsertEnd( List_t * const pxList, ListItem_t * const pxNewListItem ) P
  * \ingroup LinkedList
  */
 UBaseType_t uxListRemove( ListItem_t * const pxItemToRemove ) PRIVILEGED_FUNCTION;
+/*
+#define container_of(ptr, type, member) \
+    ((type *)((s8 *)(ptr) - (u32)(&((type *)0)->member)))
+*/
+/**
+ * container_of - 通过结构体的一个成员获取容器结构体的指针
+ * @ptr: 指向成员的指针。
+ * @type: 成员所嵌入的容器结构体类型。
+ * @member: 结构体中的成员名。
+ *
+ */
+#define container_of(ptr, type, member) ({ \
+    const typeof( ((type *)0)->member ) *__mptr = (ptr); \
+    (type *)( (char *)__mptr - offsetof(type,member) );})
 
 #ifdef __cplusplus
 }

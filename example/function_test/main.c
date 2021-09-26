@@ -20,7 +20,7 @@ extern BaseType_t TestMsgQueueEntry();
 int main()
 {
     BaseType_t xReturn = pdPASS;
-
+    
     xReturn = TestCpuStatsEntry();
     if (pdPASS != xReturn)
     {

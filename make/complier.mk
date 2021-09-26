@@ -76,13 +76,8 @@ EXCL_SRC ?= # 在源文件目录中不编译
 #OUTPUT_DIR ?= build # 输出目录
 $(shell if [ ! -e $(OUTPUT_DIR) ];then mkdir -p $(OUTPUT_DIR); fi)
 
-# include $(FREERTOS_SDK_ROOT)/third-party/freertos/portable/portable.mk
-# include $(FREERTOS_SDK_ROOT)/third-party/third-party.mk
-# include $(FREERTOS_SDK_ROOT)/drivers/drivers.mk
-# include $(FREERTOS_SDK_ROOT)/make/ld.mk
-include $(STANDALONE_DIR)/bsp/bsp.mk
+include $(STANDALONE_DIR)/standalone.mk
 include $(STANDALONE_DIR)/lib/lib.mk
-include $(FREERTOS_SDK_ROOT)/drivers/drivers.mk
 include $(FREERTOS_SDK_ROOT)/make/ld.mk
 include $(FREERTOS_SDK_ROOT)/third-party/third-party.mk
 
@@ -157,7 +152,7 @@ all: $(APP)
 $(APP): $(OBJ_FILES) $(LDSNAME)
 	@echo Linking $@.elf
 	@echo Dumping $@.map
-	
+
 	$(DO_ECHO) $(QUIET) $(CC) $(TARGET_ARCH) $(LDFLAGS) --output $@.elf -Wl,-Map=$@.map $(OBJ_FILES) -lm
 	@echo Objcopying $@.bin
 	$(DO_ECHO) $(QUIET) $(OC) -v -O binary $@.elf $@.bin

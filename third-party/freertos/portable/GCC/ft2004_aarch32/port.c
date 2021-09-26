@@ -86,7 +86,7 @@ this value. */
 
 /* In all GICs 255 can be written to the priority mask register to unmask all
 (but the lowest) interrupt priority. */
-#define portUNMASK_VALUE (0xFFUL)
+#define portUNMASK_VALUE (0xF0UL)
 
 /* Tasks are not created with a floating point context, but can be given a
 floating point context after they have been created.  A variable is stored as
@@ -137,7 +137,8 @@ the CPU itself before modifying certain hardware registers. */
 		portCPU_IRQ_ENABLE();              \
 	}
 
-#define portINTERRUPT_PRIORITY_REGISTER_OFFSET 0x400UL
+/* Hardware specifics used when sanity checking the configuration. */
+#define portINTERRUPT_PRIORITY_REGISTER_OFFSET (0x400UL + 32UL) //
 #define portMAX_8_BIT_VALUE ((uint8_t)0xff)
 #define portBIT_0_SET ((uint8_t)0x01)
 
@@ -520,8 +521,7 @@ void vPortValidateInterruptPriority(void)
 
 		FreeRTOS maintains separate thread and ISR API functions to ensure
 		interrupt entry is as fast and simple as possible. */
-	//Ft_printf("sys_icc_rpr_get() %d \r\n", sys_icc_rpr_get());
-	// configASSERT(sys_icc_rpr_get() >= (uint32_t)(configMAX_API_CALL_INTERRUPT_PRIORITY << portPRIORITY_SHIFT));
+	 configASSERT(sys_icc_rpr_get() >= (uint32_t)(configMAX_API_CALL_INTERRUPT_PRIORITY << portPRIORITY_SHIFT));
 
 	/* Priority grouping:  The interrupt controller (GIC) allows the bits
 		that define each interrupt's priority to be split between bits that

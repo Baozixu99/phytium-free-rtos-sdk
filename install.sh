@@ -40,7 +40,7 @@ sed -i '/export FREERTOS_SDK_ROOT=/d' $PROFILE_PATH
 echo "[2]: Reset Environment"
 
 #####################################Install BSP####################################################
-STANDALONE_SDK_V=v0.0.5
+STANDALONE_SDK_V=v0.1.2
 STANDALONE_PATH=$FREERTOS_SDK_ROOT/standalone
 STANDALONE_BRANCHE=master
 STANDALONE_REMOTE=https://gitee.com/phytium_embedded/phytium-standalone-sdk.git
@@ -64,7 +64,11 @@ cd $STANDALONE_PATH
 git config core.sparsecheckout true
 # supress part checkout warnning
 git config advice.detachedHead false
-echo "bsp/" >> .git/info/sparse-checkout
+echo "arch/" >> .git/info/sparse-checkout
+echo "board/" >> .git/info/sparse-checkout
+echo "common/" >> .git/info/sparse-checkout
+echo "drivers/" >> .git/info/sparse-checkout
+echo "standalone.mk" >> .git/info/sparse-checkout
 echo "lib/" >> .git/info/sparse-checkout
 echo "[3]: BSP Version is" $STANDALONE_SDK_V
 git checkout $STANDALONE_SDK_V

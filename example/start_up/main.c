@@ -12,10 +12,11 @@
  * ----- ------     --------    --------------------------------------
  */
 
-#include <stdio.h>
+
 #include "sdkconfig.h"
 #include "FreeRTOS.h"
 #include "task.h"
+#include <stdio.h>
 
 void TestTask(void *param)
 {
@@ -44,8 +45,6 @@ extern void TestSemaphoreEntry();
 void main()
 {
     printf("freertos start up\r\n");
-
-    InitIrq();
 
 #ifdef CONFIG_DEMO_HELLO_WORLD
     HelloWorldEntry();

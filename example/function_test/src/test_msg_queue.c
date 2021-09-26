@@ -115,7 +115,7 @@ BaseType_t TestMsgQueueEntry()
 
     Uart1Init();
 
-    printf("get cpu stats \r\n");
+    printf("get cpu stats TestMsgQueueEntry\r\n");
     xReturn = xTaskCreate((TaskFunction_t )AppTaskCreate, /* 任务入口函数 */
                             (const char* )"AppTaskCreate",/* 任务名字 */
                             (uint16_t )512, /* 任务栈大小 */

@@ -737,7 +737,7 @@ BaseType_t xTaskCreate(TaskFunction_t pxTaskCode,
 {
 	TCB_t *pxNewTCB;
 	BaseType_t xReturn;
-
+	
 /* If the stack grows down then allocate the stack then the TCB so the stack
 		does not grow into the TCB.  Likewise if the stack grows up then allocate
 		the TCB then the stack. */
@@ -774,6 +774,7 @@ BaseType_t xTaskCreate(TaskFunction_t pxTaskCode,
 		{
 			/* Allocate space for the TCB. */
 			pxNewTCB = (TCB_t *)pvPortMalloc(sizeof(TCB_t)); /*lint !e961 MISRA exception as the casts are only redundant for some paths. */
+			
 			if (pxNewTCB != NULL)
 			{
 				/* Store the stack location in the TCB. */
@@ -784,6 +785,7 @@ BaseType_t xTaskCreate(TaskFunction_t pxTaskCode,
 				/* The stack cannot be used as the TCB was not created.  Free
 					it again. */
 				vPortFree(pxStack);
+				
 			}
 		}
 		else
@@ -1929,6 +1931,7 @@ void vTaskStartScheduler(void)
 	}
 #else
 	{
+		
 		/* The Idle task is being created using dynamically allocated RAM. */
 		xReturn = xTaskCreate(prvIdleTask,
 							  configIDLE_TASK_NAME,
@@ -1938,7 +1941,7 @@ void vTaskStartScheduler(void)
 							  &xIdleTaskHandle); /*lint !e961 MISRA exception, justified as it is not a redundant explicit cast to all supported compilers. */
 	}
 #endif /* configSUPPORT_STATIC_ALLOCATION */
-
+	
 #if (configUSE_TIMERS == 1)
 	{
 		if (xReturn == pdPASS)
@@ -1951,7 +1954,7 @@ void vTaskStartScheduler(void)
 		}
 	}
 #endif /* configUSE_TIMERS */
-
+	
 	if (xReturn == pdPASS)
 	{
 /* freertos_tasks_c_additions_init() should only be called if the user
@@ -1977,7 +1980,7 @@ void vTaskStartScheduler(void)
 			_impure_ptr = &(pxCurrentTCB->xNewLib_reent);
 		}
 #endif /* configUSE_NEWLIB_REENTRANT */
-
+	
 		xNextTaskUnblockTime = portMAX_DELAY;
 		xSchedulerRunning = pdTRUE;
 		xTickCount = (TickType_t)0U;
@@ -1991,14 +1994,17 @@ void vTaskStartScheduler(void)
 		portCONFIGURE_TIMER_FOR_RUN_TIME_STATS();
 		/* Setting up the timer tick is hardware specific and thus in the
 		portable interface. */
+		
 		if (xPortStartScheduler() != pdFALSE)
 		{
 			/* Should not reach here as if the scheduler is running the
 			function will not return. */
+			
 		}
 		else
 		{
 			/* Should only reach here if a task calls xTaskEndScheduler(). */
+			
 		}
 	}
 	else
@@ -2008,7 +2014,7 @@ void vTaskStartScheduler(void)
 		or the timer task. */
 		configASSERT(xReturn != errCOULD_NOT_ALLOCATE_REQUIRED_MEMORY);
 	}
-
+	
 	/* Prevent compiler warnings if INCLUDE_xTaskGetIdleTaskHandle is set to 0,
 	meaning xIdleTaskHandle is not used anywhere else. */
 	(void)xIdleTaskHandle;

@@ -1,2 +1,18 @@
+# config USE_COREMARK
+#     bool
+#     depends on USE_LIBC
+#     prompt "Use Coremark"
+#     help
+#         Include Coremark for Benchmark
 
+config USE_LWIP
+    bool
+    prompt "Use LWIP"
+    select USE_SYS_TICK
+    help
+        Include LWIP for Network Protocol
+
+    if USE_LWIP
+        source "$(FREERTOS_SDK_ROOT)/third-party/lwip-2.1.2/Kconfig"
+    endif
 

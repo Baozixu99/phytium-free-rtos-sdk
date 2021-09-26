@@ -14,26 +14,38 @@
 
 .PHONY: menuconfig oldconfig alldefconfig savedefconfig lddefconfig genconfig
 menuconfig: 
-	$(FREERTOS_STANDALONE)/lib/Kconfiglib/menuconfig.py
-	$(FREERTOS_STANDALONE)/lib/Kconfiglib/genconfig.py
+	$(STANDALONE_DIR)/lib/Kconfiglib/menuconfig.py
+	$(STANDALONE_DIR)/lib/Kconfiglib/genconfig.py
 
 genconfig:
-	$(FREERTOS_STANDALONE)/lib/Kconfiglib/genconfig.py
+	$(STANDALONE_DIR)/lib/Kconfiglib/genconfig.py
 
 # backup current configs
 oldconfig:
-	$(FREERTOS_STANDALONE)/lib/Kconfiglib/oldconfig.py
+	$(STANDALONE_DIR)/lib/Kconfiglib/oldconfig.py
 
 # write configuration where all symbols and set as
 #	default val
 alldefconfig:
-	$(FREERTOS_STANDALONE)/lib/Kconfiglib/alldefconfig.py
+	$(STANDALONE_DIR)/lib/Kconfiglib/alldefconfig.py
 
 # # Saves a minimal configuration file that only lists symbols that differ in value
 # #	from their defaults
 savedefconfig:
-	$(FREERTOS_STANDALONE)/lib/Kconfiglib/savedefconfig.py
+	$(STANDALONE_DIR)/lib/Kconfiglib/savedefconfig.py
 
 lddefconfig:
 	@cp $(FREERTOS_SDK_ROOT)/configs/$(DEF_KCONFIG) ./$(KCONFIG_CONFIG) -f
 	@echo "get default configs at " $(FREERTOS_SDK_ROOT)/configs/$(DEF_KCONFIG)
+
+# load default configs，then generate sdkconfig.h, and clean build targets
+# support platform
+#	FT2000/4 AARCH32/AARCH64
+# 	D2000 AARCH32/AARCH64
+.PHONY: config_ft2004_aarch32 config_ft2004_aarch64 config_d2000_aarch32 config_d2000_aarch64
+
+config_ft2004_aarch32: lddefconfig genconfig clean
+config_ft2004_aarch64: lddefconfig genconfig clean
+config_d2000_aarch32: lddefconfig genconfig clean
+config_d2000_aarch64: lddefconfig genconfig clean
+

@@ -71,12 +71,12 @@
 #define configCPU_CLOCK_HZ 100000000UL // 100MHz
 #define configUSE_PORT_OPTIMISED_TASK_SELECTION 1 //Method to select the next task
 #define configUSE_TICKLESS_IDLE 0 //disable tickless mode
-#define configTICK_RATE_HZ ((TickType_t)100) //system timer rate 10ms
+#define configTICK_RATE_HZ ((TickType_t)1000) //system timer rate 10ms
 #define configUSE_PREEMPTION 1 //preemption task
 #define configUSE_IDLE_HOOK 1
 #define configUSE_TICK_HOOK 1
 #define configMAX_PRIORITIES (7)
-#define configMINIMAL_STACK_SIZE ((unsigned short)256) //min task stack size 100*4 bytes
+#define configMINIMAL_STACK_SIZE ((unsigned short)1024) //min task stack size 100*4 bytes
 #define configTOTAL_HEAP_SIZE (4096 * 1024) //total heap size
 #define configMAX_TASK_NAME_LEN (20)
 #define configUSE_TRACE_FACILITY 1 //启用可视化跟踪调试

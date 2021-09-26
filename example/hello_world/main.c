@@ -18,7 +18,7 @@
 #include "queue.h"
 #include "timers.h"
 
-#define TIMER_ID	1
+#define TIMER_ID	4
 #define DELAY_10_SECONDS	10000UL
 #define DELAY_1_SECOND		1000UL
 #define TIMER_CHECK_THRESHOLD	9
@@ -39,12 +39,10 @@ static TimerHandle_t xTimer = NULL;
 char HWstring[15] = "Hello World";
 long RxtaskCntr = 0;
 
-extern void InitIrq();
 int main( void )
 {
 	const TickType_t x10seconds = pdMS_TO_TICKS( DELAY_10_SECONDS );
 
-    InitIrq();
     printf( "Hello from Freertos example main\r\n" );
 
 	/* Create the two tasks.  The Tx task is given a lower priority than the
@@ -54,16 +52,16 @@ int main( void )
 					( const char * ) "Tx", 		/* Text name for the task, provided to assist debugging only. */
 					configMINIMAL_STACK_SIZE, 	/* The stack allocated to the task. */
 					NULL, 						/* The task parameter is not used, so set to NULL. */
-					tskIDLE_PRIORITY + 10,			/* The task runs at the idle priority. */
+					configMAX_PRIORITIES-1,			/* The task runs at the idle priority. */
 					&xTxTask );
-
+#if 1
 	xTaskCreate( prvRxTask,
 				 ( const char * ) "GB",
 				 configMINIMAL_STACK_SIZE,
 				 NULL,
-				 tskIDLE_PRIORITY + 20,
+				 configMAX_PRIORITIES-1,
 				 &xRxTask );
-
+#endif
 	/* Create the queue used by the tasks.  The Rx task has a higher priority
 	than the Tx task, so will preempt the Tx task and remove values from the
 	queue as soon as the Tx task writes to the queue - therefore the queue can
@@ -73,7 +71,7 @@ int main( void )
 
 	/* Check the queue was created. */
 	configASSERT( xQueue );
-
+#if 1
 	/* Create a timer with a timer expiry of 10 seconds. The timer would expire
 	 after 10 seconds and the timer call back would get called. In the timer call back
 	 checks are done to ensure that the tasks have been running properly till then.
@@ -92,7 +90,7 @@ int main( void )
 	   as the schedule starts the timer will start running and will expire after
 	   10 seconds */
 	xTimerStart( xTimer, 0 );
-
+#endif
 	/* Start the tasks and timer running. */
 	vTaskStartScheduler();
 

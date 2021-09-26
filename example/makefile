@@ -5,8 +5,8 @@ TOPTARGETS := all clean
 SUBDIRS := function_test \
 		   hello_world \
 		   start_up \
-		   buffer \
-		   template
+		   template \
+		   lwip_test
 
 $(TOPTARGETS): $(SUBDIRS)
 	@for i in $(SUBDIRS); do \

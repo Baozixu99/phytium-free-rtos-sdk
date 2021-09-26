@@ -6,4 +6,4 @@ include $(FREERTOS_SDK_ROOT)/make/build_freertos.mk
 # make and copy image to TFTP folder
 boot:
 	make
-	@cp ./$(CONFIG_TARGET_NAME).bin /mnt/d/tftboot/
+	cp ./$(CONFIG_TARGET_NAME).elf /mnt/d/tftboot/freertos.elf
