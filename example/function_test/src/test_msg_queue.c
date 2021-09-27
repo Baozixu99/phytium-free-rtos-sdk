@@ -45,7 +45,7 @@ static void AppTaskCreate(void)
     /* 创建任务 */
     xReturn = xTaskCreate((TaskFunction_t )Receive_Task, /* 任务入口函数 */
                             (const char* )"Receive_Task",/* 任务名字 */
-                            (uint16_t )512, /* 任务栈大小 */
+                            (uint16_t )1024, /* 任务栈大小 */
                             (void* )NULL, /* 任务入口函数参数 */
                             (UBaseType_t )2, /* 任务的优先级 */
                             (TaskHandle_t* )&Receive_Task_Handle);/* 任务控制块指针 */
@@ -54,7 +54,7 @@ static void AppTaskCreate(void)
 
     xReturn = xTaskCreate((TaskFunction_t )Send_Task, /* 任务入口函数 */
                         (const char* )"Send_Task",/* 任务名字 */
-                        (uint16_t )512, /* 任务栈大小 */
+                        (uint16_t )1024, /* 任务栈大小 */
                         (void* )NULL, /* 任务入口函数参数 */
                         (UBaseType_t )2, /* 任务的优先级 */
                         (TaskHandle_t* )&Send_Task_Handle);/* 任务控制块指针 */
@@ -118,7 +118,7 @@ BaseType_t TestMsgQueueEntry()
     printf("get cpu stats TestMsgQueueEntry\r\n");
     xReturn = xTaskCreate((TaskFunction_t )AppTaskCreate, /* 任务入口函数 */
                             (const char* )"AppTaskCreate",/* 任务名字 */
-                            (uint16_t )512, /* 任务栈大小 */
+                            (uint16_t )1024, /* 任务栈大小 */
                             (void* )NULL,/* 任务入口函数参数 */
                             (UBaseType_t )1, /* 任务的优先级 */
                             (TaskHandle_t* )&AppTaskCreate_Handle); /* 任务控制块指针 */

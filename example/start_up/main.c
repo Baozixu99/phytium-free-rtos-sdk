@@ -37,7 +37,6 @@ void HelloWorldEntry()
     vTaskStartScheduler(); /* 启动任务，开启调度 */   
 }
 
-extern void InitIrq();
 extern void TestTaskPriority();
 extern void TestCpuStatsEntry();
 extern void TestMsgQueueEntry();

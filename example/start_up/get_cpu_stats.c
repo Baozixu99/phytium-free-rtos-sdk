@@ -83,7 +83,7 @@ static void CpuStatsTask(void* parameter)
         vTaskList((char *)&CPU_RunInfo); //获取任务运行时间信息
 
         printf("---------------------------------------------\r\n"); 
-        printf("任务名\t任务状态\t优先级\t剩余栈\t任务序号\r\n"); 
+        printf("task_name  task_state  priority  stack  task_num\r\n"); 
         printf("%s", CPU_RunInfo); 
         printf("---------------------------------------------\r\n");
 
@@ -91,7 +91,7 @@ static void CpuStatsTask(void* parameter)
 
         vTaskGetRunTimeStats((char *)&CPU_RunInfo);
 
-        printf("任务名\t运行计数\t使用率\r\n"); 
+        printf("task_name\trun_time_count\tusage_rate\r\n"); 
         printf("%s", CPU_RunInfo); 
         printf("---------------------------------------------\r\n\n"); 
         vTaskDelay(2000); /* 延时 */        
