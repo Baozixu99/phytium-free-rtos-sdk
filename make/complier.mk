@@ -12,6 +12,8 @@
 # DEFINES      -D MYDEFINE
 
 #include $(FREERTOS_SDK_ROOT)/make/preconfig.mk
+export USR_SRC_DIR ?= $(PROJECT_DIR)
+export USR_INC_DIR ?= $(PROJECT_DIR)
 
 APP ?= $(CONFIG_TARGET_NAME)
 
@@ -31,9 +33,7 @@ ifdef CONFIG_TARGET_ARMV7
 	ARCH = armv7-a
 endif
 
-
 DEBUG_FLAGS = -g 
-
 CPPFLAGS_EXTRA :=
 
 ifndef FREERTOS_SDK_ROOT
@@ -48,7 +48,7 @@ ifdef CONFIG_TARGET_ARMV8_AARCH64
 	ifdef CONFIG_USE_EXT_COMPILER
 		CROSS_PATH  := $(CONFIG_EXT_COMPILER_PREFIX)
 	else
-		CROSS_PATH  := $(FREERTOS_AARCH64_CROSS_PATH)
+		CROSS_PATH  := $(AARCH64_CROSS_PATH)
 	endif
 CROSS_COMPILE := $(CROSS_PATH)/bin/aarch64-none-elf-
 endif
@@ -57,7 +57,7 @@ ifdef CONFIG_TARGET_ARMV8_AARCH32
 	ifdef CONFIG_USE_EXT_COMPILER
 		CROSS_PATH  := $(CONFIG_EXT_COMPILER_PREFIX)
 	else
-		CROSS_PATH  := $(FREERTOS_AARCH32_CROSS_PATH)
+		CROSS_PATH  := $(AARCH32_CROSS_PATH)
 	endif
 CROSS_COMPILE := $(CROSS_PATH)/bin/arm-none-eabi-
 endif
@@ -84,19 +84,16 @@ include $(FREERTOS_SDK_ROOT)/third-party/third-party.mk
 
 INC_DIR		:= $(INC_DIR) $(USR_INC_DIR)
 INCLUDES	:= $(patsubst %, -I %, $(INC_DIR))
+# 使用ld.o作为后缀，区分临时用的linkscript
+PROJ_LD		:= $(OUTPUT_DIR)/linkscript.ld.o
+TEMP_LD		:= $(OUTPUT_DIR)/linkscript.ld.c
 			
 define EOL =
 
 endef
 
-ifeq ($(OS),Windows_NT)
-RM_FILES = $(foreach file,$(1),if exist $(file) del /q $(file)$(EOL))
-RM_D
-IRS = $(foreach dir,$(1),if exist $(dir) rmdir /s /q $(dir)$(EOL))
-else
 RM_FILES = $(foreach file,$(1),rm -f $(file)$(EOL))
 RM_DIRS = $(foreach dir,$(1),rm -rf $(dir)$(EOL))
-endif
 
 DEPEND_FLAGS = -MD -MF $@.d
 
@@ -104,25 +101,6 @@ CPPFLAGS = $(DEFINES) $(INCLUDES) $(DEPEND_FLAGS) $(CPPFLAGS_EXTRA)
 CFLAGS =  $(DEBUG_FLAGS) -DGUEST  -ffreestanding  -Wextra -g -O$(OPT_LEVEL) 
 ASFLAGS = $(CFLAGS)
 
-LIBC ?= 
-LIBPATH ?= 
-ifdef CONFIG_TARGET_ARMV8_AARCH32
-	LIBPATH 	+= $(CROSS_PATH)/arm-none-eabi/lib/thumb/v7/nofp
-# support float and div, turn on by default for aarch64
-	ASFLAGS     := $(ASFLAGS) -mfpu=vfpv3-fp16  -ftree-vectorize -mfloat-abi=softfp -ffast-math -fsingle-precision-constant -march=$(ARCH)
-	CFLAGS      := $(CFLAGS) -mfpu=vfpv3-fp16 -mfloat-abi=softfp -march=$(ARCH)
-endif
-
-LDFLAGS = -T$(LDSNAME) -Wl,--build-id=none 
-ifdef CONFIG_USE_LIBC 
-ifdef CONFIG_TARGET_ARMV8_AARCH32
-LDFLAGS += -lgcc  -L $(LIBPATH)
-endif
-else
-LDFLAGS += -nostdlib -nostartfiles
-endif
-
-TARGET_ARCH = -march=$(ARCH)
 
 #mkdir 创建输出文件目录
 SRC_DIR   := $(SRC_DIR) $(USR_SRC_DIR)
@@ -140,32 +118,83 @@ OBJ_FILES   += $(LIBC)
 
 DEP_FILES := $(OBJ_FILES:%=%.d)
 
+LIBC ?= 
+LIBPATH ?= 
+CC_VERSION = 10.3.1
+ifdef CONFIG_TARGET_ARMV8_AARCH32
+#  support float and div, turn on by default for aarch64 -mfpu=crypto-neon-fp-armv8。
+	ASFLAGS     := $(ASFLAGS) -mfpu=crypto-neon-fp-armv8  -ftree-vectorize -mfloat-abi=softfp -ffast-math -fsingle-precision-constant -march=$(ARCH)
+	CFLAGS      := $(CFLAGS) -mfpu=crypto-neon-fp-armv8 -mfloat-abi=softfp -march=$(ARCH)
+endif
+
+
+# 使用编译链自带的Glibc
+ifdef CONFIG_USE_G_LIBC 
+	ifdef CONFIG_TARGET_ARMV8_AARCH32
+		LIBPATH += $(CROSS_PATH)/arm-none-eabi/lib/thumb/v7/nofp
+		LDFLAGS += -lgcc  -L $(LIBPATH)
+		INC_DIR	:= $(INC_DIR)  $(CROSS_PATH)/arm-none-eabi/include
+		OBJ_FILES += $(CROSS_PATH)/arm-none-eabi/lib/thumb/v7/nofp/libc.a  \
+		 			 $(CROSS_PATH)/lib/gcc/arm-none-eabi/$(CC_VERSION)/libgcc.a					
+	endif
+endif
+
+TEST_DATA ?= 
+# 使用外链的NewLibc
+ifdef CONFIG_USE_NEW_LIBC
+	ifdef CONFIG_TARGET_ARMV8_AARCH32
+		LIBPATH := $(CROSS_PATH)/newlib/arm-none-eabi/newlib
+		INC_DIR	:= $(INC_DIR)  $(CROSS_PATH)/newlib/newlib/libc/include
+		OBJ_FILES += $(CROSS_PATH)/newlib/arm-none-eabi/newlib/libc.a  \
+					 $(CROSS_PATH)/lib/gcc/arm-none-eabi/$(CC_VERSION)/libgcc.a	
+	endif
+
+	ifdef CONFIG_TARGET_ARMV8_AARCH64
+		LIBPATH := $(CROSS_PATH)/newlib/aarch64-none-elf/newlib
+		INC_DIR	:= $(INC_DIR)  $(CROSS_PATH)/newlib/newlib/libc/include
+		OBJ_FILES += $(CROSS_PATH)/newlib/aarch64-none-elf/newlib/libc.a  \
+					 $(CROSS_PATH)/lib/gcc/aarch64-none-elf/$(CC_VERSION)/libgcc.a
+	endif
+
+	LDFLAGS += -nostdlib -nostartfiles
+	LDFLAGS += -lgcc  -L $(LIBPATH)	
+endif
+
+# 不使用Libc库
+ifdef CONFIG_USE_NOSTD_LIBC
+	LDFLAGS += -nostdlib -nostartfiles
+endif
+
+
 ifdef CONFIG_DUMMY_COMPILE
 	DO_ECHO = @echo
 else
 	DO_ECHO = 
 endif
 
-.phony: all clean rebuild
+.phony: all linkscript clean rebuild
 all: $(APP)
 
-$(APP): $(OBJ_FILES) $(LDSNAME)
+linkscript:
+# 如果用户指定了linkscript，跳过使用用户指定的linkscript
+ifndef CONFIG_USER_DEFINED_LD
+	@cp -f $(LDSNAME) $(TEMP_LD)
+	$(DO_ECHO) $(QUIET) $(CC) -P -E $(TEMP_LD) -o $(PROJ_LD) -I $(PROJECT_DIR)
+	@rm -f $(TEMP_LD)
+else
+	PROJ_LD := $(EXT_LDSNAME) 
+endif
+
+$(APP): $(OBJ_FILES) linkscript
 	@echo Linking $@.elf
 	@echo Dumping $@.map
-
-	$(DO_ECHO) $(QUIET) $(CC) $(TARGET_ARCH) $(LDFLAGS) --output $@.elf -Wl,-Map=$@.map $(OBJ_FILES) -lm
+	$(DO_ECHO) $(QUIET) $(CC) $(TARGET_ARCH) $(LDFLAGS) -T $(PROJ_LD) --output $@.elf -Wl,-Map=$@.map $(OBJ_FILES) -lm
 	@echo Objcopying $@.bin
 	$(DO_ECHO) $(QUIET) $(OC) -v -O binary $@.elf $@.bin
 	$(DO_ECHO) $(QUIET) $(OD) -D $@.elf > $@.dis
 	@echo Done.
 
-clean:
-	$(call RM_DIRS,$(OUTPUT_DIR))
-	$(call RM_FILES,*.elf)
-	$(call RM_FILES,*.bin)
-	$(call RM_FILES,*.dis)
-	$(call RM_FILES,*.map)
-	$(call RM_FILES,*.tar.gz)
+
 
 $(X_OUTPUT_DIRS):
 	@mkdir -p $@
@@ -177,6 +206,14 @@ $(OUTPUT_DIR)/%.o : %.S | $(X_OUTPUT_DIRS)
 $(OUTPUT_DIR)/%.o : %.c | $(X_OUTPUT_DIRS)
 	$(PROGRESS)
 	$(QUIET) $(CC) -c $(TARGET_ARCH) $(CPPFLAGS) $(CFLAGS) -o $@ $<
+
+clean:
+	$(call RM_DIRS,$(OUTPUT_DIR))
+	$(call RM_FILES,*.elf)
+	$(call RM_FILES,*.bin)
+	$(call RM_FILES,*.dis)
+	$(call RM_FILES,*.map)
+	$(call RM_FILES,*.tar.gz)
 
 
 # Make sure everything is rebuilt if this makefile is changed

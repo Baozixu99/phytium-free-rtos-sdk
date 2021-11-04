@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0.
  * 
  * @Date: 2021-06-23 18:47:28
- * @LastEditTime: 2021-07-21 11:02:19
+ * @LastEditTime: 2021-07-21 11:21:41
  * @Description:  This files is for 
  * 
  * @Modify History: 
@@ -32,21 +32,19 @@ dcache off
 setenv ipaddr 192.168.4.20  
 setenv serverip 192.168.4.50 
 setenv gatewayip 192.168.4.1 
-tftpboot 80100000 ft2004_freertos.bin
+tftpboot 0x80100000 freertos.bin
 dcache flush
 go 0x80100000
 ```
 
-```
-tftpboot 80100000 ft2004_test_irq.bin
-```
 
-## 使用bootvx32命令跳转
+## 使用bootelf命令跳转
 - 下载新版本到FT2000-4
 ```
 setenv ipaddr 192.168.4.20  
 setenv serverip 192.168.4.50 
 setenv gatewayip 192.168.4.1 
-tftpboot 80100000 ft2004_baremetal.bin
-bootvx32
+tftpboot 0x90100000 freertos.elf
+bootelf -p 0x90100000
 ```
+

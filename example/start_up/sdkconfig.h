@@ -3,14 +3,9 @@
 
 /* Project Configuration */
 
-/* FT2000-4 AARCH32 FreeRTOS Configuration */
-
 #define CONFIG_TARGET_NAME "ft2004_freertos"
-/* CONFIG_DEMO_HELLO_WORLD is not set */
-/* CONFIG_DEMO_GET_CPU_STATS is not set */
-#define CONFIG_DEMO_MSG_QUEUE
-/* CONFIG_DEMO_SEMAPHORE is not set */
-/* end of FT2000-4 AARCH32 FreeRTOS Configuration */
+/*CONFIG_LWIP_POLL_TEST=y */
+/* CONFIG_LWIP_INTRRUPT_TEST is not set */
 /* end of Project Configuration */
 
 /* Standalone Setting */
@@ -42,7 +37,7 @@
 /* CONFIG_USE_QSPI is not set */
 #define CONFIG_USE_GIC
 #define CONFIG_EBABLE_GICV3
-#define CONFIG_USE_USART
+#define CONFIG_USE_SERIAL
 
 /* Usart Configuration */
 
@@ -95,6 +90,14 @@
 #define CONFIG_AARCH32_RAM_LD
 /* CONFIG_AARCH64_RAM_LD is not set */
 /* CONFIG_USER_DEFINED_LD is not set */
+#define CONFIG_LINK_SCRIPT_ROM
+#define CONFIG_ROM_START_UP_ADDR 0x80100000
+#define CONFIG_ROM_SIZE_MB 1
+#define CONFIG_LINK_SCRIPT_RAM
+#define CONFIG_RAM_START_UP_ADDR 0x81000000
+#define CONFIG_RAM_SIZE_MB 64
+#define CONFIG_HEAP_SIZE 0x100000
+#define CONFIG_STACK_SIZE 0x100000
 /* end of GNU Linker Setting */
 /* end of Building Option */
 
@@ -108,7 +111,12 @@
 
 /* FreeRTOS Setting */
 
-/* CONFIG_USE_LWIP is not set */
+/*CONFIG_USE_LWIP=y */
+
+/* LWIP Configuration */
+
+/*CONFIG_LWIP_F_GMAC=y */
+/* end of LWIP Configuration */
 /* end of FreeRTOS Setting */
 
 #endif

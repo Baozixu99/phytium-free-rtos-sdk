@@ -27,7 +27,7 @@ static void CpuStatsTask(void* parameter)
     {
         memset(CPU_RunInfo,0,400); //信息缓冲区清零
         vTaskList((char *)&CPU_RunInfo); //获取任务运行时间信息
-        
+
         printf("---------------------------------------------\r\n"); 
         printf("task_name  task_state  priority  stack  task_num\r\n"); 
         printf("%s", CPU_RunInfo); 
@@ -40,7 +40,6 @@ static void CpuStatsTask(void* parameter)
         printf("task_name\trun_time_count\tusage_rate\r\n"); 
         printf("%s", CPU_RunInfo); 
         printf("---------------------------------------------\r\n\n"); 
-        
         vTaskDelay(2000); /* 延时 */        
     }
 }

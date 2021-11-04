@@ -136,7 +136,7 @@ static void AppTaskCreate(void)
                         (const char* )"CPU_STATS_Task",/* 任务名字 */
                         (uint16_t )1024, /* 任务栈大小 */
                         (void* )NULL, /* 任务入口函数参数 */
-                        (UBaseType_t )4, /* 任务的优先级 */
+                        (UBaseType_t )2, /* 任务的优先级 */
                         (TaskHandle_t* )&cpuStatsTaskHandle);/* 任务控制块指针 */    
 
     if (pdPASS == xReturn)

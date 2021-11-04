@@ -38,6 +38,9 @@
         "tcpip.h": "c",
         "init.h": "c",
         "ethernet.h": "c",
-        "stdio.h": "c"
+        "stdio.h": "c",
+        "semphr.h": "c",
+        "portmacro.h": "c",
+        "fwdt.h": "c"
     }
 }

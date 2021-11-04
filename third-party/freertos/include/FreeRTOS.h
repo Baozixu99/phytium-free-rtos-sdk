@@ -807,6 +807,10 @@ extern "C"
 #define configUSE_TASK_NOTIFICATIONS 1
 #endif
 
+#ifndef configUSE_POSIX_ERRNO
+	#define configUSE_POSIX_ERRNO 0
+#endif
+
 #ifndef portTICK_TYPE_IS_ATOMIC
 #define portTICK_TYPE_IS_ATOMIC 0
 #endif
@@ -1027,6 +1031,9 @@ point support. */
 #if (INCLUDE_xTaskAbortDelay == 1)
 		uint8_t ucDummy21;
 #endif
+#if ( configUSE_POSIX_ERRNO == 1 )
+		int				iDummy22;
+	#endif
 
 	} StaticTask_t;
 

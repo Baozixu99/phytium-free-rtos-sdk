@@ -1,18 +1,20 @@
+#include "sdkconfig.h"
+
 OUTPUT_FORMAT("elf32-littlearm", "elf32-littlearm", "elf32-littlearm")
 OUTPUT_ARCH(arm)
 
 ENTRY(Startup_Aarch32)
 
 
-HEAP_SIZE   = DEFINED(__heap_size__)           ? __heap_size__          : 0x0400;
+HEAP_SIZE   = DEFINED(__heap_size__)           ? __heap_size__          : CONFIG_HEAP_SIZE;
 
 /* pretend that 0x80100000 is ROM, 0x81000000 is RAM */
 /* because vexpress-qemu is not able to emulate flash memory as ROM */
 /* space is significant to avoid syntax error when linking */
 MEMORY
 {
-    ROM (rx) : ORIGIN = 0x80100000, LENGTH = 1M
-    RAM (rwx): ORIGIN = 0x81000000, LENGTH = 32M
+    ROM (rx) : ORIGIN = CONFIG_ROM_START_UP_ADDR, LENGTH = CONFIG_ROM_SIZE_MB * 1M
+    RAM (rwx): ORIGIN = CONFIG_RAM_START_UP_ADDR, LENGTH = CONFIG_RAM_SIZE_MB * 1M
 }
 
 SECTIONS
@@ -38,6 +40,11 @@ SECTIONS
     .rodata :
     {
         *(.rodata .rodata.* .gnu.linkonce.r.*)
+        
+        . = ALIGN(8);
+        _shell_command_start = .;
+        KEEP (*(shellCommand))
+        _shell_command_end = .;        
     } > ROM
 
      .init :
@@ -113,25 +120,25 @@ SECTIONS
         . = ALIGN(8);
         __end__ = .;
         PROVIDE(end = .);
-        __HeapBase = .;
+        HeapBase = .;
+        _heap_start = .;
         . += HEAP_SIZE;
-        . = ALIGN(4096); /* align to page size */
-        __HeapLimit = .;
-        __heap_limit = .; /* Add for _sbrk */
+        _heap_end = .;
+        HeapLimit = .; /* Add for _sbrk */
     } > RAM
 
     _fiq_stack_start = ADDR(.heap) + SIZEOF(.heap);
-    _fiq_stack_end = _fiq_stack_start + 0x1000; /* 64 KB */
+    _fiq_stack_end = _fiq_stack_start + CONFIG_STACK_SIZE; /* 64 KB */
 
     _irq_stack_start = _fiq_stack_end;
-    _irq_stack_end = _irq_stack_start + 0x1000; /* 64 KB */
+    _irq_stack_end = _irq_stack_start + CONFIG_STACK_SIZE; /* 64 KB */
 
     _sys_stack_start = _irq_stack_end;
-    _sys_stack_end  = _sys_stack_start + 0x1000; /* 64 KB */
+    _sys_stack_end  = _sys_stack_start + CONFIG_STACK_SIZE; /* 64 KB */
 
     /* put svc at end and start up with SVC mode */
     _svc_stack_start = _sys_stack_end;
-    _svc_stack_end = _svc_stack_start + 0x1000; /* 64 KB */
+    _svc_stack_end = _svc_stack_start + CONFIG_STACK_SIZE; /* 64 KB */ 
 
     _irq_stack_size = _irq_stack_end - _irq_stack_start;
     _fiq_stack_size = _fiq_stack_end - _fiq_stack_start;

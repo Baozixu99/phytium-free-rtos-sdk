@@ -3,14 +3,23 @@
  *  
  * SPDX-License-Identifier: Apache-2.0.
  * 
- * @Date: 2021-07-02 11:09:17
- * @LastEditTime: 2021-09-24 10:10:16
+ * @Date: 2021-11-02 11:40:17
+ * @LastEditTime: 2021-11-02 12:10:16
  * @Description:  This files is for 
  * 
  * @Modify History: 
  *  Ver   Who        Date         Changes
  * ----- ------     --------    --------------------------------------
 -->
+# Phytium FreeRTOS SDK v0.0.5 ChangeLog
+
+Change Log sinc 0.0.4, 2021.11.2
+
+## example
+
+- add freertos function test examples
+- change Compile environment and installation script
+
 # Phytium FreeRTOS SDK v0.0.4 ChangeLog
 
 Change Log sinc 0.0.3, 2021.9.24

@@ -11,33 +11,13 @@ SRC_DIR += $(THIRD_PARTY_CUR_DIR)/freertos/portable
 SRC_DIR += $(THIRD_PARTY_CUR_DIR)/freertos
 
 ifdef CONFIG_TARGET_ARMV8_AARCH64
-	ifdef CONFIG_TARGET_F2000_4
-		SRC_DIR += $(THIRD_PARTY_CUR_DIR)/freertos/portable/GCC/ft2004_aarch64
-		INC_DIR += $(THIRD_PARTY_CUR_DIR)/freertos/portable/GCC/ft2004_aarch64
-	endif #CONFIG_TARGET_F2000_4
-
-	ifdef CONFIG_TARGET_D2000
-		SRC_DIR += $(THIRD_PARTY_CUR_DIR)/freertos/portable/GCC/d2000_aarch64
-		INC_DIR += $(THIRD_PARTY_CUR_DIR)/freertos/portable/GCC/d2000_aarch64
-	endif #CONFIG_TARGET_D2000
-
-	ifdef CONFIG_TARGET_E2000
-		SRC_DIR += $(THIRD_PARTY_CUR_DIR)/freertos/portable/GCC/e2000_aarch64
-		INC_DIR += $(THIRD_PARTY_CUR_DIR)/freertos/portable/GCC/e2000_aarch64
-	endif #CONFIG_TARGET_E2000
+	SRC_DIR += $(THIRD_PARTY_CUR_DIR)/freertos/portable/GCC/ft_platform/aarch64
+	INC_DIR += $(THIRD_PARTY_CUR_DIR)/freertos/portable/GCC/ft_platform/aarch64
 endif #CONFIG_TARGET_ARMV8_AARCH64
 
 ifdef CONFIG_TARGET_ARMV8_AARCH32
-	ifdef CONFIG_TARGET_F2000_4
-		SRC_DIR += $(THIRD_PARTY_CUR_DIR)/freertos/portable/GCC/ft2004_aarch32
-		INC_DIR += $(THIRD_PARTY_CUR_DIR)/freertos/portable/GCC/ft2004_aarch32
-	endif
-
-	ifdef CONFIG_TARGET_D2000
-		SRC_DIR += $(THIRD_PARTY_CUR_DIR)/freertos/portable/GCC/d2000_aarch32
-		INC_DIR += $(THIRD_PARTY_CUR_DIR)/freertos/portable/GCC/d2000_aarch32
-	endif
-
+	SRC_DIR += $(THIRD_PARTY_CUR_DIR)/freertos/portable/GCC/ft_platform/aarch32
+	INC_DIR += $(THIRD_PARTY_CUR_DIR)/freertos/portable/GCC/ft_platform/aarch32
 endif #CONFIG_TARGET_ARMV8_AARCH32
 
 

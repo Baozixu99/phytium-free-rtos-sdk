@@ -36,7 +36,7 @@
 /* CONFIG_USE_QSPI is not set */
 #define CONFIG_USE_GIC
 #define CONFIG_EBABLE_GICV3
-#define CONFIG_USE_USART
+#define CONFIG_USE_SERIAL
 
 /* Usart Configuration */
 
@@ -64,13 +64,13 @@
 /* CONFIG_USE_PCIE is not set */
 /* CONFIG_USE_WDT is not set */
 /* CONFIG_USE_DMA is not set */
+/* CONFIG_USE_NAND is not set */
 /* end of Components Configuration */
-#define CONFIG_USE_LIBC
+#define CONFIG_USE_G_LIBC
+/* CONFIG_USE_NEW_LIBC is not set */
 /* end of Standalone Setting */
 
 /* Building Option */
-
-#define CONFIG_ENVI_UBUNTU_20_04
 
 /* Cross-Compiler Setting */
 
@@ -84,12 +84,21 @@
 /* CONFIG_LOG_ERROR is not set */
 /* CONFIG_LOG_NONE is not set */
 
-/* GNU Linker Setting */
+/* Linker Options */
 
 /* CONFIG_AARCH32_RAM_LD is not set */
 #define CONFIG_AARCH64_RAM_LD
+/* CONFIG_QEMU_AARCH32_RAM_LD is not set */
 /* CONFIG_USER_DEFINED_LD is not set */
-/* end of GNU Linker Setting */
+#define CONFIG_LINK_SCRIPT_ROM
+#define CONFIG_ROM_START_UP_ADDR 0x80100000
+#define CONFIG_ROM_SIZE_MB 1
+#define CONFIG_LINK_SCRIPT_RAM
+#define CONFIG_RAM_START_UP_ADDR 0x81000000
+#define CONFIG_RAM_SIZE_MB 64
+#define CONFIG_HEAP_SIZE 0x100000
+#define CONFIG_STACK_TOP_ADDR 0x82000000
+/* end of Linker Options */
 /* end of Building Option */
 
 /* Component Configuration */

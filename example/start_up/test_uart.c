@@ -11,7 +11,7 @@
  *  Ver   Who        Date         Changes
  * ----- ------     --------    --------------------------------------
  */
-
+#include <stdio.h>
 #include "ft_types.h"
 #include "pl011_uart.h"
 #include "gicv3.h"

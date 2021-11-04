@@ -1,10 +1,15 @@
+#include "sdkconfig.h"
 
 ENTRY(_boot)
 
 MEMORY
 {
-    ROM (rx) : ORIGIN = 0x80100000, LENGTH = 1M
-    RAM (rwx): ORIGIN = 0x81000000, LENGTH = 32M
+#if defined(CONFIG_LINK_SCRIPT_ROM)
+    ROM (rx) : ORIGIN = CONFIG_ROM_START_UP_ADDR, LENGTH = CONFIG_ROM_SIZE_MB * 1M
+#endif
+#if defined(CONFIG_LINK_SCRIPT_RAM)
+    RAM (rwx): ORIGIN = CONFIG_RAM_START_UP_ADDR, LENGTH = CONFIG_RAM_SIZE_MB * 1M
+#endif
 }
 
 
@@ -24,6 +29,11 @@ SECTIONS
     .rodata :
     {
         *(.rodata .rodata.* .gnu.linkonce.r.*)
+
+        . = ALIGN(8);
+        _shell_command_start = .;
+        KEEP (*(shellCommand))
+        _shell_command_end = .;        
     } > ROM
 
      .init :
@@ -101,11 +111,15 @@ SECTIONS
         . = ALIGN(64);
         __end__ = .;
         PROVIDE(end = .);
-        . = . + 0x1000;
+        HeapBase = .;
+        _heap_start = .;
+        . = . + CONFIG_HEAP_SIZE;
+        _heap_end = .;
+        HeapLimit = .;
     } > RAM
 
 
-    . = 0x82000000 ; /* stack memory */
+    . = CONFIG_STACK_TOP_ADDR ; /* stack memory */
     stack_top = .;
 
 

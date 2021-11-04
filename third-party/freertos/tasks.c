@@ -303,7 +303,7 @@ typedef struct tskTaskControlBlock
 #endif
 
 #if (configNUM_THREAD_LOCAL_STORAGE_POINTERS > 0)
-	void *pvThreadLocalStoragePointers[configNUM_THREAD_LOCAL_STORAGE_POINTERS];
+	void *pvThreadLocalStoragePointers[configNUM_THREAD_LOCAL_STORAGE_POINTERS];	
 #endif
 
 #if (configGENERATE_RUN_TIME_STATS == 1)
@@ -335,6 +335,10 @@ typedef struct tskTaskControlBlock
 #if (INCLUDE_xTaskAbortDelay == 1)
 	uint8_t ucDelayAborted;
 #endif
+
+#if( configUSE_POSIX_ERRNO == 1 )
+		int iTaskErrno;
+	#endif
 
 } tskTCB;
 
@@ -3381,7 +3385,6 @@ eSleepModeStatus eTaskConfirmSleepModeStatus(void)
 /*-----------------------------------------------------------*/
 
 #if (configNUM_THREAD_LOCAL_STORAGE_POINTERS != 0)
-
 void vTaskSetThreadLocalStoragePointer(TaskHandle_t xTaskToSet, BaseType_t xIndex, void *pvValue)
 {
 	TCB_t *pxTCB;
@@ -3898,7 +3901,9 @@ BaseType_t xTaskPriorityDisinherit(TaskHandle_t const pxMutexHolder)
 			If the mutex is held by a task then it cannot be given from an
 			interrupt, and if a mutex is given by the holding task then it must
 			be the running state task. */
+			/* current task is used xSemaphoreTake to get mux? */
 		configASSERT(pxTCB == pxCurrentTCB);
+		/* this queue is mux type */
 		configASSERT(pxTCB->uxMutexesHeld);
 		(pxTCB->uxMutexesHeld)--;
 

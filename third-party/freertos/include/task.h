@@ -138,6 +138,22 @@ typedef struct xTASK_STATUS
 	uint16_t usStackHighWaterMark;	/* The minimum amount of stack space that has remained for the task since the task was created.  The closer this value is to zero the closer the task has come to overflowing its stack. */
 } TaskStatus_t;
 
+
+/**
+ * Used with the uxTaskGetSnapshotAll() function to save memory snapshot of each task in the system.
+ * We need this struct because TCB_t is defined (hidden) in tasks.c.
+ */
+typedef struct xTASK_SNAPSHOT
+{
+	void        *pxTCB;         /*!< Address of task control block. */
+	StackType_t *pxTopOfStack;  /*!< Points to the location of the last item placed on the tasks stack. */
+	StackType_t *pxEndOfStack;  /*!< Points to the end of the stack. pxTopOfStack < pxEndOfStack, stack grows hi2lo
+									pxTopOfStack > pxEndOfStack, stack grows lo2hi*/
+} TaskSnapshot_t;
+
+/** @endcond */
+
+
 /* Possible return values for eTaskConfirmSleepModeStatus(). */
 typedef enum
 {

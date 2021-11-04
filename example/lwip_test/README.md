@@ -74,7 +74,7 @@ sudo service tftpd-hpa restart
 setenv ipaddr 192.168.4.20  
 setenv serverip 192.168.4.50 
 setenv gatewayip 192.168.4.1 
-tftpboot 0x90100000 baremetal.elf
+tftpboot 0x90100000 freertos.elf
 bootelf -p 0x90100000
 ```
 
