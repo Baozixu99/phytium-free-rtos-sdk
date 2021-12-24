@@ -4,7 +4,6 @@ menu  "Linker Options"
     choice 
         prompt "Select Linker Script Template"
         optional
-        default QEMU_AARCH32_RAM_LD if TARGET_AARCH32_QEMU
 
         config AARCH32_RAM_LD
             bool "Use aarch32_ram.ld"
@@ -15,23 +14,6 @@ menu  "Linker Options"
             bool "Use aarch64_ram.ld"
             help
                 Use linkscript for booting AARCH64 Baremetal Image from DDR  
-
-    if USE_BAREMETAL_AMP
-        config AARCH32_AMP_RAM_MASTER_LD
-            bool "Use aarch32_amp_master_ram.ld"
-            help
-                Use linkscript for booting AARCH32 Master Baremetal Image from DDR
-    
-        config AARCH32_AMP_RAM_SLAVE_LD
-            bool "Use aarch32_amp_slave_ram.ld"
-            help
-                Use linkscript for booting AARCH32 Slave Baremetal Image from DDR
-    endif
-
-        config QEMU_AARCH32_RAM_LD
-            bool "Use qemu_aarch32_ram.ld"
-            help
-                Use linkscript booting AARCH32 Qemu from DDR 
 
         config USER_DEFINED_LD
             bool "Other link script"
@@ -81,25 +63,60 @@ menu  "Linker Options"
     endif
 
     config HEAP_SIZE
-        hex "Heap Size"
-        default "0x100000"
+        int "Heap Size (MB)"
+        default "1"
         help
             Assign Heap size in Linkscript
 
-    if TARGET_ARMV8_AARCH32
-        config STACK_SIZE
-            hex "Stack Size"
-            default "0x100000"
-            help
-                Assign Stack size in Linkscript  
-    endif
+    config STACK_SIZE
+        hex "Stack Size (Byte)"
+        default "0x100000"
+        depends on AARCH64_RAM_LD
+        help
+            Assign Stack size in Linkscript  
 
-    if TARGET_ARMV8_AARCH64
-        config STACK_TOP_ADDR
-            hex "Stack Top Address"
-            default "0x82000000"
-            help
-                Assign Stack top address in Linkscript              
-    endif
+
+    config SVC_STACK_SIZE
+        hex "Aarch32 supervisor stack size (Byte)"
+        default "0x1000"
+        depends on AARCH32_RAM_LD
+        help
+            Assign Stack size in Linkscript  
+
+    config SYS_STACK_SIZE
+        hex "Aarch32 system stack size (Byte)"
+        default "0x1000"
+        depends on AARCH32_RAM_LD
+        help
+            Assign system stack size in Linkscript  
+    
+    config IRQ_STACK_SIZE
+        hex "Aarch32 Irq stack size (Byte)"
+        default "0x1000"
+        depends on AARCH32_RAM_LD
+        help
+            Assign Irq stack size in Linkscript  
+    
+    config ABORT_STACK_SIZE
+        hex "Aarch32 abort stack size (Byte)"
+        default "0x1000"
+        depends on AARCH32_RAM_LD
+        help
+            Assign abort stack size in Linkscript  
+
+    config FIQ_STACK_SIZE
+        hex "Aarch32 fiq stack size (Byte)"
+        default "0x1000"
+        depends on AARCH32_RAM_LD
+        help
+            Assign abort stack size in Linkscript  
+    
+    config UNDEF_STACK_SIZE
+        hex "Aarch32 undef stack size (Byte)"
+        default "0x1000"
+        depends on AARCH32_RAM_LD
+        help
+            Assign undef stack size in Linkscript 
+
 endmenu
 

@@ -37,7 +37,7 @@ INC_DIR += 	$(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/include \
 			$(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/include/netif
 
 # src code of ports
-ifdef CONFIG_ENABLE_F_GMAC
+ifdef CONFIG_ENABLE_FGMAC
 	INC_DIR +=  $(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/ports/f_gmac \
 				$(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/ports/f_gmac/arch
 

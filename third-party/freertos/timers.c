@@ -504,7 +504,7 @@ static void prvTimerTask(void *pvParameters)
 
 	/* Just to avoid compiler warnings. */
 	(void)pvParameters;
-
+	
 #if (configUSE_DAEMON_TASK_STARTUP_HOOK == 1)
 	{
 		extern void vApplicationDaemonTaskStartupHook(void);

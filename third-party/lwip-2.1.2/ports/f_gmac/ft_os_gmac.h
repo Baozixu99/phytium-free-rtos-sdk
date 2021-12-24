@@ -19,7 +19,9 @@
 #include <event_groups.h>
 #include <semphr.h>
 
-#include "gmac.h"
+#include "fgmac.h"
+#include "fgmac_hw.h"
+#include "fgmac_phy.h"
 #include "parameters.h"
 #include "lwip/netif.h"
 
@@ -36,6 +38,11 @@
 #define GMAC_RX_DESCNUM     1024U
 #define GMAC_TX_DESCNUM     1024U
 
+#define GMAC_MTU            1500U
+
+/* Common PHY Registers (AR8035) */
+#define PHY_INTERRUPT_ENABLE_OFFSET ((u16)0x12)
+#define PHY_INTERRUPT_ENABLE_LINK_FAIL 0x00000800U  /* Link fail interrupt, 0  Interrupt disable , 1 Interrupt enable */
 
 struct Ipv4Address
 {
@@ -63,7 +70,7 @@ typedef struct
 
 typedef struct
 {
-    GmacCtrl gmac;
+    FGmac gmac;
     struct netif netif_object;
     FtOsGmacConfig config;
     u8 *rx_buffer; /* Buffer for RxDesc */
@@ -73,9 +80,9 @@ typedef struct
     EventGroupHandle_t s_status_event; /* Event Group to show netif's status ,follow FT_NETIF_XX*/
 } FtOsGmac;
 void FtOsGmacObjectInit(FtOsGmac *os_gmac, FtOsGmacConfig *config);
-void FtOsGmacInit(FtOsGmac *os_gmac);
+void FtOsGmacInit(FtOsGmac *os_gmac, FGmacPhy *phy_p);
 void FtOsGmacStart(FtOsGmac *os_gmac);
 void FtOsGmacStop(FtOsGmac *os_gmac);
-
+int FtOsGmacSetupInterrupt(FGmac *instance_p);
 
 #endif // ! FT_OS_GMAC_H

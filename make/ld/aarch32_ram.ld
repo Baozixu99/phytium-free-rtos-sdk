@@ -3,14 +3,9 @@
 OUTPUT_FORMAT("elf32-littlearm", "elf32-littlearm", "elf32-littlearm")
 OUTPUT_ARCH(arm)
 
-ENTRY(Startup_Aarch32)
+ENTRY(_boot)
 
 
-HEAP_SIZE   = DEFINED(__heap_size__)           ? __heap_size__          : CONFIG_HEAP_SIZE;
-
-/* pretend that 0x80100000 is ROM, 0x81000000 is RAM */
-/* because vexpress-qemu is not able to emulate flash memory as ROM */
-/* space is significant to avoid syntax error when linking */
 MEMORY
 {
     ROM (rx) : ORIGIN = CONFIG_ROM_START_UP_ADDR, LENGTH = CONFIG_ROM_SIZE_MB * 1M
@@ -19,95 +14,116 @@ MEMORY
 
 SECTIONS
 {
+    .vectors : {
+        *(.boot)
+        . = ALIGN(64);
+        KEEP(*(.vectors))
+
+    } > ROM
+
     .text : {
-        _text_start = .;
-        KEEP(*(.Startup_Aarch32))
-        *(.vector_table)
         *(.text*)
-        *(.rodata*) /* make life easier without rodata section */
+        *(.gnu.linkonce.t.*)
+        *(.plt)
+        *(.gnu_warning)
+        *(.gcc_execpt_table)
         *(.glue_7)               /* glue arm to thumb code */
         *(.glue_7t)              /* glue thumb to arm code */        
+        *(.vfp11_veneer)
+        *(.ARM.extab)
+        *(.gnu.linkonce.armextab.*)
+        *(.note.gnu.build-id)
      } > ROM /* .text should linked to ROM */
     . = ALIGN(8);
 
     /* .ARM.exidx is sorted, so has to go in its own output section.  */
-    .ARM :
-    {
+    .ARM :{
         *(.ARM.exidx* .gnu.linkonce.armexidx.*)
         /* This is used by the startup in order to initialize the .data secion */
     } > ROM
-    
-    .rodata :
-    {
-        *(.rodata .rodata.* .gnu.linkonce.r.*)
-        
-        . = ALIGN(8);
-        _shell_command_start = .;
-        KEEP (*(shellCommand))
-        _shell_command_end = .;        
+
+    .interp : {
+        KEEP (*(.interp))
     } > ROM
 
-     .init :
-    {
+    .note-ABI-tag : {
+        KEEP (*(.note-ABI-tag))
+    } > ROM
+
+    .rodata :{
+        __rodata_start = .;
+        *(.rodata)
+        *(.rodata.*)
+        *(.gnu.linkonce.r.*)
+        __rodata_end = .;
+    } > ROM
+
+    .rodata1 : {
+        __rodata1_start = .;
+        *(.rodata1)
+        *(.rodata1.*)
+        __rodata1_end = .;
+    } > ROM
+
+    .le_shell  (ALIGN(64)):{
+        . = ALIGN(4096);
+        _shell_command_start = .;
+        KEEP (*(shellCommand))
+        _shell_command_end = .;
+        . = ALIGN(4096); /* align to page size */
+        _shell_code_end = .;
+    }> ROM
+
+    .init :{
         KEEP (*(SORT_NONE(.init)))
     }> ROM
 
-    .fini :
-    {
+    .fini :{
         KEEP (*(SORT_NONE(.fini)))
     }> ROM
 
-    .eh_frame :
-    {
+    .eh_frame :{
         KEEP (*(.eh_frame))
     }> ROM
 
-    .ARM.extab :
-    {
+    .ARM.extab :{
         *(.ARM.extab* .gnu.linkonce.armextab.*)
     }> ROM
 
-    .ARM.exidx :
-    {
+    .ARM.exidx :{
         __exidx_start = .;
         *(.ARM.exidx* .gnu.linkonce.armexidx.*)
         __exidx_end = .;
     }> ROM
 
-    .fini_array :
-    {
+    .fini_array :{
         PROVIDE_HIDDEN (__fini_array_start = .);
         KEEP (*(SORT(.fini_array.*)))
         KEEP (*(.fini_array ))
         PROVIDE_HIDDEN (__fini_array_end = .);
     }> ROM
 
-    .dtors :
-    {
+    .dtors :{
         KEEP (*crtbegin.o(.dtors))
         KEEP (*crtbegin?.o(.dtors))
         KEEP (*(EXCLUDE_FILE (*crtend.o *crtend?.o ) .dtors))
         KEEP (*(SORT(.dtors.*)))
         KEEP (*(.dtors))
         . = ALIGN(16);
-        _rom_end = .;
+        __rom_end__ = .;
     }> ROM
-    
-    
-    . = ALIGN(4096); /* align to page size */
-    _text_end = .;
     
     /* data segment, contains data that can be modified by the program at run-time,
        global and static variables that have a non-zero initial value will normally go here */
-    .data : AT(_text_end){
-        _data_start = .; /* .data section will be redise at runtime */
+    .data : AT(__rom_end__){
+        __data_start__ = .; /* .data section will be redise at runtime */
         *(.data)
         . = ALIGN(4096); /* align to page size */
-        _data_end = .;        
+        __data_end__ = .;        
     } > RAM /* link it all to RAM */
 
     /* unitialized data segment, variables explicitly initialized with zero to BSS */
-    .bss : {
+    .bss (NOLOAD): {
         __bss_start__ = .;
         _bss_start = __bss_start__;        
         *(.bss)
@@ -115,33 +131,58 @@ SECTIONS
         _bss_end = __bss_end__;                
     } > RAM
 
-    .heap :
-    {
-        . = ALIGN(8);
+    .sbss (NOLOAD) : {
+    __sbss_start__ = .;
+    *(.sbss)
+    *(.sbss.*)
+    *(.gnu.linkonce.sb.*)
+    __sbss_end__ = .;
+    } > RAM
+
+    .heap (NOLOAD):{
+        . = ALIGN(16);
         __end__ = .;
         PROVIDE(end = .);
         HeapBase = .;
         _heap_start = .;
-        . += HEAP_SIZE;
+        . += CONFIG_HEAP_SIZE* 1M;
         _heap_end = .;
         HeapLimit = .; /* Add for _sbrk */
     } > RAM
 
-    _fiq_stack_start = ADDR(.heap) + SIZEOF(.heap);
-    _fiq_stack_end = _fiq_stack_start + CONFIG_STACK_SIZE; /* 64 KB */
+    .stack (NOLOAD):{
 
-    _irq_stack_start = _fiq_stack_end;
-    _irq_stack_end = _irq_stack_start + CONFIG_STACK_SIZE; /* 64 KB */
+        . = ALIGN(16); 
+        _supervisor_stack_end = .;
+        . += CONFIG_SVC_STACK_SIZE;
+        _supervisor_stack = .;
+        __supervisor_stack = _supervisor_stack;
 
-    _sys_stack_start = _irq_stack_end;
-    _sys_stack_end  = _sys_stack_start + CONFIG_STACK_SIZE; /* 64 KB */
+        . = ALIGN(16);
+        _irq_stack_end = .;
+        . += CONFIG_IRQ_STACK_SIZE;
+        __irq_stack = .;
 
-    /* put svc at end and start up with SVC mode */
-    _svc_stack_start = _sys_stack_end;
-    _svc_stack_end = _svc_stack_start + CONFIG_STACK_SIZE; /* 64 KB */ 
+        __sys_stack = .;
+        . += CONFIG_SYS_STACK_SIZE;
+        . = ALIGN(16);
+        __sys_stack = .;
 
-    _irq_stack_size = _irq_stack_end - _irq_stack_start;
-    _fiq_stack_size = _fiq_stack_end - _fiq_stack_start;
-    _sys_stack_size = _sys_stack_end - _sys_stack_start;
-    _svc_stack_size = _svc_stack_end - _svc_stack_start;
+        _abort_stack_end = .;
+        . += CONFIG_ABORT_STACK_SIZE;
+        . = ALIGN(16);
+        __abort_stack = .;
+
+        _fiq_stack_end = .;
+        . += CONFIG_FIQ_STACK_SIZE;
+        . = ALIGN(16);
+        __fiq_stack = .;
+
+        _undef_stack_end = .;
+        . += CONFIG_UNDEF_STACK_SIZE;
+        . = ALIGN(16);
+        __undef_stack = .;
+
+    } > RAM
+
 }

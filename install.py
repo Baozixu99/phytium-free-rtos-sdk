@@ -86,7 +86,7 @@ os.system("chmod +x ./make/*.mk --silent ")
 os.system("chmod +x ./lib/Kconfiglib/*.py --silent ")
 
 # Add standalone sdk
-standalone_sdk_v="v0.1.8"
+standalone_sdk_v="v0.1.15"
 standalone_path=freertos_sdk_path  + '/standalone'
 standalone_branche="master"
 standalone_remote="https://gitee.com/phytium_embedded/phytium-standalone-sdk.git"

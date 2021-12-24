@@ -22,11 +22,11 @@
 	#error "Please include sdkconfig.h first"
 #endif
 
-#ifndef CONFIG_ENABLE_F_GMAC
+#ifndef CONFIG_ENABLE_FGMAC
 	#error "Please include component f_gmac first"
 #endif
 
-#include "gmac.h"
+#include "fgmac.h"
 #include "lwip/ip4_addr.h"
 #include "lwip/init.h"
 #include "netif/ethernet.h"
@@ -55,7 +55,7 @@
 
 struct ethernetif {
     struct eth_addr *ethaddr;
-    GmacCtrl *ethctrl;
+    FGmac *ethctrl;
 };
 
 static ip4_addr_t ip_addr, net_mask, gate_way;

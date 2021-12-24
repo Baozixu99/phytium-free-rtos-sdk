@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0.
  * 
  * @Date: 2021-07-09 08:08:39
- * @LastEditTime: 2021-07-22 09:22:21
+ * @LastEditTime: 2021-12-15 16:57:31
  * @Description:  This files is for 
  * 
  * @Modify History: 
@@ -20,7 +20,7 @@ extern BaseType_t TestMsgQueueEntry();
 int main()
 {
     BaseType_t xReturn = pdPASS;
-    
+    printf("main is start \r\n") ;
     xReturn = TestCpuStatsEntry();
     if (pdPASS != xReturn)
     {
@@ -33,6 +33,7 @@ int main()
         goto FAIL_EXIT;
     }
 
+    printf("vTaskStartScheduler \r\n") ;
     vTaskStartScheduler(); /* 启动任务，开启调度 */   
     while (1); /* 正常不会执行到这里 */
 

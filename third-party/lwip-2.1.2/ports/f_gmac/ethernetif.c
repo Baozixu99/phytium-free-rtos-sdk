@@ -43,11 +43,12 @@
 #include "parameters.h"
 
 #include "ft_os_gmac.h"
-#include "gmac.h"
-#include "gmac_hw.h"
-#include "phy_common.h"
+#include "fgmac.h"
+#include "fgmac_hw.h"
+#include "fgmac_phy.h"
 
 #include "ft_assert.h"
+#include "interrupt.h"
 
 #ifndef SDK_CONFIG_H__
 	#error "Please include sdkconfig.h first"
@@ -57,8 +58,7 @@
 	#error "Please enable system tick by CONFIG_USE_SYS_TICK first"
 #endif
 #include "generic_timer.h"
-#include "gmac.h"
-#include "gmac_dma.h"
+#include "fgmac.h"
 #include "ft_debug.h"
 
 /* The time to block waiting for input. */
@@ -77,6 +77,8 @@
 #define ETHNETIF_DEBUG_E(format, ...) FT_DEBUG_PRINT_E(ETHNETIF_DEBUG_TAG, format, ##__VA_ARGS__)
 #define ETHNETIF_DEBUG_W(format, ...) FT_DEBUG_PRINT_W(ETHNETIF_DEBUG_TAG, format, ##__VA_ARGS__)
 
+extern FError FGmacWritePhyReg(FGmacPhy *instance_p, u16 phy_reg, u32 phy_reg_val);
+extern FError FGmacReadPhyReg(FGmacPhy *instance_p, u16 phy_reg, u32 *phy_reg_val_p);
 
 /**
  * Helper struct to hold private data used to operate your ethernet interface.
@@ -86,52 +88,35 @@
  */
 struct ethernetif {
     struct eth_addr *ethaddr;
-    GmacCtrl *ethctrl;
+    FGmac *ethctrl;
 };
 
+static FGmac gctrl; /* huge size ctrl block */
+static FGmacPhy phy;
 
-static GmacCtrl gctrl; /* huge size ctrl block */
 static struct ethernetif netifctrl;
 /* align buf and descriptor by 128 */
-static u8 txBuf[GMAC_TX_DESCNUM * GMAC_MAX_PACKET_SIZE] __aligned(GMAC_DMA_MIN_ALIGN);
-static u8 rxBuf[GMAC_RX_DESCNUM * GMAC_MAX_PACKET_SIZE] __aligned(GMAC_DMA_MIN_ALIGN);
-static GmacDmaDesc txDesc[GMAC_TX_DESCNUM] __aligned(GMAC_DMA_MIN_ALIGN);
-static GmacDmaDesc rxDesc[GMAC_RX_DESCNUM] __aligned(GMAC_DMA_MIN_ALIGN);
+static u8 tx_buf[GMAC_TX_DESCNUM * GMAC_MAX_PACKET_SIZE] __aligned(GMAC_DMA_MIN_ALIGN);
+static u8 rx_buf[GMAC_RX_DESCNUM * GMAC_MAX_PACKET_SIZE] __aligned(GMAC_DMA_MIN_ALIGN);
+static FGmacDmaDesc tx_desc[GMAC_TX_DESCNUM] __aligned(GMAC_DMA_MIN_ALIGN);
+static FGmacDmaDesc rx_desc[GMAC_RX_DESCNUM] __aligned(GMAC_DMA_MIN_ALIGN);
 
 /**
  * @name: eth_ctrl_init
  * @msg: config gmac and initialization
  * @return {*}
- * @param {GmacCtrl} *pctrl
+ * @param {FGmac} *pctrl
  */
-static u32 eth_ctrl_init(GmacCtrl *pctrl)
+u32 eth_ctrl_init(FGmac *pctrl)
 {
 	LWIP_ASSERT("pctrl != NULL", (pctrl != NULL));
-	u32 ret = GMAC_SUCCESS;
-
-	memset(pctrl, 0U, sizeof(GmacCtrl));
-	ret = GmacCfgInitialize(pctrl, GmacLookupConfig(GMAC_INSTANCE_0));
-	LWIP_ERROR("eth_ctrl_init: init cfg failed\n", (GMAC_SUCCESS == ret), return ERR_IF);
-
-	ret = GmacHwInitialize(pctrl);
-	LWIP_ERROR("eth_ctrl_init: init hardware failed\n", (GMAC_SUCCESS == ret), return ERR_IF);
-
-	ret |= GmacDmaInitRxDescRing(pctrl, &rxDesc[0], &rxBuf[0], 
-								 GMAC_MAX_PACKET_SIZE, GMAC_RX_DESCNUM);
-    ret |= GmacDmaInitTxDescRing(pctrl, &txDesc[0], &txBuf[0], 
-								 GMAC_MAX_PACKET_SIZE, GMAC_TX_DESCNUM);
-	LWIP_ERROR("eth_ctrl_init: init hardware failed\n", (GMAC_SUCCESS == ret), return ERR_IF);
-
-	ret = GmacIntrInit(pctrl);
-	LWIP_ERROR("eth_ctrl_init: init gmac intrrupt failed\n", (GMAC_SUCCESS == ret), return ERR_IF);
-
+	u32 ret = FGMAC_SUCCESS;
 	return ret;
 }
 
 
 void ethernet_link_thread(void *argument)
 {
-
   EventBits_t ev;
   FtOsGmac *os_gmac_ptr = (FtOsGmac *)argument;
   struct netif *netif = &os_gmac_ptr->netif_object;
@@ -140,16 +125,12 @@ void ethernet_link_thread(void *argument)
   
   for (;;)
   {
-	//  printf("line=%d, ev=%#x, Flg=%d \r\n", __LINE__, ev, flag);
     ev = xEventGroupWaitBits(os_gmac_ptr->s_status_event,
                              FT_NETIF_LINKUP | FT_NETIF_DOWN,
                              pdTRUE, pdFALSE, portMAX_DELAY);
 
-	  printf("line=%d, ev=%#x, Flg=%d \r\n", __LINE__, ev, flag);
-
     if (ev & FT_NETIF_DOWN)
     {
-      // Ft_Os_Gmac_Stop(Os_GmacPtr);
       netif_set_link_down(netif);
       netif_set_down(netif);
       last_status = FT_NETIF_DOWN;
@@ -163,11 +144,9 @@ void ethernet_link_thread(void *argument)
     }
     else
     {
-      ETHNETIF_DEBUG_I(" EventGroup is error \r\n");
+      ETHNETIF_DEBUG_I("EventGroup is error \r\n");
       FT_ASSERTVOIDALWAYS();
     }
-
-	  printf("ev=%#x, Flg=%d \r\n", ev, flag);
 
     if (flag)
     {
@@ -192,9 +171,7 @@ void GmacReceiveCallBack(void *args)
 {
   FtOsGmac *os_gmac_ptr;
   os_gmac_ptr = (FtOsGmac *)args;
-  //ETHNETIF_DEBUG_E(" Gmac_ReceiveCallBack \r\n");
   xSemaphoreGiveFromISR(os_gmac_ptr->s_semaphore, 0);
-	
 }
 
 
@@ -237,34 +214,36 @@ static void low_level_init(struct netif *netif)
 {
 	u32 reg_value = 0;
 	LWIP_ASSERT("netif != NULL", (netif != NULL));
-	u32 ret = GMAC_SUCCESS;
-
-	GmacCtrl *p_ctrl;
-
+	u32 ret = FGMAC_SUCCESS;
+  	FGmacMacAddr mac_addr;
+	FGmac *p_ctrl;
 	FtOsGmac *os_gmac_ptr;
 	os_gmac_ptr = container_of(netif, FtOsGmac, netif_object);
 
-	//	GmacCtrl *p_ctrl;
 	p_ctrl = &os_gmac_ptr->gmac;
 	
 	/* Init Gmac */
-  FtOsGmacInit(os_gmac_ptr);
+  	FtOsGmacInit(os_gmac_ptr, &phy);
 
-	/* Set Receive Callback */
-	GmacRegisterEvtHandler(p_ctrl, GMAC_RX_COMPLETE_EVT, GmacReceiveCallBack);
+  	/* Set Receive Callback */
+	FGmacRegisterEvtHandler(p_ctrl, FGMAC_RX_COMPLETE_EVT, GmacReceiveCallBack);
 
 #if LWIP_ARP || LWIP_ETHERNET
 
 	/* set MAC hardware address length */
 	netif->hwaddr_len = ETH_HWADDR_LEN;
 
+  /* set MAC hardware address */
+	memset(mac_addr, 0, sizeof(mac_addr));
+	FGmacGetMacAddr(os_gmac_ptr->gmac.config.base_addr, mac_addr);
+  
 	/* set MAC hardware address */
-	netif->hwaddr[0] = p_ctrl->config.macAddr[0];
-	netif->hwaddr[1] = p_ctrl->config.macAddr[1];
-	netif->hwaddr[2] = p_ctrl->config.macAddr[2];
-	netif->hwaddr[3] = p_ctrl->config.macAddr[3];
-	netif->hwaddr[4] = p_ctrl->config.macAddr[4];
-	netif->hwaddr[5] = p_ctrl->config.macAddr[5];
+	netif->hwaddr[0] = mac_addr[0];
+	netif->hwaddr[1] = mac_addr[1];
+	netif->hwaddr[2] = mac_addr[2];
+	netif->hwaddr[3] = mac_addr[3];
+	netif->hwaddr[4] = mac_addr[4];
+	netif->hwaddr[5] = mac_addr[5];
 
 	/* maximum transfer unit */
 	netif->mtu = GMAC_MTU;
@@ -284,22 +263,22 @@ static void low_level_init(struct netif *netif)
 					os_gmac_ptr, os_gmac_ptr->config.mac_input_thread.priority,
 					&os_gmac_ptr->config.mac_input_thread.thread_handle) != pdPASS)
 	{
-	ETHNETIF_DEBUG_I("xTaskCreate is Error  %s\r\n", os_gmac_ptr->config.mac_input_thread.thread_name);
-	FT_ASSERTVOIDALWAYS();
+    ETHNETIF_DEBUG_I("xTaskCreate is Error  %s\r\n", os_gmac_ptr->config.mac_input_thread.thread_name);
+    FT_ASSERTVOIDALWAYS();
 	}
 
 	/* Enable MAC and DMA transmission and reception */
 	FtOsGmacStart(os_gmac_ptr);
 	
 	/* Read Register Configuration */
-	GmacPhyReadReg(p_ctrl, PHY_INTERRUPT_ENABLE_OFFSET, &reg_value);
+	FGmacReadPhyReg(&phy, PHY_INTERRUPT_ENABLE_OFFSET, &reg_value);
 	reg_value |= (PHY_INTERRUPT_ENABLE_LINK_FAIL);
 
 	/* Enable Interrupt on change of link status */
-	GmacPhyWriteReg(p_ctrl, PHY_INTERRUPT_ENABLE_OFFSET, reg_value);
+	FGmacWritePhyReg(&phy, PHY_INTERRUPT_ENABLE_OFFSET, reg_value);
 
 	/* Read Register Configuration */
-	GmacPhyReadReg(p_ctrl, PHY_INTERRUPT_ENABLE_OFFSET, &reg_value);
+	FGmacReadPhyReg(&phy, PHY_INTERRUPT_ENABLE_OFFSET, &reg_value);
 	
 #endif /* LWIP_ARP || LWIP_ETHERNET */
 
@@ -334,18 +313,18 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p)
   err_t errval;
   struct pbuf *q;
   u8 *buffer = NULL;
-  volatile GmacDmaDesc *dma_tx_desc;
+  volatile FGmacDmaDesc *dma_tx_desc;
   u32 frame_length = 0;
   u32 buffer_offset = 0;
   u32 bytes_left_to_copy = 0;
   u32 pay_load_offset = 0;
 
-  GmacCtrl *gmac;
+  FGmac *gmac;
   FtOsGmac *os_gmac;
   os_gmac = (FtOsGmac *)container_of(netif, FtOsGmac, netif_object);
   gmac = &os_gmac->gmac;
-  dma_tx_desc = &gmac->txDesc[gmac->txRing.descBufIdx];
-  buffer = (u8 *)(intptr)(dma_tx_desc->buf1Addr);
+  dma_tx_desc = &gmac->tx_desc[gmac->tx_ring.desc_buf_idx];
+  buffer = (u8 *)(intptr)(dma_tx_desc->buf_addr);
 
   if (buffer == NULL)
   {
@@ -360,7 +339,7 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p)
   for (q = p; q != NULL; q = q->next)
   {
     /* Is this buffer available? If not, goto error */
-    if ((dma_tx_desc->status & GMAC_DMA_TDES0_OWN) != 0)
+    if ((dma_tx_desc->status & FGMAC_DMA_TDES0_OWN) != 0)
     {
       errval = ERR_USE;
       ETHNETIF_DEBUG_I("error errval = ERR_USE; \r\n");
@@ -377,19 +356,19 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p)
     {
       /* Copy data to Tx buffer*/
       memcpy((u8 *)((u8 *)buffer + buffer_offset), (u8 *)((u8 *)q->payload + pay_load_offset), (GMAC_MAX_PACKET_SIZE - buffer_offset));
-      GMAC_DMA_INC_DESC(gmac->txRing.descBufIdx, gmac->txRing.descMaxNum);
+      FGMAC_DMA_INC_DESC(gmac->tx_ring.desc_buf_idx, gmac->tx_ring.desc_max_num);
       /* Point to next descriptor */
-      dma_tx_desc = &gmac->txDesc[gmac->txRing.descBufIdx];
+      dma_tx_desc = &gmac->tx_desc[gmac->tx_ring.desc_buf_idx];
 
       /* Check if the Bufferis available */
-      if ((dma_tx_desc->status & GMAC_DMA_TDES0_OWN) != (u32)0)
+      if ((dma_tx_desc->status & FGMAC_DMA_TDES0_OWN) != (u32)0)
       {
         errval = ERR_USE;
         ETHNETIF_DEBUG_I("Check if the Bufferis available \r\n");
         goto error;
       }
 
-      buffer = (u8 *)(intptr)(dma_tx_desc->buf1Addr);
+      buffer = (u8 *)(intptr)(dma_tx_desc->buf_addr);
       bytes_left_to_copy = bytes_left_to_copy - (GMAC_MAX_PACKET_SIZE - buffer_offset);
       pay_load_offset = pay_load_offset + (GMAC_MAX_PACKET_SIZE - buffer_offset);
       frame_length = frame_length + (GMAC_MAX_PACKET_SIZE - buffer_offset);
@@ -399,24 +378,25 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p)
       {
         ETHNETIF_DEBUG_I(" error Buffer is 0 \r\n");
 		    return ERR_VAL;
-	  }
+	    }
 	}
 
     /* Copy the remaining bytes */
     memcpy((u8 *)((u8 *)buffer + buffer_offset), (u8 *)((u8 *)q->payload + pay_load_offset), bytes_left_to_copy);
     buffer_offset = buffer_offset + bytes_left_to_copy;
     frame_length = frame_length + bytes_left_to_copy;
-    GMAC_DMA_INC_DESC(gmac->txRing.descBufIdx, gmac->txRing.descMaxNum);
+    FGMAC_DMA_INC_DESC(gmac->tx_ring.desc_buf_idx, gmac->tx_ring.desc_max_num);
   }
 
 #if ETH_PAD_SIZE
   pbuf_header(p, ETH_PAD_SIZE); /* reclaim the padding word */
 #endif
 
-   GmacDmaTransFrame(gmac, frame_length);
+  FGmacSendFrame(gmac, frame_length);
   
 error:
-  GmacDmaResumeUnderflow(gmac);
+  FGmacResmuDmaUnderflow(gmac->config.base_addr);
+  
   return errval;
 }
 
@@ -437,27 +417,27 @@ static struct pbuf *low_level_input(struct netif *netif)
   struct pbuf *q = NULL;
   u16 length = 0;
   u8 *buffer;
-  volatile GmacDmaDesc *dma_rx_desc;
+  volatile FGmacDmaDesc *dma_rx_desc;
   u32 buffer_offset = 0;
   u32 pay_load_offset = 0;
   u32 bytes_left_to_copy = 0;
 
   u32 desc_buffer_index; /* For Current Desc buffer buf position */
   FtOsGmac *os_gmac;
-  GmacCtrl *gmac;
+  FGmac *gmac;
 
   os_gmac = (FtOsGmac *)container_of(netif, FtOsGmac, netif_object);
   gmac = &os_gmac->gmac;
 
   /* get received frame */
-  if (GmacRingGetReceivedFrameIT(gmac) != FT_SUCCESS)
+  if (FGmacRecvFrame(gmac) != FT_SUCCESS)
   {
     return NULL;
   }
 
-  desc_buffer_index = gmac->rxRing.descBufIdx;
-  length = (gmac->rxDesc[desc_buffer_index].status & GMAC_DMA_RDES0_FRAME_LEN_MASK) >> GMAC_DMA_RDES0_FRAME_LEN_SHIFT;
-  buffer = (u8 *)(intptr)(gmac->rxDesc[desc_buffer_index].buf1Addr);
+  desc_buffer_index = gmac->rx_ring.desc_buf_idx;
+  length = (gmac->rx_desc[desc_buffer_index].status & FGMAC_DMA_RDES0_FRAME_LEN_MASK) >> FGMAC_DMA_RDES0_FRAME_LEN_SHIFT;
+  buffer = (u8 *)(intptr)(gmac->rx_desc[desc_buffer_index].buf_addr);
 
   
 #if ETH_PAD_SIZE
@@ -479,7 +459,7 @@ static struct pbuf *low_level_input(struct netif *netif)
 #if ETH_PAD_SIZE
     pbuf_header(p, -ETH_PAD_SIZE); /* drop the padding word */
 #endif
-    dma_rx_desc = &gmac->rxDesc[desc_buffer_index];
+    dma_rx_desc = &gmac->rx_desc[desc_buffer_index];
     buffer_offset = 0;
     for (q = p; q != NULL; q = q->next)
     {
@@ -492,14 +472,14 @@ static struct pbuf *low_level_input(struct netif *netif)
         memcpy((u8 *)((u8 *)q->payload + pay_load_offset), (u8 *)((u8 *)buffer + buffer_offset), (GMAC_MAX_PACKET_SIZE - buffer_offset));
 
         /* Point to next descriptor */
-        GMAC_DMA_INC_DESC(desc_buffer_index, gmac->rxRing.descMaxNum);
-        if (desc_buffer_index == gmac->rxRing.descIdx)
+        FGMAC_DMA_INC_DESC(desc_buffer_index, gmac->rx_ring.desc_max_num);
+        if (desc_buffer_index == gmac->rx_ring.desc_idx)
         {
           break;
         }
 
-        dma_rx_desc = &gmac->rxDesc[desc_buffer_index];
-        buffer = (u8 *)(intptr)(dma_rx_desc->buf1Addr);
+        dma_rx_desc = &gmac->rx_desc[desc_buffer_index];
+        buffer = (u8 *)(intptr)(dma_rx_desc->buf_addr);
 
         bytes_left_to_copy = bytes_left_to_copy - (GMAC_MAX_PACKET_SIZE - buffer_offset);
         pay_load_offset = pay_load_offset + (GMAC_MAX_PACKET_SIZE - buffer_offset);
@@ -520,19 +500,18 @@ static struct pbuf *low_level_input(struct netif *netif)
 
   /* Release descriptors to DMA */
   /* Point to first descriptor */
-  dma_rx_desc = &gmac->rxDesc[desc_buffer_index];
+  dma_rx_desc = &gmac->rx_desc[desc_buffer_index];
   /* Set Own bit in Rx descriptors: gives the buffers back to DMA */
-  for (desc_buffer_index = gmac->rxRing.descBufIdx; desc_buffer_index != gmac->rxRing.descIdx; GMAC_DMA_INC_DESC(desc_buffer_index, gmac->rxRing.descMaxNum))
+  for (desc_buffer_index = gmac->rx_ring.desc_buf_idx; desc_buffer_index != gmac->rx_ring.desc_idx; FGMAC_DMA_INC_DESC(desc_buffer_index, gmac->rx_ring.desc_max_num))
   {
-    dma_rx_desc->status |= GMAC_DMA_RDES0_OWN;
-    dma_rx_desc = &gmac->rxDesc[desc_buffer_index];
+    dma_rx_desc->status |= FGMAC_DMA_RDES0_OWN;
+    dma_rx_desc = &gmac->rx_desc[desc_buffer_index];
   }
 
   /* Sync index */
-  gmac->rxRing.descBufIdx = gmac->rxRing.descIdx;
+  gmac->rx_ring.desc_buf_idx = gmac->rx_ring.desc_idx;
 
-  GmacDmaResumeRecv(gmac);
-
+  FGmacResumeDmaRecv(gmac->config.base_addr);
   return p;
 }
 
@@ -557,6 +536,7 @@ void ethernetif_input(void const *argument)
 	  
    if (xSemaphoreTake(os_gmac_ptr->s_semaphore, TIME_WAITING_FOR_INPUT) == pdTRUE)
     {
+
       do
       {
         LOCK_TCPIP_CORE();
@@ -594,12 +574,7 @@ static err_t low_level_output_arp_off(struct netif *netif, struct pbuf *q, const
   	err_t errval;
 	errval = ERR_OK;
     
-/* USER CODE BEGIN 5 */ 
-    
-/* USER CODE END 5 */  
-    
 	return errval;
-  
 }
 #endif /* LWIP_ARP */ 
 
@@ -708,9 +683,9 @@ sio_fd_t sio_open(u8_t devnum)
 	sio_fd_t sd;
 	(void)devnum;
 
-	sd = 0; // dummy code
+	sd = 0;
 
-  	return sd;
+	return sd;
 }
 
 /**
@@ -731,7 +706,7 @@ u32_t sio_read(sio_fd_t fd, u8_t *data, u32_t len)
 	(void)data;
 	(void)fd;
 
-	recved_bytes = 0; // dummy code
+	recved_bytes = 0; 
 
 	return recved_bytes;
 }

@@ -11,6 +11,15 @@
  *  Ver   Who        Date         Changes
  * ----- ------     --------    --------------------------------------
 -->
+# Phytium FreeRTOS SDK v0.0.6 ChangeLog
+
+Change Log sinc 0.0.5, 2021.12.23
+
+## example
+
+- adapt to the new standalone sdk v0.1.15
+- reconstruct the aarch framework for freertos
+
 # Phytium FreeRTOS SDK v0.0.5 ChangeLog
 
 Change Log sinc 0.0.4, 2021.11.2

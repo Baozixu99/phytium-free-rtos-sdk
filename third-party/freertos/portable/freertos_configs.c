@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0.
  * 
  * @Date: 2021-07-05 08:35:41
- * @LastEditTime: 2021-07-21 19:04:40
+ * @LastEditTime: 2021-12-15 16:59:45
  * @Description:  This files is for 
  * 
  * @Modify History: 
@@ -18,7 +18,6 @@
 #include "gicv3.h"
 #include "generic_timer.h"
 #include "interrupt.h"
-#include "trap.h"
 #include <stdio.h>
 #include "ft_assert.h"
 
@@ -55,16 +54,16 @@ static u32 cntfrq; /* System frequency */
 
 void vConfigureTickInterrupt(void)
 {
-    // Disable the timer
+    /* Disable the timer */
     GenericTimerStop();
-    // Get system frequency
+    /* Get system frequency */
     cntfrq = GenericTimerFrequecy();
-
-    // Set tick rate
+    
+    /* Set tick rate */
     GenericTimerCompare(cntfrq / configTICK_RATE_HZ);
     GenericTimerInterruptEnable();
 
-    // Set as the lowest priority
+    /* Set as the lowest priority */
     InterruptSetPriority(GENERIC_TIMER_NS_IRQ_NUM, configKERNEL_INTERRUPT_PRIORITY);
     InterruptUmask(GENERIC_TIMER_NS_IRQ_NUM);
 
@@ -76,9 +75,31 @@ void vClearTickInterrupt(void)
     GenericTimerCompare(cntfrq / configTICK_RATE_HZ);
 }
 
+
+static void vFIrqHandler(int ir)
+{
+	void *param;
+  	IrqHandler isr_func;
+  	extern struct IrqDesc isr_table[];
+
+	/* get interrupt service routine */
+	isr_func = isr_table[ir].handler;
+	if (isr_func)
+	{
+		/* Interrupt for myself. */
+		param = isr_table[ir].param;
+		/* turn to interrupt service routine */
+		isr_func(ir, param);
+	}
+	
+	/* end of interrupt */
+	InterruptAck(ir);
+}
+
 volatile unsigned int gCpuRuntime;
 
 #ifdef __aarch64__
+
 void vApplicationIRQHandler(uint32_t ulICCIAR)
 {
     int ulInterruptID;
@@ -97,17 +118,18 @@ void vApplicationIRQHandler(uint32_t ulICCIAR)
     }
     else
     {
-        SystemIrqHandler(ulInterruptID);
+        vFIrqHandler(ulInterruptID);
     }
 }
 #else
+
 void vApplicationFPUSafeIRQHandler(uint32_t ulICCIAR)
 {
     int ulInterruptID;
 
     /* Interrupts cannot be re-enabled until the source of the interrupt is
-	cleared. The ID of the interrupt is obtained by bitwise ANDing the ICCIAR
-	value with 0x3FF. */
+	   cleared. The ID of the interrupt is obtained by bitwise ANDing the ICCIAR
+	   value with 0x3FF. */
     ulInterruptID = ulICCIAR & 0x3FFUL;
     
     /* call handler function */
@@ -116,11 +138,10 @@ void vApplicationFPUSafeIRQHandler(uint32_t ulICCIAR)
         /* Generic Timer */
         gCpuRuntime++;
         FreeRTOS_Tick_Handler();
-        
     }
     else
-    {
-        SystemIrqHandler(ulInterruptID);
+    {      
+        vFIrqHandler(ulInterruptID);
     }    
 }
 #endif

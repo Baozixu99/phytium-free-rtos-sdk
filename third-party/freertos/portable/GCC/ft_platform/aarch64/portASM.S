@@ -32,6 +32,7 @@
 	.extern ullMaxAPIPriorityMask
 	.extern pxCurrentTCB
 	.extern vTaskSwitchContext
+	.extern _freertos_vector_table
 	.extern vApplicationIRQHandler
 	.extern ullPortInterruptNesting
 	.extern ullPortTaskHasFPUContext
@@ -39,7 +40,7 @@
 	.extern ullPortYieldRequired
 	.extern ullICCEOIR
 	.extern ullICCIAR
-	.extern _freertos_vector_table
+	.extern _vector_table
 
 	.global FreeRTOS_IRQ_Handler
 	.global FreeRTOS_SWI_Handler
@@ -257,7 +258,7 @@ FreeRTOS_Abort:
 .align 8
 .type vPortRestoreTaskContext, %function
 vPortRestoreTaskContext:
-.set freertos_vector_base,	_freertos_vector_table
+.set freertos_vector_base, _freertos_vector_table
 	
 	/* Install the FreeRTOS interrupt handlers. */
 	LDR		X1, =freertos_vector_base

@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0.
  * 
  * @Date: 2021-07-05 13:48:25
- * @LastEditTime: 2021-07-22 09:48:23
+ * @LastEditTime: 2021-12-15 15:58:22
  * @Description:  This files is for 
  * 
  * @Modify History: 
@@ -13,21 +13,21 @@
  */
 #include <stdio.h>
 #include "ft_types.h"
-#include "pl011_uart.h"
+#include "fpl011.h"
 #include "gicv3.h"
 #include "interrupt.h"
 
-static Pl011 pl011_obj;
+static FPl011 pl011_obj;
 
 void Uart1Init(void)
 {
-    Pl011Config config = *Pl011LookupConfig(1);
-    printf("config addr: 0x%x \r\n", config.base_address);
-    Pl011CfgInitialize(&pl011_obj, &config);
-    Pl011SetOptions(&pl011_obj, FUART_OPTION_UARTEN | FUART_OPTION_RXEN | FUART_OPTION_TXEN | FUART_OPTION_FIFOEN);
+    FPl011Config *config = (FPl011Config *)FPl011LookupConfig(1);
+    printf("config addr: 0x%x \r\n", config->base_address);
+    FPl011CfgInitialize(&pl011_obj, config);
+    FPl011SetOptions(&pl011_obj, FPL011_OPTION_UARTEN | FPL011_OPTION_RXEN | FPL011_OPTION_TXEN | FPL011_OPTION_FIFOEN);
 }
 
 u8 BlockReceive()
 {
-    return Pl011BlockReceive(&pl011_obj);
+    return FPl011BlockReceive(&pl011_obj);
 }

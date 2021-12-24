@@ -18,9 +18,7 @@
 #include "task.h"
 #include "unity.h"
 
-// #define EVENT_GROUPS_TEST 1
-// #define TRACE_FACILITY_TEST 1
-#if 1
+
 #define ISR_FLOAT_TEST 1
 #define BACKPORT_TEST 1
 #define DEBUG_QUEUE_REGISTER_TEST 1
@@ -41,7 +39,7 @@
 #define PRIORITY_TEST 1
 #define THREAD_LOCAL_TEST 1
 #define TIMER_TEST 1
-#endif
+
 
 #if ISR_FLOAT_TEST
 extern BaseType_t TestFloatIsrEntry(void);

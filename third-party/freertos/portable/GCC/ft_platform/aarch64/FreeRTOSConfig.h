@@ -188,4 +188,8 @@ QEMU-Virt. */
 
 #define configUSE_TRACE_FACILITY 1
 
+
+#define FreeRTOS_IRQ_Handler IRQInterruptHandler
+#define FreeRTOS_SWI_Handler SynchronousInterruptHandler
+
 #endif /* FREERTOS_CONFIG_H */

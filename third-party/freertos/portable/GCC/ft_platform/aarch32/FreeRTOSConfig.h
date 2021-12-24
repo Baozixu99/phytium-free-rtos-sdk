@@ -205,8 +205,8 @@ nothing to return to.  To avoid this define configTASK_RETURN_ADDRESS to 0.  */
         vClearTickInterrupt(); \
     }while (0)
 
-#define FreeRTOS_IRQ_Handler IRQ_Handler
-#define FreeRTOS_SWI_Handler SWI_Handler
+#define FreeRTOS_IRQ_Handler IRQHandler
+#define FreeRTOS_SWI_Handler SWIHandler
 
 #define configINTERRUPT_CONTROLLER_BASE_ADDRESS (0x71800000)
 #define configINTERRUPT_CONTROLLER_CPU_INTERFACE_OFFSET (0x2000UL)

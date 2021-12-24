@@ -323,7 +323,6 @@ BaseType_t xPortStartScheduler(void)
 
 			/* Start the timer that generates the tick ISR. */
 			configSETUP_TICK_INTERRUPT();
-
 			/* Start the first task executing. */
 			vPortRestoreTaskContext();
 		}

@@ -1,9 +1,3 @@
-# config USE_COREMARK
-#     bool
-#     depends on USE_LIBC
-#     prompt "Use Coremark"
-#     help
-#         Include Coremark for Benchmark
 
 config USE_LWIP
     bool

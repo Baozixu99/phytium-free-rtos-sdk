@@ -7,7 +7,7 @@ menu "LWIP Configuration"
 
         config LWIP_F_GMAC
             select USE_ETH
-            select ENABLE_F_GMAC
+            select ENABLE_FGMAC
             bool "F_GMAC"
 
     endchoice # LWIP_GMAC_CTRL_TYPE

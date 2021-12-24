@@ -38,6 +38,11 @@ lddefconfig:
 	@cp $(FREERTOS_SDK_ROOT)/configs/$(DEF_KCONFIG) ./$(KCONFIG_CONFIG) -f
 	@echo "get default configs at " $(FREERTOS_SDK_ROOT)/configs/$(DEF_KCONFIG)
 
+ldconfig:
+	cp $(LDCONFIG_ARG) ./$(KCONFIG_CONFIG) -f
+	@echo "get configs at " $(LDCONFIG_ARG)
+	$(STANDALONE_DIR)/lib/Kconfiglib/genconfig.py
+
 # load default configs，then generate sdkconfig.h, and clean build targets
 # support platform
 #	FT2000/4 AARCH32/AARCH64

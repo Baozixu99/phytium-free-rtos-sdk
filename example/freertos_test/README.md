@@ -70,20 +70,47 @@ PRIORITY_TEST----任务优先级测试
 THREAD_LOCAL_TEST----线程局部存储thread local storage测试
 TIMER_TEST----定时器测试
 ```
+
+本例子已经提供好具体的编译指令，以下进行介绍:
+- make 将目录下的工程进行编译
+- make clean  将目录下的工程进行清理
+- make boot   将目录下的工程进行编译，并将生成的elf 复制到目标地址
+- make load_d2000_aarch64  将预设64bit d2000 下的配置加载至工程中
+- make load_d2000_aarch32  将预设32bit d2000 下的配置加载至工程中
+- make load_ft2004_aarch64  将预设64bit ft2004 下的配置加载至工程中
+- make load_ft2004_aarch32  将预设32bit ft2004 下的配置加载至工程中
+- make menuconfig   配置目录下的参数变量
+- make backup_kconfig 将目录下的sdkconfig 备份到./configs下
+
+具体使用方法为:
+- 在当前目录下
+- 执行以上指令
+
 ### 2.3 构建和下载
 
 #### 2.3.1 构建过程
 
 - 在host侧完成配置
->配置成D2000，对于其它平台，使用对于的默认配置，如FT2000-4 `make config_ft2004_configs`
+>配置成ft2004，对于其它平台，使用对于的默认配置，如D2000 `make load_d2000_aarch32`
+
+- 选择目标平台
 ```
-$ make config_d2000_configs 
-$ make menuconfig
+make load_ft2004_aarch32
 ```
 
-- 在host侧完成构建
+- 选择例程需要的配置
 ```
-$ make
+make menuconfig
+```
+
+- 进行编译
+```
+make
+```
+
+- 将编译出的镜像放置到tftp目录下
+```
+make boot
 ```
 
 #### 2.3.2 下载过程

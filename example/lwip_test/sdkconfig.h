@@ -3,7 +3,7 @@
 
 /* Project Configuration */
 
-#define CONFIG_TARGET_NAME "ft2004_freertos"
+#define CONFIG_TARGET_NAME "d2000_freertos"
 #define CONFIG_LWIP_POLL_TEST
 /* CONFIG_LWIP_INTRRUPT_TEST is not set */
 /* end of Project Configuration */
@@ -25,9 +25,9 @@
 
 /* Board Configuration */
 
-#define CONFIG_TARGET_F2000_4
+/* CONFIG_TARGET_F2000_4 is not set */
 /* CONFIG_TARGET_E2000 is not set */
-/* CONFIG_TARGET_D2000 is not set */
+#define CONFIG_TARGET_D2000
 /* end of Board Configuration */
 
 /* Components Configuration */
@@ -35,27 +35,18 @@
 /* CONFIG_USE_SPI is not set */
 /* CONFIG_USE_QSPI is not set */
 #define CONFIG_USE_GIC
-#define CONFIG_EBABLE_GICV3
-#define CONFIG_USE_SERIAL
-
-/* Usart Configuration */
-
-#define CONFIG_ENABLE_Pl011_UART
-/* end of Usart Configuration */
+#define CONFIG_ENABLE_GICV3
+/* CONFIG_USE_SERIAL is not set */
 /* CONFIG_USE_GPIO is not set */
 /* CONFIG_USE_IOMUX is not set */
 #define CONFIG_USE_ETH
 
 /* Eth Configuration */
 
-/* CONFIG_ENABLE_F_XMAC is not set */
-#define CONFIG_ENABLE_F_GMAC
-
-/* F_GMAC Configuration */
-
-/* CONFIG_F_GMAC_PHY_COMMON is not set */
-#define CONFIG_F_GMAC_PHY_AR803X
-/* end of F_GMAC Configuration */
+/* CONFIG_ENABLE_FXMAC is not set */
+#define CONFIG_ENABLE_FGMAC
+#define CONFIG_FGMAC_PHY_COMMON
+/* CONFIG_FGMAC_PHY_AR803X is not set */
 /* end of Eth Configuration */
 /* CONFIG_USE_CAN is not set */
 /* CONFIG_USE_I2C is not set */
@@ -65,6 +56,7 @@
 /* CONFIG_USE_WDT is not set */
 /* CONFIG_USE_DMA is not set */
 /* CONFIG_USE_NAND is not set */
+/* CONFIG_USE_RTC is not set */
 /* end of Components Configuration */
 #define CONFIG_USE_G_LIBC
 /* CONFIG_USE_NEW_LIBC is not set */
@@ -75,6 +67,7 @@
 /* Cross-Compiler Setting */
 
 #define CONFIG_COMPILER_NO_STD_STARUP
+#define CONFIG_GCC_OPTIMIZE_LEVEL 0
 /* CONFIG_USE_EXT_COMPILER is not set */
 /* end of Cross-Compiler Setting */
 /* CONFIG_LOG_VERBOS is not set */
@@ -88,7 +81,6 @@
 
 /* CONFIG_AARCH32_RAM_LD is not set */
 #define CONFIG_AARCH64_RAM_LD
-/* CONFIG_QEMU_AARCH32_RAM_LD is not set */
 /* CONFIG_USER_DEFINED_LD is not set */
 #define CONFIG_LINK_SCRIPT_ROM
 #define CONFIG_ROM_START_UP_ADDR 0x80100000
@@ -96,8 +88,8 @@
 #define CONFIG_LINK_SCRIPT_RAM
 #define CONFIG_RAM_START_UP_ADDR 0x81000000
 #define CONFIG_RAM_SIZE_MB 64
-#define CONFIG_HEAP_SIZE 0x100000
-#define CONFIG_STACK_TOP_ADDR 0x82000000
+#define CONFIG_HEAP_SIZE 1
+#define CONFIG_STACK_SIZE 0x400
 /* end of Linker Options */
 /* end of Building Option */
 

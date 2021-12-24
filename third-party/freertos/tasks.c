@@ -1998,7 +1998,6 @@ void vTaskStartScheduler(void)
 		portCONFIGURE_TIMER_FOR_RUN_TIME_STATS();
 		/* Setting up the timer tick is hardware specific and thus in the
 		portable interface. */
-		
 		if (xPortStartScheduler() != pdFALSE)
 		{
 			/* Should not reach here as if the scheduler is running the

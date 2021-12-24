@@ -76,10 +76,12 @@ EXCL_SRC ?= # 在源文件目录中不编译
 #OUTPUT_DIR ?= build # 输出目录
 $(shell if [ ! -e $(OUTPUT_DIR) ];then mkdir -p $(OUTPUT_DIR); fi)
 
+
 include $(STANDALONE_DIR)/standalone.mk
 include $(STANDALONE_DIR)/lib/lib.mk
 include $(FREERTOS_SDK_ROOT)/make/ld.mk
 include $(FREERTOS_SDK_ROOT)/third-party/third-party.mk
+include $(FREERTOS_SDK_ROOT)/standalone_adaptive.mk
 
 
 INC_DIR		:= $(INC_DIR) $(USR_INC_DIR)
@@ -112,7 +114,7 @@ APP_S_SRC	:=	$(foreach dir, $(SRC_DIR), $(wildcard $(dir)/*.S))
 OBJ_FILES	:=	$(patsubst %, $(OUTPUT_DIR)/%, $(APP_S_SRC:.S=.o)) \
 				$(patsubst %, $(OUTPUT_DIR)/%, $(APP_C_SRC:.c=.o))
 				
-EXCL_OBJS   ?= $(patsubst %, $(OUTPUT_DIR)/%, $(EXCL_SRC:.c=.o))
+EXCL_OBJS   ?= $(patsubst %, $(OUTPUT_DIR)/%, $(EXCL_SRC:.c=.o) $(EXCL_SRC:.S=.o))
 OBJ_FILES   := $(filter-out $(EXCL_OBJS), $(OBJ_FILES))
 OBJ_FILES   += $(LIBC)
 
@@ -135,6 +137,7 @@ ifdef CONFIG_USE_G_LIBC
 		LDFLAGS += -lgcc  -L $(LIBPATH)
 		INC_DIR	:= $(INC_DIR)  $(CROSS_PATH)/arm-none-eabi/include
 		OBJ_FILES += $(CROSS_PATH)/arm-none-eabi/lib/thumb/v7/nofp/libc.a  \
+					 $(CROSS_PATH)/arm-none-eabi/lib/thumb/v7/nofp/libm.a  \
 		 			 $(CROSS_PATH)/lib/gcc/arm-none-eabi/$(CC_VERSION)/libgcc.a					
 	endif
 endif
@@ -146,6 +149,7 @@ ifdef CONFIG_USE_NEW_LIBC
 		LIBPATH := $(CROSS_PATH)/newlib/arm-none-eabi/newlib
 		INC_DIR	:= $(INC_DIR)  $(CROSS_PATH)/newlib/newlib/libc/include
 		OBJ_FILES += $(CROSS_PATH)/newlib/arm-none-eabi/newlib/libc.a  \
+					 $(CROSS_PATH)/newlib/arm-none-eabi/newlib/libm.a  \
 					 $(CROSS_PATH)/lib/gcc/arm-none-eabi/$(CC_VERSION)/libgcc.a	
 	endif
 
@@ -153,6 +157,7 @@ ifdef CONFIG_USE_NEW_LIBC
 		LIBPATH := $(CROSS_PATH)/newlib/aarch64-none-elf/newlib
 		INC_DIR	:= $(INC_DIR)  $(CROSS_PATH)/newlib/newlib/libc/include
 		OBJ_FILES += $(CROSS_PATH)/newlib/aarch64-none-elf/newlib/libc.a  \
+					 $(CROSS_PATH)/newlib/aarch64-none-elf/newlib/libm.a  \
 					 $(CROSS_PATH)/lib/gcc/aarch64-none-elf/$(CC_VERSION)/libgcc.a
 	endif
 
