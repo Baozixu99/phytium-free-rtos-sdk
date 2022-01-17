@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0.
  * 
  * @Date: 2021-10-19 15:42:42
- * @LastEditTime: 2021-11-01 10:20:17
+ * @LastEditTime: 2022-01-14 17:40:57
  * @Description:  This files is for 
  * 
  * @Modify History: 
@@ -14,7 +14,7 @@
 
 # 1. Linux arm aarch64 SDK安装方法
 
-Linux arm aarch64下通过下载SDK开发工具包完成安装，运行脚本`source ./setup_dev.sh`完成安装，安装前请先确认当前设备属于`Linux arm aarch64`
+Linux arm aarch64下通过下载SDK开发工具包完成安装，运行脚本`./setup_dev.py`完成安装，安装前请先确认当前设备属于`Linux arm aarch64`
 
 ![linux-aarch64](https://images.gitee.com/uploads/images/2021/1019/171438_af96408a_8736513.png "linux-aarch64.png")
 
