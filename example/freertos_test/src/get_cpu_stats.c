@@ -1,0 +1,94 @@
+/*
+ * Copyright : (C) 2022 Phytium Information Technology, Inc. 
+ * All Rights Reserved.
+ *  
+ * This program is OPEN SOURCE software: you can redistribute it and/or modify it  
+ * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,  
+ * either version 1.0 of the License, or (at your option) any later version. 
+ *  
+ * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;  
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the Phytium Public License for more details. 
+ *  
+ * 
+ * FilePath: get_cpu_stats.c
+ * Date: 2022-02-24 13:42:19
+ * LastEditTime: 2022-03-21 17:01:09
+ * Description:  This file is for 
+ * 
+ * Modify History: 
+ *  Ver   Who        Date         Changes
+ * ----- ------     --------    --------------------------------------
+ */
+
+
+#include <stdio.h>
+#include <string.h>
+#include "FreeRTOS.h"
+#include "task.h"
+#include "ft_types.h"
+
+static TaskHandle_t cpuStatsTaskHandle = NULL;
+static void CpuStatsTask(void* parameter)
+{
+    u8 CPU_RunInfo[400]; /*保存任务运行时间信息*/
+
+    while (1) 
+    {
+        memset(CPU_RunInfo,0,400); /*信息缓冲区清零*/
+        vTaskList((char *)&CPU_RunInfo); /*获取任务运行时间信息*/
+
+        printf("---------------------------------------------\r\n"); 
+        printf("task_name  task_state  priority  stack  task_num\r\n"); 
+        printf("%s", CPU_RunInfo); 
+        printf("---------------------------------------------\r\n");
+
+        memset(CPU_RunInfo, 0, 400); /*信息缓冲区清零*/
+
+        vTaskGetRunTimeStats((char *)&CPU_RunInfo);
+
+        printf("task_name\trun_time_count\tusage_rate\r\n"); 
+        printf("%s", CPU_RunInfo); 
+        printf("---------------------------------------------\r\n\n"); 
+        vTaskDelay(2000); /* 延时 */        
+    }
+}
+
+static TaskHandle_t appTaskCreateHandle = NULL;
+static void AppTaskCreate(void)
+{
+    BaseType_t ret = pdPASS;/* 定义一个创建信息返回值，默认为 pdPASS */
+ 
+    taskENTER_CRITICAL(); /*进入临界区*/
+ 
+    /* 创建 CPU stats 任务 */
+    ret = xTaskCreate((TaskFunction_t )CpuStatsTask, /* 任务入口函数 */
+                        (const char* )"CPU_STATS_Task",/* 任务名字 */
+                        (uint16_t )1024, /* 任务栈大小 */
+                        (void* )NULL, /* 任务入口函数参数 */
+                        (UBaseType_t )configMAX_PRIORITIES - 1, /* 任务的优先级 */
+                        (TaskHandle_t* )&cpuStatsTaskHandle);/* 任务控制块指针 */
+    
+    if (pdPASS == ret)
+    {
+        printf("create cpu stats task success!\r\n");  
+    }   
+
+    vTaskDelete(appTaskCreateHandle); /*删除 AppTaskCreate 任务*/
+
+    taskEXIT_CRITICAL(); /*退出临界区*/
+}
+
+BaseType_t TestCpuStatsEntry()
+{
+    BaseType_t ret = pdPASS;/* 定义一个创建信息返回值，默认为 pdPASS */
+    
+    ret = xTaskCreate((TaskFunction_t )AppTaskCreate, /* 任务入口函数 */
+                            (const char* )"AppTaskCreate",/* 任务名字 */
+                            (uint16_t )512, /* 任务栈大小 */
+                            (void* )NULL,/* 任务入口函数参数 */
+                            (UBaseType_t )configMAX_PRIORITIES - 1, /* 任务的优先级 */
+                            (TaskHandle_t* )&appTaskCreateHandle); /* 任务控制 */
+                            
+    return ret;
+}

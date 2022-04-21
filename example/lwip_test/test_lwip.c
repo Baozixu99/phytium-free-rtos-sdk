@@ -1,16 +1,26 @@
 /*
- * @ : Copyright (c) 2021 Phytium Information Technology, Inc. 
+ * Copyright : (C) 2022 Phytium Information Technology, Inc. 
+ * All Rights Reserved.
  *  
- * SPDX-License-Identifier: Apache-2.0.
+ * This program is OPEN SOURCE software: you can redistribute it and/or modify it  
+ * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,  
+ * either version 1.0 of the License, or (at your option) any later version. 
+ *  
+ * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;  
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the Phytium Public License for more details. 
+ *  
  * 
- * @Date: 2021-08-16 17:24:29
- * @LastEditTime: 2021-08-26 10:27:32
- * @Description:  This files is for 
+ * FilePath: test_lwip.c
+ * Date: 2022-02-24 13:42:19
+ * LastEditTime: 2022-03-21 17:02:05
+ * Description:  This file is for 
  * 
- * @Modify History: 
+ * Modify History: 
  *  Ver   Who        Date         Changes
  * ----- ------     --------    --------------------------------------
  */
+
 #include <string.h>
 #include <stdio.h>
 #include "sdkconfig.h"

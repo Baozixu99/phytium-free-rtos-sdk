@@ -1,0 +1,161 @@
+
+#
+# Project Configuration
+#
+
+#
+#  Baremetal Configuration
+#
+CONFIG_TARGET_NAME="openamp_core1"
+CONFIG_SHM_BASE_ADDR=0xc0000000
+# end of  Baremetal Configuration
+
+#
+# Amp Config
+#
+CONFIG_IPI_IRQ_NUM=9
+CONFIG_IPI_IRQ_NUM_PRIORITY=16
+CONFIG_SPIN_MEM=0x80000000
+CONFIG_TARGET_CPU_ID=1
+CONFIG_IPI_CHN_BITMASK=1
+# end of Amp Config
+# end of Project Configuration
+
+#
+# Standalone Setting
+#
+CONFIG_USE_FREERTOS=y
+
+#
+# Arch Configuration
+#
+# CONFIG_TARGET_ARMV8_AARCH32 is not set
+CONFIG_TARGET_ARMV8_AARCH64=y
+# CONFIG_TARGET_ARMV7 is not set
+CONFIG_USE_CACHE=y
+# CONFIG_USE_L3CACHE is not set
+CONFIG_USE_MMU=y
+# CONFIG_USE_SYS_TICK is not set
+# CONFIG_MMU_DEBUG_PRINTS is not set
+# end of Arch Configuration
+
+#
+# Board Configuration
+#
+# CONFIG_TARGET_F2000_4 is not set
+CONFIG_TARGET_F2000_4=y
+# CONFIG_TARGET_E2000Q is not set
+# CONFIG_TARGET_E2000D is not set
+# CONFIG_TARGET_E2000S is not set
+# end of Board Configuration
+
+#
+# Components Configuration
+#
+# CONFIG_USE_SPI is not set
+# CONFIG_USE_QSPI is not set
+CONFIG_USE_GIC=y
+CONFIG_ENABLE_GICV3=y
+CONFIG_USE_SERIAL=y
+
+#
+# Usart Configuration
+#
+CONFIG_ENABLE_Pl011_UART=y
+# end of Usart Configuration
+
+# CONFIG_USE_GPIO is not set
+# CONFIG_USE_IOMUX is not set
+# CONFIG_USE_ETH is not set
+# CONFIG_USE_CAN is not set
+# CONFIG_USE_I2C is not set
+# CONFIG_USE_TIMER is not set
+# CONFIG_USE_SDMMC is not set
+# CONFIG_USE_PCIE is not set
+# CONFIG_USE_WDT is not set
+# CONFIG_USE_DMA is not set
+# CONFIG_USE_NAND is not set
+# CONFIG_USE_RTC is not set
+# CONFIG_USE_SATA is not set
+# CONFIG_USE_USB is not set
+# end of Components Configuration
+
+CONFIG_USE_NEW_LIBC=y
+# end of Standalone Setting
+
+#
+# Building Option
+#
+CONFIG_LOG_VERBOS=y
+# CONFIG_LOG_DEBUG is not set
+# CONFIG_LOG_INFO is not set
+# CONFIG_LOG_WARN is not set
+# CONFIG_LOG_ERROR is not set
+# CONFIG_LOG_NONE is not set
+
+#
+# Linker Options
+#
+# CONFIG_AARCH32_RAM_LD is not set
+CONFIG_AARCH64_RAM_LD=y
+# CONFIG_USER_DEFINED_LD is not set
+CONFIG_LINK_SCRIPT_ROM=y
+CONFIG_ROM_START_UP_ADDR=0xe0100000
+CONFIG_ROM_SIZE_MB=2
+CONFIG_LINK_SCRIPT_RAM=y
+CONFIG_RAM_START_UP_ADDR=0xe0300000
+CONFIG_RAM_SIZE_MB=64
+CONFIG_HEAP_SIZE=1
+CONFIG_STACK_SIZE=0x100000
+# end of Linker Options
+
+#
+# Compiler Options
+#
+CONFIG_DON_T_BINARY_OUTPUT=y
+# end of Compiler Options
+# end of Building Option
+
+#
+# Component Configuration
+#
+
+#
+# Freertos Drivers
+#
+CONFIG_FREERTOS_USE_UART=y
+# end of Freertos Drivers
+# end of Component Configuration
+
+#
+# FreeRTOS Setting
+#
+# CONFIG_USE_LWIP is not set
+CONFIG_USE_BACKTRACE=y
+CONFIG_USE_AMP=y
+CONFIG_USE_LIBMETAL=y
+
+#
+# OpenAmp
+#
+CONFIG_USE_OPENAMP=y
+CONFIG_USE_OPENAMP_IPI=y
+CONFIG_OPENAMP_RESOURCES_ADDR=0xc0000000
+CONFIG_VRING_TX_ADDR=0xc0020000
+CONFIG_VRING_RX_ADDR=0xc0024000
+CONFIG_VRING_SIZE=0x100
+CONFIG_POLL_BASE_ADDR=0xc0224000
+# CONFIG_SKIP_SHBUF_IO_WRITE is not set
+# CONFIG_USE_MASTER_VRING_DEFINE is not set
+
+#
+# Baremetal config
+#
+CONFIG_MEM_NO_CACHE=y
+# CONFIG_MEM_WRITE_THROUGH is not set
+# CONFIG_MEM_NORMAL is not set
+# end of Baremetal config
+# end of OpenAmp
+
+# CONFIG_USE_LETTER_SHELL is not set
+# end of FreeRTOS Setting

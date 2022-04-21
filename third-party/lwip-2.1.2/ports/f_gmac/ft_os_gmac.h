@@ -1,16 +1,26 @@
 /*
- * @ : Copyright (c) 2021 Phytium Information Technology, Inc.
- *
- * SPDX-License-Identifier: Apache-2.0.
- *
- * @Date: 2021-04-07 09:53:07
- * @LastEditTime: 2021-04-20 09:51:46
- * @Description:  This files is for
- *
- * @Modify History:
+ * Copyright : (C) 2022 Phytium Information Technology, Inc. 
+ * All Rights Reserved.
+ *  
+ * This program is OPEN SOURCE software: you can redistribute it and/or modify it  
+ * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,  
+ * either version 1.0 of the License, or (at your option) any later version. 
+ *  
+ * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;  
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the Phytium Public License for more details. 
+ *  
+ * 
+ * FilePath: ft_os_gmac.h
+ * Date: 2022-02-24 13:42:19
+ * LastEditTime: 2022-03-25 09:16:53
+ * Description:  This file is for 
+ * 
+ * Modify History: 
  *  Ver   Who        Date         Changes
  * ----- ------     --------    --------------------------------------
  */
+
 
 #ifndef FT_OS_GMAC_H
 #define FT_OS_GMAC_H

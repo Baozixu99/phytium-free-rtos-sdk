@@ -1,17 +1,3 @@
-#
-# @ : Copyright (c) 2021 Phytium Information Technology, Inc. 
-#  
-# SPDX-License-Identifier: Apache-2.0.
-# 
-# @Date: 2021-05-31 16:54:49
-# @LastEditTime: 2021-05-31 16:55:15
-# @Description:  This files is for baremetal build config
-# 
-# @Modify History: 
-#  Ver   Who        Date         Changes
-# ----- ------     --------    --------------------------------------
-#
-
 .PHONY: menuconfig oldconfig alldefconfig savedefconfig lddefconfig genconfig
 menuconfig: 
 	$(STANDALONE_DIR)/lib/Kconfiglib/menuconfig.py
@@ -35,22 +21,11 @@ savedefconfig:
 	$(STANDALONE_DIR)/lib/Kconfiglib/savedefconfig.py
 
 lddefconfig:
-	@cp $(FREERTOS_SDK_ROOT)/configs/$(DEF_KCONFIG) ./$(KCONFIG_CONFIG) -f
+	@cp $(FREERTOS_SDK_ROOT)/configs/$(DEF_KCONFIG) $(KCONFIG_DIR)/$(KCONFIG_CONFIG) -f
 	@echo "get default configs at " $(FREERTOS_SDK_ROOT)/configs/$(DEF_KCONFIG)
 
 ldconfig:
-	cp $(LDCONFIG_ARG) ./$(KCONFIG_CONFIG) -f
+	cp $(LDCONFIG_ARG) $(KCONFIG_DIR)/$(KCONFIG_CONFIG) -f
 	@echo "get configs at " $(LDCONFIG_ARG)
 	$(STANDALONE_DIR)/lib/Kconfiglib/genconfig.py
-
-# load default configs，then generate sdkconfig.h, and clean build targets
-# support platform
-#	FT2000/4 AARCH32/AARCH64
-# 	D2000 AARCH32/AARCH64
-.PHONY: config_ft2004_aarch32 config_ft2004_aarch64 config_d2000_aarch32 config_d2000_aarch64
-
-config_ft2004_aarch32: lddefconfig genconfig clean
-config_ft2004_aarch64: lddefconfig genconfig clean
-config_d2000_aarch32: lddefconfig genconfig clean
-config_d2000_aarch64: lddefconfig genconfig clean
 

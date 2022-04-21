@@ -1,3 +1,6 @@
+OS_DRIVER_CUR_DIR := $(FREERTOS_SDK_ROOT)/drivers
+
 ifdef CONFIG_FREERTOS_USE_UART
-	
+	SRC_DIR += $(OS_DRIVER_CUR_DIR)/serial/fpl011
+	INC_DIR += $(OS_DRIVER_CUR_DIR)/serial/fpl011
 endif

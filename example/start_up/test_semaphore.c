@@ -1,16 +1,26 @@
 /*
- * @ : Copyright (c) 2021 Phytium Information Technology, Inc. 
+ * Copyright : (C) 2022 Phytium Information Technology, Inc. 
+ * All Rights Reserved.
  *  
- * SPDX-License-Identifier: Apache-2.0.
+ * This program is OPEN SOURCE software: you can redistribute it and/or modify it  
+ * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,  
+ * either version 1.0 of the License, or (at your option) any later version. 
+ *  
+ * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;  
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the Phytium Public License for more details. 
+ *  
  * 
- * @Date: 2021-07-05 14:00:50
- * @LastEditTime: 2021-07-05 14:15:44
- * @Description:  This files is for 
+ * FilePath: test_semaphore.c
+ * Date: 2022-02-24 13:42:19
+ * LastEditTime: 2022-03-21 17:02:26
+ * Description:  This file is for 
  * 
- * @Modify History: 
+ * Modify History: 
  *  Ver   Who        Date         Changes
  * ----- ------     --------    --------------------------------------
  */
+
 #include <stdio.h>
 #include <string.h>
 #include "ft_types.h"
@@ -70,7 +80,7 @@ static void AppTaskCreate(void)
 
     BinarySem_Handle = xSemaphoreCreateBinary();
 
-    FT_ASSERTVOID(NULL != BinarySem_Handle);
+    FASSERT(NULL != BinarySem_Handle);
 
     /* 创建任务 */
     xReturn = xTaskCreate((TaskFunction_t )Receive_Task, /* 任务入口函数 */
@@ -80,7 +90,7 @@ static void AppTaskCreate(void)
                             (UBaseType_t )2, /* 任务的优先级 */
                             (TaskHandle_t* )&Receive_Task_Handle);/* 任务控制块指针 */
 
-    FT_ASSERTVOID(pdPASS == xReturn);
+    FASSERT(pdPASS == xReturn);
 
     xReturn = xTaskCreate((TaskFunction_t )Send_Task, /* 任务入口函数 */
                         (const char* )"Send_Task",/* 任务名字 */
@@ -89,7 +99,7 @@ static void AppTaskCreate(void)
                         (UBaseType_t )2, /* 任务的优先级 */
                         (TaskHandle_t* )&Send_Task_Handle);/* 任务控制块指针 */
 
-    FT_ASSERTVOID(pdPASS == xReturn);
+    FASSERT(pdPASS == xReturn);
 
     vTaskDelete(AppTaskCreate_Handle); //删除 AppTaskCreate 任务
 

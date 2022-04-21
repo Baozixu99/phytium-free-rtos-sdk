@@ -1,20 +1,30 @@
 <!--
- * @ : Copyright (c) 2021 Phytium Information Technology, Inc. 
+ * Copyright : (C) 2022 Phytium Information Technology, Inc. 
+ * All Rights Reserved.
  *  
- * SPDX-License-Identifier: Apache-2.0.
+ * This program is OPEN SOURCE software: you can redistribute it and/or modify it  
+ * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,  
+ * either version 1.0 of the License, or (at your option) any later version. 
+ *  
+ * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;  
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the Phytium Public License for more details. 
+ *  
  * 
- * @Date: 2021-10-19 15:42:42
- * @LastEditTime: 2022-01-14 17:40:57
- * @Description:  This files is for 
+ * FilePath: install_linux_aarch64.md
+ * Date: 2022-02-24 13:42:19
+ * LastEditTime: 2022-03-21 17:00:40
+ * Description:  This file is for 
  * 
- * @Modify History: 
+ * Modify History: 
  *  Ver   Who        Date         Changes
  * ----- ------     --------    --------------------------------------
 -->
 
+
 # 1. Linux arm aarch64 SDK安装方法
 
-Linux arm aarch64下通过下载SDK开发工具包完成安装，运行脚本`./setup_dev.py`完成安装，安装前请先确认当前设备属于`Linux arm aarch64`
+Linux arm aarch64下通过下载SDK开发工具包完成安装，运行脚本`source ./setup_dev.sh`完成安装，安装前请先确认当前设备属于`Linux arm aarch64`
 
 ![linux-aarch64](https://images.gitee.com/uploads/images/2021/1019/171438_af96408a_8736513.png "linux-aarch64.png")
 

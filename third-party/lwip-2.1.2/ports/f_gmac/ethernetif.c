@@ -145,7 +145,7 @@ void ethernet_link_thread(void *argument)
     else
     {
       ETHNETIF_DEBUG_I("EventGroup is error \r\n");
-      FT_ASSERTVOIDALWAYS();
+      FASSERT(0);
     }
 
     if (flag)
@@ -264,7 +264,7 @@ static void low_level_init(struct netif *netif)
 					&os_gmac_ptr->config.mac_input_thread.thread_handle) != pdPASS)
 	{
     ETHNETIF_DEBUG_I("xTaskCreate is Error  %s\r\n", os_gmac_ptr->config.mac_input_thread.thread_name);
-    FT_ASSERTVOIDALWAYS();
+    FASSERT(0);
 	}
 
 	/* Enable MAC and DMA transmission and reception */

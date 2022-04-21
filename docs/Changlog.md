@@ -1,16 +1,62 @@
 <!--
- * @ : Copyright (c) 2021 Phytium Information Technology, Inc. 
+ * Copyright : (C) 2022 Phytium Information Technology, Inc. 
+ * All Rights Reserved.
  *  
- * SPDX-License-Identifier: Apache-2.0.
+ * This program is OPEN SOURCE software: you can redistribute it and/or modify it  
+ * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,  
+ * either version 1.0 of the License, or (at your option) any later version. 
+ *  
+ * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;  
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the Phytium Public License for more details. 
+ *  
  * 
- * @Date: 2021-11-02 11:40:17
- * @LastEditTime: 2021-11-02 12:10:16
- * @Description:  This files is for 
+ * FilePath: Changlog.md
+ * Date: 2022-02-24 13:42:19
+ * LastEditTime: 2022-03-21 16:59:25
+ * Description:  This file is for 
  * 
- * @Modify History: 
+ * Modify History: 
  *  Ver   Who        Date         Changes
  * ----- ------     --------    --------------------------------------
 -->
+# Phytium FreeRTOS SDK 0.0.7 ChangeLog
+
+Change Log sinc 2022-03-21,2022-04-20
+
+## example
+
+- adapt to the new standalone sdk v0.1.17
+
+- add Linux OpenAMP example for freertos
+
+## make
+
+- Modified some variable positions and added some configuration related variables
+
+
+# Phytium FreeRTOS SDK 2022-03-21 ChangeLog
+
+Change Log sinc 0.0.6, 2022.03.21
+
+## example
+
+- adapt to the new standalone sdk v0.1.16
+
+- add OpenAMP for FreeRTOS
+
+## third-party
+
+- add OpenAMP for freertos application
+- add Letter_shell for freertos
+
+## LICENSE
+
+- replace LICENSE with Phytium Public License 1.0 (PPL-1.0)
+- update file COPYRIGHT declaration with PPL-1.0
+
+
+
 # Phytium FreeRTOS SDK v0.0.6 ChangeLog
 
 Change Log sinc 0.0.5, 2021.12.23

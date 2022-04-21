@@ -1,16 +1,26 @@
 /*
- * @ : Copyright (c) 2021 Phytium Information Technology, Inc.
- *
- * SPDX-License-Identifier: Apache-2.0.
- *
- * @Date: 2021-04-07 09:53:07
- * @LastEditTime: 2021-04-07 15:00:19
- * @Description:  This files is for freertos gmac ports
- *
- * @Modify History:
+ * Copyright : (C) 2022 Phytium Information Technology, Inc. 
+ * All Rights Reserved.
+ *  
+ * This program is OPEN SOURCE software: you can redistribute it and/or modify it  
+ * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,  
+ * either version 1.0 of the License, or (at your option) any later version. 
+ *  
+ * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;  
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the Phytium Public License for more details. 
+ *  
+ * 
+ * FilePath: ft_os_gmac.c
+ * Date: 2022-02-24 13:42:19
+ * LastEditTime: 2022-03-25 09:16:57
+ * Description:  This file is for 
+ * 
+ * Modify History: 
  *  Ver   Who        Date         Changes
  * ----- ------     --------    --------------------------------------
  */
+
 
 #include <FreeRTOS.h>
 #include <event_groups.h>
@@ -40,7 +50,7 @@ static boolean rx_data_flag = FALSE;
 
 static void EthLinkPhyStatusChecker(void *param)
 {
-    FT_ASSERTVOID(param != NULL);
+    FASSERT(param != NULL);
     FGmac *instance_p = (FGmac *)param;
     uintptr base_addr = instance_p->config.base_addr;
 
@@ -60,7 +70,7 @@ static void EthLinkPhyStatusChecker(void *param)
 
 static void EthLinkDmaErrChecker(void *param)
 {
-    FT_ASSERTVOID(param != NULL);
+    FASSERT(param != NULL);
     FGmac *instance_p = (FGmac *)param;
     uintptr base_addr = instance_p->config.base_addr;
 
@@ -122,7 +132,7 @@ static void EthLinkDmaErrChecker(void *param)
 
 void EthLinkStatusChecker(void *param)
 {
-    FT_ASSERTVOID(param);
+    FASSERT(param);
     FGmac *instance_p = (FGmac *)param;
     uintptr base_addr = instance_p->config.base_addr;
     u32 status = FGMAC_READ_REG32(base_addr, FGMAC_MAC_PHY_STATUS);
@@ -161,7 +171,7 @@ void EthLinkStatusChecker(void *param)
 
 static void EthLinkRecvDoneCallback(void *param)
 {
-    FT_ASSERTVOID(param);
+    FASSERT(param);
     FGmac *instance_p = (FGmac *)param;
 
     if (TRUE == rx_data_flag)
@@ -176,7 +186,7 @@ static void EthLinkRecvDoneCallback(void *param)
 
 static void EthLinkTransDoneCallback(void *param)
 {
-    FT_ASSERTVOID(param);
+    FASSERT(param);
     FGmac *instance_p = (FGmac *)param;
 
     FGmacResumeDmaSend(instance_p->config.base_addr);
@@ -232,33 +242,33 @@ static u8 rx_desc[GMAC_RX_DESCNUM * sizeof(FGmacDmaDesc) + 128] __attribute__((a
 
 static void FtOsGmacMemCreate(FtOsGmac *os_gmac)
 {
-    FT_ASSERTVOID(os_gmac != NULL);
+    FASSERT(os_gmac != NULL);
     os_gmac->rx_buffer = rx_buf;
     if (os_gmac->rx_buffer == NULL)
     {
         OS_MAC_DEBUG_E("Rxbuffer Malloc is error ");
-        FT_ASSERTVOIDALWAYS();
+        FASSERT(0);
     }
 
     os_gmac->tx_buffer = tx_buf;
     if (os_gmac->tx_buffer == NULL)
     {
         OS_MAC_DEBUG_E("Txbuffer Malloc is error ");
-        FT_ASSERTVOIDALWAYS();
+        FASSERT(0);
     }
 
     os_gmac->gmac.tx_desc = (FGmacDmaDesc *)tx_desc;
     if (os_gmac->gmac.tx_desc == NULL)
     {
         OS_MAC_DEBUG_E("tx_desc Malloc is error ");
-        FT_ASSERTVOIDALWAYS();
+        FASSERT(0);
     }
 
     os_gmac->gmac.rx_desc = (FGmacDmaDesc *)rx_desc;
     if (os_gmac->gmac.rx_desc == NULL)
     {
         OS_MAC_DEBUG_E("rx_desc Malloc is error ");
-        FT_ASSERTVOIDALWAYS();
+        FASSERT(0);
     }
 
 #define ROUND_UP(x, align) (((long)(x) + ((long)align - 1)) & \
@@ -269,7 +279,7 @@ static void FtOsGmacMemCreate(FtOsGmac *os_gmac)
 
 static void FtOsGmacMemFree(FtOsGmac *os_gmac)
 {
-    FT_ASSERTVOID(os_gmac != NULL);
+    FASSERT(os_gmac != NULL);
     if (os_gmac->rx_buffer)
     {
         vPortFree(os_gmac->rx_buffer);
@@ -300,8 +310,8 @@ static void FtOsGmacMemFree(FtOsGmac *os_gmac)
  */
 void FtOsGmacObjectInit(FtOsGmac *os_gmac, FtOsGmacConfig *config)
 {
-    FT_ASSERTVOID(os_gmac != NULL);
-    FT_ASSERTVOID(os_gmac->is_ready != FT_OS_GMACOBJECT_READLY);
+    FASSERT(os_gmac != NULL);
+    FASSERT(os_gmac->is_ready != FT_OS_GMACOBJECT_READLY);
     memset(os_gmac, 0, sizeof(FtOsGmac));
     os_gmac->config = *config;
     os_gmac->is_ready = FT_OS_GMACOBJECT_READLY;
@@ -318,27 +328,27 @@ void FtOsGmacObjectInit(FtOsGmac *os_gmac, FtOsGmacConfig *config)
 void FtOsGmacInit(FtOsGmac *os_gmac, FGmacPhy *phy_p)
 {
     
-    FT_ASSERTVOID(os_gmac != NULL);
-    FT_ASSERTVOID(phy_p != NULL);
-    FT_ASSERTVOID((os_gmac->is_ready == FT_OS_GMACOBJECT_READLY));
+    FASSERT(os_gmac != NULL);
+    FASSERT(phy_p != NULL);
+    FASSERT((os_gmac->is_ready == FT_OS_GMACOBJECT_READLY));
 
     FGmac *gmac;
     gmac = &os_gmac->gmac;
     FtOsGmacMemFree(os_gmac);
 
-    FT_ASSERTVOID(FGmacCfgInitialize(gmac, FGmacLookupConfig(gmac->config.instance_id)) == FT_SUCCESS);
+    FASSERT(FGmacCfgInitialize(gmac, FGmacLookupConfig(gmac->config.instance_id)) == FT_SUCCESS);
     
     FtOsGmacMemCreate(os_gmac);
 
     /* initialize phy */
     memset(phy_p, 0U, sizeof(FGmacPhy));
     FGmacPhyLookupConfig(gmac->config.instance_id, phy_p);
-    FT_ASSERTVOID(FGmacPhyCfgInitialize(phy_p) == FT_SUCCESS);
+    FASSERT(FGmacPhyCfgInitialize(phy_p) == FT_SUCCESS);
 
     /* Create a binary semaphore used for informing ethernetif of frame reception */
-    FT_ASSERTVOID((os_gmac->s_semaphore = xSemaphoreCreateBinary()) != NULL);
+    FASSERT((os_gmac->s_semaphore = xSemaphoreCreateBinary()) != NULL);
     /* Create a event group used for ethernetif of status change */
-    FT_ASSERTVOID((os_gmac->s_status_event = xEventGroupCreate()) != NULL);
+    FASSERT((os_gmac->s_status_event = xEventGroupCreate()) != NULL);
 }
 
 /**
@@ -350,8 +360,8 @@ void FtOsGmacInit(FtOsGmac *os_gmac, FGmacPhy *phy_p)
 
 void FtOsGmacStart(FtOsGmac *os_gmac)
 {
-    FT_ASSERTVOID(os_gmac != NULL);
-    FT_ASSERTVOID((os_gmac->is_ready == FT_OS_GMACOBJECT_READLY));
+    FASSERT(os_gmac != NULL);
+    FASSERT((os_gmac->is_ready == FT_OS_GMACOBJECT_READLY));
 
     FGmac *gmac;
     gmac = &os_gmac->gmac;
@@ -360,7 +370,7 @@ void FtOsGmacStart(FtOsGmac *os_gmac)
     if (FT_SUCCESS != ret)
     {
         OS_MAC_DEBUG_E("gmac return err code %d\r\n", ret);
-        FT_ASSERTVOID(FT_SUCCESS == ret);
+        FASSERT(FT_SUCCESS == ret);
     }
 
     /* Initialize Rx Description list : ring Mode */
@@ -382,7 +392,7 @@ void FtOsGmacStop(FtOsGmac *os_gmac)
 {
     FGmac *gmac;
 
-    FT_ASSERTVOID(os_gmac != NULL);
-    FT_ASSERTVOID((os_gmac->is_ready == FT_OS_GMACOBJECT_READLY));
+    FASSERT(os_gmac != NULL);
+    FASSERT((os_gmac->is_ready == FT_OS_GMACOBJECT_READLY));
     gmac = &os_gmac->gmac;
 }

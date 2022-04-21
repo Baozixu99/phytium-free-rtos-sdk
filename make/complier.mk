@@ -11,14 +11,15 @@
 # OPT_LEVEL    0, 1, 2 or 3
 # DEFINES      -D MYDEFINE
 
-#include $(FREERTOS_SDK_ROOT)/make/preconfig.mk
-export USR_SRC_DIR ?= $(PROJECT_DIR)
-export USR_INC_DIR ?= $(PROJECT_DIR)
-
 APP ?= $(CONFIG_TARGET_NAME)
 
 QUIET ?=@
 OPT_LEVEL ?= 0
+
+INC_DIR ?=	# include 目录
+SRC_DIR ?=  # 源文件目录
+EXCL_SRC ?= # 在源文件目录中不编译
+OUTPUT_DIR ?= #输出目标文件
 
 # Other switches the user should not normally need to change:
 ifdef CONFIG_TARGET_ARMV8_AARCH32 
@@ -41,7 +42,7 @@ $(error error, please set FREERTOS_SDK_ROOT first!!)
 endif
 
 ifeq ($(QUIET),@)
-PROGRESS = @echo Compiling $<...
+PROGRESS = @echo $<...
 endif
 
 ifdef CONFIG_TARGET_ARMV8_AARCH64
@@ -67,22 +68,7 @@ OC = $(CROSS_COMPILE)objcopy
 OD = $(CROSS_COMPILE)objdump
 LD = $(CROSS_COMPILE)ld
 
-# Commit hash from git
-COMMIT=$(shell git rev-parse --short HEAD)
-PACK_DATA=$(shell date +'%m%d_%H%M')
-INC_DIR ?=	# include 目录
-SRC_DIR ?=  # 源文件目录
-EXCL_SRC ?= # 在源文件目录中不编译
-#OUTPUT_DIR ?= build # 输出目录
 $(shell if [ ! -e $(OUTPUT_DIR) ];then mkdir -p $(OUTPUT_DIR); fi)
-
-
-include $(STANDALONE_DIR)/standalone.mk
-include $(STANDALONE_DIR)/lib/lib.mk
-include $(FREERTOS_SDK_ROOT)/make/ld.mk
-include $(FREERTOS_SDK_ROOT)/third-party/third-party.mk
-include $(FREERTOS_SDK_ROOT)/standalone_adaptive.mk
-
 
 INC_DIR		:= $(INC_DIR) $(USR_INC_DIR)
 INCLUDES	:= $(patsubst %, -I %, $(INC_DIR))
@@ -103,7 +89,6 @@ CPPFLAGS = $(DEFINES) $(INCLUDES) $(DEPEND_FLAGS) $(CPPFLAGS_EXTRA)
 CFLAGS =  $(DEBUG_FLAGS) -DGUEST  -ffreestanding  -Wextra -g -O$(OPT_LEVEL) 
 ASFLAGS = $(CFLAGS)
 
-
 #mkdir 创建输出文件目录
 SRC_DIR   := $(SRC_DIR) $(USR_SRC_DIR)
 X_OUTPUT_DIRS :=	$(patsubst %, $(OUTPUT_DIR)/%, $(SRC_DIR))
@@ -116,7 +101,6 @@ OBJ_FILES	:=	$(patsubst %, $(OUTPUT_DIR)/%, $(APP_S_SRC:.S=.o)) \
 				
 EXCL_OBJS   ?= $(patsubst %, $(OUTPUT_DIR)/%, $(EXCL_SRC:.c=.o) $(EXCL_SRC:.S=.o))
 OBJ_FILES   := $(filter-out $(EXCL_OBJS), $(OBJ_FILES))
-OBJ_FILES   += $(LIBC)
 
 DEP_FILES := $(OBJ_FILES:%=%.d)
 
@@ -129,18 +113,6 @@ ifdef CONFIG_TARGET_ARMV8_AARCH32
 	CFLAGS      := $(CFLAGS) -mfpu=crypto-neon-fp-armv8 -mfloat-abi=softfp -march=$(ARCH)
 endif
 
-
-# 使用编译链自带的Glibc
-ifdef CONFIG_USE_G_LIBC 
-	ifdef CONFIG_TARGET_ARMV8_AARCH32
-		LIBPATH += $(CROSS_PATH)/arm-none-eabi/lib/thumb/v7/nofp
-		LDFLAGS += -lgcc  -L $(LIBPATH)
-		INC_DIR	:= $(INC_DIR)  $(CROSS_PATH)/arm-none-eabi/include
-		OBJ_FILES += $(CROSS_PATH)/arm-none-eabi/lib/thumb/v7/nofp/libc.a  \
-					 $(CROSS_PATH)/arm-none-eabi/lib/thumb/v7/nofp/libm.a  \
-		 			 $(CROSS_PATH)/lib/gcc/arm-none-eabi/$(CC_VERSION)/libgcc.a					
-	endif
-endif
 
 TEST_DATA ?= 
 # 使用外链的NewLibc
@@ -171,12 +143,6 @@ ifdef CONFIG_USE_NOSTD_LIBC
 endif
 
 
-ifdef CONFIG_DUMMY_COMPILE
-	DO_ECHO = @echo
-else
-	DO_ECHO = 
-endif
-
 .phony: all linkscript clean rebuild
 all: $(APP)
 
@@ -184,7 +150,7 @@ linkscript:
 # 如果用户指定了linkscript，跳过使用用户指定的linkscript
 ifndef CONFIG_USER_DEFINED_LD
 	@cp -f $(LDSNAME) $(TEMP_LD)
-	$(DO_ECHO) $(QUIET) $(CC) -P -E $(TEMP_LD) -o $(PROJ_LD) -I $(PROJECT_DIR)
+	$(QUIET) $(CC) -P -E $(TEMP_LD) -o $(PROJ_LD) -I $(KCONFIG_DIR) $(INCLUDES) 
 	@rm -f $(TEMP_LD)
 else
 	PROJ_LD := $(EXT_LDSNAME) 
@@ -193,10 +159,12 @@ endif
 $(APP): $(OBJ_FILES) linkscript
 	@echo Linking $@.elf
 	@echo Dumping $@.map
-	$(DO_ECHO) $(QUIET) $(CC) $(TARGET_ARCH) $(LDFLAGS) -T $(PROJ_LD) --output $@.elf -Wl,-Map=$@.map $(OBJ_FILES) -lm
+	$(QUIET) $(CC) $(TARGET_ARCH) $(LDFLAGS) -T $(PROJ_LD) --output $@.elf -Wl,-Map=$@.map $(OBJ_FILES) -lm
+ifndef CONFIG_DON_T_BINARY_OUTPUT
 	@echo Objcopying $@.bin
-	$(DO_ECHO) $(QUIET) $(OC) -v -O binary $@.elf $@.bin
-	$(DO_ECHO) $(QUIET) $(OD) -D $@.elf > $@.dis
+	$(QUIET) $(OC) -v -O binary $@.elf $@.bin
+endif
+	$(QUIET) $(OD) -D $@.elf > $@.dis
 	@echo Done.
 
 

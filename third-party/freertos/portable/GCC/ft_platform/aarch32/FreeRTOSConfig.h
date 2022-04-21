@@ -76,7 +76,7 @@
 #define configUSE_TICK_HOOK 1
 #define configMAX_PRIORITIES (7)
 #define configMINIMAL_STACK_SIZE ((unsigned short)1024) //min task stack size 100*4 bytes
-#define configTOTAL_HEAP_SIZE (4096 * 1024) //total heap size
+#define configTOTAL_HEAP_SIZE (10*1024 * 1024) //total heap size
 #define configMAX_TASK_NAME_LEN (20)
 #define configUSE_TRACE_FACILITY 1 //启用可视化跟踪调试
 /* 与宏 configUSE_TRACE_FACILITY 同时为 1 时会编译下面 3 个函数

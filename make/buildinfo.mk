@@ -1,16 +1,4 @@
-#
-# @ : Copyright (c) 2021 Phytium Information Technology, Inc. 
-#  
-# SPDX-License-Identifier: Apache-2.0.
-# 
-# @Date: 2021-06-02 14:17:37
-# @LastEditTime: 2021-06-02 14:24:21
-# @Description:  This files is to print build info for debugging 
-# 
-# @Modify History: 
-#  Ver   Who        Date         Changes
-# ----- ------     --------    --------------------------------------
-#
+
 
 .PHONY: info info-objs info-incs info-srcs info-libs info-variables
 info: info-objs info-incs info-srcs
@@ -44,7 +32,7 @@ info-srcs:
 	@echo
 
 info-variables:
-	@echo "sdkconfig: "$(PROJECT_DIR)/$(KCONFIG_CONFIG)
+	@echo "sdkconfig: "$(KCONFIG_DIR)/$(KCONFIG_CONFIG)
 
 info-flags:
 	@echo "target arch: "$(TARGET_ARCH)

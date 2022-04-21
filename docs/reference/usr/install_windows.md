@@ -1,16 +1,26 @@
 <!--
- * @ : Copyright (c) 2021 Phytium Information Technology, Inc. 
+ * Copyright : (C) 2022 Phytium Information Technology, Inc. 
+ * All Rights Reserved.
  *  
- * SPDX-License-Identifier: Apache-2.0.
+ * This program is OPEN SOURCE software: you can redistribute it and/or modify it  
+ * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,  
+ * either version 1.0 of the License, or (at your option) any later version. 
+ *  
+ * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;  
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the Phytium Public License for more details. 
+ *  
  * 
- * @Date: 2021-10-19 15:01:34
- * @LastEditTime: 2021-11-01 09:17:15
- * @Description:  This files is for 
+ * FilePath: install_windows.md
+ * Date: 2022-02-24 13:42:19
+ * LastEditTime: 2022-03-21 17:00:49
+ * Description:  This file is for 
  * 
- * @Modify History: 
+ * Modify History: 
  *  Ver   Who        Date         Changes
  * ----- ------     --------    --------------------------------------
 -->
+
 # 1. Windows10 SDK安装方法
 
 Windows 10 SDK开发环境集成了，

@@ -50,5 +50,71 @@ endif #CONFIG_USE_LWIP
 INC_DIR += $(THIRD_PARTY_CUR_DIR)/freertos/include
 
 
+ifdef CONFIG_USE_LIBMETAL
+
+$(shell export PATH=$(THIRD_PARTY_CUR_DIR)/libmetal:$PATH)
+
+	INC_DIR +=  $(THIRD_PARTY_CUR_DIR)/libmetal \
+				$(THIRD_PARTY_CUR_DIR)/libmetal/metal/compiler/gcc \
+				$(THIRD_PARTY_CUR_DIR)/libmetal/metal/system/freertos/ft_platform
+
+	SRC_DIR +=  $(THIRD_PARTY_CUR_DIR)/libmetal/metal \
+				$(THIRD_PARTY_CUR_DIR)/libmetal/metal/system/freertos/ft_platform
+
+
+ifdef CONFIG_TARGET_ARMV8_AARCH32
+	INC_DIR +=  $(THIRD_PARTY_CUR_DIR)/libmetal/metal/processor/arm 
+	SRC_DIR +=  $(THIRD_PARTY_CUR_DIR)/libmetal/metal/system/freertos
+endif
+
+ifdef CONFIG_TARGET_ARMV8_AARCH64
+	INC_DIR +=  $(THIRD_PARTY_CUR_DIR)/libmetal/metal/processor/aarch64 
+	SRC_DIR +=  $(THIRD_PARTY_CUR_DIR)/libmetal/metal/system/freertos
+endif
+
+endif #CONFIG_USE_LIBMETAL
+
+
+ifdef CONFIG_USE_OPENAMP
+
+INC_DIR +=  $(THIRD_PARTY_CUR_DIR)/openamp/lib \
+			$(THIRD_PARTY_CUR_DIR)/openamp/lib/include \
+			$(THIRD_PARTY_CUR_DIR)/openamp/lib/rpmsg \
+			$(THIRD_PARTY_CUR_DIR)/openamp/ports
+
+
+SRC_DIR +=  $(THIRD_PARTY_CUR_DIR)/openamp/lib \
+			$(THIRD_PARTY_CUR_DIR)/openamp/lib/remoteproc \
+			$(THIRD_PARTY_CUR_DIR)/openamp/lib/rpmsg \
+			$(THIRD_PARTY_CUR_DIR)/openamp/lib/service/rpmsg/rpc \
+			$(THIRD_PARTY_CUR_DIR)/openamp/lib/virtio \
+			$(THIRD_PARTY_CUR_DIR)/openamp/ports
+			 
+
+endif #CONFIG_USE_OPENAMP
+
+ifdef CONFIG_USE_BACKTRACE
+	INC_DIR += $(THIRD_PARTY_CUR_DIR)/backtrace
+	SRC_DIR += $(THIRD_PARTY_CUR_DIR)/backtrace
+endif #CONFIG_USE_BACKTRACE
+
+
+ifdef CONFIG_USE_LETTER_SHELL
+# src files
+INC_DIR +=  $(THIRD_PARTY_CUR_DIR)/letter-shell-3.1/port \
+			$(THIRD_PARTY_CUR_DIR)/letter-shell-3.1/src
+
+# inc files
+SRC_DIR +=  $(THIRD_PARTY_CUR_DIR)/letter-shell-3.1/port \
+			$(THIRD_PARTY_CUR_DIR)/letter-shell-3.1/port/cmd \
+			$(THIRD_PARTY_CUR_DIR)/letter-shell-3.1/src
+
+ifdef CONFIG_LS_PL011_UART
+	SRC_DIR += $(THIRD_PARTY_CUR_DIR)/letter-shell-3.1/port/pl011
+endif
+
+endif #CONFIG_USE_LETTER_SHELL
+
+
 
 

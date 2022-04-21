@@ -1,16 +1,3 @@
-###
- # @ : Copyright (c) 2021 Phytium Information Technology, Inc. 
- #  
- # SPDX-License-Identifier: Apache-2.0.
- # 
- # @Date: 2021-07-02 10:54:34
- # @LastEditTime: 2021-07-22 15:56:44
- # @Description:  This files is for 
- # 
- # @Modify History: 
- #  Ver   Who        Date         Changes
- # ----- ------     --------    --------------------------------------
-### 
 #!/bin/sh
 
 version=v0.0.3

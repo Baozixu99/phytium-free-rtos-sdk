@@ -1,16 +1,26 @@
 /*
- * @ : Copyright (c) 2021 Phytium Information Technology, Inc. 
+ * Copyright : (C) 2022 Phytium Information Technology, Inc. 
+ * All Rights Reserved.
  *  
- * SPDX-License-Identifier: Apache-2.0.
+ * This program is OPEN SOURCE software: you can redistribute it and/or modify it  
+ * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,  
+ * either version 1.0 of the License, or (at your option) any later version. 
+ *  
+ * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;  
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the Phytium Public License for more details. 
+ *  
  * 
- * @Date: 2021-07-05 08:35:41
- * @LastEditTime: 2021-12-15 16:59:45
- * @Description:  This files is for 
+ * FilePath: freertos_configs.c
+ * Date: 2022-02-24 13:42:19
+ * LastEditTime: 2022-03-21 17:03:31
+ * Description:  This file is for 
  * 
- * @Modify History: 
+ * Modify History: 
  *  Ver   Who        Date         Changes
  * ----- ------     --------    --------------------------------------
  */
+
 #include "FreeRTOS.h"
 #include "task.h"
 #include "ft_types.h"
@@ -19,6 +29,7 @@
 #include "generic_timer.h"
 #include "interrupt.h"
 #include <stdio.h>
+#include "cpu_info.h"
 #include "ft_assert.h"
 
 void vMainAssertCalled(const char *pcFileName, uint32_t ulLineNumber)
@@ -30,7 +41,9 @@ void vMainAssertCalled(const char *pcFileName, uint32_t ulLineNumber)
 
 void vApplicationMallocFailedHook(void)
 {
-    printf("Malloc Failed\r\n");
+  u32 cpu_id;
+    GetCpuId(&cpu_id);
+    printf("cpu %d Malloc Failed\r\n",cpu_id);
     while (1)
         ;
 }
@@ -162,7 +175,7 @@ void vApplicationStackOverflowHook(xTaskHandle pxTask, signed char *pcTaskName)
   (void) pcTaskName;
 
   taskDISABLE_INTERRUPTS();
-  FT_ASSERTNONERETURN(FALSE);
+  FASSERT(FALSE);
   
 }
 

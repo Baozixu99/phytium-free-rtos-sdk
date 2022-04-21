@@ -19,6 +19,8 @@ endmenu
 menu "Building Option"
     source "$(STANDALONE_DIR)/common/Kconfig"
     source "$(FREERTOS_SDK_ROOT)/make/ld/Kconfig"
+    source "$(FREERTOS_SDK_ROOT)/make/Kconfig"
+
 endmenu
 
 menu "Component Configuration"  

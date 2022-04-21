@@ -165,5 +165,7 @@ SECTIONS
         __el1_stack = .;
     } > RAM
 
-
+#ifdef  CONFIG_USE_OPENAMP
+#include "ft_openamp.ld"
+#endif
 }

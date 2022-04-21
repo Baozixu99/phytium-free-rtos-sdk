@@ -1,0 +1,14 @@
+menu "Letter Shell Configuration"
+    choice LETTER_SHELL_USART_TYPE
+        prompt "Usart Drivers"
+        default LS_PL011_UART
+        help
+            Select Usart Driver for Letter Shell
+
+        config LS_PL011_UART
+            select USE_SERIAL
+            select ENABLE_Pl011_UART
+            bool "PL011"
+
+    endchoice # LETTER_SHELL_USART_TYPE
+endmenu

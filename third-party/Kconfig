@@ -10,3 +10,40 @@ config USE_LWIP
         source "$(FREERTOS_SDK_ROOT)/third-party/lwip-2.1.2/Kconfig"
     endif
 
+
+config USE_BACKTRACE
+    bool
+    prompt "Display a backtrace."
+    default y
+
+
+
+config USE_AMP
+    bool
+    prompt "Use Asymmetric Multi-processing"
+    default n
+    help
+        Include OpenAMP framework
+
+    if USE_AMP
+        config USE_LIBMETAL
+            bool
+            prompt "Use Libmetal"
+            help
+                Include Libmetal
+
+        source "$(FREERTOS_SDK_ROOT)/third-party/openamp/ports/Kconfig"
+
+    endif
+
+
+config USE_LETTER_SHELL
+    bool
+    prompt "Use Letter Shell"
+    default n
+    help
+        Include Litter Shell for User Interactive
+
+    if USE_LETTER_SHELL
+        source "$(FREERTOS_SDK_ROOT)/third-party/letter-shell-3.1/Kconfig"
+    endif

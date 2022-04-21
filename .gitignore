@@ -62,7 +62,16 @@ dkms.conf
 /tools/gcc-*
 /tools/gdb-*
 
+#pyc files
+*.pyc
+.vscode
+
 # Standalone sdk
 standalone
 sdk
 phytium-standalone-sdk
+
+
+
+#vim
+tags

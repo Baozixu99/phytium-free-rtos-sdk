@@ -1,18 +1,3 @@
-#
-# @ : Copyright (c) 2021 Phytium Information Technology, Inc. 
-#  
-# SPDX-License-Identifier: Apache-2.0.
-# 
-# @Date: 2021-06-02 11:03:35
-# @LastEditTime: 2021-06-02 11:39:19
-# @Description:  This files is for pack mini source code for building
-# 
-# make pack OUTPATH=/mnt/d/6-2021
-#
-# @Modify History: 
-#  Ver   Who        Date         Changes
-# ----- ------     --------    --------------------------------------
-#
 
 ifeq ($(MAKECMDGOALS),pack)
 ifndef OUTPATH

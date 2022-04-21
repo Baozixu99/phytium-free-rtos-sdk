@@ -5,7 +5,7 @@
 
 /* Template Configuration */
 
-#define CONFIG_TARGET_NAME "d2000_freertos"
+#define CONFIG_TARGET_NAME "ft2004_freertos"
 /* end of Template Configuration */
 /* end of Project Configuration */
 
@@ -15,20 +15,21 @@
 
 /* Arch Configuration */
 
-/* CONFIG_TARGET_ARMV8_AARCH32 is not set */
-#define CONFIG_TARGET_ARMV8_AARCH64
+#define CONFIG_TARGET_ARMV8_AARCH32
+/* CONFIG_TARGET_ARMV8_AARCH64 is not set */
 /* CONFIG_TARGET_ARMV7 is not set */
 #define CONFIG_USE_CACHE
 #define CONFIG_USE_L3CACHE
 #define CONFIG_USE_MMU
-/* CONFIG_USE_SYS_TICK is not set */
+#define CONFIG_USE_SYS_TICK
+#define CONFIG_USE_AARCH64_L1_TO_AARCH32
 /* end of Arch Configuration */
 
 /* Board Configuration */
 
-/* CONFIG_TARGET_F2000_4 is not set */
+#define CONFIG_TARGET_F2000_4
 /* CONFIG_TARGET_E2000 is not set */
-#define CONFIG_TARGET_D2000
+/* CONFIG_TARGET_D2000 is not set */
 /* end of Board Configuration */
 
 /* Components Configuration */
@@ -37,7 +38,12 @@
 /* CONFIG_USE_QSPI is not set */
 #define CONFIG_USE_GIC
 #define CONFIG_ENABLE_GICV3
-/* CONFIG_USE_SERIAL is not set */
+#define CONFIG_USE_SERIAL
+
+/* Usart Configuration */
+
+#define CONFIG_ENABLE_Pl011_UART
+/* end of Usart Configuration */
 /* CONFIG_USE_GPIO is not set */
 /* CONFIG_USE_IOMUX is not set */
 #define CONFIG_USE_ETH
@@ -80,8 +86,8 @@
 
 /* Linker Options */
 
-/* CONFIG_AARCH32_RAM_LD is not set */
-#define CONFIG_AARCH64_RAM_LD
+#define CONFIG_AARCH32_RAM_LD
+/* CONFIG_AARCH64_RAM_LD is not set */
 /* CONFIG_USER_DEFINED_LD is not set */
 #define CONFIG_LINK_SCRIPT_ROM
 #define CONFIG_ROM_START_UP_ADDR 0x80100000
@@ -90,7 +96,12 @@
 #define CONFIG_RAM_START_UP_ADDR 0x81000000
 #define CONFIG_RAM_SIZE_MB 64
 #define CONFIG_HEAP_SIZE 1
-#define CONFIG_STACK_SIZE 0x400
+#define CONFIG_SVC_STACK_SIZE 0x1000
+#define CONFIG_SYS_STACK_SIZE 0x1000
+#define CONFIG_IRQ_STACK_SIZE 0x1000
+#define CONFIG_ABORT_STACK_SIZE 0x1000
+#define CONFIG_FIQ_STACK_SIZE 0x1000
+#define CONFIG_UNDEF_STACK_SIZE 0x1000
 /* end of Linker Options */
 /* end of Building Option */
 
