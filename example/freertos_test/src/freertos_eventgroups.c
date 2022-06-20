@@ -1,5 +1,6 @@
 #include <stdio.h>
-
+#include <string.h>
+#include <generic_timer.h>
 #include "FreeRTOS.h"
 #include "task.h"
 #include "semphr.h"
@@ -9,7 +10,6 @@
 #include "ft_debug.h"
 #include "unity.h"
 #include "interrupt.h"
-#include "gicv3.h"
 #include "parameters.h"
 #include "fwdt.h"
 #include "fwdt_hw.h"
@@ -149,7 +149,7 @@ static void FWdtRefreshTest(FWdtCtrl *pctrl)
 {
     FWdtConfig *pconfig = &pctrl->config;
     /* interrupt init */
-    InterruptSetPriority(pconfig->irq_num, /*pconfig->irq_prority*/((0x8 << 4) + 4 * 16));
+    InterruptSetPriority(pconfig->irq_num, IRQ_PRIORITY_VALUE_12);
     InterruptInstall(pconfig->irq_num, FWdtInterrupt, (void*)pctrl, pconfig->instance_name);
     InterruptUmask(pconfig->irq_num);
     FWdtSetTimeout(pctrl, 3);
@@ -165,9 +165,17 @@ static void FWdtRefreshTest(FWdtCtrl *pctrl)
  */
 static void WdtTaskCreate(void)
 {
-    FWdtCtrl *pctrl = &wdt_ctrl;
-    pctrl->config = *FWdtLookupConfig(wdt_id);
-    FWdtRefreshTest(pctrl);
+    GenericTimerStart();
+
+    memset(&wdt_ctrl, 0, sizeof(wdt_ctrl));
+
+    FWdtConfig pconfig = *FWdtLookupConfig(wdt_id);
+   
+    /* wdt init, include reset and read */
+    FWdtCfgInitialize(&wdt_ctrl, &pconfig);
+
+    FWdtRefreshTest(&wdt_ctrl);
+
 }
 
 void EventGroupIsrTest(void)

@@ -28,6 +28,7 @@
 #include "ft_types.h"
 #include "ft_assert.h"
 #include "sdkconfig.h"
+#include "cpu_info.h"
 #include <stdio.h>
 
 #ifdef CONFIG_FREERTOS_USE_UART
@@ -97,6 +98,7 @@ void FtFreertosUartInit(FtFreertosUart *uart_p, FtFreertosUartConfig *config_p)
     FPl011 *bsp_uart_p = NULL;
     FError ret;
     u32 intr_mask;
+    u32 cpu_id = 0;
     FPl011Config driver_config;
     FASSERT(uart_p != NULL);
     FASSERT(config_p != NULL);
@@ -111,13 +113,14 @@ void FtFreertosUartInit(FtFreertosUart *uart_p, FtFreertosUartConfig *config_p)
     FASSERT((uart_p->tx_event = xEventGroupCreate()) != NULL);
     FASSERT((uart_p->rx_event = xEventGroupCreate()) != NULL);
 
+    GetCpuId(&cpu_id);
+    InterruptSetTargetCpus(bsp_uart_p->config.irq_num, cpu_id);
 
     FPl011SetRxFifoThreadhold(bsp_uart_p,FPL011IFLS_RXIFLSEL_1_4);
     FPl011SetTxFifoThreadHold(bsp_uart_p,FPL011IFLS_TXIFLSEL_1_2);
     intr_mask = config_p->isr_event_mask;
     FPl011SetInterruptMask(bsp_uart_p,intr_mask);
     FPl011SetOptions(bsp_uart_p, FPL011_OPTION_UARTEN | FPL011_OPTION_RXEN | FPL011_OPTION_TXEN | FPL011_OPTION_FIFOEN);
-
 
     InterruptSetPriority(bsp_uart_p->config.irq_num, config_p->isr_priority);
     InterruptInstall(bsp_uart_p->config.irq_num, FPl011InterruptHandler, bsp_uart_p, "uart1");

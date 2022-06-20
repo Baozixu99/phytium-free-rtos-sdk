@@ -28,6 +28,11 @@
 #ifndef FREERTOS_CONFIG_H
 #define FREERTOS_CONFIG_H
 
+#if !defined(__ASSEMBLER__) 
+#include "parameters.h"
+#include "interrupt.h"
+#endif
+
 /*-----------------------------------------------------------
  * Application specific definitions.
  *
@@ -62,11 +67,10 @@
  *
  */
 
+/* 在不安全group1 中，16 is steps ，3 是其中等级*/
+#define configKERNEL_INTERRUPT_PRIORITY         IRQ_PRIORITY_VALUE_11
 /* 在不安全group1 中 ,0x8 ~0xb 不可以使用安全api（优先级越低越高）*/
-#define configMAX_API_CALL_INTERRUPT_PRIORITY 0xb          
-/* 在不安全group1 中，16 is steps ，3 是其中等级*/   
-#define configKERNEL_INTERRUPT_PRIORITY ((0x8 << 4) + 3 * 16) 
-
+#define configMAX_API_CALL_INTERRUPT_PRIORITY   IRQ_PRIORITY_VALUE_11
 
 #define configUSE_PORT_OPTIMISED_TASK_SELECTION 1 //Method to select the next task
 #define configUSE_TICKLESS_IDLE 0 //disable tickless mode
@@ -77,7 +81,7 @@
 #define configMAX_PRIORITIES (7)
 #define configMINIMAL_STACK_SIZE ((unsigned short)1024) //min task stack size 100*4 bytes
 #define configTOTAL_HEAP_SIZE (10*1024 * 1024) //total heap size
-#define configMAX_TASK_NAME_LEN (20)
+#define configMAX_TASK_NAME_LEN (32)
 #define configUSE_TRACE_FACILITY 1 //启用可视化跟踪调试
 /* 与宏 configUSE_TRACE_FACILITY 同时为 1 时会编译下面 3 个函数
 * prvWriteNameToBuffer()

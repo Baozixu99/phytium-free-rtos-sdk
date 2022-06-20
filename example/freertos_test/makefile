@@ -22,6 +22,6 @@ include $(FREERTOS_SDK_ROOT)/make/build_freertos.mk
 
 # 完成编译
 boot:
-	make
+	make -j
 	cp ./$(CONFIG_TARGET_NAME).elf $(USR_BOOT_DIR)/$(BOOT_IMG_NAME).elf
 

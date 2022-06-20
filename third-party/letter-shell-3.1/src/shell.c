@@ -86,10 +86,14 @@ enum
 
 #if defined(CONFIG_TARGET_F2000_4)
 #define SHELL_PLATFORM      "FT2000/4  "
-#elif defined(CONFIG_TARGET_D2000) 
+#elif defined(CONFIG_TARGET_D2000)
 #define SHELL_PLATFORM      "D2000  "
-#elif defined(CONFIG_TARGET_E2000) 
-#define SHELL_PLATFORM      "E2000  "
+#elif defined(CONFIG_TARGET_E2000Q)
+#define SHELL_PLATFORM      "E2000Q  "
+#elif defined(CONFIG_TARGET_E2000D)
+#define SHELL_PLATFORM      "E2000D  "
+#elif defined(CONFIG_TARGET_E2000S)
+#define SHELL_PLATFORM      "E2000S  "
 #else
 #define SHELL_PLATFORM      "Unkonwn  "
 #endif

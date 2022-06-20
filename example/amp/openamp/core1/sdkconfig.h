@@ -16,7 +16,6 @@
 #define CONFIG_SPIN_MEM 0x80000000
 #define CONFIG_TARGET_CPU_ID 1
 #define CONFIG_IPI_CHN_BITMASK 1
-#define CONFIG_WITH_BAREMETAL
 /* end of Amp Config */
 /* end of Project Configuration */
 
@@ -28,9 +27,8 @@
 
 #define CONFIG_TARGET_ARMV8_AARCH32
 /* CONFIG_TARGET_ARMV8_AARCH64 is not set */
-/* CONFIG_TARGET_ARMV7 is not set */
 #define CONFIG_USE_CACHE
-/* CONFIG_USE_L3CACHE is not set */
+#define CONFIG_USE_L3CACHE
 #define CONFIG_USE_MMU
 /* CONFIG_USE_SYS_TICK is not set */
 /* CONFIG_USE_AARCH64_L1_TO_AARCH32 is not set */
@@ -38,11 +36,14 @@
 
 /* Board Configuration */
 
-/* CONFIG_TARGET_F2000_4 is not set */
 #define CONFIG_TARGET_F2000_4
+/* CONFIG_TARGET_D2000 is not set */
 /* CONFIG_TARGET_E2000Q is not set */
 /* CONFIG_TARGET_E2000D is not set */
 /* CONFIG_TARGET_E2000S is not set */
+#define CONFIG_DEFAULT_DEBUG_PRINT_UART1
+/* CONFIG_DEFAULT_DEBUG_PRINT_UART0 is not set */
+/* CONFIG_DEFAULT_DEBUG_PRINT_UART2 is not set */
 /* end of Board Configuration */
 
 /* Components Configuration */
@@ -58,7 +59,6 @@
 #define CONFIG_ENABLE_Pl011_UART
 /* end of Usart Configuration */
 /* CONFIG_USE_GPIO is not set */
-/* CONFIG_USE_IOMUX is not set */
 /* CONFIG_USE_ETH is not set */
 /* CONFIG_USE_CAN is not set */
 /* CONFIG_USE_I2C is not set */
@@ -71,11 +71,26 @@
 /* CONFIG_USE_RTC is not set */
 /* CONFIG_USE_SATA is not set */
 /* CONFIG_USE_USB is not set */
+/* CONFIG_USE_ADC is not set */
+/* CONFIG_USE_PWM is not set */
+/* CONFIG_USE_IPC is not set */
 /* end of Components Configuration */
 #define CONFIG_USE_NEW_LIBC
 /* end of Standalone Setting */
 
 /* Building Option */
+
+#define CONFIG_LOG_VERBOS
+/* CONFIG_LOG_DEBUG is not set */
+/* CONFIG_LOG_INFO is not set */
+/* CONFIG_LOG_WARN is not set */
+/* CONFIG_LOG_ERROR is not set */
+/* CONFIG_LOG_NONE is not set */
+#define CONFIG_USE_DEFAULT_INTERRUPT_CONFIG
+/* CONFIG_INTERRUPT_ROLE_MASTER is not set */
+#define CONFIG_INTERRUPT_ROLE_SLAVE
+/* CONFIG_LOG_EXTRA_INFO is not set */
+/* CONFIG_BOOTUP_DEBUG_PRINTS is not set */
 
 /* Linker Options */
 
@@ -99,14 +114,8 @@
 
 /* Compiler Options */
 
-#define CONFIG_DON_T_BINARY_OUTPUT
+/* CONFIG_OUTPUT_BINARY is not set */
 /* end of Compiler Options */
-#define CONFIG_LOG_VERBOS
-/* CONFIG_LOG_DEBUG is not set */
-/* CONFIG_LOG_INFO is not set */
-/* CONFIG_LOG_WARN is not set */
-/* CONFIG_LOG_ERROR is not set */
-/* CONFIG_LOG_NONE is not set */
 /* end of Building Option */
 
 /* Component Configuration */

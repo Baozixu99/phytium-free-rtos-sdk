@@ -31,6 +31,22 @@
 
 FtFreertosUart os_uart1;
 extern Shell shell_object;
+static char data[64];
+
+
+#ifdef CONFIG_DEFAULT_LETTER_SHELL_USE_UART1
+#define LETTER_SHELL_UART_ID    UART1_ID
+#endif
+
+#ifdef CONFIG_DEFAULT_LETTER_SHELL_USE_UART0
+#define LETTER_SHELL_UART_ID    UART0_ID
+#endif
+
+#ifdef CONFIG_DEFAULT_LETTER_SHELL_USE_UART2
+#define LETTER_SHELL_UART_ID    UART2_ID
+#endif
+
+extern void FtFreertosUartIntrInit(FtFreertosUart *uart_p);
 
 /**
  * @brief 用户shell写
@@ -59,8 +75,8 @@ signed char LSUserShellRead(char *data)
 void LSSerialConfig(void)
 {
     FtFreertosUartConfig config = {
-        .uart_instance = UART1_ID, /* select uart global object */
-        .isr_priority = 0xd0,  /* irq Priority */
+        .uart_instance = LETTER_SHELL_UART_ID, /* select uart global object */
+        .isr_priority = IRQ_PRIORITY_VALUE_13,  /* irq Priority */
         .isr_event_mask = (RTOS_UART_ISR_OEIM_MASK|RTOS_UART_ISR_BEIM_MASK|RTOS_UART_ISR_PEIM_MASK|RTOS_UART_ISR_FEIM_MASK|RTOS_UART_ISR_RTIM_MASK|RTOS_UART_ISR_RXIM_MASK)
     };
     FtFreertosUartInit(&os_uart1,&config);
@@ -68,12 +84,12 @@ void LSSerialConfig(void)
 
 void LSSerialWaitLoop(void)
 {
-    char data[64];
     u32 recive_length = 0;
     u32 i = 0;
+
     while (TRUE)
     {
-        FtFreertosUartReceiveBuffer(&os_uart1,data,sizeof(data),&recive_length);
+        FtFreertosUartReceiveBuffer(&os_uart1, data, sizeof(data), &recive_length);
         for (i = 0; i < recive_length; i++)
         {
             shellHandler(&shell_object, data[i]);

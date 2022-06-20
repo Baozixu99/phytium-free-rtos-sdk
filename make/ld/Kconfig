@@ -118,5 +118,12 @@ menu  "Linker Options"
         help
             Assign undef stack size in Linkscript 
 
+    config FPU_STACK_SIZE
+        hex "Fpu stack Size (Byte)"
+        default "0x1000"
+        depends on AARCH64_RAM_LD
+        help
+            Assign Fpu stack size in Linkscript
+
 endmenu
 

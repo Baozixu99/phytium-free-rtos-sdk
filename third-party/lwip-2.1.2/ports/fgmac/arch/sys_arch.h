@@ -1,12 +1,4 @@
 /*
- * @Author: your name
- * @Date: 2021-02-08 10:34:58
- * @LastEditTime: 2021-02-25 17:07:46
- * @LastEditors: Please set LastEditors
- * @Description: In User Settings Edit
- * @FilePath: \freertos\devices\ft2004\drivers\freertos\lwip\system\arch\sys_arch.h
- */
-/*
  * Copyright (c) 2001-2003 Swedish Institute of Computer Science.
  * All rights reserved.
  *
@@ -40,7 +32,6 @@
 #ifndef __SYS_ARCH_H__
 #define __SYS_ARCH_H__
 
-#include "lwip/opt.h"
 
 #if !NO_SYS
 
@@ -58,23 +49,18 @@ extern "C"
 #define SYS_SEM_NULL (xSemaphoreHandle)0
 #define SYS_DEFAULT_THREAD_STACK_DEPTH configMINIMAL_STACK_SIZE
 
-    typedef xSemaphoreHandle sys_sem_t;
-    typedef xSemaphoreHandle sys_mutex_t;
-    typedef xQueueHandle sys_mbox_t;
-    typedef xTaskHandle sys_thread_t;
+typedef xSemaphoreHandle sys_sem_t;
+typedef xSemaphoreHandle sys_mutex_t;
+typedef xQueueHandle sys_mbox_t;
+typedef xTaskHandle sys_thread_t;
 
-    typedef struct _sys_arch_state_t
-    {
-        // Task creation data.
-        char cTaskName[configMAX_TASK_NAME_LEN];
-        unsigned short nStackDepth;
-        unsigned short nTaskCount;
-    } sys_arch_state_t;
-
-//extern sys_arch_state_t s_sys_arch_state;
-
-//void sys_set_default_state();
-//void sys_set_state(signed char *pTaskName, unsigned short nStackSize);
+typedef struct _sys_arch_state_t
+{
+    // Task creation data.
+    char cTaskName[configMAX_TASK_NAME_LEN];
+    unsigned short nStackDepth;
+    unsigned short nTaskCount;
+} sys_arch_state_t;
 
 /* Message queue constants. */
 #define archMAX_MESG_QUEUE_LENGTH (12)

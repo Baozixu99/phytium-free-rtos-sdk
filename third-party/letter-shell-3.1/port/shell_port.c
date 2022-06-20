@@ -39,13 +39,10 @@ extern signed char LSUserShellRead(char *data);
 extern void LSSerialConfig();
 extern void LSSerialWaitLoop();
 
-/**
- * @brief 用户shell初始化
- *
- * Note: Call this function will lead to infinite create freertos task
- */
-BaseType_t LSUserShellTask(void)
+
+void LSUserShellTaskCreate( void * args)
 {
+    BaseType_t ret;
     LSSerialConfig();
 
     shell_object.write = LSUserShellWrite;
@@ -53,8 +50,27 @@ BaseType_t LSUserShellTask(void)
     shellInit(&shell_object, shell_buffer, 4096);
 
 
-    return xTaskCreate((TaskFunction_t )LSSerialWaitLoop, /* 任务入口函数 */
+    ret = xTaskCreate((TaskFunction_t )LSSerialWaitLoop, /* 任务入口函数 */
                             (const char* )"LSSerialWaitLoop",/* 任务名字 */
+                            (uint16_t )1024, /* 任务栈大小 */
+                            (void* )NULL,/* 任务入口函数参数 */
+                            (UBaseType_t )2, /* 任务的优先级 */
+                            NULL); /* 任务控制块指针 */
+
+    FASSERT_MSG(ret == pdPASS,"LSUserShellTask create is failed");
+
+    vTaskDelete(NULL);
+}
+
+/**
+ * @brief 用户shell初始化
+ *
+ * Note: Call this function will lead to infinite create freertos task
+ */
+BaseType_t LSUserShellTask(void)
+{
+    return xTaskCreate((TaskFunction_t )LSUserShellTaskCreate, /* 任务入口函数 */
+                            (const char* )"LSUserShellTaskCreate",/* 任务名字 */
                             (uint16_t )1024, /* 任务栈大小 */
                             (void* )NULL,/* 任务入口函数参数 */
                             (UBaseType_t )2, /* 任务的优先级 */

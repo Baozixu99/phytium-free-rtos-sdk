@@ -539,12 +539,6 @@ void vPortValidateInterruptPriority(void)
 #endif /* configASSERT_DEFINED */
 /*-----------------------------------------------------------*/
 
-void vApplicationFPUSafeIRQHandler(uint32_t ulICCIAR)
-{
-	(void)ulICCIAR;
-	configASSERT((volatile void *)NULL);
-}
-
 _WEAK void vApplicationTickHook(void)
 {
 }

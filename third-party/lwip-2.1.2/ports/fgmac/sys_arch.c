@@ -1,5 +1,3 @@
-
-
 /* lwIP includes. */
 #include "lwip/debug.h"
 #include "lwip/def.h"

@@ -28,7 +28,6 @@
 #include "task.h"
 #include "unity.h"
 
-
 #define ISR_FLOAT_TEST 1
 #define BACKPORT_TEST 1
 #define DEBUG_QUEUE_REGISTER_TEST 1
@@ -43,7 +42,7 @@
 #define ISR_LATENCY_TEST 1
 #define HOOK_TEST 1
 #define NEWLIB_REENT_TEST 1
-#define PANIC_TEST 1
+#define PANIC_TEST 0 /* D2000 aarch32 is not supported*/
 #define QUEUE_SET_GET_TEST 1
 #define STREAM_TEST 1
 #define PRIORITY_TEST 1

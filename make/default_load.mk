@@ -3,6 +3,8 @@
 .PHONY: load_e2000_aarch32 load_e2000_aarch64 backup_kconfig build_ft2004_aarch32 build_ft2004_aarch64 build_d2000_aarch32 build_d2000_aarch64 config_ft2004_aarch32 config_ft2004_aarch64 config_d2000_aarch32 config_d2000_aarch64
 
 load_ft2004_aarch32:
+	@echo $(BUILD_ALL_OUTPUT_DIR)
+	exit
 	@echo "========Load for FT2000/4 AARCH32 Start============="
 	make ldconfig LDCONFIG_ARG=$(EG_CONFIGS_DIR)/ft2004_aarch32_eg_configs
 	@echo "==============FT2000/4 AARCH32======================="
@@ -22,42 +24,72 @@ load_d2000_aarch64:
 	make ldconfig LDCONFIG_ARG=$(EG_CONFIGS_DIR)/d2000_aarch64_eg_configs
 	@echo "==============D2000 AARCH64========================="
 
-load_e2000_aarch32:
-	@echo "=======Load for E2000 AARCH32===================="
-	make ldconfig LDCONFIG_ARG=$(EG_CONFIGS_DIR)/e2000_aarch32_eg_configs
-	@echo "==============E2000 AARCH32======================="
+load_e2000s_aarch32:
+	@echo "=======Load for E2000S AARCH32===================="
+	make ldconfig LDCONFIG_ARG=$(EG_CONFIGS_DIR)/e2000s_aarch32_eg_configs
+	@echo "==============E2000S AARCH32======================="
 
-load_e2000_aarch64:
-	@echo "========Load for E2000 AARCH64==================="
-	make ldconfig LDCONFIG_ARG=$(EG_CONFIGS_DIR)/e2000_aarch64_eg_configs
-	@echo "==============E2000 AARCH64========================="
+load_e2000s_aarch64:
+	@echo "========Load for E2000S AARCH64==================="
+	make ldconfig LDCONFIG_ARG=$(EG_CONFIGS_DIR)/e2000s_aarch64_eg_configs
+	@echo "==============E2000S AARCH64========================="
 
+load_e2000d_aarch32:
+	@echo "=======Load for E2000D AARCH32===================="
+	make ldconfig LDCONFIG_ARG=$(EG_CONFIGS_DIR)/e2000d_aarch32_eg_configs
+	@echo "==============E2000D AARCH32======================="
+
+load_e2000d_aarch64:
+	@echo "========Load for E2000D AARCH64==================="
+	make ldconfig LDCONFIG_ARG=$(EG_CONFIGS_DIR)/e2000d_aarch64_eg_configs
+	@echo "==============E2000D AARCH64========================="
+
+load_e2000q_aarch32:
+	@echo "=======Load for E2000Q AARCH32===================="
+	make ldconfig LDCONFIG_ARG=$(EG_CONFIGS_DIR)/e2000q_aarch32_eg_configs
+	@echo "==============E2000Q AARCH32======================="
+
+load_e2000q_aarch64:
+	@echo "========Load for E2000Q AARCH64==================="
+	make ldconfig LDCONFIG_ARG=$(EG_CONFIGS_DIR)/e2000q_aarch64_eg_configs
+	@echo "==============E2000Q AARCH64========================="
 
 backup_kconfig:
 ifdef CONFIG_TARGET_ARMV8_AARCH32 
 ifdef CONFIG_TARGET_D2000
-	cp sdkconfig $(EG_CONFIGS_DIR)/d2000_aarch32_eg_configs
+	cp sdkconfig ./configs/d2000_aarch32_eg_configs
 endif
 ifdef CONFIG_TARGET_F2000_4
-	cp sdkconfig $(EG_CONFIGS_DIR)/ft2004_aarch32_eg_configs
+	cp sdkconfig ./configs/ft2004_aarch32_eg_configs
 endif
-ifdef CONFIG_TARGET_E2000
-	cp sdkconfig $(EG_CONFIGS_DIR)/e2000_aarch32_eg_configs
+ifdef CONFIG_TARGET_E2000S
+	cp sdkconfig ./configs/e2000s_aarch32_eg_configs
+endif
+ifdef CONFIG_TARGET_E2000D
+	cp sdkconfig ./configs/e2000d_aarch32_eg_configs
+endif
+ifdef CONFIG_TARGET_E2000Q
+	cp sdkconfig ./configs/e2000q_aarch32_eg_configs
 endif
 endif
 
 ifdef CONFIG_TARGET_ARMV8_AARCH64 
 ifdef CONFIG_TARGET_D2000
-	cp sdkconfig $(EG_CONFIGS_DIR)/d2000_aarch64_eg_configs
+	cp sdkconfig ./configs/d2000_aarch64_eg_configs
 endif
 ifdef CONFIG_TARGET_F2000_4
-	cp sdkconfig $(EG_CONFIGS_DIR)/ft2004_aarch64_eg_configs
+	cp sdkconfig ./configs/ft2004_aarch64_eg_configs
 endif
-ifdef CONFIG_TARGET_E2000
-	cp sdkconfig $(EG_CONFIGS_DIR)/e2000_aarch64_eg_configs
+ifdef CONFIG_TARGET_E2000S
+	cp sdkconfig ./configs/e2000s_aarch64_eg_configs
+endif
+ifdef CONFIG_TARGET_E2000D
+	cp sdkconfig ./configs/e2000d_aarch64_eg_configs
+endif
+ifdef CONFIG_TARGET_E2000Q
+	cp sdkconfig ./configs/e2000q_aarch64_eg_configs
 endif
 endif
-
 
 config_ft2004_aarch32: lddefconfig genconfig clean
 config_ft2004_aarch64: lddefconfig genconfig clean

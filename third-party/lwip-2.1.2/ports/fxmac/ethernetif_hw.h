@@ -1,5 +1,5 @@
 /*
- * Copyright : (C) 2022 Phytium Information Technology, Inc. 
+ * Copyright : (C) 2022 Phytium Information Technology, Inc. 
  * All Rights Reserved.
  *  
  * This program is OPEN SOURCE software: you can redistribute it and/or modify it  
@@ -11,25 +11,28 @@
  * See the Phytium Public License for more details. 
  *  
  * 
- * FilePath: vectors_g.c
- * Date: 2022-02-24 13:42:19
- * LastEditTime: 2022-03-21 17:03:39
- * Description:  This file is for 
+ * FilePath: ethernetif_hw.h
+ * Date: 2022-04-02 16:43:32
+ * LastEditTime: 2022-04-19 22:03:51
+ * Description:  This file is for 
  * 
- * Modify History: 
- *  Ver   Who        Date         Changes
- * ----- ------     --------    --------------------------------------
+ * Modify History: 
+ *  Ver Who      Date        Changes
+ * ----- ------     --------    --------------------------------------
  */
 
+#ifndef __ETHERNETIF_HW_H_
+#define __ETHERNETIF_HW_H_
 
+#include "ethernetif.h"
+#include "lwip/netif.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
+#ifdef __cplusplus
+}
+#endif
 
-
-
-#include "ft_types.h"
-
-
-volatile u8 fpu_context[528] ;
-volatile u8 *fpu_context_base ;
-volatile u8 fpu_status ;
+#endif

@@ -20,53 +20,18 @@
  *  Ver   Who        Date         Changes
  * ----- ------     --------    --------------------------------------
  */
-
-#include "parameters.h"
-#include "ft_types.h"
+#include <stdio.h>
 #include "FreeRTOS.h"
 #include "task.h"
-#include "ft_os_gmac.h"
-
-#define OS_GMAC0_NAME "gmac0"
-
-extern BaseType_t TestCpuStatsEntry();
-extern void LwipRawTest(FtOsGmac *Os_Gmac);
-
-FtOsGmac os_gmac = {0};
+#include "shell_port.h"
 
 int main()
 {
     BaseType_t ret = pdPASS;
 
-    FtOsGmacConfig os_config = {
-        .gmac_instance = FT_OS_GMAC0_ID,
-        .isr_priority = 0, /* irq Priority */
-        .address = {{192,
-                     168,
-                     4,
-                     20},
-                    {255, 255, 255, 0},
-                    {192, 168, 4, 1}},
-        .mac_input_thread = {
-            .thread_name = OS_GMAC0_NAME,
-            .stack_depth = 4096, /* The number of words the stack */
-            .priority = configMAX_PRIORITIES-1, /* Defines the priority at which the task will execute. */
-            .thread_handle = NULL,
-        }, /* Gmac input thread */
-        
-    };
-    
-    /* !!! make sure eth in-place before init gmac */
-    FtOsGmacObjectInit(&os_gmac, &os_config);
-    
-    LwipRawTest(&os_gmac);
-    
-    ret = TestCpuStatsEntry();
-   
-    if (pdPASS != ret)
-    {
+    ret = LSUserShellTask();
+    if(ret != pdPASS)
         goto FAIL_EXIT;
-    }
     
     vTaskStartScheduler(); /* 启动任务，开启调度 */   
     while (1); /* 正常不会执行到这里 */

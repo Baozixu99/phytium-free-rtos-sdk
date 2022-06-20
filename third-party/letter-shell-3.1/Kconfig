@@ -10,5 +10,21 @@ menu "Letter Shell Configuration"
             select ENABLE_Pl011_UART
             bool "PL011"
 
+        if LS_PL011_UART
+            choice LETTER_SHELL_USE_UART_INSTANCE
+            prompt "Select Debug uart instance"
+            default DEFAULT_LETTER_SHELL_USE_UART1
+            help
+                Select arch for build
+            config DEFAULT_LETTER_SHELL_USE_UART1
+                bool "Use uart1"
+            config DEFAULT_LETTER_SHELL_USE_UART0
+                bool "Use uart0"
+            config DEFAULT_LETTER_SHELL_USE_UART2
+                bool "Use uart2"
+            endchoice # SHELL_USE_UART
+
+        endif
+
     endchoice # LETTER_SHELL_USART_TYPE
 endmenu

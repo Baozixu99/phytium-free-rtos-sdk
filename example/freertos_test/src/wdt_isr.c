@@ -25,7 +25,7 @@
 #include <fsleep.h>
 #include <generic_timer.h>
 #include "interrupt.h"
-#include "gicv3.h"
+
 #include "parameters.h"
 #include "fwdt.h"
 #include "fwdt_hw.h"

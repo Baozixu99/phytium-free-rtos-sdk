@@ -1,4 +1,3 @@
-
 THIRD_PARTY_CUR_DIR := $(FREERTOS_SDK_ROOT)/third-party
 
 EXCL_SRC += $(THIRD_PARTY_CUR_DIR)/freertos/portable/MemMang/heap_1.c\
@@ -37,12 +36,25 @@ INC_DIR += 	$(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/include \
 			$(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/include/netif
 
 # src code of ports
-ifdef CONFIG_ENABLE_FGMAC
-	INC_DIR +=  $(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/ports/f_gmac \
-				$(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/ports/f_gmac/arch
+ifdef CONFIG_LWIP_FGMAC
+INC_DIR +=  $(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/ports/fgmac \
+			$(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/ports/fgmac/arch \
+			$(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/ports
 
-	SRC_DIR +=  $(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/ports/f_gmac \
-				$(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/ports/f_gmac/arch
+SRC_DIR +=  $(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/ports/fgmac \
+			$(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/ports/fgmac/arch \
+			$(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/ports
+endif
+
+ifdef CONFIG_LWIP_FXMAC
+INC_DIR +=  $(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/ports/fxmac \
+			$(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/ports/fxmac/arch \
+			$(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/ports
+
+SRC_DIR +=  $(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/ports/fxmac \
+			$(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/ports/fxmac/arch \
+			$(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/ports
+
 endif
 
 endif #CONFIG_USE_LWIP

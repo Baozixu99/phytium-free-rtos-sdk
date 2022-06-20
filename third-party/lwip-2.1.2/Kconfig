@@ -1,14 +1,19 @@
 menu "LWIP Configuration"
     choice LWIP_GMAC_CTRL_TYPE
         prompt "Gmac Drivers"
-        default LWIP_F_GMAC
+        default LWIP_FGMAC
         help
             Select Gmac Driver for Lwip
 
-        config LWIP_F_GMAC
+        config LWIP_FGMAC
             select USE_ETH
             select ENABLE_FGMAC
-            bool "F_GMAC"
+            bool "FGMAC"
+
+        config LWIP_FXMAC
+            select USE_ETH
+            select ENABLE_FXMAC
+            bool "FXMAC"
 
     endchoice # LWIP_GMAC_CTRL_TYPE
 endmenu

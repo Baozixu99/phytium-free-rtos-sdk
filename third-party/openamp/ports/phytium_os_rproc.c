@@ -221,7 +221,7 @@ static int PhytiumProcNotify(struct remoteproc *rproc, uint32_t id)
 #else
 	u32 cpu_id;
 	GetCpuId(&cpu_id);
-	IpiSend((uintptr)(prproc->kick_dev->irq_info), prproc->ipi_chn_mask);
+	InterruptCoreInterSend((uintptr)(prproc->kick_dev->irq_info), prproc->ipi_chn_mask);
 #endif /* RPMSG_NO_IPI */
 
 	return 0;

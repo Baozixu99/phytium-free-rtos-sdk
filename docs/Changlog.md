@@ -20,6 +20,21 @@
  *  Ver   Who        Date         Changes
  * ----- ------     --------    --------------------------------------
 -->
+
+# Phytium FreeRTOS SDK 2022-06-18 0.1.0 ChangeLog
+
+Change Log sinc 2022-05-30
+
+## example
+
+- adapt to the new standalone sdk v0.2.0
+
+- Restruct lwip_test example
+
+## third-party
+
+- Restruct lwip gmac adapter, add gmac port
+
 # Phytium FreeRTOS SDK 0.0.7 ChangeLog
 
 Change Log sinc 2022-03-21,2022-04-20

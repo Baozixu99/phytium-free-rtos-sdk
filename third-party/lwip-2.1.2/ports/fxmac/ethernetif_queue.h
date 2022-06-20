@@ -11,9 +11,9 @@
  * See the Phytium Public License for more details. 
  *  
  * 
- * FilePath: ethernetif.h
- * Date: 2022-02-24 13:42:19
- * LastEditTime: 2022-03-21 17:04:37
+ * FilePath: ethernetif_queue.h
+ * Date: 2022-04-06 14:46:52
+ * LastEditTime: 2022-04-06 14:46:53
  * Description:  This file is for 
  * 
  * Modify History: 
@@ -21,14 +21,28 @@
  * ----- ------     --------    --------------------------------------
  */
 
-#ifndef __ETHERNETIF_H__
-#define __ETHERNETIF_H__
+#ifndef __ETHERNETIF_QUEUE_H_
+#define __ETHERNETIF_QUEUE_H_
 
-#include "lwip/err.h"
-#include "lwip/netif.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-err_t ethernetif_init(struct netif *netif);
-void ethernetif_input(void const *argument);
-void ethernetif_notify_conn_changed(struct netif *netif);
+#define PQ_QUEUE_SIZE 4096
+
+typedef struct 
+{
+	void *data[PQ_QUEUE_SIZE];
+	int head, tail, len;
+} pq_queue_t;
+
+pq_queue_t*	xmac_pq_create_queue(void);
+int xmac_pq_enqueue(pq_queue_t *q, void *p);
+void* xmac_pq_dequeue(pq_queue_t *q);
+int	xmac_pq_qlength(pq_queue_t *q);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -1,5 +1,3 @@
-
-
 .global _boot
 
 .global _vector_table
@@ -13,6 +11,8 @@
 .section .boot,"ax"
 
 _boot:
+        bl  FTraceUartInit
+        bl  FTraceBootup
         mrs	x0, CurrentEL
         cmp x0, 0xc
         b.eq    El3Entry
@@ -36,7 +36,8 @@ _boot:
         /*  daif=0000 */
         msr spsr_el3, x0 
         /*  m[4:0]=01001 el2h must match scr_el3.rw*/
-        
+
+        bl  FTraceEL3
         /*  determine el2 entry.*/
         adr x0, El2Entry 
         /*  El2Entry points to the first instruction of */
@@ -44,17 +45,21 @@ _boot:
         /*  el2 code.*/
         eret
     El2Entry:
-        
+        mov x1, #0x0
+        msr sctlr_el1, x1
         /*  initialize the sctlr_el1 register before entering el1.*/
         msr sctlr_el1, xzr
         mrs x0, hcr_el2
         orr x0, x0, #(1<<31) 
+        bic x0, x0, #(1<<27) /* HCR_EL2.TGE = 0 */
         /*  rw=1 el1 execution state is aarch64.*/
         msr hcr_el2, x0
         mov x0, #0b00101 
         /*  daif=0000 */
         msr spsr_el2, x0 
         /*  m[4:0]=00101 el1h must match hcr_el2.rw.*/
+
+        bl  FTraceEL2
         adr x0, El1Entry 
         /*  El1Entry points to the first instruction of */
         msr elr_el2, x0 
@@ -105,8 +110,7 @@ InitEl1:
 
     /* Trap floating point access only in case of standalone BSP */
     mrs	x0, CPACR_EL1
-	/* bic	x0, x0, #(0x3 << 20) */
-    orr     x0, x0, #(0x3 << 20)
+    orr     x0, x0, #(0x3 << 20)    /*This control does not cause any instructions to be trapped. */
 	msr	CPACR_EL1, x0
     isb
 
@@ -115,6 +119,7 @@ InitEl1:
     ldr x2,=el1_stack
     mov	 sp,x2
 
+    bl   FTraceEL1
     bl 	 _startup		/* jump to start */
 
 
@@ -122,5 +127,3 @@ hang:
 	wfi
     b   HangPrint
 	b	hang
-
-

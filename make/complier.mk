@@ -160,7 +160,7 @@ $(APP): $(OBJ_FILES) linkscript
 	@echo Linking $@.elf
 	@echo Dumping $@.map
 	$(QUIET) $(CC) $(TARGET_ARCH) $(LDFLAGS) -T $(PROJ_LD) --output $@.elf -Wl,-Map=$@.map $(OBJ_FILES) -lm
-ifndef CONFIG_DON_T_BINARY_OUTPUT
+ifdef CONFIG_OUTPUT_BINARY
 	@echo Objcopying $@.bin
 	$(QUIET) $(OC) -v -O binary $@.elf $@.bin
 endif

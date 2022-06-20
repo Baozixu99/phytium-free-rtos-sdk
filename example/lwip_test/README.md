@@ -26,7 +26,7 @@
 ## 1. 例程介绍
 
 本例程示范了freertos环境下的lwip移植。
-本例程目前支持在freertos下，移植lwip，使网络能够ping通，freertos的cpu状态信息任务正常运行。
+本例程目前支持在freertos下，移植lwip，使网络能够ping通，shell能够正常运行。
 
 ## 2. 如何使用例程
 
@@ -54,7 +54,8 @@
 
 对应的配置项是，
 
-- Use LWIP 
+- CONFIG_USE_LWIP
+- CONFIG_USE_LETTER_SHELL
 
 本例子已经提供好具体的编译指令，以下进行介绍:
 - make 将目录下的工程进行编译
@@ -107,7 +108,7 @@ sudo service tftpd-hpa restart
 
 - 开发板侧使用bootelf命令跳转
 ```
-setenv ipaddr 192.168.4.20  
+setenv ipaddr 192.168.4.20
 setenv serverip 192.168.4.50 
 setenv gatewayip 192.168.4.1 
 tftpboot 0x90100000 freertos.elf
@@ -116,11 +117,11 @@ bootelf -p 0x90100000
 
 ### 2.4 输出与实验现象
 
-- 启动进入后，cpu状态任务打印状态信息
+- 启动进入后，根据连接的gmac口，输入指令完成网口初始化
 
-![cpu状态打印任务](./pic/cpu_status.png "cpu_status.png")
+![gmac_probe](./pic/gmac_probe.png "gmac_probe.png")
 
-#### 2.4.1 使用网线连接计算机和开发板网口0，ping 192.168.4.20命令进行网络测试
+#### 2.4.1 使用网线连接计算机和开发板网口0，ping 192.168.4.10命令进行网络测试
 
 ![ping](./pic/ping.png "ping.png")
 
@@ -138,5 +139,5 @@ A: 考虑以下两个宏的大小：PBUF_POOL_SIZE定义缓冲池的个数，PBU
 ## 4. 修改历史记录
 
 v0.0.4  初次合入lwip
-
+v0.1.0  重构lwip
 

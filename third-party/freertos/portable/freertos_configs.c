@@ -25,12 +25,12 @@
 #include "task.h"
 #include "ft_types.h"
 #include "parameters.h"
-#include "gicv3.h"
 #include "generic_timer.h"
 #include "interrupt.h"
 #include <stdio.h>
 #include "cpu_info.h"
 #include "ft_assert.h"
+#include "exception.h"
 
 void vMainAssertCalled(const char *pcFileName, uint32_t ulLineNumber)
 {
@@ -88,42 +88,19 @@ void vClearTickInterrupt(void)
     GenericTimerCompare(cntfrq / configTICK_RATE_HZ);
 }
 
-
-static void vFIrqHandler(int ir)
-{
-	void *param;
-  	IrqHandler isr_func;
-  	extern struct IrqDesc isr_table[];
-
-	/* get interrupt service routine */
-	isr_func = isr_table[ir].handler;
-	if (isr_func)
-	{
-		/* Interrupt for myself. */
-		param = isr_table[ir].param;
-		/* turn to interrupt service routine */
-		isr_func(ir, param);
-	}
-	
-	/* end of interrupt */
-	InterruptAck(ir);
-}
-
 volatile unsigned int gCpuRuntime;
 
-#ifdef __aarch64__
-
-void vApplicationIRQHandler(uint32_t ulICCIAR)
+void vApplicationInterruptHandler(uint32_t ulICCIAR)
 {
     int ulInterruptID;
     
     /* Interrupts cannot be re-enabled until the source of the interrupt is
-	cleared. The ID of the interrupt is obtained by bitwise ANDing the ICCIAR
-	value with 0x3FF. */
+	  cleared. The ID of the interrupt is obtained by bitwise ANDing the ICCIAR
+	  value with 0x3FF. */
     ulInterruptID = ulICCIAR & 0x3FFUL;
 
     /* call handler function */
-    if (ulInterruptID == 30)
+    if (ulInterruptID == GENERIC_TIMER_NS_IRQ_NUM)
     {
         /* Generic Timer */
         gCpuRuntime++;
@@ -131,41 +108,15 @@ void vApplicationIRQHandler(uint32_t ulICCIAR)
     }
     else
     {
-        vFIrqHandler(ulInterruptID);
+        FExceptionInterruptHandler((void *)(uintptr)ulInterruptID);
     }
 }
-#else
 
-void vApplicationFPUSafeIRQHandler(uint32_t ulICCIAR)
+static InterruptDrvType finterrupt;
+
+void vApplicationInitIrq(void)
 {
-    int ulInterruptID;
-
-    /* Interrupts cannot be re-enabled until the source of the interrupt is
-	   cleared. The ID of the interrupt is obtained by bitwise ANDing the ICCIAR
-	   value with 0x3FF. */
-    ulInterruptID = ulICCIAR & 0x3FFUL;
-    
-    /* call handler function */
-    if (ulInterruptID == 30)
-    {
-        /* Generic Timer */
-        gCpuRuntime++;
-        FreeRTOS_Tick_Handler();
-    }
-    else
-    {      
-        vFIrqHandler(ulInterruptID);
-    }    
-}
-#endif
-
-
-
-void InitIrq()
-{
-    /* interrupt init */
-    ArmGicRedistAddressSet(0, GICV3_RD_BASEADDRESS + 0, 0);
-    InterruptInit(GICV3_BASEADDRESS, 0);
+    InterruptInit(&finterrupt,INTERRUPT_DRV_INTS_ID,INTERRUPT_ROLE_MASTER);
 }
 
 
@@ -204,7 +155,7 @@ void vApplicationGetIdleTaskMemory( StaticTask_t **ppxIdleTaskTCBBuffer, StackTy
 }
 
 /* configSUPPORT_STATIC_ALLOCATION and configUSE_TIMERS are both set to 1, so the
- * application must provide an implementation of vApplicationGetTimerTaskMemory()
+ * application must provide an implementation of `vApplicationGetTimerTaskMemory()
  * to provide the memory that is used by the Timer service task. */
 void vApplicationGetTimerTaskMemory( StaticTask_t **ppxTimerTaskTCBBuffer, StackType_t **ppxTimerTaskStackBuffer, uint32_t *pulTimerTaskStackSize )
 {

@@ -1,25 +1,41 @@
 mainmenu "Phytium FreeRTOS Configuration"
 
 	menu "Project Configuration"
-
+	
 		config TARGET_NAME
 			string "Build Target Name"
 			default "baremetal"
 			help
 				Build Target name for the demo
-		choice LWIP_TEST_ITEMS
-			prompt "Select Test Item"
-			default LWIP_POLL_TEST
+		
+		choice
+			prompt "choice lwip config"
+			default LWIP_IPV4_TEST
+			config LWIP_IPV4_TEST
+				bool "test lwip ipv4"
+			config LWIP_IPV4_DHCP_TEST
+				bool "test lwip ipv4 and dhcp"
+			config LWIP_IPV6_TEST
+				bool "test lwip ipv6"
+		endchoice
+
+		config GMAC_RX_DESCNUM
+			int "receive description number"
+			default "16"
 			help
-				Select arch for build
+				receive description number for the demo
 
-			config LWIP_POLL_TEST
-				bool "Poll Wait"
-
-			config LWIP_INTRRUPT_TEST
-				bool "Poll Intrrupt"
-
-		endchoice #LWIP_TEST_ITEMS
+		config GMAC_TX_DESCNUM
+			int "transmit description number"
+			default "16"
+			help
+				transmit description number for the demo
+		
+		config GMAC_IRQ_PRIORITY
+			int "gmac irq priority, 0~15"
+			default "12"
+			help
+				gmac irq priority for the demo
 	endmenu
 
 source "$(FREERTOS_SDK_ROOT)/Kconfig"

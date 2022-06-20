@@ -28,7 +28,7 @@
 #ifndef FREERTOS_CONFIG_H
 #define FREERTOS_CONFIG_H
 
-#include "parameters.h"
+#include "interrupt.h"
 
 /*-----------------------------------------------------------
  * Application specific definitions.
@@ -65,10 +65,12 @@
  * For the purpose of setting configMAX_API_CALL_INTERRUPT_PRIORITY 255
  * represents the lowest priority.
  */
-/* 在不安全group1 中 ,0x8 ~0xb 不可以使用安全api（优先级越低越高）*/
-#define configMAX_API_CALL_INTERRUPT_PRIORITY 0xb          
+
 /* 在不安全group1 中，16 is steps ，3 是其中等级*/   
-#define configKERNEL_INTERRUPT_PRIORITY ((0x8 << 4) + 3 * 16) 
+#define configKERNEL_INTERRUPT_PRIORITY         IRQ_PRIORITY_VALUE_11
+/* 在不安全group1 中 ,0x8 ~0xb 不可以使用安全api（优先级越低越高）*/
+#define configMAX_API_CALL_INTERRUPT_PRIORITY   IRQ_PRIORITY_VALUE_11          
+
 
 #define configUSE_PORT_OPTIMISED_TASK_SELECTION 1
 #define configUSE_TICKLESS_IDLE 0
@@ -80,7 +82,7 @@
 #define configMAX_PRIORITIES (8)
 #define configMINIMAL_STACK_SIZE ((unsigned short)1024)
 #define configTOTAL_HEAP_SIZE (1024 * 1024)
-#define configMAX_TASK_NAME_LEN (10)
+#define configMAX_TASK_NAME_LEN (32)
 #define configUSE_16_BIT_TICKS 0
 #define configIDLE_SHOULD_YIELD 1
 #define configUSE_MUTEXES 1

@@ -32,14 +32,43 @@
 #ifndef LWIP_LWIPOPTS_H
 #define LWIP_LWIPOPTS_H
 
+#include "sdkconfig.h"
+#ifndef SDK_CONFIG_H__
+    #warning "Please include sdkconfig.h"
+#endif
+
 #include "arch/sys_arch.h"
 
-#ifdef LWIP_OPTTEST_FILE
-#include "lwipopts_test.h"
-#else /* LWIP_OPTTEST_FILE */
 
+#ifdef CONFIG_LWIP_IPV4_TEST
 #define LWIP_IPV4                  1
 #define LWIP_IPV6                  0
+#define LWIP_IPV6_MLD              0
+/* ---------- DHCP options ---------- */
+/* Define LWIP_DHCP to 1 if you want DHCP configuration of
+   interfaces. */
+#define LWIP_DHCP                  0
+#endif
+
+#ifdef CONFIG_LWIP_IPV4_DHCP_TEST
+#define LWIP_IPV4                  1
+#define LWIP_IPV6                  0
+#define LWIP_IPV6_MLD              0
+/* ---------- DHCP options ---------- */
+/* Define LWIP_DHCP to 1 if you want DHCP configuration of
+   interfaces. */
+#define LWIP_DHCP                  1
+#endif
+
+#ifdef CONFIG_LWIP_IPV6_TEST
+#define LWIP_IPV4                  0
+#define LWIP_IPV6                  1
+#define LWIP_IPV6_MLD              0
+/* ---------- DHCP options ---------- */
+/* Define LWIP_DHCP to 1 if you want DHCP configuration of
+   interfaces. */
+#define LWIP_DHCP                  0
+#endif
 
 #define NO_SYS                     0  /* 无操作系统模拟层, 只提供RAW CALL */
 #define LWIP_SOCKET                (NO_SYS==0)
@@ -49,36 +78,23 @@
 #define LWIP_IGMP                  LWIP_IPV4
 #define LWIP_ICMP                  LWIP_IPV4
 
-#define LWIP_SNMP                  LWIP_UDP
-#define MIB2_STATS                 LWIP_SNMP
-#ifdef LWIP_HAVE_MBEDTLS
-#define LWIP_SNMP_V3               (LWIP_SNMP)
-#endif
-
-#define LWIP_DNS                   LWIP_UDP
-#define LWIP_MDNS_RESPONDER        LWIP_UDP
-
-#define LWIP_NUM_NETIF_CLIENT_DATA (LWIP_MDNS_RESPONDER)
-
-#define LWIP_HAVE_LOOPIF           0
-#define LWIP_NETIF_LOOPBACK        1
-#define LWIP_LOOPBACK_MAX_PBUFS    10
 
 #define TCP_LISTEN_BACKLOG         1
 
-#define LWIP_COMPAT_SOCKETS        1
 #define LWIP_SO_RCVTIMEO           1
 #define LWIP_SO_RCVBUF             1
 
 #define LWIP_TCPIP_CORE_LOCKING    1
 
 #define LWIP_NETIF_LINK_CALLBACK        0 //支持来自接口的回调函数
-#define LWIP_NETIF_STATUS_CALLBACK      0
-#define LWIP_NETIF_EXT_STATUS_CALLBACK  0
+#define LWIP_NETIF_STATUS_CALLBACK      1
+#define LWIP_NETIF_EXT_STATUS_CALLBACK  1
+
+#ifndef LWIP_DEBUG
+#define LWIP_DEBUG        //打印调试信息           
+#endif
 
 #ifdef LWIP_DEBUG
-
-#define LWIP_DBG_MIN_LEVEL         0
 #define PPP_DEBUG                  LWIP_DBG_OFF
 #define MEM_DEBUG                  LWIP_DBG_OFF
 #define MEMP_DEBUG                 LWIP_DBG_OFF
@@ -86,11 +102,9 @@
 #define API_LIB_DEBUG              LWIP_DBG_OFF
 #define API_MSG_DEBUG              LWIP_DBG_OFF
 #define TCPIP_DEBUG                LWIP_DBG_OFF
-#define NETIF_DEBUG                LWIP_DBG_OFF
 #define SOCKETS_DEBUG              LWIP_DBG_OFF
 #define DNS_DEBUG                  LWIP_DBG_OFF
 #define AUTOIP_DEBUG               LWIP_DBG_OFF
-#define DHCP_DEBUG                 LWIP_DBG_OFF
 #define IP_DEBUG                   LWIP_DBG_OFF
 #define IP_REASS_DEBUG             LWIP_DBG_OFF
 #define ICMP_DEBUG                 LWIP_DBG_OFF
@@ -108,6 +122,7 @@
 #endif
 
 #define NETIF_DEBUG                LWIP_DBG_ON
+#define DHCP_DEBUG                 LWIP_DBG_ON
 
 /* ---------- Memory options ---------- */
 /* MEM_ALIGNMENT: should be set to the alignment of the CPU for which
@@ -156,7 +171,6 @@ a lot of data that needs to be copied, this should be set high. */
 #define MEMP_NUM_TCPIP_MSG_API   16
 #define MEMP_NUM_TCPIP_MSG_INPKT 16
 
-
 /* ---------- Pbuf options ---------- */
 /* PBUF_POOL_SIZE: the number of buffers in the pbuf pool. */
 #define PBUF_POOL_SIZE          400 /* pbuf tests need ~200KByte */ 
@@ -171,23 +185,11 @@ a lot of data that needs to be copied, this should be set high. */
  */
 #define SYS_LIGHTWEIGHT_PROT    (NO_SYS==0) //0, 不提供缓冲区分配释放的保护
 
-/**
-* NO_SYS_NO_TIMERS==1: 无操作系统定时器
-* 
-*/
-#define NO_SYS_NO_TIMERS        0  //提供操作系统定时
-
-
 /* ---------- TCP options ---------- */
 #define LWIP_TCP                1
 #define TCP_TTL                 255
 
 #define LWIP_ALTCP              (LWIP_TCP)
-#ifdef LWIP_HAVE_MBEDTLS
-#define LWIP_ALTCP_TLS          (LWIP_TCP)
-#define LWIP_ALTCP_TLS_MBEDTLS  (LWIP_TCP)
-#endif
-
 
 /* Controls if TCP should queue segments that arrive out of
    order. Define to 0 if your device is low on memory. */
@@ -217,19 +219,6 @@ a lot of data that needs to be copied, this should be set high. */
 /* Maximum number of retransmissions of SYN segments. */
 #define TCP_SYNMAXRTX           4
 
-
-/* ---------- ARP options ---------- */
-#define LWIP_ARP                1
-#define ARP_TABLE_SIZE          10
-#define ARP_QUEUEING            1
-
-
-/* ---------- IP options ---------- */
-/* Define IP_FORWARD to 1 if you wish to have the ability to forward
-   IP packets across network interfaces. If you are going to run lwIP
-   on a device with only one network interface, define this to 0. */
-#define IP_FORWARD              1
-
 /* IP reassembly and segmentation.These are orthogonal even
  * if they both deal with IP fragments */
 #define IP_REASSEMBLY           1
@@ -238,93 +227,33 @@ a lot of data that needs to be copied, this should be set high. */
 #define IP_FRAG                 1
 #define IPV6_FRAG_COPYHEADER    1
 
-/* ---------- ICMP options ---------- */
-#define ICMP_TTL                255
-
-
-/* ---------- DHCP options ---------- */
-/* Define LWIP_DHCP to 1 if you want DHCP configuration of
-   interfaces. */
-#define LWIP_DHCP               LWIP_UDP
-
 /* 1 if you want to do an ARP check on the offered address
    (recommended). */
 #define DHCP_DOES_ARP_CHECK    (LWIP_DHCP)
-
 
 /* ---------- AUTOIP options ------- */
 #define LWIP_AUTOIP            (LWIP_DHCP)
 #define LWIP_DHCP_AUTOIP_COOP  (LWIP_DHCP && LWIP_AUTOIP)
 
-
 /* ---------- UDP options ---------- */
 #define LWIP_UDP                1
 #define LWIP_UDPLITE            LWIP_UDP
-#define UDP_TTL                 255
 
+#define LWIP_SNMP               LWIP_UDP
+#define MIB2_STATS              LWIP_SNMP
+
+#define LWIP_DNS                LWIP_UDP
+#define LWIP_MDNS_RESPONDER     LWIP_UDP
+
+#define LWIP_NUM_NETIF_CLIENT_DATA (LWIP_MDNS_RESPONDER)
 
 /* ---------- RAW options ---------- */
 #define LWIP_RAW                1
 
-
-/* ---------- Statistics options ---------- */
-
-#define LWIP_STATS              1
-#define LWIP_STATS_DISPLAY      1
-
-#if LWIP_STATS
-#define LINK_STATS              1
-#define IP_STATS                1
-#define ICMP_STATS              1
-#define IGMP_STATS              1
-#define IPFRAG_STATS            1
-#define UDP_STATS               1
-#define TCP_STATS               1
-#define MEM_STATS               1
-#define MEMP_STATS              1
-#define PBUF_STATS              1
-#define SYS_STATS               1
-
 #define LWIP_PROVIDE_ERRNO      1 //使用errno
-#endif /* LWIP_STATS */
 
-#ifndef LWIP_DEBUG
-#define LWIP_DEBUG      //打印调试信息           
-#endif
-
-/* ---------- NETBIOS options ---------- */
-#define LWIP_NETBIOS_RESPOND_NAME_QUERY 1
-
-/* ---------- PPP options ---------- */
-
-#define PPP_SUPPORT             0      /* Set > 0 for PPP */
-
-#if PPP_SUPPORT
-
-#define NUM_PPP                 1      /* Max PPP sessions. */
-
-
-/* Select modules to enable.  Ideally these would be set in the makefile but
- * we're limited by the command line length so you need to modify the settings
- * in this file.
- */
-#define PPPOE_SUPPORT           1
-#define PPPOS_SUPPORT           1
-
-#define PAP_SUPPORT             1      /* Set > 0 for PAP. */
-#define CHAP_SUPPORT            1      /* Set > 0 for CHAP. */
-#define MSCHAP_SUPPORT          0      /* Set > 0 for MSCHAP */
-#define CBCP_SUPPORT            0      /* Set > 0 for CBCP (NOT FUNCTIONAL!) */
-#define CCP_SUPPORT             0      /* Set > 0 for CCP */
-#define VJ_SUPPORT              1      /* Set > 0 for VJ header compression. */
-#define MD5_SUPPORT             1      /* Set > 0 for MD5 (see also CHAP) */
-
-#endif /* PPP_SUPPORT */
-
-#endif /* LWIP_OPTTEST_FILE */
 
 /* The following defines must be done even in OPTTEST mode: */
-
 #if !defined(NO_SYS) || !NO_SYS /* default is 0 */
 void sys_check_core_locking(void);
 #define LWIP_ASSERT_CORE_LOCKED()  //sys_check_core_locking()
@@ -334,9 +263,7 @@ void sys_mark_tcpip_thread(void);
 #if !defined(LWIP_TCPIP_CORE_LOCKING) || LWIP_TCPIP_CORE_LOCKING /* default is 1 */
 /** The global semaphore to lock the stack. */
 extern sys_mutex_t lock_tcpip_core;
-
 #define LOCK_TCPIP_CORE()           sys_mutex_lock(&lock_tcpip_core)//sys_lock_tcpip_core()
-
 #define UNLOCK_TCPIP_CORE()         sys_mutex_unlock(&lock_tcpip_core)//sys_unlock_tcpip_core()
 #endif
 #endif

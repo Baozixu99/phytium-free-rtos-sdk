@@ -27,9 +27,9 @@
 #include "task.h"
 #include "ft_types.h"
 
-const UBaseType_t task1Priority = configKERNEL_INTERRUPT_PRIORITY - 1;
-const UBaseType_t task2Priority = configKERNEL_INTERRUPT_PRIORITY/2;
-const UBaseType_t task3Priority = configKERNEL_INTERRUPT_PRIORITY/3;
+const UBaseType_t task1Priority = configMAX_PRIORITIES - 1;
+const UBaseType_t task2Priority = configMAX_PRIORITIES/2;
+const UBaseType_t task3Priority = configMAX_PRIORITIES/3;
 const TickType_t task1Delay = 100;
 const TickType_t task2Delay = 100;
 const TickType_t task3Delay = 100;

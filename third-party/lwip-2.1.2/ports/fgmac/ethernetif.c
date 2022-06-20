@@ -64,21 +64,11 @@
 /* The time to block waiting for input. */
 #define TIME_WAITING_FOR_INPUT (portMAX_DELAY)
 
-/* Stack size of the interface thread */
-#define INTERFACE_THREAD_STACK_SIZE (350)
-
-/* Define those to better describe your network interface. */
-#define IFNAME0 's'
-#define IFNAME1 't'
-
 #define ETHNETIF_DEBUG_TAG "ETHNETIF"
 
 #define ETHNETIF_DEBUG_I(format, ...) FT_DEBUG_PRINT_I(ETHNETIF_DEBUG_TAG, format, ##__VA_ARGS__)
 #define ETHNETIF_DEBUG_E(format, ...) FT_DEBUG_PRINT_E(ETHNETIF_DEBUG_TAG, format, ##__VA_ARGS__)
 #define ETHNETIF_DEBUG_W(format, ...) FT_DEBUG_PRINT_W(ETHNETIF_DEBUG_TAG, format, ##__VA_ARGS__)
-
-extern FError FGmacWritePhyReg(FGmacPhy *instance_p, u16 phy_reg, u32 phy_reg_val);
-extern FError FGmacReadPhyReg(FGmacPhy *instance_p, u16 phy_reg, u32 *phy_reg_val_p);
 
 /**
  * Helper struct to hold private data used to operate your ethernet interface.
@@ -86,34 +76,8 @@ extern FError FGmacReadPhyReg(FGmacPhy *instance_p, u16 phy_reg, u32 *phy_reg_va
  * as it is already kept in the struct netif.
  * But this is only an example, anyway...
  */
-struct ethernetif {
-    struct eth_addr *ethaddr;
-    FGmac *ethctrl;
-};
 
-static FGmac gctrl; /* huge size ctrl block */
-static FGmacPhy phy;
-
-static struct ethernetif netifctrl;
-/* align buf and descriptor by 128 */
-static u8 tx_buf[GMAC_TX_DESCNUM * GMAC_MAX_PACKET_SIZE] __aligned(GMAC_DMA_MIN_ALIGN);
-static u8 rx_buf[GMAC_RX_DESCNUM * GMAC_MAX_PACKET_SIZE] __aligned(GMAC_DMA_MIN_ALIGN);
-static FGmacDmaDesc tx_desc[GMAC_TX_DESCNUM] __aligned(GMAC_DMA_MIN_ALIGN);
-static FGmacDmaDesc rx_desc[GMAC_RX_DESCNUM] __aligned(GMAC_DMA_MIN_ALIGN);
-
-/**
- * @name: eth_ctrl_init
- * @msg: config gmac and initialization
- * @return {*}
- * @param {FGmac} *pctrl
- */
-u32 eth_ctrl_init(FGmac *pctrl)
-{
-	LWIP_ASSERT("pctrl != NULL", (pctrl != NULL));
-	u32 ret = FGMAC_SUCCESS;
-	return ret;
-}
-
+static netif_config netif_config_instance[GMAC_INSTANCE_NUM];
 
 void ethernet_link_thread(void *argument)
 {
@@ -210,40 +174,58 @@ void GmacStatusCheckCallBack(void *args, u32 mac_phy_status)
  * @param netif the already initialized lwip network interface structure
  *        for this ethernetif
  */
-static void low_level_init(struct netif *netif)
+static err_t low_level_init(struct netif *netif)
 {
-	u32 reg_value = 0;
 	LWIP_ASSERT("netif != NULL", (netif != NULL));
-	u32 ret = FGMAC_SUCCESS;
-  	FGmacMacAddr mac_addr;
-	FGmac *p_ctrl;
+  FGmacMacAddr mac_addr;
+	FGmac *gmac_ctrl;
 	FtOsGmac *os_gmac_ptr;
+  u16 reg_value = 0;
 	os_gmac_ptr = container_of(netif, FtOsGmac, netif_object);
+  gmac_ctrl = &os_gmac_ptr->gmac;
 
-	p_ctrl = &os_gmac_ptr->gmac;
-	
-	/* Init Gmac */
-  	FtOsGmacInit(os_gmac_ptr, &phy);
+  ethernetif *ethernetif_p = (ethernetif *)(netif->state);
 
-  	/* Set Receive Callback */
-	FGmacRegisterEvtHandler(p_ctrl, FGMAC_RX_COMPLETE_EVT, GmacReceiveCallBack);
+  netif_config *netif_config_p = container_of(ethernetif_p, netif_config, netifctrl);
+
+  /* Create a binary semaphore used for informing ethernetif of frame reception */
+  FASSERT((os_gmac_ptr->s_semaphore = xSemaphoreCreateBinary()) != NULL);
+  /* Create a event group used for ethernetif of status change */
+  FASSERT((os_gmac_ptr->s_status_event = xEventGroupCreate()) != NULL);
+
+  /* Init Gmac */
+  FError ret = FtOsGmacInit(os_gmac_ptr, netif_config_p);
+  if(ret != FGMAC_SUCCESS)
+  {
+    if(ret == FGMAC_ERR_PHY_AUTO_FAILED)
+    {
+      ETHNETIF_DEBUG_E("FtOsGmacInit is failed, phy auto negotiation is not success.");
+    }
+    else
+    {
+      ETHNETIF_DEBUG_E("FtOsGmacInit is failed");
+      return ERR_CONN;
+    }
+  }
+
+  /* Set Receive Callback */
+	FGmacRegisterEvtHandler(gmac_ctrl, FGMAC_RX_COMPLETE_EVT, GmacReceiveCallBack);
 
 #if LWIP_ARP || LWIP_ETHERNET
 
 	/* set MAC hardware address length */
 	netif->hwaddr_len = ETH_HWADDR_LEN;
+  
+  for(u8 i = 0; i<(sizeof(mac_addr)/sizeof(mac_addr[0])); i++)
+	{
+	  mac_addr[i] = netif->hwaddr[i];
+	}
 
   /* set MAC hardware address */
-	memset(mac_addr, 0, sizeof(mac_addr));
-	FGmacGetMacAddr(os_gmac_ptr->gmac.config.base_addr, mac_addr);
-  
-	/* set MAC hardware address */
-	netif->hwaddr[0] = mac_addr[0];
-	netif->hwaddr[1] = mac_addr[1];
-	netif->hwaddr[2] = mac_addr[2];
-	netif->hwaddr[3] = mac_addr[3];
-	netif->hwaddr[4] = mac_addr[4];
-	netif->hwaddr[5] = mac_addr[5];
+  FGmacSetMacAddr(gmac_ctrl->config.base_addr, mac_addr);
+
+  /* clear rgmii interrupt due to phy reset */
+  reg_value = FGMAC_READ_REG32(gmac_ctrl->config.base_addr, FGMAC_MAC_PHY_STATUS);
 
 	/* maximum transfer unit */
 	netif->mtu = GMAC_MTU;
@@ -251,39 +233,35 @@ static void low_level_init(struct netif *netif)
 /* Accept broadcast address and ARP traffic */
 /* don't set NETIF_FLAG_ETHARP if this device is not an ethernet one */
 #if LWIP_ARP
-  	netif->flags |= NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_LINK_UP;
+  netif->flags |= NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_LINK_UP;
 #else
-  	netif->flags |= NETIF_FLAG_BROADCAST;
+  netif->flags |= NETIF_FLAG_BROADCAST;
 #endif /* LWIP_ARP */
 
-  	/* Create the task that handles the ETH_MAC */
-	if (xTaskCreate((TaskFunction_t)ethernetif_input,
-					os_gmac_ptr->config.mac_input_thread.thread_name,
-					os_gmac_ptr->config.mac_input_thread.stack_depth,
-					os_gmac_ptr, os_gmac_ptr->config.mac_input_thread.priority,
-					&os_gmac_ptr->config.mac_input_thread.thread_handle) != pdPASS)
-	{
-    ETHNETIF_DEBUG_I("xTaskCreate is Error  %s\r\n", os_gmac_ptr->config.mac_input_thread.thread_name);
-    FASSERT(0);
+    /* Create the task that handles the ETH_MAC */
+  if (xTaskCreate((TaskFunction_t)ethernetif_input,
+                    os_gmac_ptr->config.mac_input_thread.thread_name,
+                    os_gmac_ptr->config.mac_input_thread.stack_depth,
+                    os_gmac_ptr, os_gmac_ptr->config.mac_input_thread.priority,
+                    &os_gmac_ptr->config.mac_input_thread.thread_handle) != pdPASS)
+    {
+      ETHNETIF_DEBUG_I("xTaskCreate is Error %s\r\n", os_gmac_ptr->config.mac_input_thread.thread_name);
+      FASSERT(0);
 	}
 
-	/* Enable MAC and DMA transmission and reception */
-	FtOsGmacStart(os_gmac_ptr);
-	
+  /* Enable MAC and DMA transmission and reception */
+  FtOsGmacStart(os_gmac_ptr);
+
 	/* Read Register Configuration */
-	FGmacReadPhyReg(&phy, PHY_INTERRUPT_ENABLE_OFFSET, &reg_value);
+	FGmacReadPhyReg(gmac_ctrl, gmac_ctrl->phy_addr, PHY_INTERRUPT_ENABLE_OFFSET, &reg_value);
 	reg_value |= (PHY_INTERRUPT_ENABLE_LINK_FAIL);
 
 	/* Enable Interrupt on change of link status */
-	FGmacWritePhyReg(&phy, PHY_INTERRUPT_ENABLE_OFFSET, reg_value);
+	FGmacWritePhyReg(gmac_ctrl, gmac_ctrl->phy_addr, PHY_INTERRUPT_ENABLE_OFFSET, reg_value);
 
-	/* Read Register Configuration */
-	FGmacReadPhyReg(&phy, PHY_INTERRUPT_ENABLE_OFFSET, &reg_value);
-	
 #endif /* LWIP_ARP || LWIP_ETHERNET */
 
-	LWIP_DEBUGF(NETIF_DEBUG, ("init success\n"));
-	return;
+	return ERR_OK;
 }
 
 /**
@@ -379,24 +357,32 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p)
         ETHNETIF_DEBUG_I(" error Buffer is 0 \r\n");
 		    return ERR_VAL;
 	    }
-	}
+  }
 
     /* Copy the remaining bytes */
     memcpy((u8 *)((u8 *)buffer + buffer_offset), (u8 *)((u8 *)q->payload + pay_load_offset), bytes_left_to_copy);
     buffer_offset = buffer_offset + bytes_left_to_copy;
     frame_length = frame_length + bytes_left_to_copy;
     FGMAC_DMA_INC_DESC(gmac->tx_ring.desc_buf_idx, gmac->tx_ring.desc_max_num);
+
   }
 
 #if ETH_PAD_SIZE
   pbuf_header(p, ETH_PAD_SIZE); /* reclaim the padding word */
 #endif
 
-  FGmacSendFrame(gmac, frame_length);
+  FError ret = FGmacSendFrame(gmac, frame_length);
+
+  if (ret != FGMAC_SUCCESS)
+  {
+    errval = ERR_USE;
+    ETHNETIF_DEBUG_I("error errval = ERR_USE; FGmacSendFrame\r\n");
+    goto error;
+  }
   
 error:
   FGmacResmuDmaUnderflow(gmac->config.base_addr);
-  
+
   return errval;
 }
 
@@ -439,7 +425,6 @@ static struct pbuf *low_level_input(struct netif *netif)
   length = (gmac->rx_desc[desc_buffer_index].status & FGMAC_DMA_RDES0_FRAME_LEN_MASK) >> FGMAC_DMA_RDES0_FRAME_LEN_SHIFT;
   buffer = (u8 *)(intptr)(gmac->rx_desc[desc_buffer_index].buf_addr);
 
-  
 #if ETH_PAD_SIZE
   length += ETH_PAD_SIZE; /* allow room for Ethernet padding */
 #endif
@@ -448,7 +433,6 @@ static struct pbuf *low_level_input(struct netif *netif)
   {
 	  /* We allocate a pbuf chain of pbufs from the Lwip buffer pool */
 	  p = pbuf_alloc(PBUF_RAW, length, PBUF_POOL);
-
   }
 
 #ifdef RAW_DATA_PRINT
@@ -510,8 +494,9 @@ static struct pbuf *low_level_input(struct netif *netif)
 
   /* Sync index */
   gmac->rx_ring.desc_buf_idx = gmac->rx_ring.desc_idx;
-
+  
   FGmacResumeDmaRecv(gmac->config.base_addr);
+
   return p;
 }
 
@@ -533,10 +518,8 @@ void ethernetif_input(void const *argument)
 
   for (;;)
   {
-	  
    if (xSemaphoreTake(os_gmac_ptr->s_semaphore, TIME_WAITING_FOR_INPUT) == pdTRUE)
     {
-
       do
       {
         LOCK_TCPIP_CORE();
@@ -549,17 +532,9 @@ void ethernetif_input(void const *argument)
           }
         }
         UNLOCK_TCPIP_CORE();
-	  } while (p != NULL);
+	    } while (p != NULL);
     }
   }
-}
-
-
-static void arp_timer(void *arg)
-{
-	(void)arg;
-	etharp_tmr();
-	sys_timeout(ARP_TMR_INTERVAL, arp_timer, NULL);
 }
 
 #if !LWIP_ARP
@@ -594,9 +569,11 @@ static err_t low_level_output_arp_off(struct netif *netif, struct pbuf *q, const
 err_t ethernetif_init(struct netif *netif)
 {
 	LWIP_ASSERT("netif != NULL", (netif != NULL));
+  err_t ret = ERR_OK;
+  u32 gmac_id = (u32)(uintptr)netif->state;
 
-	memset(&netifctrl, 0, sizeof(netifctrl));
-
+  memset(&netif_config_instance[gmac_id], 0, sizeof(netif_config_instance[gmac_id]));
+  printf("&netif_config_instance[gmac_id] = %#x\n", &netif_config_instance[gmac_id]);
 	LWIP_DEBUGF(NETIF_DEBUG, ("*******start init eth\n"));
 
 #if LWIP_NETIF_HOSTNAME
@@ -604,9 +581,8 @@ err_t ethernetif_init(struct netif *netif)
   	netif->hostname = "lwip";
 #endif /* LWIP_NETIF_HOSTNAME */
 
-	netif->state = &netifctrl; // 通过state将ethernetif结构传递到上层
-  	netif->name[0] = IFNAME0;
-  	netif->name[1] = IFNAME1;
+	netif->state = &netif_config_instance[gmac_id].netifctrl; // 通过state将ethernetif结构传递到上层
+
 	/* We directly use etharp_output() here to save a function call.
 	* You can instead declare your own function an call etharp_output()
 	* from it if you have to do some checks before sending (e.g. if link
@@ -628,12 +604,11 @@ err_t ethernetif_init(struct netif *netif)
 #endif /* LWIP_IPV6 */
 
 	netif->linkoutput = low_level_output;
-	/* initialize the hardware */
-	netifctrl.ethctrl = &gctrl;
-	low_level_init(netif);
-	netifctrl.ethaddr = (struct eth_addr *) &(netif->hwaddr[0]);
 
-	return ERR_OK;
+	/* initialize the hardware */  
+  ret = low_level_init(netif);
+
+	return ret;
 }
 
 /**
@@ -643,17 +618,6 @@ err_t ethernetif_init(struct netif *netif)
 * @retval Time
 */
 u32_t sys_jiffies(void)
-{
-	return GenericGetTick();
-}
-
-/**
-* @brief  Returns the current time in milliseconds
-*         when LWIP_TIMERS == 1 and NO_SYS == 1
-* @param  None
-* @retval Time
-*/
-u32_t sys_now(void)
 {
 	return GenericGetTick();
 }

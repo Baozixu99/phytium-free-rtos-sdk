@@ -480,6 +480,13 @@ netif_do_set_ipaddr(struct netif *netif, const ip4_addr_t *ipaddr, ip_addr_t *ol
 
     netif_issue_reports(netif, NETIF_REPORT_TYPE_IPV4);
 
+    LWIP_DEBUGF(NETIF_DEBUG | LWIP_DBG_TRACE | LWIP_DBG_STATE, ("netif: ip address of interface %c%c set to %" U16_F ".%" U16_F ".%" U16_F ".%" U16_F "\n",
+                                                                netif->name[0], netif->name[1],
+                                                                ip4_addr1_16(netif_ip_addr4(netif)),
+                                                                ip4_addr2_16(netif_ip_addr4(netif)),
+                                                                ip4_addr3_16(netif_ip_addr4(netif)),
+                                                                ip4_addr4_16(netif_ip_addr4(netif))));
+
     NETIF_STATUS_CALLBACK(netif);
     return 1; /* address changed */
   }

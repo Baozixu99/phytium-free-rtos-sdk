@@ -34,6 +34,7 @@
 #include "fgmac_phy.h"
 #include "parameters.h"
 #include "lwip/netif.h"
+#include "ethernetif.h"
 
 #define FT_OS_GMAC0_ID GMAC_INSTANCE_0
 #define FT_OS_GMAC1_ID GMAC_INSTANCE_1
@@ -45,20 +46,19 @@
   * @{
   */
 
-#define GMAC_RX_DESCNUM     1024U
-#define GMAC_TX_DESCNUM     1024U
+
 
 #define GMAC_MTU            1500U
 
 /* Common PHY Registers (AR8035) */
 #define PHY_INTERRUPT_ENABLE_OFFSET ((u16)0x12)
-#define PHY_INTERRUPT_ENABLE_LINK_FAIL 0x00000800U  /* Link fail interrupt, 0  Interrupt disable , 1 Interrupt enable */
+#define PHY_INTERRUPT_ENABLE_LINK_FAIL BIT(11)  /* Link fail interrupt, 0  Interrupt disable , 1 Interrupt enable */
 
 struct Ipv4Address
 {
-    u8 Ip_Address[4];
-    u8 Netmask_Address[4];
-    u8 GateWay_Address[4];
+    u8 ip_address[4];
+    u8 netmask_address[4];
+    u8 gateWay_address[4];
 };
 
 struct GmacThread
@@ -89,8 +89,10 @@ typedef struct
     SemaphoreHandle_t s_semaphore;    /*   Semaphore to signal incoming packets */
     EventGroupHandle_t s_status_event; /* Event Group to show netif's status ,follow FT_NETIF_XX*/
 } FtOsGmac;
+
+
 void FtOsGmacObjectInit(FtOsGmac *os_gmac, FtOsGmacConfig *config);
-void FtOsGmacInit(FtOsGmac *os_gmac, FGmacPhy *phy_p);
+FError FtOsGmacInit(FtOsGmac *os_gmac, netif_config *netif_config_p);
 void FtOsGmacStart(FtOsGmac *os_gmac);
 void FtOsGmacStop(FtOsGmac *os_gmac);
 int FtOsGmacSetupInterrupt(FGmac *instance_p);

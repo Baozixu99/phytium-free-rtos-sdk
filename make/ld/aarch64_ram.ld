@@ -12,6 +12,7 @@ SECTIONS
 {
     .text : {
         KEEP (*(.vectors))
+        KEEP (*(.freertos_vectors))
         *(.boot)
         *(.text)
         *(.text.*)
@@ -157,6 +158,12 @@ SECTIONS
         HeapLimit = .;
     } > RAM
 
+    .fpu_stack(NOLOAD):{
+        . = ALIGN(64);
+        _fpu_stack_end = .;
+        . += CONFIG_FPU_STACK_SIZE;
+        __fpu_stack = .;
+    } > RAM
 
     .stack (NOLOAD) : {
         . = ALIGN(64);

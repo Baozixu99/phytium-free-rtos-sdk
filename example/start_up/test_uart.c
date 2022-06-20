@@ -24,7 +24,6 @@
 #include <stdio.h>
 #include "ft_types.h"
 #include "fpl011.h"
-#include "gicv3.h"
 #include "interrupt.h"
 
 static FPl011 pl011_obj;

@@ -1,11 +1,11 @@
 
 menu  "Compiler Options"
 
-config DON_T_BINARY_OUTPUT
-    bool "Don't output *.bin file"
-        default y
+config OUTPUT_BINARY
+    bool "Build *.bin as Ouput"
+        default n
         help
-            Don't  create output bin by binary  
+            Build binary files *.bin as Outputs 
 
 endmenu
 

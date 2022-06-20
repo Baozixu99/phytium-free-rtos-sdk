@@ -29,7 +29,7 @@
 #include "queue.h"
 #include "ft_types.h"
 #include "ft_assert.h"
-#include "gicv3.h"
+
 #include "generic_timer.h"
 #include "interrupt.h"
 #include "parameters.h"

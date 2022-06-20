@@ -27,19 +27,19 @@
 #include <semphr.h>
 #include <string.h>
 #include <stdio.h>
-
 #include "ft_os_gmac.h"
 #include "fgmac.h"
 #include "ft_assert.h"
 #include "ft_io.h"
 #include "ft_assert.h"
-#include "gicv3.h"
 #include "interrupt.h"
 #include "list.h"
+#include "cpu_info.h"
 #include "ft_debug.h"
 
 #define OS_MAC_DEBUG_TAG "OS_MAC"
 
+#define OS_MAC_DEBUG_D(format, ...) FT_DEBUG_PRINT_D(OS_MAC_DEBUG_TAG, format, ##__VA_ARGS__)
 #define OS_MAC_DEBUG_I(format, ...) FT_DEBUG_PRINT_I(OS_MAC_DEBUG_TAG, format, ##__VA_ARGS__)
 #define OS_MAC_DEBUG_E(format, ...) FT_DEBUG_PRINT_E(OS_MAC_DEBUG_TAG, format, ##__VA_ARGS__)
 #define OS_MAC_DEBUG_W(format, ...) FT_DEBUG_PRINT_W(OS_MAC_DEBUG_TAG, format, ##__VA_ARGS__)
@@ -47,6 +47,7 @@
 #define FT_OS_GMACOBJECT_READLY 0x58
 
 static boolean rx_data_flag = FALSE;
+static FGmacConfig gmac_config;
 
 static void EthLinkPhyStatusChecker(void *param)
 {
@@ -54,10 +55,11 @@ static void EthLinkPhyStatusChecker(void *param)
     FGmac *instance_p = (FGmac *)param;
     uintptr base_addr = instance_p->config.base_addr;
 
-    u32 phy_status = FGMAC_READ_REG32(base_addr, FGMAC_MAC_PHY_STATUS);
+    u32 status = FGMAC_READ_REG32(base_addr, FGMAC_MAC_PHY_STATUS);
 
-    if (FGMAC_RGSMIIIS_LNKSTS_UP == (FGMAC_RGSMIIIS_LNKSTS & phy_status))
+    if (FGMAC_RGSMIIIS_LNKSTS_UP == (FGMAC_RGSMIIIS_LNKSTS & status))
     {
+        FGmacPhyCfgInitialize(instance_p);
         OS_MAC_DEBUG_I("link is up");
     }
     else
@@ -162,11 +164,8 @@ void EthLinkStatusChecker(void *param)
     }
     else
     {
-        OS_MAC_DEBUG_I("link is down");
+        OS_MAC_DEBUG_I("link is down ---");
     }
-
-    (void)speed;
-    (void)duplex;
 }
 
 static void EthLinkRecvDoneCallback(void *param)
@@ -200,11 +199,23 @@ int FtOsGmacSetupInterrupt(FGmac *instance_p)
     FGmacConfig *config_p = &instance_p->config;
     uintptr base_addr = config_p->base_addr;
     u32 irq_num = config_p->irq_num;
-    u32 irq_priority = (0x8 << 4) + 4 * 16;
+    u32 cpu_id;
+
+    u32 irq_priority = (config_p->irq_prority);
+    
+    if(irq_priority < (configMAX_API_CALL_INTERRUPT_PRIORITY))
+    {
+        OS_MAC_DEBUG_E("gmac irq priority is not applicable, you need set value below configMAX_API_CALL_INTERRUPT_PRIORITY!!!");
+        FASSERT(0);
+    }
+
+    /* gic initialize */
+    GetCpuId(&cpu_id);
+    InterruptSetTargetCpus(irq_num, cpu_id);
 
     /* disable all gmac & dma intr */
-    FGmacSetInterruptMask(instance_p, FGMAC_CTRL_INTR, FGMAC_ISR_MASK_ALL_BITS, FALSE);
-    FGmacSetInterruptMask(instance_p, FGMAC_DMA_INTR, FGMAC_DMA_INTR_ENA_ALL_MASK, FALSE);
+    FGmacSetInterruptMask(instance_p, FGMAC_CTRL_INTR, FGMAC_ISR_MASK_ALL_BITS);
+    FGmacSetInterruptMask(instance_p, FGMAC_DMA_INTR, FGMAC_DMA_INTR_ENA_ALL_MASK);
 
     InterruptSetPriority(irq_num, irq_priority);
     InterruptInstall(irq_num, FGmacInterruptHandler, instance_p, "GMAC-IRQ");
@@ -219,9 +230,9 @@ int FtOsGmacSetupInterrupt(FGmac *instance_p)
     InterruptUmask(irq_num);
 
     /* enable some interrupts */
-    FGmacSetInterruptMask(instance_p, FGMAC_CTRL_INTR, FGMAC_ISR_MASK_RSIM, TRUE);
-    FGmacSetInterruptMask(instance_p, FGMAC_DMA_INTR,  FGMAC_DMA_INTR_ENA_NIE | FGMAC_DMA_INTR_ENA_RIE\
-                    /*FGMAC_DMA_INTR_ENA_ALL_MASK*/, TRUE);
+    FGmacSetInterruptUmask(instance_p, FGMAC_CTRL_INTR, FGMAC_ISR_MASK_RSIM);
+    FGmacSetInterruptUmask(instance_p, FGMAC_DMA_INTR, 
+							FGMAC_DMA_INTR_ENA_NIE | FGMAC_DMA_INTR_ENA_RIE | FGMAC_DMA_INTR_ENA_AIE);
 
     OS_MAC_DEBUG_I("gmac setup done");
     return 0;
@@ -235,36 +246,32 @@ int FtOsGmacSetupInterrupt(FGmac *instance_p)
  * @return {*}
  */
 
-static u8 rx_buf[GMAC_RX_DESCNUM * GMAC_MAX_PACKET_SIZE] __attribute__((aligned(32)));
-static u8 tx_buf[GMAC_TX_DESCNUM * GMAC_MAX_PACKET_SIZE] __attribute__((aligned(32)));
-static u8 tx_desc[GMAC_TX_DESCNUM * sizeof(FGmacDmaDesc)] __attribute__((aligned(128)));
-static u8 rx_desc[GMAC_RX_DESCNUM * sizeof(FGmacDmaDesc) + 128] __attribute__((aligned(128)));
-
-static void FtOsGmacMemCreate(FtOsGmac *os_gmac)
+static void FtOsGmacMemCreate(FtOsGmac *os_gmac, netif_config *netif_config_p)
 {
     FASSERT(os_gmac != NULL);
-    os_gmac->rx_buffer = rx_buf;
+    
+    os_gmac->rx_buffer = netif_config_p->rx_buf;
     if (os_gmac->rx_buffer == NULL)
     {
         OS_MAC_DEBUG_E("Rxbuffer Malloc is error ");
         FASSERT(0);
     }
 
-    os_gmac->tx_buffer = tx_buf;
+    os_gmac->tx_buffer = netif_config_p->tx_buf;
     if (os_gmac->tx_buffer == NULL)
     {
         OS_MAC_DEBUG_E("Txbuffer Malloc is error ");
         FASSERT(0);
     }
 
-    os_gmac->gmac.tx_desc = (FGmacDmaDesc *)tx_desc;
+    os_gmac->gmac.tx_desc = (FGmacDmaDesc *)netif_config_p->tx_desc;
     if (os_gmac->gmac.tx_desc == NULL)
     {
         OS_MAC_DEBUG_E("tx_desc Malloc is error ");
         FASSERT(0);
     }
 
-    os_gmac->gmac.rx_desc = (FGmacDmaDesc *)rx_desc;
+    os_gmac->gmac.rx_desc = (FGmacDmaDesc *)netif_config_p->rx_desc;
     if (os_gmac->gmac.rx_desc == NULL)
     {
         OS_MAC_DEBUG_E("rx_desc Malloc is error ");
@@ -325,30 +332,57 @@ void FtOsGmacObjectInit(FtOsGmac *os_gmac, FtOsGmacConfig *config)
  * @return {*}
  */
 
-void FtOsGmacInit(FtOsGmac *os_gmac, FGmacPhy *phy_p)
+FError FtOsGmacInit(FtOsGmac *os_gmac, netif_config *netif_config_p)
 {
-    
     FASSERT(os_gmac != NULL);
-    FASSERT(phy_p != NULL);
-    FASSERT((os_gmac->is_ready == FT_OS_GMACOBJECT_READLY));
-
+    FASSERT(os_gmac->is_ready == FT_OS_GMACOBJECT_READLY);
+    const FGmacConfig *def_config_p = NULL;
     FGmac *gmac;
+    FError ret = FGMAC_SUCCESS;
     gmac = &os_gmac->gmac;
-    FtOsGmacMemFree(os_gmac);
-
-    FASSERT(FGmacCfgInitialize(gmac, FGmacLookupConfig(gmac->config.instance_id)) == FT_SUCCESS);
     
-    FtOsGmacMemCreate(os_gmac);
+    FtOsGmacMemFree(os_gmac);
+    
+    memset(gmac, 0U, sizeof(FGmac));
+	def_config_p = FGmacLookupConfig(os_gmac->config.gmac_instance);
+	if(NULL == def_config_p)
+    {
+        OS_MAC_DEBUG_E("gmac lookup cfg failed ");
+        return FGMAC_ERR_FAILED;
+    }
+    
+	gmac_config = *def_config_p;
+	gmac_config.speed = FGMAC_PHY_SPEED_1000;
+    gmac_config.mdc_clk_hz = FGMAC_PHY_MII_ADDR_CR_250_300MHZ;
+    gmac_config.en_auto_negtiation = TRUE;
+    gmac_config.duplex_mode = FGMAC_PHY_MODE_FULLDUPLEX;
+
+#ifdef CONFIG_GMAC_IRQ_PRIORITY
+    gmac_config.irq_prority = CONFIG_GMAC_IRQ_PRIORITY;
+#else
+    gmac_config.irq_prority = IRQ_PRIORITY_VALUE_12;
+#endif
+
+    /* initialize gmac */
+	ret = FGmacCfgInitialize(gmac, &gmac_config);
+    if(FGMAC_SUCCESS != ret)
+    {
+        OS_MAC_DEBUG_E("gmac cfg init failed ");
+        os_gmac->is_ready = 0;
+        return FGMAC_ERR_FAILED;
+    }
+
+    FtOsGmacMemCreate(os_gmac, netif_config_p);
 
     /* initialize phy */
-    memset(phy_p, 0U, sizeof(FGmacPhy));
-    FGmacPhyLookupConfig(gmac->config.instance_id, phy_p);
-    FASSERT(FGmacPhyCfgInitialize(phy_p) == FT_SUCCESS);
+    ret = FGmacPhyCfgInitialize(gmac);
+    if(FGMAC_SUCCESS != ret)
+    {
+        OS_MAC_DEBUG_E("gmac phy cfg init failed ");
+        return FGMAC_ERR_PHY_AUTO_FAILED;
+    }
 
-    /* Create a binary semaphore used for informing ethernetif of frame reception */
-    FASSERT((os_gmac->s_semaphore = xSemaphoreCreateBinary()) != NULL);
-    /* Create a event group used for ethernetif of status change */
-    FASSERT((os_gmac->s_status_event = xEventGroupCreate()) != NULL);
+    return ret;
 }
 
 /**
@@ -366,18 +400,22 @@ void FtOsGmacStart(FtOsGmac *os_gmac)
     FGmac *gmac;
     gmac = &os_gmac->gmac;
     u32 ret = FT_SUCCESS;
-
+    
+    /* Initialize Rx Description list : ring Mode */
+    ret = FGmacSetupRxDescRing(gmac, (FGmacDmaDesc *)(gmac->rx_desc), os_gmac->rx_buffer, GMAC_MAX_PACKET_SIZE, GMAC_RX_DESCNUM);
     if (FT_SUCCESS != ret)
     {
-        OS_MAC_DEBUG_E("gmac return err code %d\r\n", ret);
+        OS_MAC_DEBUG_E("gmac setup rx return err code %d\r\n", ret);
         FASSERT(FT_SUCCESS == ret);
     }
 
-    /* Initialize Rx Description list : ring Mode */
-    FGmacSetupRxDescRing(gmac, (FGmacDmaDesc *)(gmac->rx_desc), os_gmac->rx_buffer, GMAC_MAX_PACKET_SIZE, GMAC_RX_DESCNUM);
-
     /* Initialize Tx Description list : ring Mode */
-    FGmacSetupTxDescRing(gmac, (FGmacDmaDesc *)(gmac->tx_desc), os_gmac->tx_buffer, GMAC_MAX_PACKET_SIZE, GMAC_TX_DESCNUM);
+    ret = FGmacSetupTxDescRing(gmac, (FGmacDmaDesc *)(gmac->tx_desc), os_gmac->tx_buffer, GMAC_MAX_PACKET_SIZE, GMAC_TX_DESCNUM);
+    if (FT_SUCCESS != ret)
+    {
+        OS_MAC_DEBUG_E("gmac setup tx return err code %d\r\n", ret);
+        FASSERT(FT_SUCCESS == ret);
+    }
 
     /* enable gmac */
     FGmacStartTrans(gmac);
@@ -395,4 +433,13 @@ void FtOsGmacStop(FtOsGmac *os_gmac)
     FASSERT(os_gmac != NULL);
     FASSERT((os_gmac->is_ready == FT_OS_GMACOBJECT_READLY));
     gmac = &os_gmac->gmac;
+
+    /* disable all gmac & dma intr */
+    FGmacSetInterruptMask(gmac, FGMAC_CTRL_INTR, FGMAC_ISR_MASK_ALL_BITS);
+    FGmacSetInterruptMask(gmac, FGMAC_DMA_INTR, FGMAC_DMA_INTR_ENA_ALL_MASK);
+
+    /* umask intr */
+    InterruptMask(gmac->config.irq_num);
+
+    FGmacStopTrans(gmac);
 }
