@@ -33,8 +33,7 @@
 
 - 目前支持在Windows和Linux上使用SDK，支持在x86_64和arm aarch64设备上完成交叉编译
 
-![windows](https://images.gitee.com/uploads/images/2021/1019/153036_3fab0761_8736513.png "windows.png =100x100")![linux](https://images.gitee.com/uploads/images/2021/1019/153045_651dfe45_8736513.png "linux.png")![输入图片说明](https://images.gitee.com/uploads/images/2021/1019/160938_5b34865e_8736513.png "屏幕截图.png")
-
+![windows](./docs/fig/windows.png)![linux](./docs/fig/linux.png)![输入图片说明](./docs/fig/kylin.png)
 
 - 参考如下说明搭建Phytium FreeRTOS SDK的软件环境
 

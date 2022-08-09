@@ -39,8 +39,8 @@
 *.hex
 *.bin
 *.dis
-app*
 *.rar
+*.asm
 
 # Debug files
 *.dSYM/

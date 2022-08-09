@@ -164,8 +164,38 @@ ifdef CONFIG_OUTPUT_BINARY
 	@echo Objcopying $@.bin
 	$(QUIET) $(OC) -v -O binary $@.elf $@.bin
 endif
-	$(QUIET) $(OD) -D $@.elf > $@.dis
-	@echo Done.
+	$(QUIET) $(OD) -D $@.elf > $@.asm
+	$(QUIET) $(OD) -S $@.elf > $@.dis
+
+ifdef CONFIG_TARGET_F2000_4
+	@echo "  FT2000_4_BOARD COMPLIE"
+endif
+
+ifdef CONFIG_TARGET_D2000
+	@echo "  D2000_BOARD COMPLIE"
+endif
+
+ifdef CONFIG_TARGET_E2000S
+	@echo "  E2000S_BOARD COMPLIE"
+endif
+
+ifdef CONFIG_TARGET_E2000D
+	@echo "  E2000D_BOARD COMPLIE"
+endif
+
+ifdef CONFIG_TARGET_E2000Q
+	@echo "  E2000Q_BOARD COMPLIE"
+endif
+
+ifdef CONFIG_TARGET_ARMV8_AARCH32
+	@echo "  AARCH32 CODE"
+endif
+
+ifdef CONFIG_TARGET_ARMV8_AARCH64
+	@echo "  AARCH64 CODE"
+endif
+
+	@echo "  SUCCESS !!!"
 
 
 
@@ -187,7 +217,7 @@ clean:
 	$(call RM_FILES,*.dis)
 	$(call RM_FILES,*.map)
 	$(call RM_FILES,*.tar.gz)
-
+	$(call RM_FILES,*.asm)
 
 # Make sure everything is rebuilt if this makefile is changed
 $(OBJ_FILES) $(APP): makefile

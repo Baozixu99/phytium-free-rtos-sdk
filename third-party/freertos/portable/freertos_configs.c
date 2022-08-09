@@ -28,9 +28,11 @@
 #include "generic_timer.h"
 #include "interrupt.h"
 #include <stdio.h>
+#include <stdarg.h>
 #include "cpu_info.h"
 #include "ft_assert.h"
 #include "exception.h"
+#include "f_printf.h"
 
 void vMainAssertCalled(const char *pcFileName, uint32_t ulLineNumber)
 {
@@ -53,10 +55,12 @@ void vApplicationTickHook(void)
 
 }
 
+/*
 void vApplicationIdleHook(void)
 {
 
 }
+*/
 
 u32 PlatformGetGicDistBase(void)
 {
@@ -177,3 +181,39 @@ void vApplicationGetTimerTaskMemory( StaticTask_t **ppxTimerTaskTCBBuffer, Stack
     configTIMER_TASK_STACK_DEPTH is specified in words, not bytes. */
   *pulTimerTaskStackSize = configTIMER_TASK_STACK_DEPTH;
 }
+
+void vPrintString( const char *pcString )
+{
+	/* Print the string, using a critical section as a crude method of mutual
+	exclusion. */
+	taskENTER_CRITICAL();
+	{
+		printf( "%s\r\n", pcString );
+	}
+	taskEXIT_CRITICAL();
+}
+
+void vPrintStringAndNumber( const char *pcString, uint32_t ulValue )
+{
+	/* Print the string, using a critical section as a crude method of mutual
+	exclusion. */
+	taskENTER_CRITICAL();
+	{
+		printf( "%s %lu\r\n", pcString, ulValue );
+	}
+	taskEXIT_CRITICAL();
+}
+
+void vPrintf(const char *format, ...)
+{
+	/* Print the string, using a critical section as a crude method of mutual exclusion. */
+	taskENTER_CRITICAL();
+	{
+    va_list args;
+    va_start(args, format);
+    vprintf(format, args);
+    va_end(args);
+  }
+	taskEXIT_CRITICAL();
+}
+

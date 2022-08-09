@@ -75,7 +75,6 @@
 #define configUSE_PORT_OPTIMISED_TASK_SELECTION 1
 #define configUSE_TICKLESS_IDLE 0
 #define configTICK_RATE_HZ ((TickType_t)1000)
-#define configPERIPHERAL_CLOCK_HZ (33333000UL)
 #define configUSE_PREEMPTION 1
 #define configUSE_IDLE_HOOK 1
 #define configUSE_TICK_HOOK 1
@@ -193,5 +192,9 @@ QEMU-Virt. */
 
 #define FreeRTOS_IRQ_Handler IRQInterruptHandler
 #define FreeRTOS_SWI_Handler SynchronousInterruptHandler
+
+void vPrintString(const char *pcString);
+void vPrintStringAndNumber(const char *pcString, uint32_t ulValue);
+void vPrintf(const char *format, ...);
 
 #endif /* FREERTOS_CONFIG_H */

@@ -3,6 +3,10 @@ menuconfig:
 	$(STANDALONE_DIR)/lib/Kconfiglib/menuconfig.py
 	$(STANDALONE_DIR)/lib/Kconfiglib/genconfig.py
 
+update_menuconfig:
+	$(STANDALONE_DIR)/lib/Kconfiglib/menuconfig_autosave.py
+	$(STANDALONE_DIR)/lib/Kconfiglib/genconfig.py
+
 genconfig:
 	$(STANDALONE_DIR)/lib/Kconfiglib/genconfig.py
 

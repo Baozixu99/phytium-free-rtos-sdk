@@ -86,7 +86,7 @@ os.system("chmod +x ./make/*.mk --silent ")
 os.system("chmod +x ./lib/Kconfiglib/*.py --silent ")
 
 # Add standalone sdk
-standalone_sdk_v="v0.2.0"
+standalone_sdk_v="v0.3.0"
 standalone_path=freertos_sdk_path  + '/standalone'
 standalone_branche="master"
 standalone_remote="https://gitee.com/phytium_embedded/phytium-standalone-sdk.git"
@@ -127,8 +127,8 @@ except Exception as ex:
 
 
 rm_line("### PHYTIUM FREERTOS SDK SETTING START",sdk_profile_path)
-rm_line("export FREERTOS_SDK_ROOT="+freertos_sdk_path,sdk_profile_path)
-rm_line("export FREERTOS_STANDALONE="+standalone_path,sdk_profile_path)
+rm_line("export FREERTOS_SDK_ROOT=",sdk_profile_path)
+rm_line("export FREERTOS_STANDALONE=",sdk_profile_path)
 rm_line("### PHYTIUM FREERTOS SDK SETTING END",sdk_profile_path)
 
 

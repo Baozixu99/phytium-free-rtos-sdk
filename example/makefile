@@ -2,10 +2,9 @@
 TOPTARGETS := all clean
 
 #SUBDIRS := $(wildcard */.)
-SUBDIRS := function_test \
+SUBDIRS := freertos_feature \
 		   hello_world \
 		   start_up \
-		   freertos_test \
 		   lwip_test \
 		   template
 

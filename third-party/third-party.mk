@@ -25,6 +25,7 @@ ifdef CONFIG_USE_LWIP
 SRC_DIR +=  $(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/api \
 			$(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/core \
 			$(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/core/ipv4 \
+			$(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/core/ipv6 \
 			$(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/netif
 
 INC_DIR += 	$(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/include \
@@ -49,11 +50,11 @@ endif
 ifdef CONFIG_LWIP_FXMAC
 INC_DIR +=  $(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/ports/fxmac \
 			$(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/ports/fxmac/arch \
-			$(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/ports
+			$(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/apps/ping
 
 SRC_DIR +=  $(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/ports/fxmac \
 			$(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/ports/fxmac/arch \
-			$(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/ports
+			$(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/apps/ping
 
 endif
 
@@ -109,6 +110,78 @@ ifdef CONFIG_USE_BACKTRACE
 	INC_DIR += $(THIRD_PARTY_CUR_DIR)/backtrace
 	SRC_DIR += $(THIRD_PARTY_CUR_DIR)/backtrace
 endif #CONFIG_USE_BACKTRACE
+
+
+ifdef CONFIG_USE_FATFS
+
+	INC_DIR += $(THIRD_PARTY_CUR_DIR)/fatfs-0.1.3
+	SRC_DIR += $(THIRD_PARTY_CUR_DIR)/fatfs-0.1.3
+
+	ifdef CONFIG_SELECT_FATFS_RAM_DISK
+		INC_DIR += $(THIRD_PARTY_CUR_DIR)/fatfs-0.1.3/port/ramdisk
+		SRC_DIR += $(THIRD_PARTY_CUR_DIR)/fatfs-0.1.3/port/ramdisk
+	endif
+
+	ifdef CONFIG_SELECT_FATFS_FSDMMC
+		INC_DIR += $(THIRD_PARTY_CUR_DIR)/fatfs-0.1.3/port/fsdmmc
+		SRC_DIR += $(THIRD_PARTY_CUR_DIR)/fatfs-0.1.3/port/fsdmmc
+	endif
+
+	ifdef CONFIG_SELECT_FATFS_FSATA
+		INC_DIR += $(THIRD_PARTY_CUR_DIR)/fatfs-0.1.3/port/fsata_pcie
+		SRC_DIR += $(THIRD_PARTY_CUR_DIR)/fatfs-0.1.3/port/fsata_pcie
+	endif
+	
+
+	ifdef CONFIG_SELECT_FATFS_USB
+		INC_DIR += $(THIRD_PARTY_CUR_DIR)/fatfs-0.1.3/port/fusb_pcie
+		SRC_DIR += $(THIRD_PARTY_CUR_DIR)/fatfs-0.1.3/port/fusb_pcie
+	endif
+endif #CONFIG_USE_FATFS
+
+
+ifdef CONFIG_USE_SFUD
+
+# $(shell export PATH=$(THIRD_PARTY_CUR_DIR)/sfud:$PATH)
+
+	INC_DIR +=  $(THIRD_PARTY_CUR_DIR)/sfud-1.1.0 \
+				$(THIRD_PARTY_CUR_DIR)/sfud-1.1.0/inc \
+				$(THIRD_PARTY_CUR_DIR)/sfud-1.1.0/ports
+	SRC_DIR +=  $(THIRD_PARTY_CUR_DIR)/sfud-1.1.0 \
+				$(THIRD_PARTY_CUR_DIR)/sfud-1.1.0/src \
+				$(THIRD_PARTY_CUR_DIR)/sfud-1.1.0/ports
+
+	ifdef CONFIG_SFUD_CTRL_FSPIM
+		INC_DIR += $(THIRD_PARTY_CUR_DIR)/sfud-1.1.0/ports/fspim
+		SRC_DIR += $(THIRD_PARTY_CUR_DIR)/sfud-1.1.0/ports/fspim	
+	endif
+
+	ifdef CONFIG_SFUD_CTRL_FQSPI
+		INC_DIR += $(THIRD_PARTY_CUR_DIR)/sfud-1.1.0/ports/fqspi
+		SRC_DIR += $(THIRD_PARTY_CUR_DIR)/sfud-1.1.0/ports/fqspi	
+	endif
+
+endif #CONFIG_USE_SFUD
+
+# spiffs
+ifdef CONFIG_USE_SPIFFS
+
+INC_DIR += $(THIRD_PARTY_CUR_DIR)/spiffs-0.3.7/inc \
+			$(THIRD_PARTY_CUR_DIR)/spiffs-0.3.7/ports
+SRC_DIR += $(THIRD_PARTY_CUR_DIR)/spiffs-0.3.7/src \
+			$(THIRD_PARTY_CUR_DIR)/spiffs-0.3.7/ports
+
+ifdef CONFIG_SPIFFS_ON_FSPIM_SFUD
+	INC_DIR += $(THIRD_PARTY_CUR_DIR)/spiffs-0.3.7/ports/fspim
+	SRC_DIR += $(THIRD_PARTY_CUR_DIR)/spiffs-0.3.7/ports/fspim
+endif #CONFIG_SPIFFS_ON_FSPIM_SFUD
+
+ifdef CONFIG_SPIFFS_ON_FQSPI_SFUD
+	INC_DIR += $(THIRD_PARTY_CUR_DIR)/spiffs-0.3.7/ports/fqspi
+	SRC_DIR += $(THIRD_PARTY_CUR_DIR)/spiffs-0.3.7/ports/fqspi
+endif #CONFIG_SPIFFS_ON_FSPIM_SFUD
+
+endif #CONFIG_USE_SPIFFS
 
 
 ifdef CONFIG_USE_LETTER_SHELL

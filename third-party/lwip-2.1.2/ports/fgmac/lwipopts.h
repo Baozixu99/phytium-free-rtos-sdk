@@ -134,7 +134,7 @@
 
 /* MEM_SIZE: the size of the heap memory. If the application will send
 a lot of data that needs to be copied, this should be set high. */
-#define MEM_SIZE               10240 // 最大可以分配的内存
+#define MEM_SIZE               ( 1024 * 1024)   // 最大可以分配的内存
 
 /* MEMP_NUM_PBUF: the number of memp struct pbufs. If the application
    sends a lot of data out of ROM (or other static memory), this
@@ -173,10 +173,10 @@ a lot of data that needs to be copied, this should be set high. */
 
 /* ---------- Pbuf options ---------- */
 /* PBUF_POOL_SIZE: the number of buffers in the pbuf pool. */
-#define PBUF_POOL_SIZE          400 /* pbuf tests need ~200KByte */ 
+#define PBUF_POOL_SIZE          (2 * 1024)  /* pbuf tests need ~200KByte */ 
 
 /* PBUF_POOL_BUFSIZE: the size of each pbuf in the pbuf pool. */
-#define PBUF_POOL_BUFSIZE       1600 //pbuf池中每个pbuf的大小 
+#define PBUF_POOL_BUFSIZE       (2 * 1024)  //pbuf池中每个pbuf的大小 
 
 /** SYS_LIGHTWEIGHT_PROT
  * define SYS_LIGHTWEIGHT_PROT in lwipopts.h if you want inter-task protection
@@ -251,6 +251,13 @@ a lot of data that needs to be copied, this should be set high. */
 #define LWIP_RAW                1
 
 #define LWIP_PROVIDE_ERRNO      1 //使用errno
+
+/** ETH_PAD_SIZE: number of bytes added before the ethernet header to ensure
+ * alignment of payload after that header. Since the header is 14 bytes long,
+ * without this padding e.g. addresses in the IP header will not be aligned
+ * on a 32-bit boundary, so setting this to 2 can speed up 32-bit-platforms.
+ */
+#define ETH_PAD_SIZE                    0
 
 
 /* The following defines must be done even in OPTTEST mode: */

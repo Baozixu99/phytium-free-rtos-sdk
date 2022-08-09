@@ -33,7 +33,7 @@
 #include "sdkconfig.h"
 #include "ft_debug.h"
 #include "interrupt.h"
-#include "stdio.h"
+#include <stdio.h>
 #include "mmu.h"
 #include "ft_types.h"
 #include "cpu_info.h"

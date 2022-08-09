@@ -24,7 +24,7 @@
 
 #include <metal/sys.h>
 #include "platform_info.h"
-#include "stdio.h"
+#include <stdio.h>
 #include "cache.h"
 #include <stdarg.h> 
 

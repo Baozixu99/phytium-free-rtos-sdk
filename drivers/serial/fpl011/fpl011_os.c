@@ -31,11 +31,7 @@
 #include "cpu_info.h"
 #include <stdio.h>
 
-#ifdef CONFIG_FREERTOS_USE_UART
 /* Callback events  */
-
-
-
 static void FPl011IrqClearReciveTimeOut(FPl011 *uart_p)
 {
     u32 reg_temp;
@@ -105,8 +101,11 @@ void FtFreertosUartInit(FtFreertosUart *uart_p, FtFreertosUartConfig *config_p)
     bsp_uart_p = &uart_p->bsp_uart;
     uart_p->config = *config_p;
     driver_config = *FPl011LookupConfig(config_p->uart_instance);
+    
+    driver_config.baudrate = config_p->uart_baudrate;
     ret = FPl011CfgInitialize(bsp_uart_p, &driver_config);
     FASSERT(FT_SUCCESS == ret);
+
     FPl011SetHandler(bsp_uart_p, FtFreeRtosUartCallback, uart_p);
     FASSERT((uart_p->rx_semaphore = xSemaphoreCreateMutex()) != NULL);
     FASSERT((uart_p->tx_semaphore = xSemaphoreCreateMutex()) != NULL);
@@ -248,6 +247,3 @@ FError FtFreertosUartBlcokingSend(FtFreertosUart *uart_p, u8 *buffer, u32 length
 
     return ret;
 }
-
-
-#endif

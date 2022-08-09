@@ -16,6 +16,38 @@ config USE_BACKTRACE
     prompt "Display a backtrace."
     default y
 
+config USE_FATFS
+    bool
+    prompt "Use FATFS"
+    default n
+    help
+        Include FATFS
+
+    if USE_FATFS
+        source "$(FREERTOS_SDK_ROOT)/third-party/fatfs-0.1.3/Kconfig"
+    endif
+
+config USE_SFUD
+    bool
+    prompt "Use SFUD(Spi Flash Library)"
+    default n
+    help
+        Include JEDEC SFDP standard serial (SPI) flash universal driver library
+
+    if USE_SFUD
+        source "$(FREERTOS_SDK_ROOT)/third-party/sfud-1.1.0/Kconfig"
+    endif
+
+config USE_SPIFFS
+    bool
+    default n
+    prompt "Use Spiffs"
+    help
+        Include Spiffs as SPI Flash File System
+
+    if USE_SPIFFS
+        source "$(FREERTOS_SDK_ROOT)/third-party/spiffs-0.3.7/Kconfig"
+    endif
 
 
 config USE_AMP

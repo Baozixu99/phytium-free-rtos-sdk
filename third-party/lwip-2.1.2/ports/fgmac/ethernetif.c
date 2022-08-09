@@ -42,6 +42,10 @@
 #include "sdkconfig.h"
 #include "parameters.h"
 
+#if LWIP_IPV6
+#include "lwip/ethip6.h"
+#endif
+
 #include "ft_os_gmac.h"
 #include "fgmac.h"
 #include "fgmac_hw.h"
@@ -288,102 +292,101 @@ static err_t low_level_init(struct netif *netif)
 
 static err_t low_level_output(struct netif *netif, struct pbuf *p)
 {
-  err_t errval;
-  struct pbuf *q;
-  u8 *buffer = NULL;
-  volatile FGmacDmaDesc *dma_tx_desc;
-  u32 frame_length = 0;
-  u32 buffer_offset = 0;
-  u32 bytes_left_to_copy = 0;
-  u32 pay_load_offset = 0;
+	err_t errval = ERR_OK;
+	struct pbuf *q;
+	u8 *buffer = NULL;
+	volatile FGmacDmaDesc *dma_tx_desc;
+	u32 frame_length = 0;
+	u32 buffer_offset = 0;
+	u32 bytes_left_to_copy = 0;
+	u32 pay_load_offset = 0;
 
-  FGmac *gmac;
-  FtOsGmac *os_gmac;
-  os_gmac = (FtOsGmac *)container_of(netif, FtOsGmac, netif_object);
-  gmac = &os_gmac->gmac;
-  dma_tx_desc = &gmac->tx_desc[gmac->tx_ring.desc_buf_idx];
-  buffer = (u8 *)(intptr)(dma_tx_desc->buf_addr);
+	FGmac *gmac;
+	FtOsGmac *os_gmac;
+	os_gmac = (FtOsGmac *)container_of(netif, FtOsGmac, netif_object);
+	gmac = &os_gmac->gmac;
+	dma_tx_desc = &gmac->tx_desc[gmac->tx_ring.desc_buf_idx];
+	buffer = (u8 *)(intptr)(dma_tx_desc->buf_addr);
 
-  if (buffer == NULL)
-  {
-    ETHNETIF_DEBUG_I(" error buffer is 0 \r\n");
-    return ERR_VAL;
-  }
-
-#if ETH_PAD_SIZE
-  pbuf_header(p, -ETH_PAD_SIZE); /* drop the padding word */
-#endif
-
-  for (q = p; q != NULL; q = q->next)
-  {
-    /* Is this buffer available? If not, goto error */
-    if ((dma_tx_desc->status & FGMAC_DMA_TDES0_OWN) != 0)
-    {
-      errval = ERR_USE;
-      ETHNETIF_DEBUG_I("error errval = ERR_USE; \r\n");
-      goto error;
-    }
-
-    /* Get bytes in current lwIP buffer */
-
-    bytes_left_to_copy = q->len;
-    pay_load_offset = 0;
-
-    /* Check if the length of data to copy is bigger than Tx buffer size*/
-    while ((bytes_left_to_copy + buffer_offset) > GMAC_MAX_PACKET_SIZE)
-    {
-      /* Copy data to Tx buffer*/
-      memcpy((u8 *)((u8 *)buffer + buffer_offset), (u8 *)((u8 *)q->payload + pay_load_offset), (GMAC_MAX_PACKET_SIZE - buffer_offset));
-      FGMAC_DMA_INC_DESC(gmac->tx_ring.desc_buf_idx, gmac->tx_ring.desc_max_num);
-      /* Point to next descriptor */
-      dma_tx_desc = &gmac->tx_desc[gmac->tx_ring.desc_buf_idx];
-
-      /* Check if the Bufferis available */
-      if ((dma_tx_desc->status & FGMAC_DMA_TDES0_OWN) != (u32)0)
-      {
-        errval = ERR_USE;
-        ETHNETIF_DEBUG_I("Check if the Bufferis available \r\n");
-        goto error;
-      }
-
-      buffer = (u8 *)(intptr)(dma_tx_desc->buf_addr);
-      bytes_left_to_copy = bytes_left_to_copy - (GMAC_MAX_PACKET_SIZE - buffer_offset);
-      pay_load_offset = pay_load_offset + (GMAC_MAX_PACKET_SIZE - buffer_offset);
-      frame_length = frame_length + (GMAC_MAX_PACKET_SIZE - buffer_offset);
-      buffer_offset = 0;
-
-      if (buffer == NULL)
-      {
-        ETHNETIF_DEBUG_I(" error Buffer is 0 \r\n");
-		    return ERR_VAL;
-	    }
-  }
-
-    /* Copy the remaining bytes */
-    memcpy((u8 *)((u8 *)buffer + buffer_offset), (u8 *)((u8 *)q->payload + pay_load_offset), bytes_left_to_copy);
-    buffer_offset = buffer_offset + bytes_left_to_copy;
-    frame_length = frame_length + bytes_left_to_copy;
-    FGMAC_DMA_INC_DESC(gmac->tx_ring.desc_buf_idx, gmac->tx_ring.desc_max_num);
-
-  }
+	if (buffer == NULL)
+	{
+		ETHNETIF_DEBUG_I(" error buffer is 0 \r\n");
+		return ERR_VAL;
+	}
 
 #if ETH_PAD_SIZE
-  pbuf_header(p, ETH_PAD_SIZE); /* reclaim the padding word */
+  	pbuf_header(p, -ETH_PAD_SIZE); /* drop the padding word */
 #endif
 
-  FError ret = FGmacSendFrame(gmac, frame_length);
+	for (q = p; q != NULL; q = q->next)
+	{
+		/* Is this buffer available? If not, goto error */
+		if ((dma_tx_desc->status & FGMAC_DMA_TDES0_OWN) != 0)
+		{
+			errval = ERR_USE;
+			ETHNETIF_DEBUG_I("error errval = ERR_USE; \r\n");
+			goto error;
+		}
 
-  if (ret != FGMAC_SUCCESS)
-  {
-    errval = ERR_USE;
-    ETHNETIF_DEBUG_I("error errval = ERR_USE; FGmacSendFrame\r\n");
-    goto error;
+		/* Get bytes in current lwIP buffer */
+		bytes_left_to_copy = q->len;
+		pay_load_offset = 0;
+
+		/* Check if the length of data to copy is bigger than Tx buffer size*/
+		while ((bytes_left_to_copy + buffer_offset) > GMAC_MAX_PACKET_SIZE)
+		{
+			/* Copy data to Tx buffer*/
+			memcpy((u8 *)((u8 *)buffer + buffer_offset), (u8 *)((u8 *)q->payload + pay_load_offset), (GMAC_MAX_PACKET_SIZE - buffer_offset));
+			FGMAC_DMA_INC_DESC(gmac->tx_ring.desc_buf_idx, gmac->tx_ring.desc_max_num);
+			/* Point to next descriptor */
+			dma_tx_desc = &gmac->tx_desc[gmac->tx_ring.desc_buf_idx];
+
+			/* Check if the Bufferis available */
+			if ((dma_tx_desc->status & FGMAC_DMA_TDES0_OWN) != (u32)0)
+			{
+				errval = ERR_USE;
+				ETHNETIF_DEBUG_I("Check if the Bufferis available \r\n");
+				goto error;
+			}
+
+			buffer = (u8 *)(intptr)(dma_tx_desc->buf_addr);
+			bytes_left_to_copy = bytes_left_to_copy - (GMAC_MAX_PACKET_SIZE - buffer_offset);
+			pay_load_offset = pay_load_offset + (GMAC_MAX_PACKET_SIZE - buffer_offset);
+			frame_length = frame_length + (GMAC_MAX_PACKET_SIZE - buffer_offset);
+			buffer_offset = 0;
+
+			if (buffer == NULL)
+			{
+			ETHNETIF_DEBUG_I(" error Buffer is 0 \r\n");
+				return ERR_VAL;
+			}
+		}
+
+		/* Copy the remaining bytes */
+		memcpy((u8 *)((u8 *)buffer + buffer_offset), (u8 *)((u8 *)q->payload + pay_load_offset), bytes_left_to_copy);
+		buffer_offset = buffer_offset + bytes_left_to_copy;
+		frame_length = frame_length + bytes_left_to_copy;
   }
+
+	FGMAC_DMA_INC_DESC(gmac->tx_ring.desc_buf_idx, gmac->tx_ring.desc_max_num);
+
+#if ETH_PAD_SIZE
+	pbuf_header(p, ETH_PAD_SIZE); /* reclaim the padding word */
+#endif
+
+	FError ret = FGmacSendFrame(gmac, frame_length);
+
+	if (ret != FGMAC_SUCCESS)
+	{
+		errval = ERR_USE;
+		ETHNETIF_DEBUG_I("error errval = ERR_USE; FGmacSendFrame\r\n");
+		goto error;
+	}
   
 error:
-  FGmacResmuDmaUnderflow(gmac->config.base_addr);
+	FGmacResmuDmaUnderflow(gmac->config.base_addr);
 
-  return errval;
+	return errval;
 }
 
 

@@ -2,12 +2,7 @@
 #
 # Project Configuration
 #
-
-#
-# Template Configuration
-#
-CONFIG_TARGET_NAME="ft2004_freertos"
-# end of Template Configuration
+CONFIG_TARGET_NAME="d2000_freertos_a64"
 # end of Project Configuration
 
 #
@@ -56,20 +51,11 @@ CONFIG_ENABLE_Pl011_UART=y
 # end of Usart Configuration
 
 # CONFIG_USE_GPIO is not set
-CONFIG_USE_ETH=y
-
-#
-# Eth Configuration
-#
-# CONFIG_ENABLE_FXMAC is not set
-CONFIG_ENABLE_FGMAC=y
-CONFIG_FGMAC_PHY_COMMON=y
-# CONFIG_FGMAC_PHY_AR803X is not set
-# end of Eth Configuration
-
+# CONFIG_USE_ETH is not set
 # CONFIG_USE_CAN is not set
 # CONFIG_USE_I2C is not set
 # CONFIG_USE_TIMER is not set
+# CONFIG_USE_MIO is not set
 # CONFIG_USE_SDMMC is not set
 # CONFIG_USE_PCIE is not set
 # CONFIG_USE_WDT is not set
@@ -130,10 +116,28 @@ CONFIG_FPU_STACK_SIZE=0x1000
 #
 
 #
-# Freertos Drivers
+# Freertos Uart Drivers
 #
 CONFIG_FREERTOS_USE_UART=y
-# end of Freertos Drivers
+# end of Freertos Uart Drivers
+
+#
+# Freertos Qspi Drivers
+#
+# CONFIG_FREERTOS_USE_QSPI is not set
+# end of Freertos Qspi Drivers
+
+#
+# Freertos Wdt Drivers
+#
+# CONFIG_FREERTOS_USE_WDT is not set
+# end of Freertos Wdt Drivers
+
+#
+# Freertos Eth Drivers
+#
+# CONFIG_FREERTOS_USE_XMAC is not set
+# end of Freertos Eth Drivers
 # end of Component Configuration
 
 #
@@ -141,6 +145,18 @@ CONFIG_FREERTOS_USE_UART=y
 #
 # CONFIG_USE_LWIP is not set
 CONFIG_USE_BACKTRACE=y
+# CONFIG_USE_FATFS is not set
+# CONFIG_USE_SFUD is not set
+# CONFIG_USE_SPIFFS is not set
 # CONFIG_USE_AMP is not set
-# CONFIG_USE_LETTER_SHELL is not set
+CONFIG_USE_LETTER_SHELL=y
+
+#
+# Letter Shell Configuration
+#
+CONFIG_LS_PL011_UART=y
+CONFIG_DEFAULT_LETTER_SHELL_USE_UART1=y
+# CONFIG_DEFAULT_LETTER_SHELL_USE_UART0 is not set
+# CONFIG_DEFAULT_LETTER_SHELL_USE_UART2 is not set
+# end of Letter Shell Configuration
 # end of FreeRTOS Setting

@@ -1,7 +1,28 @@
-menu "Freertos Drivers"
+menu "Freertos Uart Drivers"
     config FREERTOS_USE_UART
         bool
         prompt "Use Freertos uart driver"
-        default y
+        default n
 endmenu
 
+menu "Freertos Qspi Drivers"
+    config FREERTOS_USE_QSPI
+        bool
+        prompt "Use Freertos qspi driver"
+        default n
+endmenu
+
+menu "Freertos Wdt Drivers"
+    config FREERTOS_USE_WDT
+        bool
+        prompt "Use Freertos wdt driver"
+        default n
+endmenu
+
+
+menu "Freertos Eth Drivers"
+config FREERTOS_USE_XMAC
+    bool
+    prompt "Use Freertos xmac driver"
+    default n
+endmenu

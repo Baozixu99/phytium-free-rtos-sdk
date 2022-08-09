@@ -6,13 +6,10 @@ menu "LWIP Configuration"
             Select Gmac Driver for Lwip
 
         config LWIP_FGMAC
-            select USE_ETH
-            select ENABLE_FGMAC
             bool "FGMAC"
 
         config LWIP_FXMAC
-            select USE_ETH
-            select ENABLE_FXMAC
+            select FREERTOS_USE_XMAC
             bool "FXMAC"
 
     endchoice # LWIP_GMAC_CTRL_TYPE

@@ -52,7 +52,7 @@
     15. make boot               将 ./core0 ./core1 下的目标elf 复制到目标路径下
 
 - 具体使用方法为：
-    - 在 //example/amp/openamp  下
+    - 在 /example/amp/openamp  下
     - 使用以上指令
 
 ### 2.3 构建和下载

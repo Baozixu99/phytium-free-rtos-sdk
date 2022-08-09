@@ -29,21 +29,34 @@
 #include "queue.h"
 #include "ft_types.h"
 #include "ft_assert.h"
-
 #include "generic_timer.h"
 #include "interrupt.h"
 #include "parameters.h"
+#include "shell.h"
+#include "shell_port.h"
 
 static TaskHandle_t cpuStatsTaskHandle = NULL;
+static uint8_t CPU_RunInfo[800] = {0}; //保存任务运行时间信息
 
 static void CpuStatsTask(void* parameter)
 {
-    u32 count = 0;
-
     while (1) 
     {
-        printf("hello ft Date: %s, Time: %s, count=%d\n", __DATE__, __TIME__, count++);
-        vTaskDelay(2000); /* 延时 */        
+        memset(CPU_RunInfo,0,800); //信息缓冲区清零
+        vTaskList((char *)&CPU_RunInfo); //获取任务运行时间信息
+
+        printf("---------------------------------------------\r\n"); 
+        printf("task_name  task_state  priority  stack  task_num\r\n"); 
+        printf("%s", CPU_RunInfo); 
+        printf("---------------------------------------------\r\n");
+
+        memset(CPU_RunInfo, 0, 800); //信息缓冲区清零
+        vTaskGetRunTimeStats((char *)&CPU_RunInfo);
+
+        printf("task_name\trun_time_count\tusage_rate\r\n"); 
+        printf("%s", CPU_RunInfo); 
+        printf("---------------------------------------------\r\n\n"); 
+        vTaskDelay(5000); /* 延时 */        
     }
 }
 
@@ -90,22 +103,23 @@ BaseType_t TestFreeRTOSEntry()
 
 int main()
 {
-
     printf("main hello ft Date: %s, Time: %s\n", __DATE__, __TIME__);
-   
     BaseType_t xReturn = pdPASS;
 
     /* 创建 CPU stats 任务 */
     xReturn = TestFreeRTOSEntry();
+    if(xReturn != pdPASS)
+        goto FAIL_EXIT;  
 
-    if (pdPASS == xReturn)
-    {
-        printf("create cpu stats task success!\r\n");  
-    }   
+    xReturn = LSUserShellTask() ;
+    if(xReturn != pdPASS)
+        goto FAIL_EXIT;
 
     vTaskStartScheduler(); /* 启动任务，开启调度 */   
 
     while (1); /* 正常不会执行到这里 */
 
+FAIL_EXIT:
+    printf("failed 0x%x \r\n", xReturn);  
     return 0;
 }

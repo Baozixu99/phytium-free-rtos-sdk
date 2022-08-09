@@ -14,7 +14,6 @@ else
 USR_BOOT_DIR		?= /mnt/d/tftboot
 endif
 
-
 # 设置启动镜像名
 BOOT_IMG_NAME      ?= freertos
 
@@ -23,10 +22,9 @@ include $(FREERTOS_SDK_ROOT)/make/build_freertos.mk
 
 # 完成编译
 boot:
-	make
-#	@echo tar $(CONFIG_TARGET_NAME)
-#	@echo img $(BOOT_IMG_NAME)
-	cp ./$(CONFIG_TARGET_NAME).elf $(USR_BOOT_DIR)/$(BOOT_IMG_NAME).elf
-
-
-
+	make -j
+	@cp ./$(CONFIG_TARGET_NAME).elf $(USR_BOOT_DIR)/$(BOOT_IMG_NAME).elf
+ifdef CONFIG_OUTPUT_BINARY
+	@cp ./$(CONFIG_TARGET_NAME).bin $(USR_BOOT_DIR)/$(BOOT_IMG_NAME).bin
+endif
+	@ls $(USR_BOOT_DIR)/$(BOOT_IMG_NAME).* -l

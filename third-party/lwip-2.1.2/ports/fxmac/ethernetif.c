@@ -12,14 +12,15 @@
  *  
  * 
  * FilePath: ethernetif.c
- * Date: 2022-04-02 16:43:32
- * LastEditTime: 2022-04-19 21:27:57
+ * Date: 2022-07-21 19:18:46
+ * LastEditTime: 2022-07-21 19:18:46
  * Description:  This file is for 
  * 
  * Modify History: 
- *  Ver Who      Date        Changes
- * ----- ------     --------    --------------------------------------
+ *  Ver   Who  Date   Changes
+ * ----- ------  -------- --------------------------------------
  */
+
 
 #include <stdio.h>
 #include <string.h>
@@ -35,54 +36,24 @@
 #include "netif/etharp.h"
 #include "ethernetif.h"
 #include "lwip_port.h"
-#include "ethernetif_queue.h"
-#include "fxmac.h"
+#include "ft_os_xmac.h"
+#include "ft_debug.h"
+
+
+#define FXMAC_LWIP_NET_DEBUG_TAG "FXMAC_LWIP_NET"
+#define FXMAC_LWIP_NET_PRINT_E(format, ...) FT_DEBUG_PRINT_E(FXMAC_LWIP_NET_DEBUG_TAG, format, ##__VA_ARGS__)
+#define FXMAC_LWIP_NET_PRINT_I(format, ...) FT_DEBUG_PRINT_I(FXMAC_LWIP_NET_DEBUG_TAG, format, ##__VA_ARGS__)
+#define FXMAC_LWIP_NET_PRINT_D(format, ...) FT_DEBUG_PRINT_D(FXMAC_LWIP_NET_DEBUG_TAG, format, ##__VA_ARGS__)
+#define FXMAC_LWIP_NET_PRINT_W(format, ...) FT_DEBUG_PRINT_W(FXMAC_LWIP_NET_DEBUG_TAG, format, ##__VA_ARGS__)
+
 
 #if LWIP_IPV6
 #include "lwip/ethip6.h"
 #endif
 
 /* Define those to better describe your network interface. */
-#define IFNAME0 't'
-#define IFNAME1 'e'
-
-FXmacConfig *mac_config;
-struct netif *NetIf;
-
-#if defined(OS_IS_FREERTOS) && defined(__arm__) && !defined(ARMR5)
-int32_t lExpireCounter = 0;
-#define RESETRXTIMEOUT 10
-#endif
-
-/*
- * this function is always called with interrupts off
- * this function also assumes that there are available BD's
- */
-static err_t unbuffered_low_level_output(ethernetif *ethernetif_p, struct pbuf *p)
-{
-    FError status = 0;
-
-#if ETH_PAD_SIZE
-    pbuf_header(p, -ETH_PAD_SIZE); /* drop the padding word */
-#endif
-    status = xmac_sgsend(ethernetif_p, p);
-    if (status != FT_SUCCESS)
-    {
-#if LINK_STATS
-        lwip_stats.link.drop++;
-#endif
-    }
-
-#if ETH_PAD_SIZE
-    pbuf_header(p, ETH_PAD_SIZE); /* reclaim the padding word */
-#endif
-
-#if LINK_STATS
-    lwip_stats.link.xmit++;
-#endif /* LINK_STATS */
-
-    return ERR_OK;
-}
+#define IFNAME0 'f'
+#define IFNAME1 't'
 
 /*
  * low_level_output():
@@ -94,40 +65,33 @@ static err_t unbuffered_low_level_output(ethernetif *ethernetif_p, struct pbuf *
  */
 static err_t low_level_output(struct netif *netif, struct pbuf *p)
 {
-    SYS_ARCH_DECL_PROTECT(lev);
-    err_t err;
-    u32 freecnt;
-    FXmacBdRing *txring;
+    FError ret ;
+    FXmacOs *instance_p = NULL;
+    FASSERT(netif != NULL);
+    FASSERT(netif->state != NULL);
+    struct LwipPort *xmac_netif_p = (struct LwipPort *)(netif->state);
+    FASSERT(xmac_netif_p != NULL);
 
-    struct xmac_netif *xmac_netif_p = (struct xmac_netif *)(netif->state);
-    ethernetif *ethernetif_p = (ethernetif *)(xmac_netif_p->state);
+    instance_p = (FXmacOs *)(xmac_netif_p->state) ;
 
-    SYS_ARCH_PROTECT(lev);
-
-    /* check if space is available to send */
-    freecnt = is_tx_space_available(ethernetif_p);
-    if (freecnt <= 5)
-    {
-        txring = &(FXMAC_GET_TXRING(ethernetif_p->xmac_ctrl));
-        xmac_process_sent_bds(ethernetif_p, txring);
-    }
-
-    if (is_tx_space_available(ethernetif_p))
-    {
-        unbuffered_low_level_output(ethernetif_p, p);
-        err = ERR_OK;
-    }
-    else
-    {
-#if LINK_STATS
-        lwip_stats.link.drop++;
+    portENTER_CRITICAL();
+#if ETH_PAD_SIZE
+    pbuf_header(p, -ETH_PAD_SIZE); /* drop the padding word */
 #endif
-        f_printk("pack dropped, no space\r\n");
-        err = ERR_MEM;
+    
+    ret = FXmacOsTx(instance_p, p);
+
+#if ETH_PAD_SIZE
+    pbuf_header(p, ETH_PAD_SIZE); /* reclaim the padding word */
+#endif
+    portEXIT_CRITICAL();
+
+    if (ret != FT_SUCCESS)
+    {
+        return ERR_MEM; 
     }
 
-    SYS_ARCH_UNPROTECT(lev);
-    return err;
+    return ERR_OK;
 }
 
 /*
@@ -139,34 +103,14 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p)
  */
 static struct pbuf *low_level_input(struct netif *netif)
 {
-    struct xmac_netif *xmac_netif_p = (struct xmac_netif *)(netif->state);
-    ethernetif *ethernetif_p = (ethernetif *)(xmac_netif_p->state);
-    struct pbuf *p;
+    FXmacOs *instance_p = NULL;
+    FASSERT(netif != NULL);
+    FASSERT(netif->state != NULL);
+    struct LwipPort *xmac_netif_p = (struct LwipPort *)(netif->state);
+    FASSERT(xmac_netif_p != NULL);
+    instance_p = (FXmacOs *)(xmac_netif_p->state) ;
 
-    f_printk("pq_qlength(ethernetif_p->recv_q)=%d\n", xmac_pq_qlength(ethernetif_p->recv_q));
-    /* see if there is data to process */
-    if (xmac_pq_qlength(ethernetif_p->recv_q) == 0)
-        return NULL;
-
-    /* return one packet from receive q */
-    p = (struct pbuf *)xmac_pq_dequeue(ethernetif_p->recv_q);
-    return p;
-}
-
-/*
- * ethernetif_output():
- *
- * This function is called by the TCP/IP stack when an IP packet
- * should be sent. It calls the function called low_level_output() to
- * do the actual transmission of the packet.
- *
- */
-
-static err_t ethernetif_output(struct netif *netif, struct pbuf *p,
-                              const ip_addr_t *ipaddr)
-{
-    /* resolve hardware address, then send (or queue) packet */
-    return etharp_output(netif, p, ipaddr);
+    return FXmacOsRx(instance_p);
 }
 
 /*
@@ -188,7 +132,7 @@ void ethernetif_input(struct netif *netif)
     struct pbuf *p;
     SYS_ARCH_DECL_PROTECT(lev);
 
-#ifdef OS_IS_FREERTOS
+#if NO_SYS == 0
     while (1)
 #endif
     {
@@ -208,22 +152,22 @@ void ethernetif_input(struct netif *netif)
 
 #if LINK_STATS
         lwip_stats.link.recv++;
-#endif /* LINK_STATS */
-
+    #endif /* LINK_STATS */
         switch (htons(ethhdr->type))
         {
         /* IP or ARP packet? */
         case ETHTYPE_IP:
         case ETHTYPE_ARP:
-#if LWIP_IPV6
+    #if LWIP_IPV6
         /*IPv6 Packet?*/
         case ETHTYPE_IPV6:
-#endif
-#if PPPOE_SUPPORT
+    #endif
+    #if PPPOE_SUPPORT
             /* PPPoE packet? */
         case ETHTYPE_PPPOEDISC:
         case ETHTYPE_PPPOE:
-#endif /* PPPOE_SUPPORT */
+    #endif /* PPPOE_SUPPORT */
+
             /* full packet send to tcpip_thread to process */
             if (netif->input(p, netif) != ERR_OK)
             {
@@ -239,162 +183,120 @@ void ethernetif_input(struct netif *netif)
             break;
         }
     }
-
+    
     return;
 }
-
-#if defined(OS_IS_FREERTOS) && defined(__arm__) && !defined(ARMR5)
-void vTimerCallback(TimerHandle_t pxTimer)
-{
-    /* Do something if the pxTimer parameter is NULL */
-    configASSERT(pxTimer);
-
-    lExpireCounter++;
-    /* If the timer has expired 100 times then reset RX */
-    if (lExpireCounter >= RESETRXTIMEOUT)
-    {
-        lExpireCounter = 0;
-        ethernetif_resetrx_on_no_rxdata(NetIf);
-    }
-}
-#endif
 
 static err_t low_level_init(struct netif *netif)
 {
     uintptr mac_address = (uintptr)(netif->state);
-    struct xmac_netif *xmac_netif_p;
-    ethernetif *ethernetif_p;
+    struct LwipPort *xmac_netif_p;
+    FXmacOs *instance_p;
+    FXmac *xmac_p = NULL;
+    FError ret;
     u32 dmacrreg;
+    FXmacOsControl os_config;
     s32_t status = FT_SUCCESS;
-    NetIf = netif;
-
-    ethernetif_p = mem_malloc(sizeof *ethernetif_p);
-    if (ethernetif_p == NULL)
-    {
-        LWIP_DEBUGF(NETIF_DEBUG, ("ethernetif_p_init: out of memory\r\n"));
-        return ERR_MEM;
-    }
+    FASSERT(netif != NULL);
+    FASSERT(netif->state != NULL);
+    user_config *config_p;
 
     xmac_netif_p = mem_malloc(sizeof *xmac_netif_p);
     if (xmac_netif_p == NULL)
     {
-        LWIP_DEBUGF(NETIF_DEBUG, ("ethernetif_p_init: out of memory\r\n"));
+        LWIP_DEBUGF(NETIF_DEBUG, ("xmac_netif_p init: out of memory\r\n"));
         return ERR_MEM;
     }
 
-    xmac_netif_p->state = (void *)ethernetif_p;
-    ethernetif_p->send_q = NULL;
-    ethernetif_p->recv_q = xmac_pq_create_queue();
-    if (!ethernetif_p->recv_q)
-        return ERR_MEM;
-
-        /* maximum transfer unit */
-#ifdef XMAC_USE_JUMBO
-    netif->mtu = FXMAC_MTU_JUMBO - FXMAC_HDR_SIZE;
-#else
-    netif->mtu = FXMAC_MTU - FXMAC_HDR_SIZE;
+#if !NO_SYS
+    sys_sem_new(&xmac_netif_p->sem_rx_data_available, 0);
+    printf("sem_rx_data_available is %p \r\n",xmac_netif_p->sem_rx_data_available);
 #endif
+    /* obtain config of this emac */
+    FXMAC_LWIP_NET_PRINT_I("netif->state is %p \r\n ",netif->state);
+
+    config_p = (user_config *)netif->state;
+    os_config.instance_id = config_p->mac_instance;
+
+    switch (config_p->mii_interface)
+    {
+        case LWIP_PORT_INTERFACE_RGMII:
+            os_config.interface = FXMAC_OS_INTERFACE_RGMII;
+            break;
+        case LWIP_PORT_INTERFACE_SGMII:
+            os_config.interface = FXMAC_OS_INTERFACE_SGMII;
+            break;
+        default:
+            os_config.interface = FXMAC_OS_INTERFACE_RGMII;
+            break;
+    }
+
+    os_config.autonegotiation = config_p->autonegotiation; /* 1 is autonegotiation ,0 is manually set */
+    os_config.phy_speed = config_p->phy_speed;  /* FXMAC_PHY_SPEED_XXX */
+    os_config.phy_duplex = config_p->phy_duplex; /* FXMAC_PHY_XXX_DUPLEX */
+
+    instance_p = FXmacOsGetInstancePointer(&os_config);
+    if(instance_p == NULL)
+    {
+        FXMAC_LWIP_NET_PRINT_E("FXmacOsGetInstancePointer is error\r\n");
+        return ERR_ARG;
+    }
+
+    for (int i = 0; i < 6; i++)
+    {
+        instance_p->hwaddr[i] = netif->hwaddr[i];
+    }
+        
+    ret = FXmacOsInit(instance_p);
+
+    
+    if (ret != FT_SUCCESS)
+    {
+        FXMAC_LWIP_NET_PRINT_E("FXmacOsInit is error\r\n");
+        return ERR_ARG;
+    }
+
+    xmac_netif_p->state = (void *)instance_p;
+    netif->state = (void *)xmac_netif_p; /* update state */
+    instance_p->stack_pointer = xmac_netif_p;
+
+
+    /* maximum transfer unit */
+    if(instance_p->config & FXMAC_OS_CONFIG_JUMBO) 
+    {
+        netif->mtu = FXMAC_MTU_JUMBO - FXMAC_HDR_SIZE;
+    }
+    else
+    {
+        netif->mtu = FXMAC_MTU - FXMAC_HDR_SIZE;
+    }
+    
 
     netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP |
                    NETIF_FLAG_LINK_UP;
 
-#if !NO_SYS
-    sys_sem_new(&xmac_netif_p->sem_rx_data_available, 0);
-#endif
-    /* obtain config of this emac */
-    mac_config = (FXmacConfig *)FXmacLookupConfig((unsigned)(uintptr)netif->state);
-
-    status = FXmacCfgInitialize(&ethernetif_p->xmac_ctrl, mac_config);
-    if (status != FT_SUCCESS)
-    {
-        f_printk("In %s:EmacPs Configuration Failed....\r\n", __func__);
-    }
-
-    /* initialize the mac */
-    xmac_init(ethernetif_p, netif);
-
-    dmacrreg = FXMAC_READREG32(ethernetif_p->xmac_ctrl.config.base_address, FXMAC_DMACR_OFFSET);
-    dmacrreg = dmacrreg | (0x00000010);
-    FXMAC_WRITEREG32(ethernetif_p->xmac_ctrl.config.base_address, FXMAC_DMACR_OFFSET, dmacrreg);
-
-#if defined(OS_IS_FREERTOS) && defined(__arm__) && !defined(ARMR5)
-    /* Freertos tick is 10ms by default; set period to the same */
-    xmac_netif_p->xTimer = xTimerCreate("Timer", 10, pdTRUE, (void *)1, vTimerCallback);
-    if (xmac_netif_p->xTimer == NULL)
-    {
-        f_printk("In %s:Timer creation failed....\r\n", __func__);
-    }
-    else
-    {
-        if (xTimerStart(xmac_netif_p->xTimer, 0) != pdPASS)
-        {
-            f_printk("In %s:Timer start failed....\r\n", __func__);
-        }
-    }
-#endif
-    xmac_setup_isr(xmac_netif_p);
-    init_dma(xmac_netif_p);
-    xmac_start(ethernetif_p);
-
-    /* replace the state in netif (currently the emac baseaddress)
-     * with the mac instance pointer.
-     */
-    netif->state = (void *)xmac_netif_p;
-
+    FXMAC_LWIP_NET_PRINT_I("ready to leave netif \r\n");
     return ERR_OK;
 }
 
-void xmac_handle_dma_tx_error(struct xmac_netif *xmac_netif_p)
-{
-    ethernetif *ethernetif_p;
-    s32_t status = FT_SUCCESS;
-    u32 dmacrreg;
 
-    SYS_ARCH_DECL_PROTECT(lev);
-    SYS_ARCH_PROTECT(lev);
-
-    ethernetif_p = (ethernetif *)(xmac_netif_p->state);
-    free_txrx_pbufs(ethernetif_p);
-    status = FXmacCfgInitialize(&ethernetif_p->xmac_ctrl, mac_config);
-
-    if (status != FT_SUCCESS)
-    {
-        f_printk("In %s:EmacPs Configuration Failed....\r\n", __func__);
-    }
-
-    /* initialize the mac */
-    xmac_init_on_error(ethernetif_p, NetIf);
-    dmacrreg = FXMAC_READREG32(ethernetif_p->xmac_ctrl.config.base_address, FXMAC_DMACR_OFFSET);
-    dmacrreg = dmacrreg | (0x01000000); /* force_discard_on_err */
-    FXMAC_WRITEREG32(ethernetif_p->xmac_ctrl.config.base_address, FXMAC_DMACR_OFFSET, dmacrreg);
-    xmac_setup_isr(xmac_netif_p);
-    init_dma(xmac_netif_p);
-    xmac_start(ethernetif_p);
-
-    SYS_ARCH_UNPROTECT(lev);
+#if !LWIP_ARP
+/**
+ * This function has to be completed by user in case of ARP OFF.
+ *
+ * @param netif the lwip network interface structure for this ethernetif
+ * @return ERR_OK if ...
+ */
+static err_t low_level_output_arp_off(struct netif *netif, struct pbuf *q, const ip4_addr_t *ipaddr)
+{  
+  	err_t errval;
+	errval = ERR_OK;
+    
+    
+	return errval;
+  
 }
-
-void xmac_handle_tx_errors(struct xmac_netif *xmac_netif_p)
-{
-    ethernetif *ethernetif_p;
-    u32 netctrlreg;
-
-    SYS_ARCH_DECL_PROTECT(lev);
-    SYS_ARCH_PROTECT(lev);
-    ethernetif_p = (ethernetif *)(xmac_netif_p->state);
-    netctrlreg = FXMAC_READREG32(ethernetif_p->xmac_ctrl.config.base_address,
-                                 FXMAC_NWCTRL_OFFSET);
-    netctrlreg = netctrlreg & (~FXMAC_NWCTRL_TXEN_MASK);
-    FXMAC_WRITEREG32(ethernetif_p->xmac_ctrl.config.base_address,
-                     FXMAC_NWCTRL_OFFSET, netctrlreg);
-    free_onlytx_pbufs(ethernetif_p);
-
-    clean_dma_txdescs(xmac_netif_p);
-    netctrlreg = FXMAC_READREG32(ethernetif_p->xmac_ctrl.config.base_address, FXMAC_NWCTRL_OFFSET);
-    netctrlreg = netctrlreg | (FXMAC_NWCTRL_TXEN_MASK);
-    FXMAC_WRITEREG32(ethernetif_p->xmac_ctrl.config.base_address, FXMAC_NWCTRL_OFFSET, netctrlreg);
-    SYS_ARCH_UNPROTECT(lev);
-}
+#endif /* LWIP_ARP */ 
 
 /*
  * ethernetif_init():
@@ -407,25 +309,22 @@ void xmac_handle_tx_errors(struct xmac_netif *xmac_netif_p)
 
 err_t ethernetif_init(struct netif *netif)
 {
-#if LWIP_SNMP
-    /* ifType ethernetCsmacd(6) @see RFC1213 */
-    netif->link_type = 6;
-    /* your link speed here */
-    netif->link_speed = ;
-    netif->ts = 0;
-    netif->ifinoctets = 0;
-    netif->ifinucastpkts = 0;
-    netif->ifinnucastpkts = 0;
-    netif->ifindiscards = 0;
-    netif->ifoutoctets = 0;
-    netif->ifoutucastpkts = 0;
-    netif->ifoutnucastpkts = 0;
-    netif->ifoutdiscards = 0;
-#endif
+    LWIP_DEBUGF(NETIF_DEBUG, ("*******start init eth\n"));
 
     netif->name[0] = IFNAME0;
     netif->name[1] = IFNAME1;
-    netif->output = ethernetif_output;
+
+#if LWIP_IPV4
+#if LWIP_ARP || LWIP_ETHERNET
+#if LWIP_ARP
+	netif->output = etharp_output;
+#else
+  	/* The user should write ist own code in low_level_output_arp_off function */
+	netif->output = low_level_output_arp_off;
+#endif /* LWIP_ARP */
+#endif /* LWIP_ARP || LWIP_ETHERNET */
+#endif /* LWIP_IPV4 */
+
     netif->linkoutput = low_level_output;
 #if LWIP_IPV6
     netif->output_ip6 = ethip6_output;

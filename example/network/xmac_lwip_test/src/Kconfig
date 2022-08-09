@@ -1,0 +1,22 @@
+
+menu " E2000 board Configuration"
+    config TARGET_NAME
+        string "Build Target Name"
+        default "eth test"
+        help
+            Build Target name for the demo
+
+    choice EVALUATION_BOARD_TYPE
+        prompt "Select evaluation board"
+        default BOARD_TYPE_B
+        help
+            Select board type for build
+        config BOARD_TYPE_B
+            bool "evaluation board b"
+        config BOARD_TYPE_C
+            bool "evaluation board c"
+        config BOARD_TYPE_A
+            bool "evaluation board a"
+        endchoice # BUILD_TARGET_ARCH_TYPE
+
+endmenu

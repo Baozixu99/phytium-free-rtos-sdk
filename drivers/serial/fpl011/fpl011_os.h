@@ -28,10 +28,10 @@
 #include <FreeRTOS.h>
 #include <event_groups.h>
 #include <semphr.h>
-#include "ft_error_code.h"
 #include "fpl011.h"
 #include "fpl011_hw.h"
 #include "ft_types.h"
+#include "ft_error_code.h"
 
 #define FREERTOS_UART_SEM_ERROR FT_CODE_ERR(ErrModPort, 0, 0x1)
 #define FREERTOS_UART_EVENT_ERROR FT_CODE_ERR(ErrModPort, 0, 0x2)
@@ -73,6 +73,7 @@ typedef struct
     u32 uart_instance; /* select uart global object */
     u32 isr_priority;  /* irq Priority */
     u32 isr_event_mask; /* followed by RTOS_UART_ISR_XX */
+    u32 uart_baudrate;
 } FtFreertosUartConfig;
 
 typedef struct

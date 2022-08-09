@@ -7,7 +7,7 @@ menu "Letter Shell Configuration"
 
         config LS_PL011_UART
             select USE_SERIAL
-            select ENABLE_Pl011_UART
+            select FREERTOS_USE_UART
             bool "PL011"
 
         if LS_PL011_UART

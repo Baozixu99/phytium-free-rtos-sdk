@@ -4,3 +4,20 @@ ifdef CONFIG_FREERTOS_USE_UART
 	SRC_DIR += $(OS_DRIVER_CUR_DIR)/serial/fpl011
 	INC_DIR += $(OS_DRIVER_CUR_DIR)/serial/fpl011
 endif
+
+ifdef CONFIG_FREERTOS_USE_QSPI
+	SRC_DIR += $(OS_DRIVER_CUR_DIR)/qspi
+	INC_DIR += $(OS_DRIVER_CUR_DIR)/qspi
+endif
+
+ifdef CONFIG_FREERTOS_USE_WDT
+	SRC_DIR += $(OS_DRIVER_CUR_DIR)/wdt
+	INC_DIR += $(OS_DRIVER_CUR_DIR)/wdt
+endif
+
+
+ifdef CONFIG_FREERTOS_USE_XMAC
+	SRC_DIR += $(OS_DRIVER_CUR_DIR)/eth/xmac
+	INC_DIR += $(OS_DRIVER_CUR_DIR)/eth/xmac
+endif
+

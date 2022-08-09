@@ -66,7 +66,7 @@ static void EthLinkPhyStatusChecker(void *param)
     {
         OS_MAC_DEBUG_I("link is down");
     }
-
+    
     return;
 }
 

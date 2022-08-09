@@ -74,10 +74,12 @@ signed char LSUserShellRead(char *data)
 
 void LSSerialConfig(void)
 {
-    FtFreertosUartConfig config = {
+    FtFreertosUartConfig config = 
+    {
         .uart_instance = LETTER_SHELL_UART_ID, /* select uart global object */
         .isr_priority = IRQ_PRIORITY_VALUE_13,  /* irq Priority */
-        .isr_event_mask = (RTOS_UART_ISR_OEIM_MASK|RTOS_UART_ISR_BEIM_MASK|RTOS_UART_ISR_PEIM_MASK|RTOS_UART_ISR_FEIM_MASK|RTOS_UART_ISR_RTIM_MASK|RTOS_UART_ISR_RXIM_MASK)
+        .isr_event_mask = (RTOS_UART_ISR_OEIM_MASK|RTOS_UART_ISR_BEIM_MASK|RTOS_UART_ISR_PEIM_MASK|RTOS_UART_ISR_FEIM_MASK|RTOS_UART_ISR_RTIM_MASK|RTOS_UART_ISR_RXIM_MASK),
+        .uart_baudrate = 115200
     };
     FtFreertosUartInit(&os_uart1,&config);
 }

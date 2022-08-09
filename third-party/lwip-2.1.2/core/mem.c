@@ -618,7 +618,7 @@ mem_free(void *rmem)
 {
   struct mem *mem;
   LWIP_MEM_FREE_DECL_PROTECT();
-
+  
   if (rmem == NULL) {
     LWIP_DEBUGF(MEM_DEBUG | LWIP_DBG_TRACE | LWIP_DBG_LEVEL_SERIOUS, ("mem_free(p == NULL) was called.\n"));
     return;

@@ -14,7 +14,7 @@
 #endif
 #include "shell.h"
 #include "string.h"
-#include "stdio.h"
+#include <stdio.h>
 #include "stdarg.h"
 #include "shell_ext.h"
 

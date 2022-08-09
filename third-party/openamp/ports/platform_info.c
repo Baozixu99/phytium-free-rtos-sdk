@@ -35,7 +35,7 @@
 #include "sdkconfig.h"
 #include "mmu.h"
 #include "ft_debug.h"
-#include "stdio.h"
+#include <stdio.h>
 
 /************************** Constant Definitions *****************************/
 

@@ -26,7 +26,7 @@
 
 #include <openamp/open_amp.h>
 #include "rsc_table.h"
-#include "stdio.h"
+#include <stdio.h>
 #include "sdkconfig.h"
 
 /***************** Macros (Inline Functions) Definitions *********************/

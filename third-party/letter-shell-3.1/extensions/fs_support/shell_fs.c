@@ -10,7 +10,7 @@
  */
 #include "shell_fs.h"
 #include "shell.h"
-#include "stdio.h"
+#include <stdio.h>
 
 /**
  * @brief 改变当前路径(shell调用)

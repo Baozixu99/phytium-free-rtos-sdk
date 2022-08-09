@@ -13,7 +13,7 @@
 #include <metal/utilities.h>
 #include <openamp/rpmsg_virtio.h>
 #include <openamp/virtqueue.h>
-#include "stdio.h"
+#include <stdio.h>
 #include "rpmsg_internal.h"
 #include "sdkconfig.h"
 #ifdef CONFIG_MEM_NORMAL
