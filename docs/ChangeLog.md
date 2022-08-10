@@ -1,8 +1,16 @@
+# Phytium FreeRTOS SDK 2022-08-10 0.2.1 ChangeLog
+
+Change Log sinc 0.2.0 
+
+## README
+
+- add E2000D/S description
+
 # Phytium FreeRTOS SDK 2022-08-09 0.2.0 ChangeLog
 
 Change Log sinc 2022-07-29
 
-# driver 
+## driver 
 
 - modify wdt driver
 

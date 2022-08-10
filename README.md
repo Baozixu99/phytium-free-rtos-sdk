@@ -83,6 +83,36 @@ D2000 是一款面向桌面应用的高性能通用 8 核处理器。每 2 个�
 - 集成 4 个 UART，1 个 LPC，32 个 GPIO，4 个 I2C，1 个 QSPI，2 个通用 SPI，2 个 WDT，16 个外部中断（和 GPIO 共用 IO）
 - 集成 2 个温度传感器
 
+### 3.3 E2000D
+
+- E2000D 1个cluster有2个cpu，共两核。主要技术特征如下：
+
+- 兼容ARM v8 64 位指令系统，兼容32 位指令
+- 支持单精度、双精度浮点运算指令
+- L1有32KB，L2有256KB
+- 集成1个DDR4 通道，可对DDR 存储数据进行实时加密
+- 集成4 Lane PCIE3.0 接口（4X1）
+- 集成网络接口4x1000M SGMII，1路支持RGMII/RMII，支持1路TSN
+- 集成2个USB2.0(OTG)接口
+- 集成1个HDAudio，支持音频输出;2路DP显示接口
+- 集成2路SATA3.0模块
+- 集成常用低速接口：WDT，DMAC，QSPI，PWM，Nand，SD/SDIO/eMMC ，SPI_M，UART，I2C，MIO，CAN， LPC_M_S，GPIO，LBC，Timer
+
+### 3.4 E2000S
+
+- E2000S 1个cluster有1个cpu，单核结构。主要技术特征如下：
+
+- 兼容ARM v8 64 位指令系统，兼容32 位指令
+- 支持单精度、双精度浮点运算指令
+- L1有32KB，L2有256KB
+- 集成1个DDR4 通道，可对DDR 存储数据进行实时加密
+- 集成2 Lane PCIE3.0 接口（2X1）
+- 集成网络接口2x1000M SGMII/RGMII/RMII，支持2路NCSI
+- 集成2个USB2.0(OTG)接口
+- 集成1个HDAudio，支持音频输出;2路DP显示接口
+- 集成JPEG Encoder模块
+- 集成常用低速接口：WDT，DMAC，PWM，QSPI，SD/SDIO/eMMC，SPI_M，UART，I2C，MIO，I3C，PMBUS， LPC_M_S，GPIO，oneWire，Timer
+
 ---
 
 ## 4. 参考资料
