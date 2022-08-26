@@ -1,0 +1,12 @@
+menu "SDMMC Configuration"
+    choice SDMMC_PORT_TYPE
+        prompt "MMC/SD Type"
+        help
+            Select MMC/SD Driver
+
+        config SDMMC_PORT_FSDIO
+            bool "FSDIO"
+            select USE_SDMMC
+            select ENABLE_FSDIO
+    endchoice #SDMMC_PORT_TYPE
+endmenu

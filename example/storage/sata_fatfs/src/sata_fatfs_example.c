@@ -70,7 +70,6 @@ static BYTE buff[FSATA_FATFS_FILE_SIZE] __attribute__((aligned(32))) = {0};
 static char mount_path[256] = "";
 const char *file_name = "test.txt";
 
-
 int FatfsSataFormat(const char *mount_point)
 {
     FRESULT res;
@@ -391,10 +390,6 @@ BaseType_t FFreeRTOSSataFatfsCreate(void)
 
 	taskENTER_CRITICAL(); /*进入临界区*/
 	
-#if defined(CONFIG_TARGET_E2000Q)
-	
-#endif
-	
     xReturn = xTaskCreate((TaskFunction_t )FFreeRTOSSataFatfsInitTask, /* 任务入口函数 */
                             (const char* )"FFreeRTOSSataFatfsInitTask",/* 任务名字 */
                             (uint16_t )4096, /* 任务栈大小 */
@@ -457,8 +452,6 @@ static void FFreeRTOSSataFatfsDelete(void)
 {
 	BaseType_t xReturn = pdPASS;
     
-    vSemaphoreDelete(xCountingSemaphore);
-    
 	if(read_handle)
     {
         vTaskDelete(read_handle);
@@ -470,7 +463,11 @@ static void FFreeRTOSSataFatfsDelete(void)
         vTaskDelete(write_handle);
         vPrintf("Delete FFreeRTOSSataFatfsWriteTask success\r\n");
     }
+
+    /* delete count sem */
+	vSemaphoreDelete(xCountingSemaphore);
 	
+	/* delete timer */
 	xReturn = xTimerDelete(xOneShotTimer, 0);
 	if(xReturn != pdPASS)
 	{
@@ -481,7 +478,6 @@ static void FFreeRTOSSataFatfsDelete(void)
 		vPrintf("OneShot Software Timer Delete success.\r\n");
 	}
 
-    
 }
 
 

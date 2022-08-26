@@ -59,6 +59,4 @@ FError FFreeRTOSWdtDeinit(FFreeRTOSWdt *os_wdt_p);
 /* control freertos wdt instance */
 FError FFreeRTOSWdtControl(FFreeRTOSWdt *os_wdt_p, int cmd, void *args);
 
-/* register wdt interrupt handler */
-
 #endif // !

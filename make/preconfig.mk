@@ -15,14 +15,6 @@ ifeq ($(MAKECMDGOALS),config_ft2004_aarch64)
 export DEF_KCONFIG=ft2004_aarch64_defconfig
 endif
 
-ifeq ($(MAKECMDGOALS),config_e2000_aarch32)
-export DEF_KCONFIG=e2000_aarch32_defconfig
-endif
-
-ifeq ($(MAKECMDGOALS),config_e2000_aarch64)
-export DEF_KCONFIG=e2000_aarch64_defconfig
-endif
-
 ifeq ($(MAKECMDGOALS),config_d2000_aarch32)
 export DEF_KCONFIG=d2000_aarch32_defconfig
 endif
@@ -30,6 +22,23 @@ endif
 ifeq ($(MAKECMDGOALS),config_d2000_aarch64)
 export DEF_KCONFIG=d2000_aarch64_defconfig
 endif
+
+ifeq ($(MAKECMDGOALS),config_e2000d_aarch32)
+export DEF_KCONFIG=e2000d_aarch32_defconfig
+endif
+
+ifeq ($(MAKECMDGOALS),config_e2000d_aarch64)
+export DEF_KCONFIG=e2000d_aarch64_defconfig
+endif
+
+ifeq ($(MAKECMDGOALS),config_e2000q_aarch32)
+export DEF_KCONFIG=e2000q_aarch32_defconfig
+endif
+
+ifeq ($(MAKECMDGOALS),config_e2000q_aarch64)
+export DEF_KCONFIG=e2000q_aarch64_defconfig
+endif
+
 
 #if sdkconfig not exits, prompt user to load default sdkconfig first
 FILE_EXISTS = $(shell if [ -f $(KCONFIG_DIR)/$(KCONFIG_CONFIG) ]; then echo "exist"; else echo "notexist"; fi;)

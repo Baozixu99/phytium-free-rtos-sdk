@@ -79,3 +79,21 @@ config USE_LETTER_SHELL
     if USE_LETTER_SHELL
         source "$(FREERTOS_SDK_ROOT)/third-party/letter-shell-3.1/Kconfig"
     endif
+
+config USE_TLSF
+    bool
+    prompt "Use TLSF"
+    default n
+    help
+        Include TLSF for memory pool
+
+config USE_SDMMC_CMD
+    bool
+    prompt "Use Sd/MMC/SDIO/eMMc Cmd"
+    default n
+    help
+        Include Sd/MMC/SDIO/eMMc Command framework
+
+    if USE_SDMMC_CMD
+        source "$(FREERTOS_SDK_ROOT)/third-party/sdmmc-1.0/Kconfig"
+    endif

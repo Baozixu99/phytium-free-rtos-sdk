@@ -1,6 +1,6 @@
 
 # 根据例程默认，编译各平台的镜像
-.PHONY: load_e2000_aarch32 load_e2000_aarch64 backup_kconfig build_ft2004_aarch32 build_ft2004_aarch64 build_d2000_aarch32 build_d2000_aarch64 config_ft2004_aarch32 config_ft2004_aarch64 config_d2000_aarch32 config_d2000_aarch64
+.PHONY: load_e2000d_aarch32 load_e2000d_aarch64 load_e2000q_aarch32 load_e2000q_aarch64 backup_kconfig build_ft2004_aarch32 build_ft2004_aarch64 build_d2000_aarch32 build_d2000_aarch64 config_ft2004_aarch32 config_ft2004_aarch64 config_d2000_aarch32 config_d2000_aarch64
 
 load_ft2004_aarch32:
 	@echo $(BUILD_ALL_OUTPUT_DIR)
@@ -95,3 +95,7 @@ config_ft2004_aarch32: lddefconfig genconfig clean
 config_ft2004_aarch64: lddefconfig genconfig clean
 config_d2000_aarch32: lddefconfig genconfig clean
 config_d2000_aarch64: lddefconfig genconfig clean
+config_e2000d_aarch32: lddefconfig genconfig clean
+config_e2000d_aarch64: lddefconfig genconfig clean
+config_e2000q_aarch32: lddefconfig genconfig clean
+config_e2000q_aarch64: lddefconfig genconfig clean

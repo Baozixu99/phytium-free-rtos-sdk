@@ -157,11 +157,11 @@ else
 endif
 
 $(APP): $(OBJ_FILES) linkscript
-	@echo Linking $@.elf
-	@echo Dumping $@.map
+	@echo "  LINK	$@.elf"
+	@echo "  DUMP	$@.map"
 	$(QUIET) $(CC) $(TARGET_ARCH) $(LDFLAGS) -T $(PROJ_LD) --output $@.elf -Wl,-Map=$@.map $(OBJ_FILES) -lm
 ifdef CONFIG_OUTPUT_BINARY
-	@echo Objcopying $@.bin
+	@echo "  COPY	$@.bin"
 	$(QUIET) $(OC) -v -O binary $@.elf $@.bin
 endif
 	$(QUIET) $(OD) -D $@.elf > $@.asm
@@ -203,11 +203,11 @@ $(X_OUTPUT_DIRS):
 	@mkdir -p $@
 
 $(OUTPUT_DIR)/%.o : %.S | $(X_OUTPUT_DIRS)
-	$(PROGRESS)
+	@echo "  AS    $@"
 	$(QUIET) $(CC) -c $(TARGET_ARCH) $(CPPFLAGS) $(ASFLAGS) -o $@ $<
 
 $(OUTPUT_DIR)/%.o : %.c | $(X_OUTPUT_DIRS)
-	$(PROGRESS)
+	@echo "  CC    $@"
 	$(QUIET) $(CC) -c $(TARGET_ARCH) $(CPPFLAGS) $(CFLAGS) -o $@ $<
 
 clean:

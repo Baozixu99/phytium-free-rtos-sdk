@@ -86,7 +86,7 @@ os.system("chmod +x ./make/*.mk --silent ")
 os.system("chmod +x ./lib/Kconfiglib/*.py --silent ")
 
 # Add standalone sdk
-standalone_sdk_v="v0.3.0"
+standalone_sdk_v="ab17ac114e1413314864cd6f4b695fb8ba4311f1" # v0.3.1 commit id
 standalone_path=freertos_sdk_path  + '/standalone'
 standalone_branche="master"
 standalone_remote="https://gitee.com/phytium_embedded/phytium-standalone-sdk.git"
@@ -158,7 +158,7 @@ os.system("echo \"export FREERTOS_STANDALONE={}\" >> {}".format(standalone_path,
 os.system("echo \"### PHYTIUM FREERTOS SDK SETTING END\" >> {}".format(sdk_profile_path))
 
 ## STEP 5: display success message and enable environment
-print("[5]: Success!!! Standalone SDK is Install at {}".format(freertos_sdk_path))
+print("[5]: Success!!! SDK is Install at {}".format(freertos_sdk_path))
 print("[5]: SDK Environment Variables is in {}".format(sdk_profile_path))
 print("[5]: Phytium FREERTOS SDK Setup Done for {}!!!".format(usr))
 print("[5]: Input 'source {}' or Reboot System to Active SDK".format(sdk_profile_path))

@@ -80,6 +80,11 @@ sfud_err sfud_spi_port_init(sfud_flash *flash)
 {
     sfud_err result = SFUD_SUCCESS;
 
+    if (NULL != xSemaphore)
+    {
+        vSemaphoreDelete(xSemaphore); /* delate locker if it is not first probe */
+    }
+
     xSemaphore = xSemaphoreCreateMutex();
     if (xSemaphore == NULL)
     {

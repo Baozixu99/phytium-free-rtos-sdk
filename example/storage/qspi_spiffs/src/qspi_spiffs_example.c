@@ -590,8 +590,6 @@ static void FFreeRTOSQspiSpiffsDelete(void)
 	BaseType_t xReturn = pdPASS;
 
     FSpiffsDeInitialize(&instance);
-
-    vSemaphoreDelete(xCountingSemaphore);
     
 	if(qspi_read1_handle)
     {
@@ -611,6 +609,10 @@ static void FFreeRTOSQspiSpiffsDelete(void)
         vPrintf("Delete FFreeRTOSQspiSpiffsWriteTask success\r\n");
     }
 	
+    /* delete count sem */
+	vSemaphoreDelete(xCountingSemaphore);
+	
+	/* delete timer */
 	xReturn = xTimerDelete(xOneShotTimer, 0);
 	if(xReturn != pdPASS)
 	{

@@ -101,7 +101,7 @@ FError FFreeRTOSWdtControl(FFreeRTOSWdt *os_wdt_p, int cmd, void *args)
     /* New contrl can be performed only after current one is finished */
     if (pdFALSE == xSemaphoreTake(os_wdt_p->wdt_semaphore, portMAX_DELAY))
     {
-        vPrintf("Wdt xSemaphoreTake failed\r\n");
+        FWDT_ERROR("Wdt xSemaphoreTake failed\r\n");
         /* We could not take the semaphore, exit with 0 data received */
         return FREERTOS_WDT_SEM_ERROR;
     }
@@ -114,7 +114,6 @@ FError FFreeRTOSWdtControl(FFreeRTOSWdt *os_wdt_p, int cmd, void *args)
 
         case FREERTOS_WDT_CTRL_SET_TIMEOUT:
             os_wdt_p->timeout_value = *((u32*)args);
-            printf("Wdt timeout value = %d\r\n", os_wdt_p->timeout_value);
             if(os_wdt_p->timeout_value >= FWDT_MAX_TIMEOUT)
             {
                 goto control_exit;
@@ -169,7 +168,7 @@ control_exit:
     if (pdFALSE == xSemaphoreGive(os_wdt_p->wdt_semaphore))
     {
         /* We could not post the semaphore, exit with error */
-        vPrintf("Wdt xSemaphoreGive failed\r\n");
+        FWDT_ERROR("Wdt xSemaphoreGive failed\r\n");
         return FREERTOS_WDT_SEM_ERROR;
     }
 

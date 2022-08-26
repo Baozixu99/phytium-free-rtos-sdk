@@ -8,25 +8,6 @@ menu "SFUD Configuration"
         select USE_FSPIM
         default n
 
-    if SFUD_CTRL_FSPIM
-    choice SFUD_TRANS_MODE
-        prompt "Trans Mode"
-        default SFUD_TRANS_MODE_POLL_FIFO
-        help
-            Select Transfer Mode as Poll or Intrrupt
-
-        config SFUD_TRANS_MODE_POLL_BYTE
-            bool "Poll (Trans by Byte)"
-
-        config SFUD_TRANS_MODE_POLL_FIFO
-            bool "Poll (Trans by Fifo)"
-
-        config SFUD_TRANS_MODE_INTRRUPT
-            bool "Intrrupt (Trans by Fifo)"
-
-    endchoice #SFUD_TRANS_MODE
-    endif
-
     config SFUD_CTRL_FQSPI
             bool
             prompt "Use FQSPI"        

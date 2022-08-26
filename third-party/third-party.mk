@@ -200,6 +200,29 @@ endif
 
 endif #CONFIG_USE_LETTER_SHELL
 
+ifdef CONFIG_USE_TLSF
 
+INC_DIR += $(THIRD_PARTY_CUR_DIR)/tlsf-3.1.0/src \
+			$(THIRD_PARTY_CUR_DIR)/tlsf-3.1.0/port
+SRC_DIR += $(THIRD_PARTY_CUR_DIR)/tlsf-3.1.0/src \
+			$(THIRD_PARTY_CUR_DIR)/tlsf-3.1.0/port
 
+endif #CONFIG_USE_TLSF
 
+ifdef CONFIG_USE_SDMMC_CMD
+
+$(shell export PATH=$(THIRD_PARTY_CUR_DIR)/sdmmc-1.0:$PATH)
+
+	INC_DIR +=  $(THIRD_PARTY_CUR_DIR)/sdmmc-1.0 \
+				$(THIRD_PARTY_CUR_DIR)/sdmmc-1.0/inc \
+				$(THIRD_PARTY_CUR_DIR)/sdmmc-1.0/src
+	SRC_DIR +=  $(THIRD_PARTY_CUR_DIR)/sdmmc-1.0 \
+				$(THIRD_PARTY_CUR_DIR)/sdmmc-1.0/src
+
+	ifdef CONFIG_SDMMC_PORT_FSDIO
+		INC_DIR +=  $(THIRD_PARTY_CUR_DIR)/sdmmc-1.0/port \
+					$(THIRD_PARTY_CUR_DIR)/sdmmc-1.0/port/fsdio
+		SRC_DIR +=  $(THIRD_PARTY_CUR_DIR)/sdmmc-1.0/port \
+					$(THIRD_PARTY_CUR_DIR)/sdmmc-1.0/port/fsdio
+	endif #CONFIG_SDMMC_PORT_FSDIO
+endif #CONFIG_USE_SDMMC_CMD

@@ -301,7 +301,14 @@ static void FFreeRTOSWdtDelete(FFreeRTOSWdt *os_wdt_p)
         vTaskDelete(queue_receive_handle);
         vPrintf("Delete FFreeRTOSWdtQueueReceiveTask success\r\n");
     }
+
+	/* delete queue */
+	vQueueDelete(xQueue);
+
+	/* delete count sem */
+	vSemaphoreDelete(xCountingSemaphore);
 	
+	/* delete timer */
 	xReturn = xTimerDelete(xOneShotTimer, 0);
 	if(xReturn != pdPASS)
 	{

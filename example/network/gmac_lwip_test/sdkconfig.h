@@ -123,6 +123,11 @@
 #define CONFIG_FREERTOS_USE_UART
 /* end of Freertos Uart Drivers */
 
+/* Freertos Pwm Drivers */
+
+/* CONFIG_FREERTOS_USE_PWM is not set */
+/* end of Freertos Pwm Drivers */
+
 /* Freertos Qspi Drivers */
 
 /* CONFIG_FREERTOS_USE_QSPI is not set */
@@ -137,6 +142,27 @@
 
 /* CONFIG_FREERTOS_USE_XMAC is not set */
 /* end of Freertos Eth Drivers */
+
+/* Freertos Gpio Drivers */
+
+/* CONFIG_FREERTOS_USE_GPIO is not set */
+/* end of Freertos Gpio Drivers */
+
+/* Freertos Spim Drivers */
+
+/* CONFIG_FREERTOS_USE_FSPIM is not set */
+/* end of Freertos Spim Drivers */
+
+/* Freertos DMA Drivers */
+
+/* CONFIG_FREERTOS_USE_FDDMA is not set */
+/* CONFIG_FREERTOS_USE_FGDMA is not set */
+/* end of Freertos DMA Drivers */
+
+/* Freertos MMC Drivers */
+
+/* CONFIG_FREERTOS_USE_FSDIO is not set */
+/* end of Freertos MMC Drivers */
 /* end of Component Configuration */
 
 /* FreeRTOS Setting */
@@ -162,6 +188,8 @@
 /* CONFIG_DEFAULT_LETTER_SHELL_USE_UART0 is not set */
 /* CONFIG_DEFAULT_LETTER_SHELL_USE_UART2 is not set */
 /* end of Letter Shell Configuration */
+#define CONFIG_USE_TLSF
+/* CONFIG_USE_SDMMC_CMD is not set */
 /* end of FreeRTOS Setting */
 
 #endif

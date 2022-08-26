@@ -1,32 +1,67 @@
-## 拉取/合并请求描述：
 
-[
-这段方括号里的内容是您**必须填写并替换掉**的，否则PR不可能被合并。**方括号外面的内容不需要修改，但请仔细阅读。**
-请在这里填写您的PR描述，可以包括以下之一的内容：
-为什么提交这份PR；解决的问题是什么，你的解决方案是什么；
-并确认并列出已经在什么情况或板卡上进行了测试；
-并且附上测试结果于测试流程，如果代码存在耦合，则需要对耦合部分进行修改。
+# Pull Request (拉取/合并请求) v0.2
 
-]
+- PR 发起人：
+- PR 评审人：
 
+## PR内容描述
 
-以下的内容不应该在提交PR时的message修改，修改下述message，PR会被直接关闭。请在提交PR后，浏览器查看PR并对以下检查项逐项check，没问题后逐条在页面上打钩。
+><font size="1">简述本次PR的背景, 描述本次PR新增/修改的内容, 说明PR合入后功能的变更（PR发起人完成）</font><br />
 
-### 当前拉取/合并请求的状态
+### PR关联模块 (必填)
 
-必须选择一项 :
+><font size="1">描述本次PR修改关联耦合了哪些模块，关联耦合模块是否已经进行功能验证（PR发起人完成）</font><br />
+
+### PR测试说明 (必填)
+
+><font size="1">说明本次PR合入代码已经在哪些板卡上进行了测试，描述测试方法和流程，给出测试结果，并做简要说明（PR发起人完成）</font><br />
+
+## PR当前状态
 
 - [ ] 本拉取/合并请求是一个草稿版本 
 - [ ] 本拉取/合并请求是一个成熟版本 
 
-### 代码质量 Code Quality：
+## PR检查事项
 
-我在这个拉取/合并请求中已经考虑了 As part of this pull request, I've considered the following:
+><font size="1">按照清单完成PR的自查（PR发起人完成）和审查（PR评审人完成）</font><br />
 
-- [ ] 已经仔细查看过代码改动的对比 Already check the difference between PR and old code
-- [ ] 代码风格正确，包括缩进空格，命名及其他风格 Style guide is adhered to, including spacing, naming and other styles
-- [ ] 没有垃圾代码，代码尽量精简，不包含`#if 0`代码，不包含已经被注释了的代码 All redundant code is removed and cleaned up
-- [ ] 所有变更均有原因及合理的，并且不会影响到其他软件组件代码或BSP All modifications are justified and not affect other components or BSP
-- [ ] 对难懂代码均提供对应的注释 I've commented appropriately where code is tricky
-- [ ] 本拉取/合并请求代码是高质量的 Code in this PR is of high quality
-- [ ] 本拉取/合并符合[代码规范](../documentation/coding_style_cn.md) 
+- [ ]  1. PR essential content is completed, PR的必填项是否已经完成
+
+
+> PR内容描述是否完成，写明了新增特性/解决的问题，关联模块和测试结果
+
+- [ ]  2. PR content fits within project, changes are reflected in documentation, PR说明的修改是否与提交的代码符合，且变更已经同步到文档中
+
+> PR说明的是A，B功能，合入的也是A，B功能
+
+- [ ]  3. PR follows Module specification, PR符合组件接口规范
+
+> 参考编码规范的组件接口规范进行了检查
+
+- [ ] 4. PR follows nameing specification， PR符合命名规范
+
+> 参考编码规范的命名规范检查了新增/修改的文件，目录，符号等
+
+- [ ] 5. PR follows typesetting and comment specification，PR符合排版注释规范
+
+> 参考编码规范的排版、注释、头文件规范检查了新增的代码
+
+- [ ] 6. PR code in good fashion, PR代码考虑了编程实践中常见的问题
+
+> 参考编码规范的宏、变量、表达式、分支、函数等规范进行了检查
+
+- [ ] 7. PR code is portable for 32/64 bit, PR代码考虑了32/64位可移植性
+
+> 参考编码规范的32/64位可移植性规范进行了检查
+
+- [ ] 8. PR code is portable for supported platform, PR代码考虑了硬件平台可移植性
+
+> 参考编码规范的平台可移植性规范进行了检查
+
+- [ ] 9. PR code follows log specification, PR代码考虑了日志打印规范
+
+> 参考编码规范的日志打印规范进行了检查
+
+- [ ] 10. PR does not cause build fail or unit test fail , 提交的代码是否通过编译，通过基本功能验证
+
+> 已经使用test suite进行编译和功能验证

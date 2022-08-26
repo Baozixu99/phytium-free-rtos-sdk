@@ -5,6 +5,11 @@ ifdef CONFIG_FREERTOS_USE_UART
 	INC_DIR += $(OS_DRIVER_CUR_DIR)/serial/fpl011
 endif
 
+ifdef CONFIG_FREERTOS_USE_PWM
+	SRC_DIR += $(OS_DRIVER_CUR_DIR)/pwm
+	INC_DIR += $(OS_DRIVER_CUR_DIR)/pwm
+endif
+
 ifdef CONFIG_FREERTOS_USE_QSPI
 	SRC_DIR += $(OS_DRIVER_CUR_DIR)/qspi
 	INC_DIR += $(OS_DRIVER_CUR_DIR)/qspi
@@ -15,9 +20,32 @@ ifdef CONFIG_FREERTOS_USE_WDT
 	INC_DIR += $(OS_DRIVER_CUR_DIR)/wdt
 endif
 
-
 ifdef CONFIG_FREERTOS_USE_XMAC
 	SRC_DIR += $(OS_DRIVER_CUR_DIR)/eth/xmac
 	INC_DIR += $(OS_DRIVER_CUR_DIR)/eth/xmac
 endif
 
+ifdef CONFIG_FREERTOS_USE_GPIO
+	SRC_DIR += $(OS_DRIVER_CUR_DIR)/gpio/fgpio
+	INC_DIR += $(OS_DRIVER_CUR_DIR)/gpio/fgpio
+endif
+
+ifdef CONFIG_FREERTOS_USE_FSPIM
+	SRC_DIR += $(OS_DRIVER_CUR_DIR)/spi/fspim
+	INC_DIR += $(OS_DRIVER_CUR_DIR)/spi/fspim
+endif
+
+ifdef CONFIG_FREERTOS_USE_FDDMA
+	SRC_DIR += $(OS_DRIVER_CUR_DIR)/dma/fddma
+	INC_DIR += $(OS_DRIVER_CUR_DIR)/dma/fddma
+endif
+
+ifdef CONFIG_FREERTOS_USE_FGDMA
+	SRC_DIR += $(OS_DRIVER_CUR_DIR)/dma/fgdma
+	INC_DIR += $(OS_DRIVER_CUR_DIR)/dma/fgdma
+endif
+
+ifdef CONFIG_FREERTOS_USE_FSDIO
+	SRC_DIR += $(OS_DRIVER_CUR_DIR)/mmc/fsdio
+	INC_DIR += $(OS_DRIVER_CUR_DIR)/mmc/fsdio
+endif

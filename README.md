@@ -115,13 +115,41 @@ D2000 是一款面向桌面应用的高性能通用 8 核处理器。每 2 个�
 
 ---
 
-## 4. 参考资料
+## 4. 外设驱动支持情况
+
+| Hardware Interface             | Platform Supported         | Platform Developing         | Component                 |
+| ------------------------------ | -------------------------- | --------------------------- | ------------------------- |
+| UART (PrimeCell PL011)         | FT2000/4<br>E2000<br>D2000 |                             | serial/fpl011             |
+| 10/100/1000MB-ETHERNET         | E2000                      |                             | eth/fxmac                 |
+| QSPI (Nor Flash)               | FT2000/4<br>E2000<br>D2000 |                             | qspi                      |
+| PWM                            | E2000                      |                             | pwm                       |
+| WDT                            | FT2000/4<br>D2000<br>E2000 |                             | wdt                       |
+| DDMA                           | E2000                      |                             | dma/fddma                 |
+| GDMA                           | E2000                      |                             | dma/fgdma                 |
+| GPIO                           | E2000                      |                             | gpio                      |
+| SDIO                           | E2000                      |                             | mmc/fsdio                 |
+| SPI                            | E2000                      |                             | spi/fspim                 |
+
+
+| Third-Party                    | Platform Supported         | Platform Developing         | Component                 |
+| ------------------------------ | -------------------------- | --------------------------- | ------------------------- |
+| LWIP 2.1.2                     | FT2000/4<br>D2000<br>E2000 |                             | lwip-2.1.2                |
+| Letter shell 3.1               | FT2000/4<br>D2000<br>E2000 |                             | letter-shell-3.1          |
+| Sfud 1.1.0                     | FT2000/4<br>D2000<br>E2000 |                             | sfud-1.1.0                |
+| Fatfs (RAMSATA)                | FT2000/4<br>D2000<br>E2000 |                             | fatfs-0.1.3               |
+| OpenAMP                        | FT2000/4<br>D2000<br>E2000 |                             | openamp                   |
+| SPIFFS-0.3.7                   | FT2000/4<br>D2000<br>E2000 |                             | spiffs-0.3.7              |
+| TLSF-3.1.0                     | FT2000/4<br>D2000<br>E2000 |                             | tlsf-3.1.0                |
+| Sdmmc-1.0                      | E2000                      |                             | sdmmc-1.0                 |
+
+---
+## 5. 参考资料
 
 - The FreeRTOS Reference Manual API Functions and Configuration Options
 - Mastering the FreeRTOS Real Time Kernel A Hands-On Tutorial Guide
----
 
-## 5. 贡献方法
+---
+## 6. 贡献方法
 
 请联系飞腾嵌入式软件部
 
@@ -135,6 +163,6 @@ liushengming1118@phytium.com.cn
 
 ---
 
-## 6. 许可协议
+## 7. 许可协议
 
 Phytium Public License 1.0 (PPL-1.0)

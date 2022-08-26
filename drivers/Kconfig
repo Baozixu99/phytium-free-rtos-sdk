@@ -5,6 +5,15 @@ menu "Freertos Uart Drivers"
         default n
 endmenu
 
+menu "Freertos Pwm Drivers"
+    config FREERTOS_USE_PWM
+        bool
+        prompt "Use Freertos pwm driver"
+        default n
+        select USE_PWM
+        select USE_FPWM
+endmenu
+
 menu "Freertos Qspi Drivers"
     config FREERTOS_USE_QSPI
         bool
@@ -19,10 +28,42 @@ menu "Freertos Wdt Drivers"
         default n
 endmenu
 
-
 menu "Freertos Eth Drivers"
-config FREERTOS_USE_XMAC
+    config FREERTOS_USE_XMAC
+        bool
+        prompt "Use Freertos xmac driver"
+        default n
+endmenu
+
+menu "Freertos Gpio Drivers"
+    config FREERTOS_USE_GPIO
     bool
-    prompt "Use Freertos xmac driver"
+    prompt "Use Freertos gpio driver"
     default n
+endmenu
+
+menu "Freertos Spim Drivers"
+    config FREERTOS_USE_FSPIM
+        bool
+        prompt "Use Freertos spim driver"
+        default n
+endmenu
+
+menu "Freertos DMA Drivers"
+    config FREERTOS_USE_FDDMA
+        bool
+        prompt "Use Freertos ddma driver"
+        default n
+
+    config FREERTOS_USE_FGDMA
+        bool
+        prompt "Use Freertos gdma driver"
+        default n
+endmenu
+
+menu "Freertos MMC Drivers"
+    config FREERTOS_USE_FSDIO
+        bool
+        prompt "Use Freertos sdio driver"
+        default n
 endmenu

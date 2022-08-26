@@ -1,3 +1,38 @@
+# Phytium FreeRTOS SDK 2022-08-10 0.2.2 ChangeLog
+
+Change Log sinc 0.2.1 
+
+## driver
+
+- add gpio freertos driver
+- add spi freertos driver
+- add ddma freertos driver
+- add gdma freertos driver
+- add sdio freertos driver
+
+## example
+
+- add gpio, gdma, ddma example
+- add spi nor flash, tf emmc example
+
+## third-party
+
+- add tlsf to implement memory pool
+- add sfud to support nor flash
+- add sdmmc to support tf/emmc
+
+# Phytium FreeRTOS SDK 2022-08-18 ChangeLog
+
+Change Log sinc 2022-08-16
+
+## driver 
+
+- add pwm driver
+
+## example
+
+- add pwm test example
+
 # Phytium FreeRTOS SDK 2022-08-10 0.2.1 ChangeLog
 
 Change Log sinc 0.2.0 

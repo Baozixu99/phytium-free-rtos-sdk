@@ -269,7 +269,11 @@ static void FFreeRTOSQspiDelete(void)
         vTaskDelete(write_handle);
         vPrintf("Delete QspiWriteTask success\r\n");
     }
+
+	/* delete count sem */
+	vSemaphoreDelete(xCountingSemaphore);
 	
+	/* delete timer */
 	xReturn = xTimerDelete(xOneShotTimer, 0);
 	if(xReturn != pdPASS)
 	{
