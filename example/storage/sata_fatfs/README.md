@@ -40,7 +40,7 @@
 
 本例程在FT2000/4，D2000，E2000平台测试通过，您可以参考以下方法配置本例程所需要的硬件和软件环境，
 - FT2000/4，D2000或E2000开发板
-- 本例程使用Marvell 88SE9215芯片通过PCIE接口转接Sata，外接Sata硬盘
+- 本例程基于FT2000/4平台，使用Marvell 88SE9215芯片通过PCIE接口转接Sata，外接Sata硬盘
 - 将转接板插入PCIE插槽，接入sata硬盘至转接板的CN1(也就是port 0)
 
 ![hardware](./figs/hardware.png)
@@ -51,7 +51,7 @@
 
 本例程需要的配置包括，
 - Letter Shell组件，依赖 USE_LETTER_SHELL
-- FATFS组件，依赖 USE_FATFS 和 SELECT_FATFS_FSATA
+- FATFS组件，依赖 USE_FATFS 和 SELECT_FATFS_FSATA_PCIE
 - PCIE组件，作为转接接口，依赖USE_PCIE
 - SATA组件，依赖 USE_SATA
 
@@ -75,7 +75,6 @@
 ### 2.3 构建和下载
 
 ><font size="1">描述构建、烧录下载镜像的过程，列出相关的命令</font><br />
-
 
 使用例程的一般过程为
 
@@ -124,6 +123,10 @@ bootelf -p 0x90100000
 ## 3. 如何解决问题
 
 ><font size="1">主要记录使用例程中可能会遇到的问题，给出相应的解决方案</font><br />
+- 如果使用E2000D开发板，可以选择使用sata控制器，只需要在fatfs的介质选择中使能SELECT_FATFS_FSATA_CONTROLLER
+![menuconfig](./figs/menuconfig.png)
+
+- 在configs文件夹的默认配置中，ft2004和d2000是使用的pcie转sata配置，e2000是使用的sata控制器配置
 
 ## 4. 修改历史记录
 

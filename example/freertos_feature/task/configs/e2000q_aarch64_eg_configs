@@ -1,14 +1,9 @@
 
 #
-# Project Configuration
-#
-
-#
-#  Freertos Configuration
+# Freertos Configuration
 #
 CONFIG_TARGET_NAME="e2000q_freertos_a64"
-# end of  Freertos Configuration
-# end of Project Configuration
+# end of Freertos Configuration
 
 #
 # Standalone Setting
@@ -21,7 +16,6 @@ CONFIG_USE_FREERTOS=y
 # CONFIG_TARGET_ARMV8_AARCH32 is not set
 CONFIG_TARGET_ARMV8_AARCH64=y
 CONFIG_USE_CACHE=y
-# CONFIG_USE_L3CACHE is not set
 CONFIG_USE_MMU=y
 # CONFIG_USE_SYS_TICK is not set
 # CONFIG_MMU_DEBUG_PRINTS is not set
@@ -35,6 +29,7 @@ CONFIG_USE_MMU=y
 CONFIG_TARGET_E2000Q=y
 # CONFIG_TARGET_E2000D is not set
 # CONFIG_TARGET_E2000S is not set
+CONFIG_TARGET_E2000=y
 CONFIG_DEFAULT_DEBUG_PRINT_UART1=y
 # CONFIG_DEFAULT_DEBUG_PRINT_UART0 is not set
 # CONFIG_DEFAULT_DEBUG_PRINT_UART2 is not set
@@ -60,6 +55,7 @@ CONFIG_ENABLE_Pl011_UART=y
 # CONFIG_USE_CAN is not set
 # CONFIG_USE_I2C is not set
 # CONFIG_USE_TIMER is not set
+# CONFIG_USE_MIO is not set
 # CONFIG_USE_SDMMC is not set
 # CONFIG_USE_PCIE is not set
 # CONFIG_USE_WDT is not set
@@ -120,10 +116,65 @@ CONFIG_OUTPUT_BINARY=y
 #
 
 #
-# Freertos Drivers
+# Freertos Uart Drivers
 #
 CONFIG_FREERTOS_USE_UART=y
-# end of Freertos Drivers
+# end of Freertos Uart Drivers
+
+#
+# Freertos Pwm Drivers
+#
+# CONFIG_FREERTOS_USE_PWM is not set
+# end of Freertos Pwm Drivers
+
+#
+# Freertos Qspi Drivers
+#
+# CONFIG_FREERTOS_USE_QSPI is not set
+# end of Freertos Qspi Drivers
+
+#
+# Freertos Wdt Drivers
+#
+# CONFIG_FREERTOS_USE_WDT is not set
+# end of Freertos Wdt Drivers
+
+#
+# Freertos Eth Drivers
+#
+# CONFIG_FREERTOS_USE_XMAC is not set
+# end of Freertos Eth Drivers
+
+#
+# Freertos Gpio Drivers
+#
+# CONFIG_FREERTOS_USE_GPIO is not set
+# end of Freertos Gpio Drivers
+
+#
+# Freertos Spim Drivers
+#
+# CONFIG_FREERTOS_USE_FSPIM is not set
+# end of Freertos Spim Drivers
+
+#
+# Freertos DMA Drivers
+#
+# CONFIG_FREERTOS_USE_FDDMA is not set
+# CONFIG_FREERTOS_USE_FGDMA is not set
+# end of Freertos DMA Drivers
+
+#
+# Freertos MMC Drivers
+#
+# CONFIG_FREERTOS_USE_FSDIO is not set
+# end of Freertos MMC Drivers
+
+#
+# Freertos Adc Drivers
+#
+# CONFIG_FREERTOS_USE_ADC is not set
+# end of Freertos Adc Drivers
 # end of Component Configuration
 
 #
@@ -131,6 +182,9 @@ CONFIG_FREERTOS_USE_UART=y
 #
 # CONFIG_USE_LWIP is not set
 CONFIG_USE_BACKTRACE=y
+# CONFIG_USE_FATFS is not set
+# CONFIG_USE_SFUD is not set
+# CONFIG_USE_SPIFFS is not set
 # CONFIG_USE_AMP is not set
 CONFIG_USE_LETTER_SHELL=y
 
@@ -142,4 +196,7 @@ CONFIG_DEFAULT_LETTER_SHELL_USE_UART1=y
 # CONFIG_DEFAULT_LETTER_SHELL_USE_UART0 is not set
 # CONFIG_DEFAULT_LETTER_SHELL_USE_UART2 is not set
 # end of Letter Shell Configuration
+
+# CONFIG_USE_TLSF is not set
+# CONFIG_USE_SDMMC_CMD is not set
 # end of FreeRTOS Setting

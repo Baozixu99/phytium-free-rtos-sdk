@@ -127,11 +127,15 @@ ifdef CONFIG_USE_FATFS
 		SRC_DIR += $(THIRD_PARTY_CUR_DIR)/fatfs-0.1.3/port/fsdmmc
 	endif
 
-	ifdef CONFIG_SELECT_FATFS_FSATA
+	ifdef CONFIG_SELECT_FATFS_FSATA_PCIE
 		INC_DIR += $(THIRD_PARTY_CUR_DIR)/fatfs-0.1.3/port/fsata_pcie
 		SRC_DIR += $(THIRD_PARTY_CUR_DIR)/fatfs-0.1.3/port/fsata_pcie
 	endif
 	
+	ifdef CONFIG_SELECT_FATFS_FSATA_CONTROLLER
+		INC_DIR += $(THIRD_PARTY_CUR_DIR)/fatfs-0.1.3/port/fsata_controller
+		SRC_DIR += $(THIRD_PARTY_CUR_DIR)/fatfs-0.1.3/port/fsata_controller
+	endif
 
 	ifdef CONFIG_SELECT_FATFS_USB
 		INC_DIR += $(THIRD_PARTY_CUR_DIR)/fatfs-0.1.3/port/fusb_pcie

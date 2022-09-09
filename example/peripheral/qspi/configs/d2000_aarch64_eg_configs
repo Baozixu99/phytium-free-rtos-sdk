@@ -44,11 +44,7 @@ CONFIG_USE_QSPI=y
 #
 # Qspi Configuration
 #
-CONFIG_USE_GD25Q256=y
-# CONFIG_USE_GD25Q64 is not set
-# CONFIG_USE_GD25Q32 is not set
-# CONFIG_USE_GD25Q128 is not set
-# CONFIG_USE_S25FS256 is not set
+CONFIG_USE_FQSPI=y
 # end of Qspi Configuration
 
 CONFIG_USE_GIC=y
@@ -87,8 +83,8 @@ CONFIG_USE_NEW_LIBC=y
 # Building Option
 #
 # CONFIG_LOG_VERBOS is not set
-# CONFIG_LOG_DEBUG is not set
-CONFIG_LOG_INFO=y
+CONFIG_LOG_DEBUG=y
+# CONFIG_LOG_INFO is not set
 # CONFIG_LOG_WARN is not set
 # CONFIG_LOG_ERROR is not set
 # CONFIG_LOG_NONE is not set
@@ -180,6 +176,12 @@ CONFIG_FREERTOS_USE_QSPI=y
 #
 # CONFIG_FREERTOS_USE_FSDIO is not set
 # end of Freertos MMC Drivers
+
+#
+# Freertos Adc Drivers
+#
+# CONFIG_FREERTOS_USE_ADC is not set
+# end of Freertos Adc Drivers
 # end of Component Configuration
 
 #

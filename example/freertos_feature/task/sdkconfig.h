@@ -3,7 +3,7 @@
 
 /* Freertos Configuration */
 
-#define CONFIG_TARGET_NAME "e2000d_freertos_a64"
+#define CONFIG_TARGET_NAME "e2000q_freertos_a64"
 /* end of Freertos Configuration */
 
 /* Standalone Setting */
@@ -24,8 +24,8 @@
 
 /* CONFIG_TARGET_F2000_4 is not set */
 /* CONFIG_TARGET_D2000 is not set */
-/* CONFIG_TARGET_E2000Q is not set */
-#define CONFIG_TARGET_E2000D
+#define CONFIG_TARGET_E2000Q
+/* CONFIG_TARGET_E2000D is not set */
 /* CONFIG_TARGET_E2000S is not set */
 #define CONFIG_TARGET_E2000
 #define CONFIG_DEFAULT_DEBUG_PRINT_UART1
@@ -68,11 +68,11 @@
 
 /* Building Option */
 
-/* CONFIG_LOG_VERBOS is not set */
+#define CONFIG_LOG_VERBOS
 /* CONFIG_LOG_DEBUG is not set */
 /* CONFIG_LOG_INFO is not set */
 /* CONFIG_LOG_WARN is not set */
-#define CONFIG_LOG_ERROR
+/* CONFIG_LOG_ERROR is not set */
 /* CONFIG_LOG_NONE is not set */
 #define CONFIG_USE_DEFAULT_INTERRUPT_CONFIG
 #define CONFIG_INTERRUPT_ROLE_MASTER
@@ -149,6 +149,11 @@
 
 /* CONFIG_FREERTOS_USE_FSDIO is not set */
 /* end of Freertos MMC Drivers */
+
+/* Freertos Adc Drivers */
+
+/* CONFIG_FREERTOS_USE_ADC is not set */
+/* end of Freertos Adc Drivers */
 /* end of Component Configuration */
 
 /* FreeRTOS Setting */
@@ -168,7 +173,7 @@
 /* CONFIG_DEFAULT_LETTER_SHELL_USE_UART0 is not set */
 /* CONFIG_DEFAULT_LETTER_SHELL_USE_UART2 is not set */
 /* end of Letter Shell Configuration */
-#define CONFIG_USE_TLSF
+/* CONFIG_USE_TLSF is not set */
 /* CONFIG_USE_SDMMC_CMD is not set */
 /* end of FreeRTOS Setting */
 

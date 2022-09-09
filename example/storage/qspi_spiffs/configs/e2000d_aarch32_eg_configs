@@ -44,11 +44,7 @@ CONFIG_USE_QSPI=y
 #
 # Qspi Configuration
 #
-# CONFIG_USE_GD25Q256 is not set
-# CONFIG_USE_GD25Q64 is not set
-# CONFIG_USE_GD25Q32 is not set
-CONFIG_USE_GD25Q128=y
-# CONFIG_USE_S25FS256 is not set
+CONFIG_USE_FQSPI=y
 # end of Qspi Configuration
 
 CONFIG_USE_GIC=y
@@ -145,7 +141,7 @@ CONFIG_FREERTOS_USE_UART=y
 #
 # Freertos Qspi Drivers
 #
-# CONFIG_FREERTOS_USE_QSPI is not set
+CONFIG_FREERTOS_USE_QSPI=y
 # end of Freertos Qspi Drivers
 
 #
@@ -184,6 +180,12 @@ CONFIG_FREERTOS_USE_UART=y
 #
 # CONFIG_FREERTOS_USE_FSDIO is not set
 # end of Freertos MMC Drivers
+
+#
+# Freertos Adc Drivers
+#
+# CONFIG_FREERTOS_USE_ADC is not set
+# end of Freertos Adc Drivers
 # end of Component Configuration
 
 #

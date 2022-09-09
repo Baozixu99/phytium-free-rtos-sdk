@@ -23,8 +23,9 @@
 
 #include "parameters.h"
 #include "fqspi_sfud_core.h"
-#include "fqspi_flash.h"
 #include "sdkconfig.h"
+#include "fqspi_os.h"
+
 #ifndef SDK_CONFIG_H__
     #warning "Please include sdkconfig.h"
 #endif
@@ -35,11 +36,21 @@ extern void sfud_log_info(const char *format, ...);
 
 typedef struct 
 {
-    FQspiCtrl qspi;
-} FqspiCore;
+    u32 id;
+    FFreeRTOSQspi *os_qspi_p;
+    u8 cs;
+    boolean is_inited;
+} FQspiSfudOs;
 
-static u32 device_select_mask ; /* 每一位用于指示那个设备被选择，如0x3 ,则 fqspi0 ，fqspi1 被选择 */
-FqspiCore fqspi[FQSPI_INSTANCE_NUM] = {0} ;
+static FQspiSfudOs sfud_instance =
+{
+    .id = FQSPI_INSTANCE_0,
+    .os_qspi_p = NULL,
+    .cs = FQSPI_CS_0,
+    .is_inited = FALSE
+};
+
+static FQspiSfudOs fqspi_sfud_os[FQSPI_INSTANCE_NUM] = {0} ;
 
 
 #ifdef SFUD_USING_QSPI
@@ -50,12 +61,14 @@ static sfud_err FQspiFastRead(const sfud_spi *spi, uint32_t addr, sfud_qspi_read
         uint8_t *read_buf, size_t read_size) {
 
     sfud_err result = SFUD_SUCCESS;
-    FQspiCtrl *qspi_p = (FQspiCtrl *)spi->user_data;
-    static uint8_t read_flag = 0;
+    FQspiSfudOs *qspi_sfud_os_p = (FQspiSfudOs *)spi->user_data;
+
+    FFreeRTOSQspiMessage message;
+    memset(&message, 0, sizeof(message));
 
     /* set default read instruction */
     #ifdef CONFIG_SFUD_QSPI_READ_MODE_READ
-    qspi_read_cmd_format->instruction = SFUD_CMD_READ_DATA;
+        qspi_read_cmd_format->instruction = SFUD_CMD_READ_DATA;
     #endif
 
     #ifdef CONFIG_SFUD_QSPI_READ_MODE_DUAL_READ
@@ -65,22 +78,19 @@ static sfud_err FQspiFastRead(const sfud_spi *spi, uint32_t addr, sfud_qspi_read
     #ifdef CONFIG_SFUD_QSPI_READ_MODE_QUAD_READ
     qspi_read_cmd_format->instruction = SFUD_CMD_QUAD_IO_READ_DATA;
     #endif
-    /**
-     * add your qspi read flash data code
-     */
-    if(read_flag == 0)
-    {
-        result = FQspiFlashReadDataConfig(qspi_p, qspi_read_cmd_format->instruction);
-        read_flag = 1;
-    }
-    FQspiFlashReadData(qspi_p, addr, read_buf, read_size);
-    // result = FQspiFlashPortReadData(qspi_p, SFUD_CMD_READ_DATA, addr, read_buf, read_size);
+
+    /* add your qspi read flash data code */
+    message.read_buf = read_buf;
+    message.length = read_size;
+    message.addr = addr;
+    message.cmd = qspi_read_cmd_format->instruction;
+    message.cs = qspi_sfud_os_p->cs;
+    result = FFreeRTOSQspiTransfer(qspi_sfud_os_p->os_qspi_p, &message);
+    
     return result;
 }
 
 #endif /* SFUD_USING_QSPI */
-
-
 
 static sfud_err FQspiFlashTransfer(const sfud_spi *spi, const u8 *write_buf, 
                                     size_t write_size, u8 *read_buf, size_t read_size)
@@ -91,44 +101,61 @@ static sfud_err FQspiFlashTransfer(const sfud_spi *spi, const u8 *write_buf,
     u32 addr = 0;
     u8 i = 0;
     size_t len = 0;
-    FQspiCtrl *qspi_p = (FQspiCtrl *)spi->user_data;
+        
+    FQspiSfudOs *qspi_sfud_os_p = (FQspiSfudOs *)spi->user_data;
+    FQspiCtrl *qspi_p = &qspi_sfud_os_p->os_qspi_p->qspi_ctrl;
+
+    FFreeRTOSQspiMessage message;
+    memset(&message, 0, sizeof(message));
+
     len = (qspi_p->flash_size > SZ_16M) ? 5 : 4;
     if (write_size && read_size)
     {
         command = write_buf[0];
         switch(command)
         {
-            case FQSPI_FLASH_CMD_RDID:
-                FQspiFlashSpecialInstruction(qspi_p, command, read_buf, read_size);
+            case SFUD_CMD_JEDEC_ID:
+                message.cs = qspi_sfud_os_p->cs;
+	            message.cmd = command;
+                message.read_buf = read_buf;
+                message.length = read_size;
+                ret = FFreeRTOSQspiTransfer(qspi_sfud_os_p->os_qspi_p, &message);
                 if (SFUD_SUCCESS != ret)
                 {
-                    printf("failed read id, test result 0x%x\r\n", ret);
+                    printf("failed cmd = %#x, test result 0x%x\r\n", command, ret);
                     return ret;
                 }
                 break;
 
-            case FQSPI_FLASH_CMD_SFDP:
+            case SFUD_CMD_READ_SFDP_REGISTER:
                 if(write_size >= 4)
                 {
                     addr = ((write_buf[1] << 16) | (write_buf[2] << 8) | (write_buf[3]));
                 }
-                FQspiFlashReadSfdp(qspi_p, addr, read_buf, read_size);
+                message.cs = qspi_sfud_os_p->cs;
+	            message.cmd = command;
+                message.addr = addr;
+                message.read_buf = read_buf;
+                message.length = read_size;
+                ret = FFreeRTOSQspiTransfer(qspi_sfud_os_p->os_qspi_p, &message);
                 if (SFUD_SUCCESS != ret)
                 {
-                    printf("failed read sfdp, test result 0x%x\r\n", ret);
+                    printf("failed cmd = %#x, test result 0x%x\r\n", command, ret);
                     return ret;
                 }
                 break;
 
-            case FQSPI_FLASH_CMD_RDSR1:
-                ret = FQspiFlashSpecialInstruction(qspi_p, command, read_buf, 1);
-    
+            case SFUD_CMD_READ_STATUS_REGISTER:
+                message.cs = qspi_sfud_os_p->cs;
+	            message.cmd = command;
+                message.read_buf = read_buf;
+                message.length = 1;
+                ret = FFreeRTOSQspiTransfer(qspi_sfud_os_p->os_qspi_p, &message);
                 if (SFUD_SUCCESS != ret)
                 {
-                    printf("failed read sr1, test result 0x%x\r\n", ret);
+                    printf("failed cmd = %#x, test result 0x%x\r\n", command, ret);
                     return ret;
                 }
-
                 break;
             default:
                 break;
@@ -139,38 +166,59 @@ static sfud_err FQspiFlashTransfer(const sfud_spi *spi, const u8 *write_buf,
         command = write_buf[0];
         switch(command)
         {
-            case FQSPI_CMD_ENABLE_RESET:
-            case FQSPI_CMD_RESET:
-                FQspiFlashWriteReg(qspi_p, command, NULL, 0);
-                break; 
-            case FQSPI_FLASH_CMD_WREN:
-                FQspiFlashEnableWrite(qspi_p);
+            case SFUD_CMD_ENABLE_RESET:
+            case SFUD_CMD_RESET:
+            case SFUD_CMD_WRITE_ENABLE:
+            case SFUD_CMD_WRITE_DISABLE:
+            case SFUD_CMD_WRITE_STATUS_REGISTER:
+                message.cs = qspi_sfud_os_p->cs;
+	            message.cmd = command;
+                ret = FFreeRTOSQspiTransfer(qspi_sfud_os_p->os_qspi_p, &message);
+                if (SFUD_SUCCESS != ret)
+                {
+                    printf("failed cmd = %#x, test result 0x%x\r\n", command, ret);
+                    return ret;
+                }
                 break;
-            case FQSPI_FLASH_CMD_WRDI:
-                FQspiFlashDisableWrite(qspi_p);
-                break;
-            case FQSPI_FLASH_CMD_WRR:
-                FQspiFlashWriteReg(qspi_p, command, NULL, 0);
-                break;
-            case FQSPI_FLASH_CMD_SE:                
-            case FQSPI_FLASH_CMD_4SE:
-            case FQSPI_FLASH_CMD_4BE:
-            case FQSPI_FLASH_CMD_P4E:
+            
+            /* some erase commands are used in SFUD_FLASH_CHIP_TABLE, users need add if not identify */
+            case SFUD_CMD_ERASE_CHIP:
+            case SFUD_CMD_ERASE_SECTOR:
                 SFUD_ASSERT(write_size >= len);
                 for (i = 1; i < len; i++)
                 {
                     addr = ((addr << 8)|(write_buf[i]));
                 }
-                FQspiFlashErase(qspi_p, command, addr);
-                break;   
-            case FQSPI_FLASH_CMD_PP:
+                message.cs = qspi_sfud_os_p->cs;
+	            message.cmd = command;
+                message.addr = addr;
+                ret = FFreeRTOSQspiTransfer(qspi_sfud_os_p->os_qspi_p, &message);
+                if (SFUD_SUCCESS != ret)
+                {
+                    printf("failed cmd = %#x, test result 0x%x\r\n", command, ret);
+                    return ret;
+                }
+                break;  
+
+            case SFUD_CMD_PAGE_PROGRAM:
                 /* write Flash data */
                 SFUD_ASSERT(write_size > len);
                 for (i = 1; i < len; i++)
                 {
                     addr = ((addr << 8)|(write_buf[i]));
                 }
-                ret = FQspiFlashWriteData(qspi_p, command, addr, &write_buf[len], write_size - len);
+
+                message.write_buf = &write_buf[len];
+                message.length = write_size - len;
+                message.addr = addr;
+                message.cmd = command;
+                message.cs = qspi_sfud_os_p->cs;
+                ret = FFreeRTOSQspiTransfer(qspi_sfud_os_p->os_qspi_p, &message);
+                if (SFUD_SUCCESS != ret)
+                {
+                    printf("failed cmd = %#x, test result 0x%x\r\n", command, ret);
+                    return ret;
+                }
                 break;
             default:
                 break;
@@ -192,7 +240,6 @@ static sfud_err FQspiWriteRead(const sfud_spi *spi, const uint8_t *write_buf,
                                 size_t read_size) {
     sfud_err result = SFUD_SUCCESS;
     uint8_t send_data, read_data;
-    // FQspiCtrl *qspi_p = (FQspiCtrl *)spi->user_data;
     
     if (write_size) 
     {
@@ -212,31 +259,29 @@ static sfud_err FQspiWriteRead(const sfud_spi *spi, const uint8_t *write_buf,
 sfud_err FQspiProbe(sfud_flash *flash)
 {
     sfud_spi *spi_p = &flash->spi; 
+
     sfud_err result = SFUD_SUCCESS;
+
+    FQspiSfudOs *user_data = &sfud_instance;
+
     if(!memcmp(FQSPI0_SFUD_NAME,spi_p->name,strlen(FQSPI0_SFUD_NAME)))
     {
-        if(device_select_mask &0x1)
+        if (FALSE == user_data->is_inited)
         {
-            return SFUD_ERR_NOT_FOUND;
-        }
-        FQspiConfig config_p= *FQspiLookupConfig(0);
-        
-        if (FQSPI_SUCCESS != FQspiCfgInitialize(&fqspi[0].qspi, &config_p))
-        {
-            SFUD_DEBUG("init qspi failed");
-            result = SFUD_ERR_INIT_FAILED;
-            return result;
-        }
-        
-        flash->spi.wr = FQspiWriteRead;
-        flash->spi.user_data = &fqspi[0].qspi;
-        /* adout 60 seconds timeout */
-        flash->retry.times = 60 * 10000;
+            user_data->os_qspi_p = FFreeRTOSQspiInit(user_data->id);
 
-#ifdef SFUD_USING_QSPI
-        flash->spi.qspi_read = FQspiFastRead;
-#endif
-        device_select_mask |= 0x1 ;
+            flash->spi.wr = FQspiWriteRead;
+
+            flash->spi.user_data = user_data;
+
+            /* adout 60 seconds timeout */
+            flash->retry.times = 60 * 10000;
+
+    #ifdef SFUD_USING_QSPI
+            flash->spi.qspi_read = FQspiFastRead;
+    #endif
+            user_data->is_inited = TRUE;        
+        }
     }
     else
     {

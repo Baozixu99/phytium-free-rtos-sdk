@@ -1,3 +1,32 @@
+# Phytium FreeRTOS SDK 2022-09-07 ChangeLog
+
+Change Log sinc 2022-08-30
+
+## driver 
+
+- optimize qspi os driver adapt to sfud and spiffs
+
+## example
+
+- add sata controller fatfs test example
+
+## third-party
+
+- modify qspi sfud use qspi os driver interface functions
+- add sata controller fatfs port diskio
+
+# Phytium FreeRTOS SDK 2022-08-29 ChangeLog
+
+Change Log sinc 2022-08-24
+
+## driver 
+
+- add adc driver
+
+## example
+
+- add adc test example
+
 # Phytium FreeRTOS SDK 2022-08-10 0.2.2 ChangeLog
 
 Change Log sinc 0.2.1 

@@ -193,7 +193,7 @@ int FatfsSataWriteFile(const char *file_name, const char *input_str, boolean cre
 
     if (FALSE == fatfs_ok)
     {
-        vPrintf("please setup fatfs first !!!\n");
+        printf("please setup fatfs first !!!\n");
         return -1;
     }
 
@@ -218,14 +218,14 @@ int FatfsSataWriteFile(const char *file_name, const char *input_str, boolean cre
 
         if (res != FR_OK)
         {
-            vPrintf("write %s fail\n", file_name);
+            printf("write %s fail\n", file_name);
             ret = -3;
             goto err_handle;            
         }             
     }
     else
     {
-        vPrintf("f_open %s fail %d\n", file_name, res);
+        printf("f_open %s fail %d\n", file_name, res);
         return -4; /* no file handler, directly return */
     }
 
@@ -234,7 +234,7 @@ err_handle:
     res = f_close(&file_handler);
     if (FR_OK != res)
     {
-        vPrintf("close file %s failed !!!\n", file_name);
+        printf("close file %s failed !!!\n", file_name);
         ret = -6;
     }
 
@@ -250,40 +250,40 @@ int FatfsSataReadFile(const char *file_name, size_t len)
 
     if (FALSE == fatfs_ok)
     {
-        vPrintf("please setup fatfs first !!!\n");
+        printf("please setup fatfs first !!!\n");
         return -1;
     }
 
     if (len > sizeof(buff))
     {
-        vPrintf("length %d is not support\n", len);
-        return -3;
+        printf("length %d is not support\n", len);
+        return -2;
     }
 
     res = f_open(&file_handler, file_name, FA_READ);
     if (res != FR_OK)
     {
-        vPrintf("open file %s failed !!!\n", file_name);
-        return -1;
+        printf("open file %s failed !!!\n", file_name);
+        return -3;
     }
 
     res = f_lseek(&file_handler, 0);
     if (res != FR_OK)
     {
-        vPrintf("seek to file begin failed !!!\n");
-        return -2;
+        printf("seek to file begin failed !!!\n");
+        return -4;
     }    
 
     memset(buff, 0, sizeof(buff));
     res = f_read(&file_handler, buff, len, &fnum);
     if (res != FR_OK)
     {
-        vPrintf("read file %s failed !!!\n", file_name);
-        return -3;
+        printf("read file %s failed !!!\n", file_name);
+        return -5;
     }
     else
     {
-        vPrintf("read %s success, str = %s\n\n", file_name, buff);
+        printf("read %s success, str = %s\n\n", file_name, buff);
 	}
 
     return 0;    
@@ -301,7 +301,7 @@ static void FFreeRTOSSataFatfsReadTask(void *pvParameters)
 	for( ;; )
 	{
 		/* Print out the name of this task. */
-		vPrintf( pcTaskName );
+		// printf( pcTaskName );
 
 		FatfsSataReadFile(file_name, FSATA_READ_LEN);
 
@@ -330,10 +330,10 @@ static void FFreeRTOSSataFatfsWriteTask(void *pvParameters)
     for (;;)
     {
 		/* Print out the name of this task. */
-		vPrintf( pcTaskName );
+		// printf( pcTaskName );
 		i++;
 		sprintf(string_out, "%s-%d", string, i);
-		vPrintf( "write to %s, str = %s\n", file_name, string_out);
+		printf( "write to %s, str = %s\n", file_name, string_out);
 		FatfsSataWriteFile(file_name, string_out, FALSE, 0);
 
 		/* Delay for a period.  This time a call to vTaskDelay() is used which

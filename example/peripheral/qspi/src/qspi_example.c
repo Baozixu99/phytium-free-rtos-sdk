@@ -82,11 +82,6 @@ static void QspiInitTask(void *pvParameters)
 		goto qspi_init_exit;
 	}
 	
-	/* read qspi flash id, set cs and cmd */
-	message.cs = QSPI_CS_CHANNEL;
-	message.cmd = FQSPI_FLASH_CMD_RDID;
-	FFreeRTOSQspiTransfer(os_qspi_ctrl_p, &message);
-
     for (int i = 0; i < READ_WRITE_TASK_NUM; i++)
     {
         xSemaphoreGive(xCountingSemaphore);
@@ -108,7 +103,7 @@ static void QspiReadTask(void *pvParameters)
 	for( ;; )
 	{
 		/* Print out the name of this task. */
-		vPrintf( pcTaskName );
+		printf( pcTaskName );
 
 		message.read_buf = rd_buf;
 		message.length = DAT_LENGTH;
@@ -118,8 +113,11 @@ static void QspiReadTask(void *pvParameters)
 		ret = FFreeRTOSQspiTransfer(os_qspi_ctrl_p, &message);
 		if (FQSPI_SUCCESS != ret)
 		{
-			vPrintf("QspiReadTask FFreeRTOSQspiTransfer failed, result 0x%x\r\n", ret);
+			printf("QspiReadTask FFreeRTOSQspiTransfer failed, result 0x%x\r\n", ret);
 		}
+		taskENTER_CRITICAL(); //进入临界区
+		FtDumpHexByte(rd_buf, DAT_LENGTH);
+		taskEXIT_CRITICAL(); //退出临界区
 
 		/* Delay for a period.  This time a call to vTaskDelay() is used which
 		places the task into the Blocked state until the delay period has
@@ -144,10 +142,19 @@ static void QspiWriteTask(void *pvParameters)
 	for( ;; )
 	{
 		/* Print out the name of this task. */
-		vPrintf( pcTaskName );
+		printf( pcTaskName );
 		for (i = 0; i < DAT_LENGTH; i++)
 		{
 			wr_buf[i] = wr_buf[i] + 0x11;
+		}
+
+		message.addr = FLASH_ADDR;
+		message.cmd = FQSPI_FLASH_CMD_SE;
+		message.cs = QSPI_CS_CHANNEL;
+		ret = FFreeRTOSQspiTransfer(os_qspi_ctrl_p, &message);
+		if (FQSPI_SUCCESS != ret)
+		{
+			printf("QspiWriteTask FFreeRTOSQspiTransfer failed, result 0x%x\r\n", ret);
 		}
 
 		message.write_buf = wr_buf;
@@ -159,7 +166,7 @@ static void QspiWriteTask(void *pvParameters)
 		ret = FFreeRTOSQspiTransfer(os_qspi_ctrl_p, &message);
 		if (FQSPI_SUCCESS != ret)
 		{
-			vPrintf("QspiWriteTask FFreeRTOSQspiTransfer failed, result 0x%x\r\n", ret);
+			printf("QspiWriteTask FFreeRTOSQspiTransfer failed, result 0x%x\r\n", ret);
 		}
 
 		/* Delay for a period.  This time a call to vTaskDelay() is used which
@@ -175,7 +182,7 @@ static void QspiWriteTask(void *pvParameters)
 static void prvOneShotTimerCallback( TimerHandle_t xTimer )
 {
 	/* Output a string to show the time at which the callback was executed. */
-	vPrintf( "One-shot timer callback executing, will delete QspiReadTask and QspiWriteTask.\r\n" );
+	printf( "One-shot timer callback executing, will delete QspiReadTask and QspiWriteTask.\r\n" );
 
 	FFreeRTOSQspiDelete();
 }
@@ -241,12 +248,12 @@ BaseType_t FFreeRTOSQspiCreate(u32 id)
 		passed. */
 		if( xTimerStarted != pdPASS)
 		{
-			vPrintf("CreateSoftwareTimerTasks xTimerStart failed \r\n");
+			printf("CreateSoftwareTimerTasks xTimerStart failed \r\n");
 		}
 	}
 	else
 	{
-		vPrintf("CreateSoftwareTimerTasks xTimerCreate failed \r\n");
+		printf("CreateSoftwareTimerTasks xTimerCreate failed \r\n");
 	}
 
 	taskEXIT_CRITICAL(); 	
@@ -261,13 +268,13 @@ static void FFreeRTOSQspiDelete(void)
 	if(read_handle)
     {
         vTaskDelete(read_handle);
-        vPrintf("Delete QspiReadTask success\r\n");
+        printf("Delete QspiReadTask success\r\n");
     }
 
     if(write_handle)
     {
         vTaskDelete(write_handle);
-        vPrintf("Delete QspiWriteTask success\r\n");
+        printf("Delete QspiWriteTask success\r\n");
     }
 
 	/* delete count sem */
@@ -277,11 +284,11 @@ static void FFreeRTOSQspiDelete(void)
 	xReturn = xTimerDelete(xOneShotTimer, 0);
 	if(xReturn != pdPASS)
 	{
-		vPrintf("OneShot Software Timer Delete failed.\r\n");
+		printf("OneShot Software Timer Delete failed.\r\n");
 	}
 	else
 	{
-		vPrintf("OneShot Software Timer Delete success.\r\n");
+		printf("OneShot Software Timer Delete success.\r\n");
 	}
 }
 

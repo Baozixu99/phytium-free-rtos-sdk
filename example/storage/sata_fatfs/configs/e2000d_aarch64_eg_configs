@@ -57,14 +57,7 @@ CONFIG_ENABLE_Pl011_UART=y
 # CONFIG_USE_TIMER is not set
 # CONFIG_USE_MIO is not set
 # CONFIG_USE_SDMMC is not set
-CONFIG_USE_PCIE=y
-
-#
-# pcie Configuration
-#
-CONFIG_ENABLE_F_PCIE=y
-# end of pcie Configuration
-
+# CONFIG_USE_PCIE is not set
 # CONFIG_USE_WDT is not set
 # CONFIG_USE_DMA is not set
 # CONFIG_USE_NAND is not set
@@ -183,6 +176,12 @@ CONFIG_FREERTOS_USE_UART=y
 #
 # CONFIG_FREERTOS_USE_FSDIO is not set
 # end of Freertos MMC Drivers
+
+#
+# Freertos Adc Drivers
+#
+# CONFIG_FREERTOS_USE_ADC is not set
+# end of Freertos Adc Drivers
 # end of Component Configuration
 
 #
@@ -197,7 +196,8 @@ CONFIG_USE_FATFS=y
 #
 # CONFIG_SELECT_FATFS_RAM_DISK is not set
 # CONFIG_SELECT_FATFS_FSDMMC is not set
-CONFIG_SELECT_FATFS_FSATA=y
+# CONFIG_SELECT_FATFS_FSATA_PCIE is not set
+CONFIG_SELECT_FATFS_FSATA_CONTROLLER=y
 # CONFIG_SELECT_FATFS_USB is not set
 # end of FATFS Configuration
 

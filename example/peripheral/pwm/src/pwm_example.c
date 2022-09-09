@@ -192,7 +192,7 @@ BaseType_t FFreeRTOSPwmCreate(u32 id)
                             (UBaseType_t )configMAX_PRIORITIES-1, /* 任务的优先级 */
                             NULL); /* 任务控制 */
 
-	/* 主动喂狗任务，周期比看门狗的超时时间短 */
+	/* pwm占空比变化任务 */
 	xReturn = xTaskCreate((TaskFunction_t )FFreeRTOSPwmChangeTask, /* 任务入口函数 */
                             (const char* )"FFreeRTOSPwmChangeTask",/* 任务名字 */
                             (uint16_t )1024, /* 任务栈大小 */

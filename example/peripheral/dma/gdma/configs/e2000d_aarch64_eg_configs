@@ -124,6 +124,12 @@ CONFIG_FREERTOS_USE_UART=y
 # end of Freertos Uart Drivers
 
 #
+# Freertos Pwm Drivers
+#
+# CONFIG_FREERTOS_USE_PWM is not set
+# end of Freertos Pwm Drivers
+
+#
 # Freertos Qspi Drivers
 #
 # CONFIG_FREERTOS_USE_QSPI is not set
@@ -165,6 +171,12 @@ CONFIG_FREERTOS_USE_FGDMA=y
 #
 # CONFIG_FREERTOS_USE_FSDIO is not set
 # end of Freertos MMC Drivers
+
+#
+# Freertos Adc Drivers
+#
+# CONFIG_FREERTOS_USE_ADC is not set
+# end of Freertos Adc Drivers
 # end of Component Configuration
 
 #

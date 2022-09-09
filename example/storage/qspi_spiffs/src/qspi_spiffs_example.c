@@ -68,12 +68,12 @@ enum
 #define FSPIFFS_DEBUG(format, ...)   FT_DEBUG_PRINT_D(FSPIFFS_DEBUG_TAG, format, ##__VA_ARGS__)
 
 /* spiffs start address and size */ 
-#define FSPIFFS_START_ADDR		SZ_8M
+#define FSPIFFS_START_ADDR		(7 * SZ_1M)
 #define FSPIFFS_USE_SIZE		SZ_1M	
 
 #define FSPIFFS_RW_BUF_SIZE     64
 
-/* if format flash */
+/* if format flash, TRUE is need format, it tasks some time  */
 #define FSPIFFS_IF_FORMAT		TRUE
 
 /* 一个页大小两倍的一个RAM缓冲区, 用来加载和维护SPIFFS的逻辑页 */

@@ -3,7 +3,7 @@
 
 /* Freertos Configuration */
 
-#define CONFIG_TARGET_NAME "e2000d_freertos_a32"
+#define CONFIG_TARGET_NAME "e2000d_freertos_a64"
 /* end of Freertos Configuration */
 
 /* Standalone Setting */
@@ -12,12 +12,12 @@
 
 /* Arch Configuration */
 
-#define CONFIG_TARGET_ARMV8_AARCH32
-/* CONFIG_TARGET_ARMV8_AARCH64 is not set */
+/* CONFIG_TARGET_ARMV8_AARCH32 is not set */
+#define CONFIG_TARGET_ARMV8_AARCH64
 #define CONFIG_USE_CACHE
 #define CONFIG_USE_MMU
 #define CONFIG_USE_SYS_TICK
-#define CONFIG_USE_AARCH64_L1_TO_AARCH32
+/* CONFIG_MMU_DEBUG_PRINTS is not set */
 /* end of Arch Configuration */
 
 /* Board Configuration */
@@ -85,8 +85,8 @@
 
 /* Linker Options */
 
-#define CONFIG_AARCH32_RAM_LD
-/* CONFIG_AARCH64_RAM_LD is not set */
+/* CONFIG_AARCH32_RAM_LD is not set */
+#define CONFIG_AARCH64_RAM_LD
 /* CONFIG_USER_DEFINED_LD is not set */
 #define CONFIG_LINK_SCRIPT_ROM
 #define CONFIG_ROM_START_UP_ADDR 0x80100000
@@ -95,12 +95,8 @@
 #define CONFIG_RAM_START_UP_ADDR 0x81000000
 #define CONFIG_RAM_SIZE_MB 64
 #define CONFIG_HEAP_SIZE 1
-#define CONFIG_SVC_STACK_SIZE 0x1000
-#define CONFIG_SYS_STACK_SIZE 0x1000
-#define CONFIG_IRQ_STACK_SIZE 0x1000
-#define CONFIG_ABORT_STACK_SIZE 0x1000
-#define CONFIG_FIQ_STACK_SIZE 0x1000
-#define CONFIG_UNDEF_STACK_SIZE 0x1000
+#define CONFIG_STACK_SIZE 0x100000
+#define CONFIG_FPU_STACK_SIZE 0x1000
 /* end of Linker Options */
 
 /* Compiler Options */
@@ -115,6 +111,11 @@
 
 #define CONFIG_FREERTOS_USE_UART
 /* end of Freertos Uart Drivers */
+
+/* Freertos Pwm Drivers */
+
+/* CONFIG_FREERTOS_USE_PWM is not set */
+/* end of Freertos Pwm Drivers */
 
 /* Freertos Qspi Drivers */
 
@@ -151,6 +152,11 @@
 
 /* CONFIG_FREERTOS_USE_FSDIO is not set */
 /* end of Freertos MMC Drivers */
+
+/* Freertos Adc Drivers */
+
+/* CONFIG_FREERTOS_USE_ADC is not set */
+/* end of Freertos Adc Drivers */
 /* end of Component Configuration */
 
 /* FreeRTOS Setting */

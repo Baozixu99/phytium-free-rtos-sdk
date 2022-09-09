@@ -150,6 +150,11 @@
 
 /* CONFIG_FREERTOS_USE_FSDIO is not set */
 /* end of Freertos MMC Drivers */
+
+/* Freertos Adc Drivers */
+
+/* CONFIG_FREERTOS_USE_ADC is not set */
+/* end of Freertos Adc Drivers */
 /* end of Component Configuration */
 
 /* FreeRTOS Setting */

@@ -49,7 +49,9 @@ FFreeRTOSQspi *FFreeRTOSQspiInit(u32 instance_id)
     FQspiConfig qspi_config;
     qspi_config = *FQspiLookupConfig(instance_id);
     FASSERT(FQspiCfgInitialize(&os_qspi[instance_id].qspi_ctrl, &qspi_config) == FT_SUCCESS);
-    
+    /* detect connected flash infomation */
+    FASSERT_MSG(FQspiFlashDetect(&os_qspi[instance_id].qspi_ctrl) == FT_SUCCESS, "flash detect failed.");
+
     /* qspi wr_semaphore initialize */
     FASSERT((os_qspi[instance_id].wr_semaphore = xSemaphoreCreateMutex()) != NULL);
    
@@ -100,7 +102,7 @@ FError FFreeRTOSQspiTransfer(FFreeRTOSQspi *os_qspi_p, FFreeRTOSQspiMessage *mes
     /* New transfer can be performed only after current one is finished */
     if (pdFALSE == xSemaphoreTake(os_qspi_p->wr_semaphore, portMAX_DELAY))
     {
-        vPrintf("Qspi xSemaphoreTake failed\r\n");
+        printf("Qspi xSemaphoreTake failed\r\n");
         /* We could not take the semaphore, exit with 0 data received */
         return FREERTOS_QSPI_SEM_ERROR;
     }
@@ -116,24 +118,17 @@ FError FFreeRTOSQspiTransfer(FFreeRTOSQspi *os_qspi_p, FFreeRTOSQspiMessage *mes
         {
             if (NULL != write_buf)
             {
-                /* erase norflash data in specified address */
-                ret = FQspiFlashErase(pctrl, FQSPI_FLASH_CMD_SE, flash_addr);
-                if (FQSPI_SUCCESS != ret)
-                {
-                    vPrintf("Qspi failed to erase mem, result 0x%x\r\n", ret);
-                    goto transfer_exit;
-                }
                 /* write norflash data */
                 ret = FQspiFlashWriteData(pctrl, cmd, flash_addr, write_buf, length);
                 if (FQSPI_SUCCESS != ret)
                 {
-                    vPrintf("Qspi failed to write mem, result 0x%x\r\n", ret);
+                    printf("Qspi failed to write mem, result 0x%x\r\n", ret);
                     goto transfer_exit;
                 }
             }
             else
             {
-                vPrintf("Qspi Transfer cmd %x write_buf is null\r\n", cmd);
+                printf("Qspi Transfer cmd %x write_buf is null\r\n", cmd);
                 ret = FQSPI_INVAL_PARAM;
                 goto transfer_exit;
             }
@@ -154,7 +149,7 @@ FError FFreeRTOSQspiTransfer(FFreeRTOSQspi *os_qspi_p, FFreeRTOSQspiMessage *mes
                     read_cmd_bak = cmd;
                     if (FQSPI_SUCCESS != ret)
                     {
-                        vPrintf("Qspi read config failed\r\n");
+                        printf("Qspi read config failed\r\n");
                         goto transfer_exit;
                     }
                 }
@@ -162,44 +157,53 @@ FError FFreeRTOSQspiTransfer(FFreeRTOSQspi *os_qspi_p, FFreeRTOSQspiMessage *mes
                 read_len = FQspiFlashReadData(pctrl, flash_addr, read_buf, length);
                 if (read_len != length)
                 {
-                    vPrintf("Qspi failed to read mem, read len = %d\r\n", read_len);
+                    printf("Qspi failed to read mem, read len = %d\r\n", read_len);
                     ret = FQSPI_NOT_SUPPORT;
                     goto transfer_exit;
                 }
-                taskENTER_CRITICAL(); //进入临界区
-                FtDumpHexByte(read_buf, length);
-                taskEXIT_CRITICAL(); //退出临界区
+                
             }
             else
             {
-                vPrintf("Qspi Transfer cmd %x read_buf is null\r\n", cmd);
+                printf("Qspi Transfer cmd %x read_buf is null\r\n", cmd);
                 ret = FQSPI_INVAL_PARAM;
                 goto transfer_exit;
             }
         }
         break;
-        case FQSPI_FLASH_CMD_RDID:
-        {
-            FQspiFlashId flash_id;
-            memset(&flash_id, 0, sizeof(flash_id));
 
-            /* read flash id */
-            ret = FQspiFlashSpecialInstruction(pctrl, cmd, (u8 *)&flash_id, sizeof(flash_id));
-            if(FQSPI_SUCCESS != ret)
-            {
-                vPrintf("Qspi Transfer cmd %x failed to read id\r\n", cmd);
-                goto transfer_exit;
-            }
-            vPrintf("flash_id manufacturer_id=%#x\r\n", flash_id.manufacturer_id);
-            vPrintf("flash_id device_id_msb  =%#x\r\n", flash_id.device_id_msb);
-            vPrintf("flash_id device_id_lsb  =%#x\r\n", flash_id.device_id_lsb);
-            vPrintf("flash_id id_cfi_length  =%#x\r\n", flash_id.id_cfi_length);
-            vPrintf("flash_id sector_size    =%#x\r\n", flash_id.sector_size);
-            vPrintf("flash_id family_id      =%#x\r\n", flash_id.family_id);
-        }
+        case FQSPI_FLASH_CMD_RDID:
+        case FQSPI_FLASH_CMD_RDSR1:
+            ret = FQspiFlashSpecialInstruction(pctrl, cmd, read_buf, length);
         break;
+
+        case FQSPI_FLASH_CMD_SFDP:
+            ret = FQspiFlashReadSfdp(pctrl, flash_addr, read_buf, length);
+        break;
+
+        case FQSPI_CMD_ENABLE_RESET:
+        case FQSPI_CMD_RESET:
+        case FQSPI_FLASH_CMD_WRR:
+            ret = FQspiFlashWriteReg(pctrl, cmd, NULL, 0);
+        break; 
+
+        case FQSPI_FLASH_CMD_WREN:
+            ret = FQspiFlashEnableWrite(pctrl);
+        break;
+
+        case FQSPI_FLASH_CMD_WRDI:
+            ret = FQspiFlashDisableWrite(pctrl);
+        break;
+
+        case FQSPI_FLASH_CMD_SE:                
+        case FQSPI_FLASH_CMD_4SE:
+        case FQSPI_FLASH_CMD_4BE:
+        case FQSPI_FLASH_CMD_P4E:
+            ret = FQspiFlashErase(pctrl, cmd, flash_addr);
+            break; 
+
         default:
-            vPrintf("Qspi Transfer cmd invalid\r\n");
+            printf("Qspi Transfer cmd invalid\r\n");
             ret = FQSPI_INVAL_PARAM;
             goto transfer_exit;
             
@@ -210,7 +214,7 @@ transfer_exit:
     if (pdFALSE == xSemaphoreGive(os_qspi_p->wr_semaphore))
     {
         /* We could not post the semaphore, exit with error */
-        vPrintf("Qspi xSemaphoreGive failed\r\n");
+        printf("Qspi xSemaphoreGive failed\r\n");
         ret |= FREERTOS_QSPI_SEM_ERROR;
     }
 

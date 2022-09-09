@@ -177,6 +177,10 @@ if (!(EXPR))                                                                   \
 #define SFUD_WRITE_MAX_PAGE_SIZE                        256
 #endif
 
+#ifndef SFUD_CMD_ERASE_SECTOR
+#define SFUD_CMD_ERASE_SECTOR                           0xD8          
+#endif
+
 /* send dummy data for read data */
 #ifndef SFUD_DUMMY_DATA
 #define SFUD_DUMMY_DATA                                0xFF

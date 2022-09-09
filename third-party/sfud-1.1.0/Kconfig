@@ -1,6 +1,5 @@
 menu "SFUD Configuration"
     
-
     config SFUD_CTRL_FSPIM
         bool
         prompt "Use FSPIM"        
@@ -10,7 +9,7 @@ menu "SFUD Configuration"
 
     config SFUD_CTRL_FQSPI
             bool
-            prompt "Use FQSPI"        
+            prompt "Use FQSPI"     
             select USE_QSPI
             select USE_NOR_QSPI
             default n

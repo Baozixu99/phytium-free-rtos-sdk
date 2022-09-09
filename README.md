@@ -129,6 +129,7 @@ D2000 是一款面向桌面应用的高性能通用 8 核处理器。每 2 个�
 | GPIO                           | E2000                      |                             | gpio                      |
 | SDIO                           | E2000                      |                             | mmc/fsdio                 |
 | SPI                            | E2000                      |                             | spi/fspim                 |
+| ADC                            | E2000                      |                             | adc                       |
 
 
 | Third-Party                    | Platform Supported         | Platform Developing         | Component                 |

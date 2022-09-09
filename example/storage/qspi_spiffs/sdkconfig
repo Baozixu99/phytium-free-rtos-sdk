@@ -2,7 +2,7 @@
 #
 # Freertos Configuration
 #
-CONFIG_TARGET_NAME="e2000d_freertos_a64"
+CONFIG_TARGET_NAME="e2000q_freertos_a64"
 # end of Freertos Configuration
 
 #
@@ -26,8 +26,8 @@ CONFIG_USE_SYS_TICK=y
 #
 # CONFIG_TARGET_F2000_4 is not set
 # CONFIG_TARGET_D2000 is not set
-# CONFIG_TARGET_E2000Q is not set
-CONFIG_TARGET_E2000D=y
+CONFIG_TARGET_E2000Q=y
+# CONFIG_TARGET_E2000D is not set
 # CONFIG_TARGET_E2000S is not set
 CONFIG_TARGET_E2000=y
 CONFIG_DEFAULT_DEBUG_PRINT_UART1=y
@@ -44,11 +44,7 @@ CONFIG_USE_QSPI=y
 #
 # Qspi Configuration
 #
-# CONFIG_USE_GD25Q256 is not set
-# CONFIG_USE_GD25Q64 is not set
-# CONFIG_USE_GD25Q32 is not set
-CONFIG_USE_GD25Q128=y
-# CONFIG_USE_S25FS256 is not set
+CONFIG_USE_FQSPI=y
 # end of Qspi Configuration
 
 CONFIG_USE_GIC=y
@@ -141,7 +137,7 @@ CONFIG_FREERTOS_USE_UART=y
 #
 # Freertos Qspi Drivers
 #
-# CONFIG_FREERTOS_USE_QSPI is not set
+CONFIG_FREERTOS_USE_QSPI=y
 # end of Freertos Qspi Drivers
 
 #
@@ -180,6 +176,12 @@ CONFIG_FREERTOS_USE_UART=y
 #
 # CONFIG_FREERTOS_USE_FSDIO is not set
 # end of Freertos MMC Drivers
+
+#
+# Freertos Adc Drivers
+#
+# CONFIG_FREERTOS_USE_ADC is not set
+# end of Freertos Adc Drivers
 # end of Component Configuration
 
 #
@@ -221,6 +223,6 @@ CONFIG_DEFAULT_LETTER_SHELL_USE_UART1=y
 # CONFIG_DEFAULT_LETTER_SHELL_USE_UART2 is not set
 # end of Letter Shell Configuration
 
-CONFIG_USE_TLSF=y
+# CONFIG_USE_TLSF is not set
 # CONFIG_USE_SDMMC_CMD is not set
 # end of FreeRTOS Setting

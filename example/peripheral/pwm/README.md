@@ -29,6 +29,7 @@
 程序启动后，创建pwm初始化任务，设置pwm时钟分频、周期和占空比等；
 创建pwm占空比变化任务FFreeRTOSPwmChangeTask，用于定时变化pwm占空比；
 创建单次模式的软件定时器，回调函数为删除FFreeRTOSPwmChangeTask，去初始化pwm，删除软件定时器；
+使用C板进行测试，选择pwm模块7的两路pwm_out，也就是pwm14和pwm15作为输出，对应板上J152的引脚18和引脚20；
 
 ## 2. 如何使用例程
 

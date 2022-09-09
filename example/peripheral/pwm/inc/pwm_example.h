@@ -25,6 +25,6 @@
 #ifndef PWM_EXAMPLE_H
 #define PWM_EXAMPLE_H
 
-/* pwm read and write test */
+/* pwm test */
 BaseType_t FFreeRTOSPwmCreate(u32 id);
 #endif // !

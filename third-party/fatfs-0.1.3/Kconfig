@@ -12,8 +12,18 @@ menu "FATFS Configuration"
             bool "Sd Card(FSdmmc)"
             select USE_SDMMC_CMD
 
-        config SELECT_FATFS_FSATA
-            bool "Sata"
+        config SELECT_FATFS_FSATA_PCIE
+            bool "Sata_Pcie"
+            select USE_PCIE
+            select ENABLE_F_PCIE
+            select USE_SATA
+            select ENABLE_FSATA
+        
+        config SELECT_FATFS_FSATA_CONTROLLER
+            depends on TARGET_E2000
+            bool "Sata_Controller"
+            select USE_SATA
+            select ENABLE_FSATA
 
         config SELECT_FATFS_USB
             bool "Usb Disk"

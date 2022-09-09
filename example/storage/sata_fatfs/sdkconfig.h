@@ -3,7 +3,7 @@
 
 /* Freertos Configuration */
 
-#define CONFIG_TARGET_NAME "e2000d_freertos_a64"
+#define CONFIG_TARGET_NAME "e2000q_freertos_a64"
 /* end of Freertos Configuration */
 
 /* Standalone Setting */
@@ -24,8 +24,8 @@
 
 /* CONFIG_TARGET_F2000_4 is not set */
 /* CONFIG_TARGET_D2000 is not set */
-/* CONFIG_TARGET_E2000Q is not set */
-#define CONFIG_TARGET_E2000D
+#define CONFIG_TARGET_E2000Q
+/* CONFIG_TARGET_E2000D is not set */
 /* CONFIG_TARGET_E2000S is not set */
 #define CONFIG_TARGET_E2000
 #define CONFIG_DEFAULT_DEBUG_PRINT_UART1
@@ -52,12 +52,7 @@
 /* CONFIG_USE_TIMER is not set */
 /* CONFIG_USE_MIO is not set */
 /* CONFIG_USE_SDMMC is not set */
-#define CONFIG_USE_PCIE
-
-/* pcie Configuration */
-
-#define CONFIG_ENABLE_F_PCIE
-/* end of pcie Configuration */
+/* CONFIG_USE_PCIE is not set */
 /* CONFIG_USE_WDT is not set */
 /* CONFIG_USE_DMA is not set */
 /* CONFIG_USE_NAND is not set */
@@ -159,6 +154,11 @@
 
 /* CONFIG_FREERTOS_USE_FSDIO is not set */
 /* end of Freertos MMC Drivers */
+
+/* Freertos Adc Drivers */
+
+/* CONFIG_FREERTOS_USE_ADC is not set */
+/* end of Freertos Adc Drivers */
 /* end of Component Configuration */
 
 /* FreeRTOS Setting */
@@ -171,7 +171,8 @@
 
 /* CONFIG_SELECT_FATFS_RAM_DISK is not set */
 /* CONFIG_SELECT_FATFS_FSDMMC is not set */
-#define CONFIG_SELECT_FATFS_FSATA
+/* CONFIG_SELECT_FATFS_FSATA_PCIE is not set */
+#define CONFIG_SELECT_FATFS_FSATA_CONTROLLER
 /* CONFIG_SELECT_FATFS_USB is not set */
 /* end of FATFS Configuration */
 /* CONFIG_USE_SFUD is not set */

@@ -49,3 +49,9 @@ ifdef CONFIG_FREERTOS_USE_FSDIO
 	SRC_DIR += $(OS_DRIVER_CUR_DIR)/mmc/fsdio
 	INC_DIR += $(OS_DRIVER_CUR_DIR)/mmc/fsdio
 endif
+
+ifdef CONFIG_FREERTOS_USE_ADC
+	SRC_DIR += $(OS_DRIVER_CUR_DIR)/adc
+	INC_DIR += $(OS_DRIVER_CUR_DIR)/adc
+endif
+

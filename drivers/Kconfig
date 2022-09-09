@@ -19,6 +19,8 @@ menu "Freertos Qspi Drivers"
         bool
         prompt "Use Freertos qspi driver"
         default n
+        select USE_QSPI
+        select USE_FQSPI
 endmenu
 
 menu "Freertos Wdt Drivers"
@@ -66,4 +68,13 @@ menu "Freertos MMC Drivers"
         bool
         prompt "Use Freertos sdio driver"
         default n
+endmenu
+
+menu "Freertos Adc Drivers"
+    config FREERTOS_USE_ADC
+        bool
+        prompt "Use Freertos adc driver"
+        default n
+        select USE_ADC
+        select USE_FADC
 endmenu

@@ -29,17 +29,15 @@
 #include "fsleep.h"
 #include "sfud.h"
 #include "fqspi_spiffs_port.h"
-#include "sdkconfig.h"
 
 /************************** Constant Definitions *****************************/
-#define FSPIFFS_FLASH_START_ADDR		SZ_8M
+#define FSPIFFS_FLASH_START_ADDR		(7 * SZ_1M)
 #define FSPIFFS_FLASH_SIZE				SZ_1M	
 /**************************** Type Definitions *******************************/
 
 /************************** Variable Definitions *****************************/
 static boolean is_sfud_ready = FALSE;
 static const sfud_flash *flash_instance = NULL;
-
 static const fsize_t flash_id = SFUD_FQSPI0_INDEX;
 
 /***************** Macros (Inline Functions) Definitions *********************/
