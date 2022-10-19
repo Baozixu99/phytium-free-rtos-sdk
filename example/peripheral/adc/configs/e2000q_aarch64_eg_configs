@@ -182,6 +182,12 @@ CONFIG_FREERTOS_USE_UART=y
 #
 CONFIG_FREERTOS_USE_ADC=y
 # end of Freertos Adc Drivers
+
+#
+# Freertos Can Drivers
+#
+# CONFIG_FREERTOS_USE_CAN is not set
+# end of Freertos Can Drivers
 # end of Component Configuration
 
 #

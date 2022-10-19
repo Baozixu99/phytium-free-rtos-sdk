@@ -57,7 +57,7 @@
 
 /* FWDT Configuration */
 
-#define CONFIG_ENABLE_FWDT
+#define CONFIG_USE_FWDT
 /* end of FWDT Configuration */
 /* CONFIG_USE_DMA is not set */
 /* CONFIG_USE_NAND is not set */
@@ -159,6 +159,11 @@
 
 /* CONFIG_FREERTOS_USE_ADC is not set */
 /* end of Freertos Adc Drivers */
+
+/* Freertos Can Drivers */
+
+/* CONFIG_FREERTOS_USE_CAN is not set */
+/* end of Freertos Can Drivers */
 /* end of Component Configuration */
 
 /* FreeRTOS Setting */

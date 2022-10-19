@@ -100,6 +100,13 @@ SECTIONS
         _shell_code_end = .;
     }> ROM
 
+    .cherryusb (ALIGN(64)):{
+        /* section information for usbh class */
+        . = ALIGN(4);
+        __usbh_class_info_start__ = .;
+        KEEP(*(.usbh_class_info))
+        __usbh_class_info_end__ = .;
+    }> ROM
 
     .rodata1 (ALIGN(64)): {
     __rodata1_start = .;

@@ -28,6 +28,8 @@ menu "Freertos Wdt Drivers"
         bool
         prompt "Use Freertos wdt driver"
         default n
+        select USE_WDT
+        select USE_FWDT
 endmenu
 
 menu "Freertos Eth Drivers"
@@ -77,4 +79,13 @@ menu "Freertos Adc Drivers"
         default n
         select USE_ADC
         select USE_FADC
+endmenu
+
+menu "Freertos Can Drivers"
+    config FREERTOS_USE_CAN
+        bool
+        prompt "Use Freertos can driver"
+        default n
+        select USE_CAN
+        select USE_FCAN
 endmenu

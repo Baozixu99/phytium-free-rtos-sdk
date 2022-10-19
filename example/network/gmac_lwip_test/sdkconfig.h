@@ -168,6 +168,11 @@
 
 /* CONFIG_FREERTOS_USE_ADC is not set */
 /* end of Freertos Adc Drivers */
+
+/* Freertos Can Drivers */
+
+/* CONFIG_FREERTOS_USE_CAN is not set */
+/* end of Freertos Can Drivers */
 /* end of Component Configuration */
 
 /* FreeRTOS Setting */

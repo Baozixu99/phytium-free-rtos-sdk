@@ -97,3 +97,14 @@ config USE_SDMMC_CMD
     if USE_SDMMC_CMD
         source "$(FREERTOS_SDK_ROOT)/third-party/sdmmc-1.0/Kconfig"
     endif
+
+config USE_CHERRY_USB
+    bool
+    default n
+    prompt "Use CherryUSB"
+    help
+        Include CherryUSB
+
+    if USE_CHERRY_USB
+        source "$(FREERTOS_SDK_ROOT)/third-party/cherryusb-0.6.0/Kconfig"
+    endif

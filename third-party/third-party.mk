@@ -230,3 +230,9 @@ $(shell export PATH=$(THIRD_PARTY_CUR_DIR)/sdmmc-1.0:$PATH)
 					$(THIRD_PARTY_CUR_DIR)/sdmmc-1.0/port/fsdio
 	endif #CONFIG_SDMMC_PORT_FSDIO
 endif #CONFIG_USE_SDMMC_CMD
+
+ifdef CONFIG_USE_CHERRY_USB
+
+include $(THIRD_PARTY_CUR_DIR)/cherryusb-0.6.0/makefile
+
+endif #CONFIG_USE_CHERRY_USB

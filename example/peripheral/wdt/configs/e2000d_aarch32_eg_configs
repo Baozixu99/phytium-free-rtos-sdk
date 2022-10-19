@@ -63,7 +63,7 @@ CONFIG_USE_WDT=y
 #
 # FWDT Configuration
 #
-CONFIG_ENABLE_FWDT=y
+CONFIG_USE_FWDT=y
 # end of FWDT Configuration
 
 # CONFIG_USE_DMA is not set
@@ -186,6 +186,12 @@ CONFIG_FREERTOS_USE_WDT=y
 #
 # CONFIG_FREERTOS_USE_ADC is not set
 # end of Freertos Adc Drivers
+
+#
+# Freertos Can Drivers
+#
+# CONFIG_FREERTOS_USE_CAN is not set
+# end of Freertos Can Drivers
 # end of Component Configuration
 
 #

@@ -1,3 +1,28 @@
+
+# Phytium FreeRTOS SDK 2022-10-10 ChangeLog
+
+Change Log sinc 2022-09-23
+
+## example
+
+- add cherryusb host example
+
+## third-party
+
+- add cherryusb 0.5.2 and port to xhci
+
+# Phytium FreeRTOS SDK 2022-09-23 ChangeLog
+
+Change Log sinc 2022-09-15
+
+## driver 
+
+- add can os driver
+
+## example
+
+- add can test test example
+
 # Phytium FreeRTOS SDK 2022-09-07 ChangeLog
 
 Change Log sinc 2022-08-30

@@ -208,7 +208,7 @@ $(OUTPUT_DIR)/%.o : %.S | $(X_OUTPUT_DIRS)
 
 $(OUTPUT_DIR)/%.o : %.c | $(X_OUTPUT_DIRS)
 	@echo "  CC    $@"
-	$(QUIET) $(CC) -c $(TARGET_ARCH) $(CPPFLAGS) $(CFLAGS) -o $@ $<
+	$(QUIET) $(CC) -c $(TARGET_ARCH) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
 
 clean:
 	$(call RM_DIRS,$(OUTPUT_DIR))
