@@ -186,6 +186,7 @@
 
 #define CONFIG_SDMMC_PORT_FSDIO
 /* end of SDMMC Configuration */
+/* CONFIG_USE_CHERRY_USB is not set */
 /* end of FreeRTOS Setting */
 
 #endif

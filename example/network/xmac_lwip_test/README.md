@@ -39,11 +39,12 @@
 
 本例程支持的硬件平台包括
 
-- E2000D
+- E2000D/Q
 
 对应的配置项是，
 
 - CONFIG_TARGET_E2000D
+- CONFIG_TARGET_E2000Q
 
 ### 2.2 SDK配置方法
 
@@ -62,6 +63,8 @@
 - make boot   将目录下的工程进行编译，并将生成的elf 复制到目标地址
 - make load_e2000d_aarch64  将预设64bit e2000d 下的配置加载至工程中
 - make load_e2000d_aarch32  将预设32bit e2000d 下的配置加载至工程中
+- make load_e2000q_aarch64  将预设64bit e2000q 下的配置加载至工程中
+- make load_e2000q_aarch32  将预设32bit e2000q 下的配置加载至工程中
 - make menuconfig   配置目录下的参数变量
 - make backup_kconfig 将目录下的sdkconfig 备份到./configs下
 
@@ -137,13 +140,19 @@ xmac probe [device id] [interface id]
 - 其中device id 为控制器id 
 - interface id ,0 为rgmii ,1 为sgmii
 
-![xmac_probe_ipv4](./pic/xmac_probe_ipv4.png "xmac_probe_ipv4.png")
+![xmac_probe_ipv4](./pic/xmac_probe.png "xmac_probe.png")
 
 ![ping](./pic/ping.png "ping.png")
 
 
 #### 2.4.2 ipv6下的probe
 
+
+- 先将配置恢复到初始配置状态，以E2000D 为例
+
+```shell
+    make load_e2000d_aarch32
+```
 
 - 输入以下命令
 
@@ -164,12 +173,18 @@ xmac probe [device id] [interface id]
 - 其中device id 为控制器id 
 - interface id ,0 为rgmii ,1 为sgmii
 
-![gmac_probe](./pic/gmac_probe_ipv6.png "gmac_probe_ipv6.png")
+![xmac_probe](./pic/xmac_probe.png "xmac_probe.png")
 
 ![ping](./pic/ping_ipv6.png "ping_ipv6.png")
 
 
 #### 2.4.3 ipv4 dhcp
+
+- 先将配置恢复到初始配置状态，以E2000D 为例
+
+```shell
+    make load_e2000d_aarch32
+```
 
 - 输入以下命令
 
@@ -178,7 +193,6 @@ make menuconfig
 ```
 
 - 将此项选择上
-
 
 ![dhcp_select](./pic/xmac_dhcp_menuconfig.png)
 
@@ -191,7 +205,7 @@ xmac probe [device id] [interface id]
 - 其中device id 为控制器id 
 - interface id ,0 为rgmii ,1 为sgmii
 
-![xmac_probe_dhcp0](./pic/xmac_probe_dhcp0.png "xmac_probe_dhcp0.png")
+![xmac_probe_dhcp0](./pic/xmac_probe.png "xmac_probe.png")
 
 ![xmac_probe_dhcp1](./pic/xmac_probe_dhcp1.png "xmac_probe_dhcp1.png")
 
@@ -206,6 +220,27 @@ A: 考虑自身任务创建时分配的栈空间大小，考虑tcpip_thread任�
 Q: 程序运行过程中ping大包异常
 
 A: 考虑以下两个宏的大小：PBUF_POOL_SIZE定义缓冲池的个数，PBUF_POOL_BUFSIZE定义单个缓冲区的大小
+
+Q: 如何选择demo板的配置
+
+A: 开发者在编译终端下使用以下命令
+```shell
+    make menuconfig
+```
+
+![](./pic/select_demo.png)
+
+
+Q: 如果开发者使用E2000 demo板应该如何进行实验：
+
+A: 开发者在串口终端上输入以下命令对控制器进行初始化
+
+![](./pic/e2000demo板全貌.jpg)
+
+
+```shell
+    xmac probe 0 1
+```
 
 ## 4. 修改历史记录
 

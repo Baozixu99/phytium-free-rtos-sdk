@@ -218,6 +218,7 @@ clean:
 	$(call RM_FILES,*.map)
 	$(call RM_FILES,*.tar.gz)
 	$(call RM_FILES,*.asm)
+	$(call RM_FILES,*.out)
 
 # Make sure everything is rebuilt if this makefile is changed
 $(OBJ_FILES) $(APP): makefile

@@ -253,7 +253,7 @@ Queue_t * const pxQueue = ( Queue_t * ) xQueue;
 	taskENTER_CRITICAL();
 	{
 		pxQueue->pcTail = pxQueue->pcHead + ( pxQueue->uxLength * pxQueue->uxItemSize );
-		pxQueue->uxMessagesWaiting = ( UBaseType_t ) 0U;
+		pxQueue->uxMessagesWaiting = (UBaseType_t)0U;
 		pxQueue->pcWriteTo = pxQueue->pcHead;
 		pxQueue->u.pcReadFrom = pxQueue->pcHead + ( ( pxQueue->uxLength - ( UBaseType_t ) 1U ) * pxQueue->uxItemSize );
 		pxQueue->cRxLock = queueUNLOCKED;
@@ -1092,7 +1092,7 @@ Queue_t * const pxQueue = ( Queue_t * ) xQueue;
 	/* Normally a mutex would not be given from an interrupt, especially if
 	there is a mutex holder, as priority inheritance makes no sense for an
 	interrupts, only tasks. */
-	configASSERT( !( ( pxQueue->uxQueueType == queueQUEUE_IS_MUTEX ) && ( pxQueue->pxMutexHolder != NULL ) ) );
+	configASSERT(!((pxQueue->uxQueueType == queueQUEUE_IS_MUTEX) && (pxQueue->pxMutexHolder != NULL)));
 
 	/* RTOS ports that support interrupt nesting have the concept of a maximum
 	system call (or maximum API call) interrupt priority.  Interrupts that are

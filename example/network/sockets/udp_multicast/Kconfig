@@ -1,0 +1,19 @@
+mainmenu "Phytium FreeRTOS Configuration"
+
+	menu "Project Configuration"
+	
+		config TARGET_NAME
+			string "Build Target Name"
+			default "freertos"
+			help
+				Build Target name for the demo
+		
+
+		if TARGET_E2000
+			source "./src/Kconfig"
+		endif
+		
+	endmenu
+	
+source "$(FREERTOS_SDK_ROOT)/Kconfig"
+

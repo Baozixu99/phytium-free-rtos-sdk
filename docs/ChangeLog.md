@@ -1,3 +1,15 @@
+# Phytium FreeRTOS SDK 2022-10-21 ChangeLog
+
+Change Log sinc 2022-10-15
+
+## example
+
+- add e2000q example
+## third-party
+
+- Adapt fatfs to e2000 demo board for sata
+- Add the lwip configuration kconfig
+- Add udp multicast function
 
 # Phytium FreeRTOS SDK 2022-10-10 ChangeLog
 

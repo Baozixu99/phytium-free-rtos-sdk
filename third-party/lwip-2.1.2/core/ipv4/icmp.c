@@ -167,7 +167,7 @@ icmp_input(struct pbuf *p, struct netif *inp)
         /* allocate new packet buffer with space for link headers */
         r = pbuf_alloc(PBUF_LINK, alloc_len, PBUF_RAM);
         if (r == NULL) {
-          LWIP_DEBUGF(ICMP_DEBUG, ("icmp_input: allocating new pbuf failed\n"));
+          LWIP_DEBUGF(ICMP_DEBUG, ("icmp_input: allocating new pbuf failed alloc_len is %d \n",alloc_len));
           goto icmperr;
         }
         if (r->len < hlen + sizeof(struct icmp_echo_hdr)) {

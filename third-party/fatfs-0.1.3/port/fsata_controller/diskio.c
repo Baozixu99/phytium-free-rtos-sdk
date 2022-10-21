@@ -16,9 +16,6 @@
 #include "fsata.h"
 #include "fsata_hw.h"
 
-#define HOST_NUM    0  /* sata host */
-#define PORT_NUM    0  /* sata link port */
-
 #define FSATA_DEBUG_TAG "FSATA-CONTROLLER-DISKIO"
 #define FSATA_ERROR(format, ...)   FT_DEBUG_PRINT_E(FSATA_DEBUG_TAG, format, ##__VA_ARGS__)
 #define FSATA_WARN(format, ...)    FT_DEBUG_PRINT_W(FSATA_DEBUG_TAG, format, ##__VA_ARGS__)
@@ -28,40 +25,41 @@
 /* 64位需要预留给内存池更大的空间 */
 static u8 mem[50000] __attribute__((aligned(1024))) = {0};
 
-#define SATA_PORT_MEM_SIZE 0x00000C00
-
-static u32 port_mem_count = 0;
+#define ADDR_ALIGNMENT 1024
 
 static FSataCtrl sata_device[FSATA_INSTANCE_NUM];//最多支持16个ahci控制器，可以自行定义个数
-static s32 sata_host_count;
 
 static boolean sata_ok = FALSE;
+
+static u32 host_num = 0;	/* sata host */
+static u32 port_num = 0;   /* sata link port */
 
 /*-----------------------------------------------------------------------*/
 /* Get Drive Status                                                      */
 /*-----------------------------------------------------------------------*/
 
-DSTATUS disk_status (
-	BYTE pdrv		/* Physical drive nmuber to identify the drive */
+DSTATUS
+disk_status(
+	BYTE pdrv /* Physical drive nmuber to identify the drive */
 )
 {
 	DSTATUS status = STA_NOINIT;
 
-	if (FT_COMPONENT_IS_READY == sata_device[HOST_NUM].is_ready)
+	if (FT_COMPONENT_IS_READY == sata_device[host_num].is_ready)
 		status &= ~STA_NOINIT; /* 假设Sata处于插入状态 */
 
 	return status;
 }
 
 static int FSataInit(void)
-{
-	s32 i;
-	u32	j;
-    u8 id = 0;
+{	
+    u32 instance_id = 0;
+	u32	port = 0;
+	u32 port_mem_count = 0;
+	u8 link_success = 0;
 
     const FSataConfig *config_p = NULL;
     FSataCtrl *instance_p;
-    FError status = FSATA_SUCCESS;
     FError ret = FSATA_SUCCESS;
     boolean host_valid = FALSE;
 
@@ -71,71 +69,61 @@ static int FSataInit(void)
         return 0;
     }
 
-	for(i = 0; i < FSATA_INSTANCE_NUM; i++)
-    {
-		instance_p = &(sata_device[i]);
-		memset(instance_p, 0, sizeof(*instance_p));
-	}
-
-	/* get xhci host from fsata_g.c */
-	for(id = 0;id < FSATA_INSTANCE_NUM; id++)
+	for (instance_id = 0; instance_id < FSATA_INSTANCE_NUM; instance_id++)
 	{
-		config_p = FSataLookupConfig(id, FSATA_TYPE_CONTROLLER);
-		/* 如果有一个定义的PLATFORM AHCI HOST，则获取，否则跳过 */
-		if(config_p->base_addr != 0)
+        host_valid = FALSE;
+		config_p = FSataLookupConfig(instance_id, FSATA_TYPE_CONTROLLER);
+		if(config_p != NULL)
         {
-            /* base不为0，表示有platform ahci自定义 */
-            status = FSataCfgInitialize(&sata_device[sata_host_count], config_p);
-            if (FSATA_SUCCESS != status)
+            ret = FSataCfgInitialize(&sata_device[instance_id], config_p);
+            if (FSATA_SUCCESS != ret)
             {
-                FSATA_ERROR("init sata failed, status: 0x%x", status);
+                FSATA_ERROR("init sata failed, ret: 0x%x", ret);
                 continue;
             }
 
-			FSATA_DEBUG("plat ahci host[%d] base_addr = 0x%x", id, sata_device[sata_host_count].config.base_addr);
-			FSATA_DEBUG("plat ahci host[%d] irq_num = %d", id, sata_device[sata_host_count].config.irq_num);
-			sata_host_count++;
+			FSATA_DEBUG("plat ahci host[%d] base_addr = 0x%x", instance_id, sata_device[instance_id].config.base_addr);
+			FSATA_DEBUG("plat ahci host[%d] irq_num = %d", instance_id, sata_device[instance_id].config.irq_num);
 		}
         else
         {
 			continue;
 		}
-	}
-	FSATA_DEBUG("sata_host_count = %d\n", sata_host_count);
-	for (i = 0; i < sata_host_count; i++)
-	{
-        host_valid = FALSE;
-		instance_p = &(sata_device[i]);
+
+		instance_p = &sata_device[instance_id];
 
 	    /* init ahci controller and port */
-		status = FSataAhciInit(instance_p);
-	    if (FSATA_SUCCESS != status)
+		ret = FSataAhciInit(instance_p);
+	    if (FSATA_SUCCESS != ret)
 	    {
 	        FSataCfgDeInitialize(instance_p);
-	        FSATA_ERROR("FSataAhciInit sata failed, status: 0x%x", status);
+	        FSATA_ERROR("FSataAhciInit sata failed, ret: 0x%x", ret);
 			continue;
 	    }
 
         FSATA_DEBUG("instance_p->n_ports = %d\n", instance_p->n_ports);
 
-        for (j = 0; j < instance_p->n_ports; j++)
+        for (port = 0; port < instance_p->n_ports; port++)
 		{
 			u32 port_map = instance_p->port_map;
-			if (!(port_map & (1 << j)))
+			if (!(port_map & BIT(port)))
 				continue;
-			ret = FSataAhciPortStart(instance_p, j, (uintptr)mem + SATA_PORT_MEM_SIZE*port_mem_count);
-			port_mem_count++;
+
+            /* command list address must be 1K-byte aligned */
+            ret = FSataAhciPortStart(instance_p, port,
+                                     (uintptr)mem + PALIGN_UP(FSATA_AHCI_PORT_PRIV_DMA_SZ, ADDR_ALIGNMENT) * port_mem_count);
+            port_mem_count++;
 		    if (FSATA_SUCCESS != ret)
 		    {
-		        FSATA_ERROR("FSataAhciPortStart host %d port %d failed, ret: 0x%x", i, j, ret);
+		        FSATA_ERROR("FSataAhciPortStart %d-%d failed, ret: 0x%x", instance_id, port, ret);
 				continue;
 		    }
 			
-		    ret = FSataAhciReadInfo(instance_p, j);
+		    ret = FSataAhciReadInfo(instance_p, port);
 		    if (FSATA_SUCCESS != ret)
 		    {
 		        FSataCfgDeInitialize(instance_p);
-		        FSATA_ERROR("FSataAhciReadInfo %d-%d failed, ret: 0x%x", i, j, ret);
+		        FSATA_ERROR("FSataAhciReadInfo %d-%d failed, ret: 0x%x", instance_id, port, ret);
 				continue;
 		    }
             if(FSATA_SUCCESS == ret)
@@ -147,6 +135,32 @@ static int FSataInit(void)
 	}
 	
     sata_ok = TRUE;
+
+	/* get host number and port number which link success */
+	for(host_num = 0; host_num < FSATA_INSTANCE_NUM; host_num++)
+    {
+        for (port_num = 0; port_num < sata_device[host_num].n_ports; port_num++)
+        {
+            if (!(sata_device[host_num].link_port_map & BIT(port_num)))
+            {
+                printf("host_num %d port_num %d is not link\n", host_num, port_num);
+                continue;
+            }
+            else
+            {
+                printf("host_num %d port_num %d is link\n", host_num, port_num);
+                link_success = 1;
+                break;
+            }
+        }
+        if(link_success == 1)
+            break;
+    }
+    if(link_success != 1)
+    {
+        FSATA_ERROR("Sata host port link failed\n");
+        return -1;
+    }
 
     return 0;
 }
@@ -191,7 +205,7 @@ DRESULT disk_read (
 	BYTE *io_buf = buff;
 	UINT err = FSATA_SUCCESS;
 
-	err = FSataReadWrite(&sata_device[HOST_NUM], PORT_NUM, sector, count, io_buf, 0);
+	err = FSataReadWrite(&sata_device[host_num], port_num, sector, count, io_buf, FALSE, FALSE);
 
 	if (FSATA_SUCCESS != err)
 	{
@@ -217,7 +231,7 @@ DRESULT disk_write (
 	const BYTE *io_buf = buff;
 	UINT err = FSATA_SUCCESS;
 
-	err = FSataReadWrite(&sata_device[HOST_NUM], PORT_NUM, sector, count, (u8 *)io_buf, 1);
+	err = FSataReadWrite(&sata_device[host_num], port_num, sector, count, (u8 *)io_buf, FALSE, TRUE);
 
 	if (FSATA_SUCCESS != err)
 	{
@@ -249,7 +263,7 @@ DRESULT disk_ioctl (
 			break;
 		/* 所有可用的扇区数目（逻辑寻址即LBA寻址方式） */			
 		case GET_SECTOR_COUNT:
-			*((DWORD *)buff) = sata_device[HOST_NUM].port[PORT_NUM].dev_info.lba512;
+			*((DWORD *)buff) = sata_device[host_num].port[port_num].dev_info.lba512;
 			res = RES_OK; 
 			break;
 		/* 返回磁盘扇区大小, 只用于f_mkfs() */
@@ -258,7 +272,7 @@ DRESULT disk_ioctl (
 			break;
 		/* 每个扇区有多少个字节 */			
 		case GET_BLOCK_SIZE:
-			*((DWORD *)buff) = sata_device[HOST_NUM].port[PORT_NUM].dev_info.blksz;
+			*((DWORD *)buff) = sata_device[host_num].port[port_num].dev_info.blksz;
 			res = RES_OK;
 			break;
 		case CTRL_TRIM:

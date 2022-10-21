@@ -70,7 +70,7 @@
 #define LWIP_PORT_WARN(format, ...)    FT_DEBUG_PRINT_W(LWIP_PORT_DEBUG_TAG, format, ##__VA_ARGS__)
 
 
-#if NO_SYS == 0
+#if !NO_SYS
 #define THREAD_STACKSIZE 256
 #define LINK_DETECT_THREAD_INTERVAL 1000 /* one second */
 
@@ -98,13 +98,13 @@ struct netif *lwip_port_add(struct netif *netif,
 	user_config *user_config)
 {
 	int i;
-	
+	struct netif * netif_p ;
 	if(user_config->magic_code != LWIP_PORT_CONFIG_MAGIC_CODE)
 	{
 		printf("user_config is illegitmacy \r\n");
 		return NULL;
 	}
-#if NO_SYS == 0
+#if !NO_SYS
 	/* Start thread to detect link periodically for Hot Plug autodetect */
 	sys_thread_new("link_detect_thread", link_detect_thread, netif,
 			THREAD_STACKSIZE, tskIDLE_PRIORITY);
@@ -118,8 +118,10 @@ struct netif *lwip_port_add(struct netif *netif,
 	netif->name[0] = IFNAME0;
   	netif->name[1] = IFNAME1;
 	/* initialize based on MAC type */
-	return netif_add(netif, 
-#if LWIP_IPV4
+	netif_p = netif_add(netif, 
+#if LWIP_IPV4 && LWIP_IPV6
+		&ipaddr->u_addr.ip4, &netmask->u_addr.ip4, &gw->u_addr.ip4,
+#elif LWIP_IPV4
 		ipaddr, netmask, gw,
 #endif
 		(void*)(uintptr)user_config,
@@ -130,7 +132,9 @@ struct netif *lwip_port_add(struct netif *netif,
 		tcpip_input
 #endif
 		);
+	
 
+	return netif_p ;
 }
 
 #if !NO_SYS
@@ -159,8 +163,6 @@ void lwip_port_input(struct netif *netif)
 {
 	ethernetif_input(netif);
 }
-
-#if defined(CONFIG_LWIP_FXMAC)
 
 extern enum ethernet_link_status FXmacPhyReconnect(struct LwipPort *xmac_netif_p);
 
@@ -202,7 +204,7 @@ void lwip_port_link_detect(struct netif *netif)
 }
 
 
-#if NO_SYS == 0
+#if !NO_SYS
 
 void link_detect_thread(void *p)
 {
@@ -217,7 +219,6 @@ void link_detect_thread(void *p)
 	}
 }
 
-
 #endif
 
 
@@ -236,125 +237,10 @@ void lwip_port_stop(struct netif *netif)
 	enum ethernet_link_status link_status;
 
 	struct ethernetif *mac_netif = (struct ethernetif *)(netif->state);
-	
 }
 
 
-#else
-
-static u32 phy_link_detect(FGmac *instance_p, u32 phy_addr)
-{
-	u16 status;
-
-	/* Read Phy Status register twice to get the confirmation of the current
-	 * link status.
-	 */
-	FGmacReadPhyReg(instance_p, instance_p->phy_addr, FGMAC_PHY_MII_STATUS_REG, &status);
-	FGmacReadPhyReg(instance_p, instance_p->phy_addr, FGMAC_PHY_MII_STATUS_REG, &status);
-
-	if (status & FGMAC_PHY_MII_SR_LSTATUS)
-		return 1;
-	return 0;
-}
-
-static u32 phy_autoneg_status(FGmac *instance_p, u32 phy_addr)
-{
-	u16 status;
-
-	/* Read Phy Status register twice to get the confirmation of the current
-	 * link status.
-	 */
-	FGmacReadPhyReg(instance_p, instance_p->phy_addr, FGMAC_PHY_MII_STATUS_REG, &status);
-	FGmacReadPhyReg(instance_p, instance_p->phy_addr, FGMAC_PHY_MII_STATUS_REG, &status);
-
-	if (status & FGMAC_PHY_MII_SR_AUTO_NEGOT_COMPLETE)
-		return 1;
-	return 0;
-}
-
-void lwip_port_link_detect(struct netif *netif)
-{
-	u32 link_speed, phy_link_status;
-	enum ethernet_link_status link_status;
-
-	struct ethernetif *mac_netif = (struct ethernetif *)(netif->state);
-	FGmac *instance_p = mac_netif->ethctrl;
-
-	if (instance_p->is_ready != FT_COMPONENT_IS_READY)
-	{
-		LWIP_PORT_ERROR("instance_p is not ready\n");
-		return;
-	}
-
-	/* read gmac phy link status */
-	phy_link_status = phy_link_detect(instance_p, instance_p->phy_addr);
-	link_status = phy_link_status ? ETH_LINK_UP : ETH_LINK_DOWN;
-
-	/* if the link status is changed */
-	if(eth_link_status != link_status)
-		eth_link_status = link_status;
-	else
-		return;
-
-	switch (eth_link_status) 
-	{
-		case ETH_LINK_UP:
-			if (phy_link_status && phy_autoneg_status(instance_p, instance_p->phy_addr)) 
-			{
-				netif_set_link_up(netif);
-				eth_link_status = ETH_LINK_UP;
-				LWIP_PORT_DEBUG("Ethernet Link up\r\n");
-			}
-			break;
-		case ETH_LINK_DOWN:
-			netif_set_link_down(netif);
-			LWIP_PORT_DEBUG("Ethernet Link down\r\n");
-			break;
-		default:
-			break;
-	}
-
-	return;
-}
-
-
-void lwip_port_start(struct netif *netif)
-{
-	u32 link_speed, phy_link_status;
-	enum ethernet_link_status link_status;
-
-	struct ethernetif *mac_netif = (struct ethernetif *)(netif->state);
-	FGmac *instance_p = mac_netif->ethctrl;
-
-	if (instance_p->is_ready != FT_COMPONENT_IS_READY)
-	{
-		LWIP_PORT_ERROR("instance_p is not ready\n");
-		return;
-	}
-
-	FGmacStartTrans(instance_p);
-}
-
-void lwip_port_stop(struct netif *netif)
-{
-	u32 link_speed, phy_link_status;
-	enum ethernet_link_status link_status;
-
-	struct ethernetif *mac_netif = (struct ethernetif *)(netif->state);
-	FGmac *instance_p = mac_netif->ethctrl;
-
-	if (instance_p->is_ready != FT_COMPONENT_IS_READY)
-	{
-		LWIP_PORT_ERROR("instance_p is not ready\n");
-		return;
-	}
-
-	FGmacStopTrans(instance_p);
-}
-
-#endif
-
-
+/* gCpuRuntime value from  freertos_configs.c */
 extern volatile unsigned int gCpuRuntime;
 
 u32_t sys_now(void)

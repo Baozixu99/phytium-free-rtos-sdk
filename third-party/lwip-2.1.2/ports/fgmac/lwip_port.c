@@ -116,7 +116,7 @@ struct netif *lwip_port_add(struct netif *netif,
 	/* initialize based on MAC type */
 	return netif_add(netif, 
 #if LWIP_IPV4
-		ipaddr, netmask, gw,
+		(const ip4_addr_t *)ipaddr, netmask, gw,
 #endif
 		(void*)(uintptr)mac_id,
 

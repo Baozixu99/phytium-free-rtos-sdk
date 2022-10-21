@@ -94,7 +94,7 @@ void LwipTestCreate(void * args)
     BaseType_t ret = pdPASS;
     /* the mac address of the board. this should be unique per board */
 	unsigned char mac_ethernet_address[] =
-	{0x00, 0x04, 0x66, 0x00, 0x11, 0x22};
+	{0x98, 0x0e, 0x24, 0x00, 0x11, 0x22};
 
     echo_netif = pvPortMalloc(sizeof(struct netif));
     if(echo_netif == NULL)
@@ -147,14 +147,15 @@ void LwipTestCreate(void * args)
 	netif_ip6_addr_set_state(echo_netif, 0, IP6_ADDR_VALID);
 
 	printf("Board IPv6 address %x:%x:%x:%x:%x:%x:%x:%x\n\r",
-			IP6_ADDR_BLOCK1(&echo_netif->ip6_addr[0]),
-			IP6_ADDR_BLOCK2(&echo_netif->ip6_addr[0]),
-			IP6_ADDR_BLOCK3(&echo_netif->ip6_addr[0]),
-			IP6_ADDR_BLOCK4(&echo_netif->ip6_addr[0]),
-			IP6_ADDR_BLOCK5(&echo_netif->ip6_addr[0]),
-			IP6_ADDR_BLOCK6(&echo_netif->ip6_addr[0]),
-			IP6_ADDR_BLOCK7(&echo_netif->ip6_addr[0]),
-			IP6_ADDR_BLOCK8(&echo_netif->ip6_addr[0]));
+			IP6_ADDR_BLOCK1(&echo_netif->ip6_addr[0].u_addr.ip6),
+			IP6_ADDR_BLOCK2(&echo_netif->ip6_addr[0].u_addr.ip6),
+			IP6_ADDR_BLOCK3(&echo_netif->ip6_addr[0].u_addr.ip6),
+			IP6_ADDR_BLOCK4(&echo_netif->ip6_addr[0].u_addr.ip6),
+			IP6_ADDR_BLOCK5(&echo_netif->ip6_addr[0].u_addr.ip6),
+			IP6_ADDR_BLOCK6(&echo_netif->ip6_addr[0].u_addr.ip6),
+			IP6_ADDR_BLOCK7(&echo_netif->ip6_addr[0].u_addr.ip6),
+			IP6_ADDR_BLOCK8(&echo_netif->ip6_addr[0].u_addr.ip6));
+
 
 #endif
 
@@ -193,7 +194,7 @@ void LwipTestCreate(void * args)
     
     ret = xTaskCreate((TaskFunction_t )LwipDhcpTest, /* 任务入口函数 */
                             (const char* )"LwipDhcpTest",/* 任务名字 */
-                            (uint16_t )4096, /* 任务栈大小 */
+                            (uint16_t )8192, /* 任务栈大小 */
                             (void* )(echo_netif),/* 任务入口函数参数 */
                             (UBaseType_t )configMAX_PRIORITIES-1, /* 任务的优先级 */
                             (TaskHandle_t* )&appTaskCreateHandle); /* 任务控制 */

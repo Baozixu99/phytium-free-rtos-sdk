@@ -468,6 +468,9 @@ netif_do_set_ipaddr(struct netif *netif, const ip4_addr_t *ipaddr, ip_addr_t *ol
     ip_addr_copy(*old_addr, *netif_ip_addr4(netif));
 
     LWIP_DEBUGF(NETIF_DEBUG | LWIP_DBG_STATE, ("netif_set_ipaddr: netif address being changed\n"));
+
+
+
     netif_do_ip_addr_changed(old_addr, &new_addr);
 
     mib2_remove_ip4(netif);
@@ -479,14 +482,12 @@ netif_do_set_ipaddr(struct netif *netif, const ip4_addr_t *ipaddr, ip_addr_t *ol
     mib2_add_route_ip4(0, netif);
 
     netif_issue_reports(netif, NETIF_REPORT_TYPE_IPV4);
-
-    LWIP_DEBUGF(NETIF_DEBUG | LWIP_DBG_TRACE | LWIP_DBG_STATE, ("netif: ip address of interface %c%c set to %" U16_F ".%" U16_F ".%" U16_F ".%" U16_F "\n",
-                                                                netif->name[0], netif->name[1],
-                                                                ip4_addr1_16(netif_ip_addr4(netif)),
-                                                                ip4_addr2_16(netif_ip_addr4(netif)),
-                                                                ip4_addr3_16(netif_ip_addr4(netif)),
-                                                                ip4_addr4_16(netif_ip_addr4(netif))));
-
+    LWIP_DEBUGF(NETIF_DEBUG | LWIP_DBG_TRACE, ("netif_do_set_ipaddr: ip of interface %c%c set to %"U16_F".%"U16_F".%"U16_F".%"U16_F"\n",
+        netif->name[0], netif->name[1],
+        ip4_addr1_16(netif_ip4_addr(netif)),
+        ip4_addr2_16(netif_ip4_addr(netif)),
+        ip4_addr3_16(netif_ip4_addr(netif)),
+        ip4_addr4_16(netif_ip4_addr(netif))));
     NETIF_STATUS_CALLBACK(netif);
     return 1; /* address changed */
   }

@@ -212,4 +212,6 @@ CONFIG_USE_SDMMC_CMD=y
 #
 CONFIG_SDMMC_PORT_FSDIO=y
 # end of SDMMC Configuration
+
+# CONFIG_USE_CHERRY_USB is not set
 # end of FreeRTOS Setting

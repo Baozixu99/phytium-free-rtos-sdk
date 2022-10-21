@@ -3,19 +3,17 @@
 
 /* Project Configuration */
 
-#define CONFIG_TARGET_NAME "e2000d_freertos_a64"
-#define CONFIG_LWIP_IPV4_TEST
-/* CONFIG_LWIP_IPV4_DHCP_TEST is not set */
-/* CONFIG_LWIP_IPV6_TEST is not set */
-#define CONFIG_GMAC_RX_DESCNUM 256
-#define CONFIG_GMAC_TX_DESCNUM 256
-#define CONFIG_GMAC_IRQ_PRIORITY 12
+#define CONFIG_TARGET_NAME "e2000d_lwip_echo"
 
 /*  E2000 board Configuration */
 
-#define CONFIG_BOARD_TYPE_B
+#define CONFIG_LWIP_IPV4_TEST
+/* CONFIG_LWIP_IPV4_DHCP_TEST is not set */
+/* CONFIG_LWIP_IPV6_TEST is not set */
+/* CONFIG_BOARD_TYPE_B is not set */
 /* CONFIG_BOARD_TYPE_C is not set */
 /* CONFIG_BOARD_TYPE_A is not set */
+#define CONFIG_BOARD_TYPE_DEMO
 /* end of  E2000 board Configuration */
 /* end of Project Configuration */
 
@@ -37,8 +35,8 @@
 
 /* CONFIG_TARGET_F2000_4 is not set */
 /* CONFIG_TARGET_D2000 is not set */
-/* CONFIG_TARGET_E2000Q is not set */
-#define CONFIG_TARGET_E2000D
+#define CONFIG_TARGET_E2000Q
+/* CONFIG_TARGET_E2000D is not set */
 /* CONFIG_TARGET_E2000S is not set */
 #define CONFIG_TARGET_E2000
 #define CONFIG_DEFAULT_DEBUG_PRINT_UART1
@@ -89,10 +87,10 @@
 
 /* Building Option */
 
-#define CONFIG_LOG_VERBOS
+/* CONFIG_LOG_VERBOS is not set */
 /* CONFIG_LOG_DEBUG is not set */
 /* CONFIG_LOG_INFO is not set */
-/* CONFIG_LOG_WARN is not set */
+#define CONFIG_LOG_WARN
 /* CONFIG_LOG_ERROR is not set */
 /* CONFIG_LOG_NONE is not set */
 #define CONFIG_USE_DEFAULT_INTERRUPT_CONFIG
@@ -107,13 +105,13 @@
 #define CONFIG_AARCH64_RAM_LD
 /* CONFIG_USER_DEFINED_LD is not set */
 #define CONFIG_LINK_SCRIPT_ROM
-#define CONFIG_ROM_START_UP_ADDR 0x90000000
+#define CONFIG_ROM_START_UP_ADDR 0x80100000
 #define CONFIG_ROM_SIZE_MB 1
 #define CONFIG_LINK_SCRIPT_RAM
-#define CONFIG_RAM_START_UP_ADDR 0x90500000
+#define CONFIG_RAM_START_UP_ADDR 0x80500000
 #define CONFIG_RAM_SIZE_MB 64
 #define CONFIG_HEAP_SIZE 1
-#define CONFIG_STACK_SIZE 0x1000
+#define CONFIG_STACK_SIZE 0x100000
 #define CONFIG_FPU_STACK_SIZE 0x1000
 /* end of Linker Options */
 
@@ -188,8 +186,169 @@
 
 /* LWIP Configuration */
 
+/* LWIP Port Configuration */
+
 /* CONFIG_LWIP_FGMAC is not set */
 #define CONFIG_LWIP_FXMAC
+/* end of LWIP Port Configuration */
+#define CONFIG_LWIP_LOCAL_HOSTNAME "phytium"
+
+/* memory configuration */
+
+/* CONFIG_LWIP_USE_MEM_POOL is not set */
+#define CONFIG_LWIP_USE_MEM_HEAP
+#define CONFIG_MEM_SIZE 1
+#define CONFIG_MEM_ALIGNMENT 64
+/* end of memory configuration */
+
+/* NETWORK_INTERFACE_OPTIONS */
+
+/* CONFIG_LWIP_NETIF_API is not set */
+/* CONFIG_LWIP_NETIF_STATUS_CALLBACK is not set */
+/* end of NETWORK_INTERFACE_OPTIONS */
+
+/* LOOPIF */
+
+#define CONFIG_LWIP_NETIF_LOOPBACK
+#define CONFIG_LWIP_LOOPBACK_MAX_PBUFS 8
+/* end of LOOPIF */
+
+/* SLIPIF */
+
+/* CONFIG_LWIP_SLIP_SUPPORT is not set */
+/* end of SLIPIF */
+
+/* Pbuf options */
+
+#define CONFIG_PBUF_POOL_BUFSIZE 2
+/* end of Pbuf options */
+
+/* Internal Memory Pool Sizes */
+
+#define CONFIG_PBUF_POOL_SIZE 1
+/* end of Internal Memory Pool Sizes */
+#define CONFIG_LWIP_MAX_SOCKETS 10
+
+/* LWIP RAW API */
+
+#define CONFIG_LWIP_MAX_RAW_PCBS 16
+/* end of LWIP RAW API */
+
+/* TCP */
+
+#define CONFIG_LWIP_MAX_ACTIVE_TCP 16
+#define CONFIG_LWIP_MAX_LISTENING_TCP 16
+#define CONFIG_LWIP_TCP_HIGH_SPEED_RETRANSMISSION
+#define CONFIG_LWIP_TCP_MAXRTX 12
+#define CONFIG_LWIP_TCP_SYNMAXRTX 12
+#define CONFIG_LWIP_TCP_MSS 1440
+#define CONFIG_LWIP_TCP_TMR_INTERVAL 250
+#define CONFIG_LWIP_TCP_MSL 60000
+#define CONFIG_LWIP_TCP_SND_BUF_DEFAULT 5744
+#define CONFIG_LWIP_TCP_WND_DEFAULT 5744
+#define CONFIG_LWIP_TCP_RECVMBOX_SIZE 6
+#define CONFIG_LWIP_TCP_QUEUE_OOSEQ
+/* CONFIG_LWIP_TCP_SACK_OUT is not set */
+#define CONFIG_LWIP_TCP_OVERSIZE_MSS
+/* CONFIG_LWIP_TCP_OVERSIZE_QUARTER_MSS is not set */
+/* CONFIG_LWIP_TCP_OVERSIZE_DISABLE is not set */
+/* end of TCP */
+
+/* UDP */
+
+#define CONFIG_LWIP_MAX_UDP_PCBS 16
+#define CONFIG_LWIP_UDP_RECVMBOX_SIZE 6
+/* CONFIG_LWIP_NETBUF_RECVINFO is not set */
+/* end of UDP */
+
+/* IPv4 */
+
+#define CONFIG_USE_IPV4_ONLY
+#define CONFIG_LWIP_IP4_REASSEMBLY
+#define CONFIG_LWIP_IP4_FRAG
+/* CONFIG_LWIP_IP_FORWARD is not set */
+#define CONFIG_IP_REASS_MAX_PBUFS 16
+/* end of IPv4 */
+
+/* ICMP */
+
+#define CONFIG_LWIP_ICMP
+#define CONFIG_LWIP_MULTICAST_PING
+#define CONFIG_LWIP_BROADCAST_PING
+/* end of ICMP */
+
+/* DHCP */
+
+/* CONFIG_LWIP_DHCP_ENABLE is not set */
+/* CONFIG_LWIP_DHCP_DOES_ARP_CHECK is not set */
+/* CONFIG_LWIP_DHCP_GET_NTP_SRV is not set */
+/* CONFIG_LWIP_DHCP_DISABLE_CLIENT_ID is not set */
+/* CONFIG_LWIP_DHCP_RESTORE_LAST_IP is not set */
+#define CONFIG_LWIP_DHCP_OPTIONS_LEN 68
+#define CONFIG_LWIP_DHCP_DISABLE_VENDOR_CLASS_ID
+/* end of DHCP */
+
+/* AUTOIP */
+
+/* CONFIG_LWIP_AUTOIP is not set */
+/* end of AUTOIP */
+
+/* DNS */
+
+#define CONFIG_LWIP_DNS_SUPPORT_MDNS_QUERIES
+/* end of DNS */
+
+/* TCP options */
+
+#define CONFIG_LWIP_TCP_RTO_TIME 1500
+/* end of TCP options */
+#define CONFIG_LWIP_TCPIP_CORE_LOCKING
+
+/* socket */
+
+/* CONFIG_LWIP_SO_LINGER is not set */
+#define CONFIG_LWIP_SO_REUSE
+#define CONFIG_LWIP_SO_REUSE_RXTOALL
+/* end of socket */
+/* CONFIG_LWIP_STATS is not set */
+
+/* PPP */
+
+/* CONFIG_LWIP_PPP_SUPPORT is not set */
+#define CONFIG_LWIP_IPV6_MEMP_NUM_ND6_QUEUE 3
+#define CONFIG_LWIP_IPV6_ND6_NUM_NEIGHBORS 5
+/* end of PPP */
+
+/* Checksums */
+
+/* CONFIG_LWIP_CHECKSUM_CHECK_IP is not set */
+/* CONFIG_LWIP_CHECKSUM_CHECK_UDP is not set */
+#define CONFIG_LWIP_CHECKSUM_CHECK_ICMP
+/* end of Checksums */
+
+/* ipv6 */
+
+#define CONFIG_LWIP_IPV6
+/* CONFIG_LWIP_IPV6_AUTOCONFIG is not set */
+#define CONFIG_LWIP_IPV6_NUM_ADDRESSES 3
+/* CONFIG_LWIP_IPV6_FORWARD is not set */
+#define CONFIG_LWIP_IP6_FRAG
+/* CONFIG_LWIP_IP6_REASSEMBLY is not set */
+/* end of ipv6 */
+#define CONFIG_LWIP_DEBUG
+#define CONFIG_LWIP_NETIF_DEBUG
+/* CONFIG_LWIP_PBUF_DEBUG is not set */
+/* CONFIG_LWIP_ETHARP_DEBUG is not set */
+/* CONFIG_LWIP_API_LIB_DEBUG is not set */
+/* CONFIG_LWIP_SOCKETS_DEBUG is not set */
+/* CONFIG_LWIP_IP_DEBUG is not set */
+/* CONFIG_LWIP_ICMP_DEBUG is not set */
+/* CONFIG_LWIP_DHCP_DEBUG is not set */
+/* CONFIG_LWIP_IP6_DEBUG is not set */
+/* CONFIG_LWIP_ICMP6_DEBUG is not set */
+/* CONFIG_LWIP_TCP_DEBUG is not set */
+/* CONFIG_LWIP_SNTP_DEBUG is not set */
+/* CONFIG_LWIP_DNS_DEBUG is not set */
 /* end of LWIP Configuration */
 #define CONFIG_USE_BACKTRACE
 /* CONFIG_USE_FATFS is not set */
@@ -207,6 +366,7 @@
 /* end of Letter Shell Configuration */
 #define CONFIG_USE_TLSF
 /* CONFIG_USE_SDMMC_CMD is not set */
+/* CONFIG_USE_CHERRY_USB is not set */
 /* end of FreeRTOS Setting */
 
 #endif

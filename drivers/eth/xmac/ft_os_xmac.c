@@ -54,25 +54,26 @@
 
 static void FXmacInitOnError(FXmacOs *instance_p);
 static void FXmacSetupIsr(FXmacOs *instance_p);
-extern void sys_sem_signal_fromisr(sys_sem_t *sem); 
+extern void sys_sem_signal(sys_sem_t *sem); 
 static FXmacOs fxmac_os_instace[FT_XMAC_NUM] =
 	{
 		[FT_XMAC0_ID] = {
-			.config =(FXMAC_OS_CONFIG_COPY_ALL_FRAMES | FXMAC_OS_CONFIG_CLOSE_FCS_CHECK)
+			.config =( 0)
 		},
 		[FT_XMAC1_ID] = {
-			.config =(FXMAC_OS_CONFIG_COPY_ALL_FRAMES | FXMAC_OS_CONFIG_CLOSE_FCS_CHECK)
+			.config =( 0)
 		},
 		[FT_XMAC2_ID] = {
-			.config =(FXMAC_OS_CONFIG_COPY_ALL_FRAMES | FXMAC_OS_CONFIG_CLOSE_FCS_CHECK)
+			.config =( 0)
 		},
 		[FT_XMAC3_ID] = {
-			.config =(FXMAC_OS_CONFIG_COPY_ALL_FRAMES | FXMAC_OS_CONFIG_CLOSE_FCS_CHECK )
+			.config =( 0 )
 		},
 };
 
-/* queue */
+int isr_calling_flg = 0;
 
+/* queue */
 
 void FXmacQueueInit(PqQueue *q)
 {
@@ -328,7 +329,6 @@ void SetupRxBds(FXmacOs *instance_p, FXmacBdRing *rxring)
 	u32 freebds;
 	u32 bdindex;
 	u32 *temp;
-
 	freebds = FXMAC_BD_RING_GET_FREE_CNT(rxring);
 	while (freebds > 0) 
 	{
@@ -340,8 +340,8 @@ void SetupRxBds(FXmacOs *instance_p, FXmacBdRing *rxring)
         }
         else
         {
-            p = pbuf_alloc(PBUF_RAW, FXMAC_MAX_FRAME_SIZE, PBUF_POOL);
-        }
+			p = pbuf_alloc(PBUF_RAW, FXMAC_MAX_FRAME_SIZE, PBUF_POOL);
+		}
 
 		if (!p) 
 		{
@@ -448,7 +448,7 @@ void FXmacRecvHandler(void *arg)
 			/*
 			 * Adjust the buffer size to the actual number of bytes received.
 			 */
-            if(instance_p->config & FXMAC_OS_CONFIG_JUMBO)
+			if(instance_p->config & FXMAC_OS_CONFIG_JUMBO)
             {
                 rx_bytes = FXMAC_GET_RX_FRAME_SIZE(&(instance_p->instance), curbdptr);
             }
@@ -456,7 +456,6 @@ void FXmacRecvHandler(void *arg)
             {
                 rx_bytes = FXMAC_BD_GET_LENGTH(curbdptr);
             }
-
 			pbuf_realloc(p, rx_bytes);
 
 			/* Invalidate RX frame before queuing to handle
@@ -481,9 +480,8 @@ void FXmacRecvHandler(void *arg)
 		/* free up the BD's */
 		FXmacBdRingFree(rxring, bd_processed, rxbdset);
 		SetupRxBds(instance_p, rxring);
-
 #if !NO_SYS
-		sys_sem_signal_fromisr(&xmac_netif_p->sem_rx_data_available);
+		sys_sem_signal(&xmac_netif_p->sem_rx_data_available);
 #endif
 	}
 	
@@ -583,7 +581,8 @@ FError FXmacInitDma(FXmacOs *instance_p)
 	/*
 	 * Allocate RX descriptors, 1 RxBD at a time.
 	 */
-	for (i = 0; i < FXMAX_RX_PBUFS_LENGTH; i++) 
+	printf("Allocate RX descriptors, 1 RxBD at a time. \r\n");
+	for (i = 0; i < FXMAX_RX_PBUFS_LENGTH; i++)
 	{
         if(instance_p->config & FXMAC_OS_CONFIG_JUMBO)
         {
@@ -600,13 +599,13 @@ FError FXmacInitDma(FXmacOs *instance_p)
 			lwip_stats.link.memerr++;
 			lwip_stats.link.drop++;
 #endif
-			FXMAC_OS_XMAC_PRINT_I("unable to alloc pbuf in InitDma\r\n");
+			FXMAC_OS_XMAC_PRINT_E("unable to alloc pbuf in InitDma\r\n");
 			return ERR_IF;
 		}
 		status = FXmacBdRingAlloc(rxringptr, 1, &rxbd);
 		if (status != FT_SUCCESS) 
 		{
-			FXMAC_OS_XMAC_PRINT_I("InitDma: Error allocating RxBD\r\n");
+			FXMAC_OS_XMAC_PRINT_E("InitDma: Error allocating RxBD\r\n");
 			pbuf_free(p);
 			return ERR_IF;
 		}
@@ -614,7 +613,7 @@ FError FXmacInitDma(FXmacOs *instance_p)
 		status = FXmacBdRingToHw(rxringptr, 1, rxbd);
 		if (status != FT_SUCCESS) 
 		{
-			FXMAC_OS_XMAC_PRINT_I("Error: committing RxBD to HW\r\n");
+			FXMAC_OS_XMAC_PRINT_E("Error: committing RxBD to HW\r\n");
 			pbuf_free(p);
 			FXmacBdRingUnAlloc(rxringptr, 1, rxbd);
 			return ERR_IF;
@@ -1063,6 +1062,13 @@ enum ethernet_link_status  FXmacPhyReconnect(struct LwipPort *xmac_netif_p)
 	}
 }
 
+static void FxmacOsIntrHandler(s32 vector, void *args)
+{
+	isr_calling_flg++;
+	FXmacIntrHandler(vector,args);
+	isr_calling_flg--;
+}
+
 
 static void FXmacSetupIsr(FXmacOs *instance_p)
 {
@@ -1076,7 +1082,7 @@ static void FXmacSetupIsr(FXmacOs *instance_p)
 	FXmacSetHandler(&instance_p->instance, FXMAC_HANDLER_LINKCHANGE, FXmacLinkChange, instance_p);
 	
     InterruptSetPriority(instance_p->instance.config.queue_irq_num[0], IRQ_PRIORITY_VALUE_12);
-    InterruptInstall(instance_p->instance.config.queue_irq_num[0], FXmacIntrHandler, &instance_p->instance, "fxmac");
+    InterruptInstall(instance_p->instance.config.queue_irq_num[0], FxmacOsIntrHandler, &instance_p->instance, "fxmac");
     InterruptUmask(instance_p->instance.config.queue_irq_num[0]);
 }
 
@@ -1195,6 +1201,12 @@ FError FXmacOsInit(FXmacOs *instance_p)
         FXmacSetOptions(xmac_p, FXMAC_PROMISC_OPTION,0);
     }
 
+	status = FXmacSetMacAddress(xmac_p, (void*)(instance_p->hwaddr), 0);
+	if (status != FT_SUCCESS)
+	{
+		FXMAC_OS_XMAC_PRINT_E("In %s:Emac Mac Address set failed...\r\n",__func__);
+	}
+
     /* close fcs check */
     if(instance_p->config & FXMAC_OS_CONFIG_CLOSE_FCS_CHECK)
     {
@@ -1250,7 +1262,7 @@ void *FXmacOsRx(FXmacOs *instance_p)
     /* return one packet from receive q */
     p = (struct pbuf *)FXmacPqDequeue(&instance_p->recv_q);
 
-    return p;
+	return p;
 }
 
 static FError FXmacOsOutput(FXmacOs *instance_p, struct pbuf *p) 
@@ -1325,7 +1337,5 @@ FXmacOs *FXmacOsGetInstancePointer(FXmacOsControl *config_p)
 
 	instance_p = &fxmac_os_instace[config_p->instance_id];
 	memcpy(&instance_p->mac_config,config_p,sizeof(FXmacOsControl));
-	// instance_p->mac_config = *config_p;
-
 	return instance_p;
 }

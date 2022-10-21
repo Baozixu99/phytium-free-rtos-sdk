@@ -8,35 +8,6 @@ mainmenu "Phytium FreeRTOS Configuration"
 			help
 				Build Target name for the demo
 		
-		choice
-			prompt "choice lwip config"
-			default LWIP_IPV4_TEST
-			config LWIP_IPV4_TEST
-				bool "test lwip ipv4"
-			config LWIP_IPV4_DHCP_TEST
-				bool "test lwip ipv4 and dhcp"
-			config LWIP_IPV6_TEST
-				bool "test lwip ipv6"
-		endchoice
-
-		config GMAC_RX_DESCNUM
-			int "receive description number"
-			default "16"
-			help
-				receive description number for the demo
-
-		config GMAC_TX_DESCNUM
-			int "transmit description number"
-			default "16"
-			help
-				transmit description number for the demo
-		
-		config GMAC_IRQ_PRIORITY
-			int "gmac irq priority, 0~15"
-			default "12"
-			help
-				gmac irq priority for the demo
-
 		if TARGET_E2000
 			source "./src/Kconfig"
 		endif

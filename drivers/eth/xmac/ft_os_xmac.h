@@ -46,8 +46,8 @@ extern "C" {
 #define FXMAX_RX_BDSPACE_LENGTH    0x20000 /* default set 64KB*/
 #define FXMAX_TX_BDSPACE_LENGTH    0x20000 /* default set 64KB*/
 
-#define FXMAX_RX_PBUFS_LENGTH       64
-#define FXMAX_TX_PBUFS_LENGTH       64
+#define FXMAX_RX_PBUFS_LENGTH       128
+#define FXMAX_TX_PBUFS_LENGTH       128
 
 #define FXMAX_MAX_HARDWARE_ADDRESS_LENGTH 6
 
@@ -70,9 +70,7 @@ extern "C" {
 /* Byte alignment of BDs */
 #define BD_ALIGNMENT (FXMAC_DMABD_MINIMUM_ALIGNMENT*2)
 
-
 /*  frame queue */
-
 #define PQ_QUEUE_SIZE 4096
 
     typedef struct 

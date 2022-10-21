@@ -186,6 +186,7 @@
 /* end of Letter Shell Configuration */
 /* CONFIG_USE_TLSF is not set */
 /* CONFIG_USE_SDMMC_CMD is not set */
+/* CONFIG_USE_CHERRY_USB is not set */
 /* end of FreeRTOS Setting */
 
 #endif

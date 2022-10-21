@@ -132,7 +132,7 @@ void ethernetif_input(struct netif *netif)
     struct pbuf *p;
     SYS_ARCH_DECL_PROTECT(lev);
 
-#if NO_SYS == 0
+#if !NO_SYS
     while (1)
 #endif
     {
@@ -210,7 +210,6 @@ static err_t low_level_init(struct netif *netif)
 
 #if !NO_SYS
     sys_sem_new(&xmac_netif_p->sem_rx_data_available, 0);
-    printf("sem_rx_data_available is %p \r\n",xmac_netif_p->sem_rx_data_available);
 #endif
     /* obtain config of this emac */
     FXMAC_LWIP_NET_PRINT_I("netif->state is %p \r\n ",netif->state);
@@ -246,10 +245,13 @@ static err_t low_level_init(struct netif *netif)
     {
         instance_p->hwaddr[i] = netif->hwaddr[i];
     }
-        
+
+#if LWIP_IPV6
+    instance_p->config = FXMAC_OS_CONFIG_COPY_ALL_FRAMES;
+#endif
+
     ret = FXmacOsInit(instance_p);
 
-    
     if (ret != FT_SUCCESS)
     {
         FXMAC_LWIP_NET_PRINT_E("FXmacOsInit is error\r\n");
@@ -270,10 +272,19 @@ static err_t low_level_init(struct netif *netif)
     {
         netif->mtu = FXMAC_MTU - FXMAC_HDR_SIZE;
     }
-    
 
     netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP |
                    NETIF_FLAG_LINK_UP;
+
+
+    #if LWIP_IPV6 && LWIP_IPV6_MLD
+        netif->flags |= NETIF_FLAG_MLD6;
+    #endif
+
+    #if LWIP_IGMP
+        netif->flags |= NETIF_FLAG_IGMP;
+    #endif
+
 
     FXMAC_LWIP_NET_PRINT_I("ready to leave netif \r\n");
     return ERR_OK;
@@ -313,6 +324,11 @@ err_t ethernetif_init(struct netif *netif)
 
     netif->name[0] = IFNAME0;
     netif->name[1] = IFNAME1;
+
+#if LWIP_NETIF_HOSTNAME
+	/* Initialize interface hostname */
+  	netif->hostname = "lwip";
+#endif /* LWIP_NETIF_HOSTNAME */
 
 #if LWIP_IPV4
 #if LWIP_ARP || LWIP_ETHERNET
