@@ -23,10 +23,10 @@
 
 
 #include <string.h>
-#include "ft_assert.h"
-#include "parameters.h"
+#include "fassert.h"
+#include "fparameters.h"
 #include "shell_port.h"
-#include "interrupt.h"
+#include "finterrupt.h"
 #include "fpl011_os.h"
 
 FtFreertosUart os_uart1;

@@ -34,7 +34,7 @@
 ## 2. 如何使用例程
 
 本例程需要用到
-- Phytium开发板（E2000D/E2000Q）
+- Phytium开发板（E2000D）
 - [Phytium freeRTOS SDK](https://gitee.com/phytium_embedded/phytium-free-rtos-sdk)
 - [Phytium standalone SDK](https://gitee.com/phytium_embedded/phytium-standalone-sdk)
 ### 2.1 硬件配置方法
@@ -42,12 +42,10 @@
 本例程支持的硬件平台包括
 
 - E2000D
-- E2000Q
 
 对应的配置项是，
 
 - CONFIG_TARGET_E2000D
-- CONFIG_TARGET_E2000Q
 
 ### 2.2 SDK配置方法
 
@@ -68,8 +66,6 @@
 - make boot   将目录下的工程进行编译，并将生成的elf 复制到目标地址
 - make load_e2000d_aarch64  将预设64bit e2000d 下的配置加载至工程中
 - make load_e2000d_aarch32  将预设32bit e2000d 下的配置加载至工程中
-- make load_e2000q_aarch64  将预设64bit e2000q 下的配置加载至工程中
-- make load_e2000q_aarch32  将预设32bit e2000q 下的配置加载至工程中
 - make menuconfig   配置目录下的参数变量
 - make backup_kconfig 将目录下的sdkconfig 备份到./configs下
 
@@ -82,11 +78,11 @@
 #### 2.3.1 构建过程
 
 - 在host侧完成配置
-配置成e2000q，对于其它平台，使用对于的默认配置，如e2000d `make load_e2000d_aarch32`
+配置成e2000d
 
 - 选择目标平台
 ```
-make load_e2000q_aarch32
+make load_e2000d_aarch32
 ```
 
 - 选择例程需要的配置

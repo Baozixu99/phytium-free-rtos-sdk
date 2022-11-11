@@ -31,11 +31,11 @@ extern "C"
 /***************************** Include Files *********************************/
 #include <FreeRTOS.h>
 
-#include "ft_types.h"
+#include "ftypes.h"
 #include "fsleep.h"
-#include "kernel.h"
-#include "ft_assert.h"
-#include "ft_debug.h"
+#include "fkernel.h"
+#include "fassert.h"
+#include "fdebug.h"
 
 /************************** Constant Definitions *****************************/
 #define true TRUE 

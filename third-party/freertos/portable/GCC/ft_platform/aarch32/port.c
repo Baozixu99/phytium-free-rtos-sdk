@@ -28,7 +28,7 @@
 /* Standard includes. */
 #include <stdlib.h>
 #include <stdio.h>
-#include "aarch32.h"
+#include "faarch32.h"
 
 /* Scheduler includes. */
 #include "FreeRTOS.h"

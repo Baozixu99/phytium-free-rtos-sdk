@@ -1,3 +1,40 @@
+# Phytium FreeRTOS SDK 2022-11-11 ChangeLog
+
+Change Log sinc 2022-11-11
+
+## example
+
+- task/task_notify e2000q support
+- modify some README.md description
+- modify openamp & freertos_feature\task & storage\sata_fatfs readme.md
+- modify freertos_feature\eventgroup interrupt queue resource software_timer readme.md and picture
+- remove e2000q adc support
+- modify some README.md description
+
+
+# Phytium FreeRTOS SDK 2022-11-01 ChangeLog
+
+Change Log sinc 2022-11-1
+
+## driver 
+
+- add USE_SPI slection in Kconfig
+
+## example
+
+- add fspim_spiffs example
+
+## third-party
+
+- sfud debug 
+- add spiffs port for spim
+
+# Phytium Standalone SDK 2022-10-31 ChangeLog
+
+Change Log sinc 2022-10-31
+
+- rename some include file with f prefix
+
 # Phytium FreeRTOS SDK 2022-10-21 ChangeLog
 
 Change Log sinc 2022-10-15

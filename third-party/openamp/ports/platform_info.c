@@ -33,8 +33,8 @@
 #include "platform_info.h"
 #include "rsc_table.h"
 #include "sdkconfig.h"
-#include "mmu.h"
-#include "ft_debug.h"
+#include "fmmu.h"
+#include "fdebug.h"
 #include <stdio.h>
 
 /************************** Constant Definitions *****************************/

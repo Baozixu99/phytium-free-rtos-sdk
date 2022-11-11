@@ -17,7 +17,7 @@ CONFIG_TARGET_ARMV8_AARCH32=y
 # CONFIG_TARGET_ARMV8_AARCH64 is not set
 CONFIG_USE_CACHE=y
 CONFIG_USE_MMU=y
-CONFIG_USE_SYS_TICK=y
+# CONFIG_USE_SYS_TICK is not set
 CONFIG_USE_AARCH64_L1_TO_AARCH32=y
 # end of Arch Configuration
 
@@ -59,19 +59,14 @@ CONFIG_ENABLE_Pl011_UART=y
 # CONFIG_USE_SDMMC is not set
 # CONFIG_USE_PCIE is not set
 # CONFIG_USE_WDT is not set
-# CONFIG_USE_DMA is not set
+CONFIG_USE_DMA=y
+CONFIG_ENABLE_FGDMA=y
+# CONFIG_ENABLE_FDDMA is not set
 # CONFIG_USE_NAND is not set
 # CONFIG_USE_RTC is not set
 # CONFIG_USE_SATA is not set
 # CONFIG_USE_USB is not set
-CONFIG_USE_ADC=y
-
-#
-# ADC Configuration
-#
-CONFIG_USE_FADC=y
-# end of ADC Configuration
-
+# CONFIG_USE_ADC is not set
 # CONFIG_USE_PWM is not set
 # CONFIG_USE_IPC is not set
 # end of Components Configuration
@@ -84,14 +79,14 @@ CONFIG_USE_NEW_LIBC=y
 #
 # CONFIG_LOG_VERBOS is not set
 # CONFIG_LOG_DEBUG is not set
-CONFIG_LOG_INFO=y
+# CONFIG_LOG_INFO is not set
 # CONFIG_LOG_WARN is not set
-# CONFIG_LOG_ERROR is not set
+CONFIG_LOG_ERROR=y
 # CONFIG_LOG_NONE is not set
 CONFIG_USE_DEFAULT_INTERRUPT_CONFIG=y
 CONFIG_INTERRUPT_ROLE_MASTER=y
 # CONFIG_INTERRUPT_ROLE_SLAVE is not set
-# CONFIG_LOG_EXTRA_INFO is not set
+CONFIG_LOG_EXTRA_INFO=y
 # CONFIG_BOOTUP_DEBUG_PRINTS is not set
 
 #
@@ -172,7 +167,7 @@ CONFIG_FREERTOS_USE_UART=y
 # Freertos DMA Drivers
 #
 # CONFIG_FREERTOS_USE_FDDMA is not set
-# CONFIG_FREERTOS_USE_FGDMA is not set
+CONFIG_FREERTOS_USE_FGDMA=y
 # end of Freertos DMA Drivers
 
 #
@@ -184,7 +179,7 @@ CONFIG_FREERTOS_USE_UART=y
 #
 # Freertos Adc Drivers
 #
-CONFIG_FREERTOS_USE_ADC=y
+# CONFIG_FREERTOS_USE_ADC is not set
 # end of Freertos Adc Drivers
 
 #
@@ -214,7 +209,7 @@ CONFIG_DEFAULT_LETTER_SHELL_USE_UART1=y
 # CONFIG_DEFAULT_LETTER_SHELL_USE_UART2 is not set
 # end of Letter Shell Configuration
 
-# CONFIG_USE_TLSF is not set
+CONFIG_USE_TLSF=y
 # CONFIG_USE_SDMMC_CMD is not set
 # CONFIG_USE_CHERRY_USB is not set
 # end of FreeRTOS Setting

@@ -36,7 +36,7 @@ extern "C"
 #include "event_groups.h"
 #include "semphr.h"
 
-#include "ft_error_code.h"
+#include "ferror_code.h"
 
 #include "tlsf.h"
 #include "fslink_list.h"

@@ -65,12 +65,14 @@
 - make load_ft2004_aarch32  将预设32bit ft2004 下的配置加载至工程中
 - make load_e2000d_aarch64  将预设64bit e2000d 下的配置加载至工程中
 - make load_e2000d_aarch32  将预设32bit e2000d 下的配置加载至工程中
+- make load_e2000q_aarch64  将预设64bit e2000q 下的配置加载至工程中
+- make load_e2000q_aarch32  将预设32bit e2000q 下的配置加载至工程中
 - make menuconfig   配置目录下的参数变量
 - make backup_kconfig 将目录下的sdkconfig 备份到./configs下
 
-- 具体使用方法为：
-    - 在当前目录下
-    - 执行以上指令
+具体使用方法为：
+- 在当前目录下
+- 执行以上指令
 
 ### 2.3 构建和下载
 
@@ -103,7 +105,7 @@ sudo service tftpd-hpa restart
 setenv ipaddr 192.168.4.20  
 setenv serverip 192.168.4.50 
 setenv gatewayip 192.168.4.1 
-tftpboot 0x90100000 baremetal.elf
+tftpboot 0x90100000 freertos.elf
 bootelf -p 0x90100000
 ```
 

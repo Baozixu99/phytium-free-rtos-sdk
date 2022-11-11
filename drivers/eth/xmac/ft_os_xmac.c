@@ -22,26 +22,26 @@
  */
 
 
-#include "parameters.h"
-#include "ft_assert.h"
+#include "fparameters.h"
+#include "fassert.h"
 #include "ft_os_xmac.h"
 #include "fxmac.h"
-#include "cache.h"
+#include "fcache.h"
 #include "fxmac_bdring.h"
 #include "lwip_port.h"
 #include "eth_ieee_reg.h"
-#include "cpu_info.h"
+#include "fcpu_info.h"
 
 #ifdef __aarch64__
-#include "aarch64.h"
+#include "faarch64.h"
 #else
-#include "cp15.h"
+#include "fcp15.h"
 #endif
 
 #include "FreeRTOS.h"
 #include "semphr.h"
 
-#include "ft_debug.h"
+#include "fdebug.h"
 
 #define FXMAC_OS_XMAC_DEBUG_TAG "FXMAC_OS_XMAC"
 #define FXMAC_OS_XMAC_PRINT_E(format, ...) FT_DEBUG_PRINT_E(FXMAC_OS_XMAC_DEBUG_TAG, format, ##__VA_ARGS__)

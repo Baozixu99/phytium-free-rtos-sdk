@@ -27,7 +27,7 @@
 #include "timers.h"
 #include "fpwm.h"
 #include "fpwm_os.h"
-#include "cpu_info.h"
+#include "fcpu_info.h"
 #include "fpinctrl.h"
 #include "pwm_example.h"
 

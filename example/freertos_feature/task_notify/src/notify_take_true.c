@@ -8,8 +8,8 @@ the ulTaskNotifyTake() xClearOnExit parameter was set to pdTRUE.
 #include "FreeRTOS.h"
 #include "task.h"
 #include "semphr.h"
-#include "interrupt.h"
-#include "cpu_info.h"
+#include "finterrupt.h"
+#include "fcpu_info.h"
 
 static xTaskHandle xtask1_handle = NULL;
 static xTaskHandle xtask2_handle = NULL;

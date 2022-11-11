@@ -25,10 +25,10 @@
 
 #include <string.h>
 #include <stdio.h>
-#include "ft_types.h"
-#include "ft_assert.h"
-#include "kernel.h"
-#include "ft_debug.h"
+#include "ftypes.h"
+#include "fassert.h"
+#include "fkernel.h"
+#include "fdebug.h"
 
 #include "tlsf.h"
 

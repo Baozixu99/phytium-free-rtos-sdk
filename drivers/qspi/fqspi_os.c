@@ -25,8 +25,8 @@
 #include <FreeRTOS.h>
 #include <semphr.h>
 #include "task.h"
-#include "ft_types.h"
-#include "ft_assert.h"
+#include "ftypes.h"
+#include "fassert.h"
 #include "fqspi_os.h"
 #include "fqspi.h"
 #include "fqspi_hw.h"

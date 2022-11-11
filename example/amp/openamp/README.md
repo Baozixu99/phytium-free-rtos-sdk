@@ -87,16 +87,18 @@
 
 ><font size="1">描述输入输出情况，列出存在哪些输入，对应的输出是什么（建议附录相关现象图片）</font><br />
 
-#### D2000/FT2004 aarch32 裸跑程序测试 （裸机间）
+#### D2000/FT2004 aarch32 程序测试 （Free Rtos）
 
-1. 在编译环境下，切换至 phytium-standalone-sdk/baremetal/example/system/amp/openamp 目录
-1.1 输入 'make config_amp_d2000_aarch32' 加载默认D2000配置信息，或者输入 'make config_amp_ft2004_aarch32' 加载默认ft2004配置信息 
-1.2 输入 'make all' 编译core0 / core1 代码，并且生成对应的elf 文件
-1.3 先将 ./core0/makefile 与 ./core1/makefile 中 的 USR_BOOT_DIR 修改为您的tftp 所覆盖的目录
-1.4 输入 'make boot' 将生成的elf 拷贝至 tftp 的目录下
+1. 在编译环境下，切换至 phytium-free-rtos-sdk/example/amp/openamp 目录
+- 1.1 输入 'make config_amp_d2000_aarch32' 加载默认D2000配置信息，或者输入 'make config_amp_ft2004_aarch32' 加载默认ft2004配置信息 
+- 1.2 输入 'make all' 编译core0 / core1 代码，并且生成对应的elf 文件
+- 1.3 先将 ./core0/makefile 与 ./core1/makefile 中 的 USR_BOOT_DIR 修改为您的tftp 所覆盖的目录
+- 1.4 输入 'make boot' 将生成的elf 拷贝至 tftp 的目录下
 
 2. 使用串口连接D2000/FT2004 开发板 ，并且打开串口终端工具
+
 2.1 复位开发板之后，将D2000/FT2004 开发板的网络与tftp 服务器在同一局域网中
+
 2.2  在中断工具下输入以下命令
 
 ```
@@ -112,20 +114,23 @@
 ![](./figs/d2000_aarch32_openamp_startup.png)
 
 
-2.4 输入 'loadelf -p f1000000' 加载从核程序
+2.4 输入 'loadelf -p f1000000' 加载从核程
+
+![](./figs/d2000_aarch32_loadelf_result.png)
+
 2.5 输入 'rpmsg_echo_task' 运行openamp 测试程序
 2.6 结果显示为
 
 ![](./figs/d2000_aarch32_openamp_reault.png)
 
 
-#### D2000/FT2004 aarch64 裸跑程序测试 （裸机间）
+#### D2000/FT2004 aarch64 程序测试 （Free Rtos）
 
 1. 在编译环境下，切换至 phytium-standalone-sdk/baremetal/example/system/amp/openamp 目录
-1.1 输入 'make config_amp_d2000_aarch64' 加载默认配置信息,或输入 'make config_amp_ft2004_aarch64' 加载默认配置信息
-1.2 输入 'make all' 编译core0 / core1 代码，并且生成对应的elf 文件
-1.3 先将 ./core0/makefile 与 ./core1/makefile 中 的 USR_BOOT_DIR 修改为您的tftp 所覆盖的目录
-1.4 输入 'make boot' 将生成的elf 拷贝至 tftp 的目录下
+- 1.1 输入 'make config_amp_d2000_aarch64' 加载默认配置信息,或输入 'make config_amp_ft2004_aarch64' 加载默认配置信息
+- 1.2 输入 'make all' 编译core0 / core1 代码，并且生成对应的elf 文件
+- 1.3 先将 ./core0/makefile 与 ./core1/makefile 中 的 USR_BOOT_DIR 修改为您的tftp 所覆盖的目录
+- 1.4 输入 'make boot' 将生成的elf 拷贝至 tftp 的目录下
 
 2. 使用串口连接D2000/FT2004 开发板 ，并且打开串口终端工具
 2.1 复位开发板之后，将D2000/FT2004 开发板的网络与tftp 服务器在同一局域网中
@@ -145,6 +150,8 @@
 
 
 2.4 输入 'loadelf -p f1000000' 加载从核程序
+![](./figs/d2000_aarch64_loadelf_result.png)
+
 2.5 输入 'rpmsg_echo_task' 运行openamp 测试程序
 2.6 结果显示为
 

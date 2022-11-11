@@ -34,7 +34,7 @@ extern "C"
 #include <semphr.h>
 #include <event_groups.h>
 
-#include "parameters.h"
+#include "fparameters.h"
 #include "fspim.h"
 
 /************************** Constant Definitions *****************************/

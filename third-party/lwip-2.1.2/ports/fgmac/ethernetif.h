@@ -27,7 +27,7 @@
 #include "lwip/err.h"
 #include "lwip/netif.h"
 #include "fgmac.h"
-#include "parameters.h"
+#include "fparameters.h"
 #include "sdkconfig.h"
 
 #define GMAC_RX_DESCNUM     CONFIG_GMAC_RX_DESCNUM

@@ -25,12 +25,12 @@
 #include <FreeRTOS.h>
 #include <semphr.h>
 #include "task.h"
-#include "ft_types.h"
-#include "ft_assert.h"
-#include "ft_debug.h"
+#include "ftypes.h"
+#include "fassert.h"
+#include "fdebug.h"
 #include "fcan_os.h"
 #include "fcan.h"
-#include "interrupt.h"
+#include "finterrupt.h"
 #include "fcan_hw.h"
 
 #define FCAN_DEBUG_TAG "FFreeRTOSCan"

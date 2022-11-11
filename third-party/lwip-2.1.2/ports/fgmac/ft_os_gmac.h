@@ -32,7 +32,7 @@
 #include "fgmac.h"
 #include "fgmac_hw.h"
 #include "fgmac_phy.h"
-#include "parameters.h"
+#include "fparameters.h"
 #include "lwip/netif.h"
 #include "ethernetif.h"
 

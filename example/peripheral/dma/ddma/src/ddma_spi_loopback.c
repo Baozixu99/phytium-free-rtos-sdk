@@ -28,9 +28,9 @@
 #include "task.h"
 #include "queue.h"
 
-#include "cache.h"
-#include "ft_assert.h"
-#include "ft_debug.h"
+#include "fcache.h"
+#include "fassert.h"
+#include "fdebug.h"
 #include "fpinctrl.h"
 
 #include "fspim_os.h"

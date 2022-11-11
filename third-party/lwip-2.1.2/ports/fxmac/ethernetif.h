@@ -32,7 +32,7 @@ extern "C" {
 #include "netif/etharp.h"
 #include "lwip/sys.h"
 #include "lwip_port.h"
-#include "f_printk.h"
+#include "fprintk.h"
 #include "fxmac.h"
 #include "arch/cc.h"
 

@@ -30,8 +30,8 @@
 #include <event_groups.h>
 #include <semphr.h>
 #include "fxmac.h"
-#include "kernel.h"
-#include "ft_error_code.h"
+#include "fkernel.h"
+#include "ferror_code.h"
 
 #define FREERTOS_XMAC_INIT_ERROR FT_CODE_ERR(ErrModPort, 0, 0x1)
 #define FREERTOS_XMAC_PARAM_ERROR FT_CODE_ERR(ErrModPort, 0, 0x2)

@@ -25,12 +25,12 @@
 #include <FreeRTOS.h>
 #include <semphr.h>
 #include "task.h"
-#include "ft_types.h"
-#include "ft_assert.h"
-#include "ft_debug.h"
+#include "ftypes.h"
+#include "fassert.h"
+#include "fdebug.h"
 #include "fpwm_os.h"
 #include "fpwm.h"
-#include "interrupt.h"
+#include "finterrupt.h"
 #include "fpwm_hw.h"
 
 #define FPWM_DEBUG_TAG "FFreeRTOSPwm"

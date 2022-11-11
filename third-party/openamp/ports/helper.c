@@ -25,7 +25,7 @@
 #include <metal/sys.h>
 #include "platform_info.h"
 #include <stdio.h>
-#include "cache.h"
+#include "fcache.h"
 #include <stdarg.h> 
 
 static void system_metal_logger(enum metal_log_level level,

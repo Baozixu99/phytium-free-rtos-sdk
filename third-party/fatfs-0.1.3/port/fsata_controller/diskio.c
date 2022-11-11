@@ -8,9 +8,9 @@
 /*-----------------------------------------------------------------------*/
 
 #include <string.h>
-#include "parameters.h"
-#include "ft_debug.h"
-#include "interrupt.h"
+#include "fparameters.h"
+#include "fdebug.h"
+#include "finterrupt.h"
 #include "ff.h"
 #include "diskio.h"		/* FatFs lower layer API */
 #include "fsata.h"

@@ -44,7 +44,7 @@
 static void SdCmdUsage()
 {
 	printf("usage:\r\n");
-    printf("    sd rw <id> <medium> <start-blk> <blk-num>\r\n");
+    printf("    sd wr <id> <medium> <start-blk> <blk-num>\r\n");
     printf("        -- demo read and write by sdmmc\r\n");
 }
 

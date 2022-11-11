@@ -30,8 +30,8 @@
 #include <semphr.h>
 #include "fpl011.h"
 #include "fpl011_hw.h"
-#include "ft_types.h"
-#include "ft_error_code.h"
+#include "ftypes.h"
+#include "ferror_code.h"
 
 #define FREERTOS_UART_SEM_ERROR FT_CODE_ERR(ErrModPort, 0, 0x1)
 #define FREERTOS_UART_EVENT_ERROR FT_CODE_ERR(ErrModPort, 0, 0x2)

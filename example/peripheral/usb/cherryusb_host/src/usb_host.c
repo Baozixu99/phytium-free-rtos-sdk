@@ -28,11 +28,11 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
-#include "ft_assert.h"
-#include "interrupt.h"
-#include "cpu_info.h"
-#include "ft_debug.h"
-#include "cache.h"
+#include "fassert.h"
+#include "finterrupt.h"
+#include "fcpu_info.h"
+#include "fdebug.h"
+#include "fcache.h"
 #include "fmemory_pool.h"
 
 #include "usbh_core.h"

@@ -26,9 +26,9 @@
 
 #include <FreeRTOS.h>
 #include <semphr.h>
-#include "ft_error_code.h"
+#include "ferror_code.h"
 #include "fcan.h"
-#include "ft_types.h"
+#include "ftypes.h"
 
 /* freertos can error */
 #define FREERTOS_CAN_OK           FT_SUCCESS

@@ -25,12 +25,12 @@
 #include <FreeRTOS.h>
 #include <semphr.h>
 #include "task.h"
-#include "ft_types.h"
-#include "ft_assert.h"
-#include "ft_debug.h"
+#include "ftypes.h"
+#include "fassert.h"
+#include "fdebug.h"
 #include "fadc_os.h"
 #include "fadc.h"
-#include "interrupt.h"
+#include "finterrupt.h"
 #include "fadc_hw.h"
 
 #define FADC_DEBUG_TAG "FFreeRTOSAdc"

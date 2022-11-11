@@ -32,7 +32,7 @@
 extern "C"
 {
 #endif
-#include "ft_types.h"
+#include "ftypes.h"
 /*-----------------------------------------------------------
  * Port specific definitions.
  *

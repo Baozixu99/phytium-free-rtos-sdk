@@ -31,8 +31,8 @@
 /* Scheduler includes. */
 #include "FreeRTOS.h"
 #include "task.h"
-#include "ft_types.h"
-#include "interrupt.h"
+#include "ftypes.h"
+#include "finterrupt.h"
 #include "fgic_cpu_interface.h"
 #ifndef configUNIQUE_INTERRUPT_PRIORITIES
 #error configUNIQUE_INTERRUPT_PRIORITIES must be defined.  See http://www.freertos.org/Using-FreeRTOS-on-Cortex-A-Embedded-Processors.html

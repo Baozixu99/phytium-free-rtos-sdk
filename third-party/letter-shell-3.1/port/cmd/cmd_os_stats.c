@@ -26,11 +26,13 @@
 #include <stdio.h>
 #include "string.h"
 
-static uint8_t CPU_RunInfo[800] = {0}; //保存任务运行时间信息
+#define PS_LENGTH 10240
+
+static uint8_t CPU_RunInfo[PS_LENGTH] = {0}; //保存任务运行时间信息
 
 static int DisplayTaskStats(int argc, char *argv[])
 {
-    memset(CPU_RunInfo,0,800); /*信息缓冲区清零*/
+    memset(CPU_RunInfo, 0, PS_LENGTH); /*信息缓冲区清零*/
     vTaskList((char *)&CPU_RunInfo); //获取任务运行时间信息
 
     printf("---------------------------------------------\r\n"); 
@@ -38,7 +40,7 @@ static int DisplayTaskStats(int argc, char *argv[])
     printf("%s", CPU_RunInfo); 
     printf("---------------------------------------------\r\n");
 
-    memset(CPU_RunInfo, 0, 800); //信息缓冲区清零
+    memset(CPU_RunInfo, 0, PS_LENGTH); //信息缓冲区清零
 
     vTaskGetRunTimeStats((char *)&CPU_RunInfo);
 

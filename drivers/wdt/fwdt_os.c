@@ -25,12 +25,12 @@
 #include <FreeRTOS.h>
 #include <semphr.h>
 #include "task.h"
-#include "ft_types.h"
-#include "ft_assert.h"
-#include "ft_debug.h"
+#include "ftypes.h"
+#include "fassert.h"
+#include "fdebug.h"
 #include "fwdt_os.h"
 #include "fwdt.h"
-#include "interrupt.h"
+#include "finterrupt.h"
 #include "fwdt_hw.h"
 
 

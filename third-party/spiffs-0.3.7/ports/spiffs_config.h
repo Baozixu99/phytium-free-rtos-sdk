@@ -17,8 +17,8 @@
 #include <stddef.h>
 #include <unistd.h>
 
-#include "ft_types.h"
-#include "ft_debug.h"
+#include "ftypes.h"
+#include "fdebug.h"
 
 #ifdef _SPIFFS_TEST
 #include "testrunner.h"
@@ -106,7 +106,7 @@
 
 // Enable/disable statistics on caching. Debug/test purpose only.
 #ifndef  SPIFFS_CACHE_STATS
-#define SPIFFS_CACHE_STATS              1
+#define SPIFFS_CACHE_STATS              0
 #endif
 #endif
 
@@ -123,7 +123,7 @@
 
 // Enable/disable statistics on gc. Debug/test purpose only.
 #ifndef SPIFFS_GC_STATS
-#define SPIFFS_GC_STATS                 1
+#define SPIFFS_GC_STATS                 0
 #endif
 
 // Garbage collecting examines all pages in a block which and sums up
@@ -291,7 +291,7 @@ extern void FSpiffsSemUnlock(void);
 // directly. If all available descriptors become opened, all cache memory is
 // lost.
 #ifndef SPIFFS_TEMPORAL_FD_CACHE
-#define SPIFFS_TEMPORAL_FD_CACHE              1
+#define SPIFFS_TEMPORAL_FD_CACHE              1 /* 启用此选项可优化文件的打开。spiffs 获得的文件描述符越多，缓存就越有效。请注意，这会向每个文件描述符添加额外的 6 个字节 */
 #endif
 
 // Temporal file cache hit score. Each time a file is opened, all cached files

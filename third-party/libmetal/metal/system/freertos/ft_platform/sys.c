@@ -27,10 +27,10 @@
 #include <metal/sys.h>
 #include <stdint.h>
 #ifndef __aarch64__
-#include "cp15.h"
+#include "fcp15.h"
 #endif
-#include "mmu.h"
-#include "cache.h"
+#include "fmmu.h"
+#include "fcache.h"
 
 #define _DISABLE_INTERRUPTS()           \
 	__asm volatile("MSR DAIFSET, #2" :: \

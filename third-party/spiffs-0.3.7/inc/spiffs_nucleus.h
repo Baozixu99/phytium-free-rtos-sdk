@@ -389,6 +389,7 @@ typedef struct {
   u8_t ix;
   // last access of this cache page
   u32_t last_access;
+
   union {
     // type read cache
     struct {

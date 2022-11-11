@@ -23,7 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include "kernel.h"
+#include "fkernel.h"
 #include "FreeRTOSConfig.h"
 #include "FreeRTOS.h"
 #include "task.h"
@@ -32,9 +32,9 @@
 #include "timers.h"
 #include "qspi_spiffs_example.h"
 #include "strto.h"
-#include "ft_assert.h"
-#include "ft_debug.h"
-#include "parameters.h"
+#include "fassert.h"
+#include "fdebug.h"
+#include "fparameters.h"
 #include "spiffs_port.h"
 #include "sdkconfig.h"
 #ifdef CONFIG_SPIFFS_ON_FSPIM_SFUD

@@ -11,7 +11,7 @@
  * See the Phytium Public License for more details. 
  *  
  * 
- * FilePath: README.md
+ * FilePath: READEME.md
  * Date: 2022-02-24 13:42:19
  * LastEditTime: 2022-03-21 17:02:58
  * Description:  This file is for 
@@ -68,6 +68,8 @@
 - make load_ft2004_aarch32  将预设32bit ft2004 下的配置加载至工程中
 - make load_e2000d_aarch64  将预设64bit e2000d 下的配置加载至工程中
 - make load_e2000d_aarch32  将预设32bit e2000d 下的配置加载至工程中
+- make load_e2000q_aarch64  将预设64bit e2000q 下的配置加载至工程中
+- make load_e2000q_aarch32  将预设32bit e2000q 下的配置加载至工程中
 - make menuconfig   配置目录下的参数变量
 - make backup_kconfig 将目录下的sdkconfig 备份到./configs下
 

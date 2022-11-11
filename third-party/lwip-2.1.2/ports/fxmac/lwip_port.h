@@ -28,7 +28,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-#include "ft_types.h"
+#include "ftypes.h"
 #include "lwipopts.h"
 
 #include "lwip/netif.h"

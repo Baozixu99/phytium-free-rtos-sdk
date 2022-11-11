@@ -10,7 +10,7 @@
 #include <stdio.h>
 #include "../src/shell.h"
 #include "strto.h"
-#include "ft_elf.h"
+#include "felf.h"
 
 static unsigned long image_load_addr = 0x80100000;
 

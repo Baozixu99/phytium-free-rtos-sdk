@@ -29,13 +29,13 @@
 #include <stdio.h>
 #include "ft_os_gmac.h"
 #include "fgmac.h"
-#include "ft_assert.h"
-#include "ft_io.h"
-#include "ft_assert.h"
-#include "interrupt.h"
+#include "fassert.h"
+#include "fio.h"
+#include "fassert.h"
+#include "finterrupt.h"
 #include "list.h"
-#include "cpu_info.h"
-#include "ft_debug.h"
+#include "fcpu_info.h"
+#include "fdebug.h"
 
 #define OS_MAC_DEBUG_TAG "OS_MAC"
 

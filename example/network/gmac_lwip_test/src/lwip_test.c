@@ -27,8 +27,8 @@
 #include "sdkconfig.h"
 #include "FreeRTOS.h"
 #include "task.h"
-#include "ft_types.h"
-#include "parameters.h"
+#include "ftypes.h"
+#include "fparameters.h"
 
 #ifndef SDK_CONFIG_H__
 	#error "Please include sdkconfig.h first"

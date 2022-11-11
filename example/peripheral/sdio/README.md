@@ -18,6 +18,8 @@ SD卡的通信依赖三种数据格式：命令包，响应包，数据包，控
 - [Phytium FreeRTOS SDK](https://gitee.com/phytium_embedded/phytium-free-rtos-sdk)
 - [Phytium Standalone SDK](https://gitee.com/phytium_embedded/phytium-standalone-sdk)
 
+![](./figs/board.jpg)
+
 ### 2.1 硬件配置方法
 
 本例程支持的硬件平台包括

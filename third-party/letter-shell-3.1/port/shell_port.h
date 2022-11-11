@@ -26,7 +26,7 @@
 #define THIRD_LETTER_SHELL_OS_PORT_H
 
 #include "shell.h"
-#include "ft_types.h"
+#include "ftypes.h"
 #include "FreeRTOS.h"
 #include "task.h"
 

@@ -34,7 +34,7 @@ extern "C"
 #include <semphr.h>
 #include <event_groups.h>
 
-#include "parameters.h"
+#include "fparameters.h"
 #include "fgdma.h"
 #include "fmemory_pool.h"
 /************************** Constant Definitions *****************************/

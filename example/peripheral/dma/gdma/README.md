@@ -13,6 +13,10 @@ GDMA (Generic Direct Memory Access) 用于将数据从一个内存地址复制�
 - [Phytium FreeRTOS SDK](https://gitee.com/phytium_embedded/phytium-free-rtos-sdk)
 - [Phytium Standalone SDK](https://gitee.com/phytium_embedded/phytium-standalone-sdk)
 
+- 本例程在E2000D Demo 板测试通过，不需要进行额外连线
+
+[](./figs/board.jpg)
+
 ### 2.1 硬件配置方法
 
 本例程支持的硬件平台包括
@@ -21,9 +25,7 @@ GDMA (Generic Direct Memory Access) 用于将数据从一个内存地址复制�
 
 对应的配置项是，
 
-- CONFIG_TARGET_E2000
-
-本例程在 E2000-A测试板和B测试板完成测试
+- CONFIG_TARGET_E2000D
 
 ### 2.2 SDK配置方法
 

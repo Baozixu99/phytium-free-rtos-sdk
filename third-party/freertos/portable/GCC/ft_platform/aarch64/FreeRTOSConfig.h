@@ -28,7 +28,7 @@
 #ifndef FREERTOS_CONFIG_H
 #define FREERTOS_CONFIG_H
 
-#include "interrupt.h"
+#include "finterrupt.h"
 
 /*-----------------------------------------------------------
  * Application specific definitions.

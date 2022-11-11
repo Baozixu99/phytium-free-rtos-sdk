@@ -27,9 +27,9 @@
 #include "timers.h"
 #include "fadc.h"
 #include "fadc_os.h"
-#include "cpu_info.h"
+#include "fcpu_info.h"
 #include "fpinctrl.h"
-#include "ft_assert.h"
+#include "fassert.h"
 
 /* The periods assigned to the one-shot timers. */
 #define ONE_SHOT_TIMER_PERIOD		( pdMS_TO_TICKS( 60000UL ))

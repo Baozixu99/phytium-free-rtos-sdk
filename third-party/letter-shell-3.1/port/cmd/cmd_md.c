@@ -25,8 +25,8 @@
 #include <string.h>
 #include <stdlib.h>
 #include "../src/shell.h"
-#include "ft_io.h"
-#include "ft_types.h"
+#include "fio.h"
+#include "ftypes.h"
 
 static void MdCmdUsage()
 {

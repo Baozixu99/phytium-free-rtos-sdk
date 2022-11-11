@@ -15,15 +15,22 @@ GPIO (General-purpose input/output)，即通用型输入输出，其引脚可以
 
 ### 2.1 硬件配置方法
 
-本例程支持的硬件平台包括
+本例程需要用到
+- E2000 Q Demo 板
+- 杜邦线
 
-- E2000
+![](./figs/board.jpg)
 
-对应的配置项是，
 
-- CONFIG_TARGET_E2000
+- 在本例程中连接 GPIO-4-A-11 和 GPIO-4-A-12，分别配置为输入引脚和输出引脚，参考 E2000 Q 数据手册可知，引脚的复用功能6为 GPIO，因此例程中会修改引脚复用，
 
-本例程在 E2000-A测试板和B测试板完成测试
+- GPIO-4-A-11 和 GPIO-4-A-12 的引脚为外侧排第 4 和第 5 引脚，具体情况可以参考 E2000 Q Demo板原理图
+
+![](./figs/pin_connect_gpio4.jpg)
+
+- 也可以使用 GPIO-3-A-4 和 GPIO-3-A-5 进行测试
+
+![](./figs/pin_connect_gpio3.jpg)
 
 ### 2.2 SDK配置方法
 

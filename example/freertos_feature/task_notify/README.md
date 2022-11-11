@@ -72,6 +72,8 @@ FreeRTOS 从 V8.2.0 版本开始提供任务通知这个功能，每个任务都
 - make load_ft2004_aarch32  将预设32bit ft2004 下的配置加载至工程中
 - make load_e2000d_aarch64  将预设64bit e2000d 下的配置加载至工程中
 - make load_e2000d_aarch32  将预设32bit e2000d 下的配置加载至工程中
+- make load_e2000q_aarch64  将预设64bit e2000q 下的配置加载至工程中
+- make load_e2000q_aarch32  将预设32bit e2000q 下的配置加载至工程中
 - make menuconfig   配置目录下的参数变量
 - make backup_kconfig 将目录下的sdkconfig 备份到./configs下
 
@@ -130,6 +132,8 @@ bootelf -p 0x90100000
 - 输入```notify false_cre```，启动ulTaskNotifyTake pdFALSE测试
 - 输入```notify false_del```，删除ulTaskNotifyTake pdFALSE测试
 - 测试任务能够能正常创建和删除，输入```ps```查看任务状态正常，即测试正常
+
+![](./pic/task_notify.png)
 
 ## 3. 如何解决问题
 

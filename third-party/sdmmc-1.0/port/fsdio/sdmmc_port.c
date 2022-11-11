@@ -27,7 +27,7 @@
 #include <event_groups.h>
 
 #include "fmemory_pool.h"
-#include "parameters.h"
+#include "fparameters.h"
 
 #include "sdmmc_port.h"
 #include "sdmmc_cmd.h"

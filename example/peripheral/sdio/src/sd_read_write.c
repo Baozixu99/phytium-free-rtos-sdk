@@ -27,11 +27,11 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
-#include "ft_assert.h"
-#include "ft_debug.h"
+#include "fassert.h"
+#include "fdebug.h"
 #include "fsleep.h"
-#include "kernel.h"
-#include "cache.h"
+#include "fkernel.h"
+#include "fcache.h"
 
 #include "fsdio_os.h"
 /************************** Constant Definitions *****************************/

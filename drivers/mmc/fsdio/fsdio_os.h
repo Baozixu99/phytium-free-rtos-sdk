@@ -34,8 +34,8 @@ extern "C"
 #include <semphr.h>
 #include <event_groups.h>
 
-#include "kernel.h"
-#include "parameters.h"
+#include "fkernel.h"
+#include "fparameters.h"
 #include "fsdio.h"
 
 /************************** Constant Definitions *****************************/

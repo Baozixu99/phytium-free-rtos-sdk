@@ -68,6 +68,8 @@
 - make load_ft2004_aarch32  将预设32bit ft2004 下的配置加载至工程中
 - make load_e2000d_aarch64  将预设64bit e2000d 下的配置加载至工程中
 - make load_e2000d_aarch32  将预设32bit e2000d 下的配置加载至工程中
+- make load_e2000q_aarch64  将预设64bit e2000q 下的配置加载至工程中
+- make load_e2000q_aarch32  将预设32bit e2000q 下的配置加载至工程中
 - make menuconfig   配置目录下的参数变量
 - make backup_kconfig 将目录下的sdkconfig 备份到./configs下
 
@@ -133,8 +135,17 @@ bootelf -p 0x90100000
 ### 2.4 输出与实验现象
 
 - 系统进入后，输入```task```查看指令说明
+
+![](.\figs\task_result.png)
+
 - 执行相应的cre和del操作，创建和删除测试任务
+![](.\figs\task_cre.png)
+
+![](.\figs\task_del.png)
+
 - 测试任务能够能正常创建和删除，输入```ps```查看任务状态正常，即测试正常
+
+![](./pic/task_command.png)
 
 ## 3. 如何解决问题
 Q: ps查看任务状态异常
@@ -142,7 +153,6 @@ Q: ps查看任务状态异常
 A: 当使用了某个例程，且该例程中的任务未使用vTaskDelay进行延时，而是使用了for死循环的时候，串口使用ps查看任务状态会出现异常; 推荐在任务中使用vTaskDelay;
 
 ## 4. 修改历史记录
-
 
 
 

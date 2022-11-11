@@ -22,8 +22,8 @@
  */
 
 #include "../src/shell.h"
-#include "ft_types.h"
-#include "psci.h"
+#include "ftypes.h"
+#include "fpsci.h"
 
 int RebootCmdEntry()
 {

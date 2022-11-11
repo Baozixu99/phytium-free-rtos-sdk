@@ -40,7 +40,7 @@
 #include "../include/lwip/debug.h"
 #include "ethernetif.h"
 #include "sdkconfig.h"
-#include "parameters.h"
+#include "fparameters.h"
 
 #if LWIP_IPV6
 #include "lwip/ethip6.h"
@@ -51,8 +51,8 @@
 #include "fgmac_hw.h"
 #include "fgmac_phy.h"
 
-#include "ft_assert.h"
-#include "interrupt.h"
+#include "fassert.h"
+#include "finterrupt.h"
 
 #ifndef SDK_CONFIG_H__
 	#error "Please include sdkconfig.h first"
@@ -61,9 +61,9 @@
 #ifndef CONFIG_USE_SYS_TICK
 	#error "Please enable system tick by CONFIG_USE_SYS_TICK first"
 #endif
-#include "generic_timer.h"
+#include "fgeneric_timer.h"
 #include "fgmac.h"
-#include "ft_debug.h"
+#include "fdebug.h"
 
 /* The time to block waiting for input. */
 #define TIME_WAITING_FOR_INPUT (portMAX_DELAY)

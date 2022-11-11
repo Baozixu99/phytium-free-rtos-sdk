@@ -26,10 +26,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "interrupt.h"
-#include "ft_debug.h"
+#include "finterrupt.h"
+#include "fdebug.h"
 #include "fsleep.h"
-#include "cpu_info.h"
+#include "fcpu_info.h"
 #include "fiopad.h"
 
 #include "fgpio_os.h"

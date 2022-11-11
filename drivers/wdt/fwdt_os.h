@@ -26,9 +26,9 @@
 
 #include <FreeRTOS.h>
 #include <semphr.h>
-#include "ft_error_code.h"
+#include "ferror_code.h"
 #include "fwdt.h"
-#include "ft_types.h"
+#include "ftypes.h"
 
 /* freertos wdt error */
 #define FREERTOS_WDT_SEM_ERROR    FT_CODE_ERR(ErrModBsp, ErrBspWdt, 10)

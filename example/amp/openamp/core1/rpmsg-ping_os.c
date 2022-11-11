@@ -14,7 +14,7 @@ This application echoes back data that was sent to it by the master core. */
 #include <unistd.h>
 #include <openamp/open_amp.h>
 #include <metal/alloc.h>
-#include "ft_types.h"
+#include "ftypes.h"
 #include "platform_info.h"
 #include "rpmsg-echo.h"
 #include "FreeRTOS.h"

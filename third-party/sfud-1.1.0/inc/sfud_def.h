@@ -33,7 +33,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include "ft_debug.h"
+#include "fdebug.h"
 #include <sfud_cfg.h>
 #include "sfud_flash_def.h"
 

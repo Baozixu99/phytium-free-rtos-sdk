@@ -28,10 +28,10 @@
 #include "task.h"
 #include "queue.h"
 
-#include "kernel.h"
-#include "cache.h"
-#include "ft_assert.h"
-#include "ft_debug.h"
+#include "fkernel.h"
+#include "fcache.h"
+#include "fassert.h"
+#include "fdebug.h"
 #include "fpinctrl.h"
 
 #include "fgdma_os.h"
@@ -250,9 +250,9 @@ static void GdmaMemcpyTaskA(void *args)
             taskENTER_CRITICAL();
             printf("[A]memcpy success !!!\r\n");
             printf("[A]src buf...\r\n");
-            FtDumpHexByte((const u8 *)src_a, min(GDMA_BUF_A_LEN, (fsize_t)64U));
+            FtDumpHexByte((const u8 *)src_a, min((fsize_t)GDMA_BUF_A_LEN, (fsize_t)64U));
             printf("[A]dst buf...\r\n");
-            FtDumpHexByte((const u8 *)dst_a, min(GDMA_BUF_A_LEN, (fsize_t)64U));
+            FtDumpHexByte((const u8 *)dst_a, min((fsize_t)GDMA_BUF_A_LEN, (fsize_t)64U));
             taskEXIT_CRITICAL();
         }
         else
@@ -325,9 +325,9 @@ static void GdmaMemcpyTaskB(void *args)
             taskENTER_CRITICAL();
             printf("[B]memcpy success !!!\r\n");
             printf("[B]src buf...\r\n");
-            FtDumpHexByte((const u8 *)src_b, min(GDMA_BUF_B_LEN, (fsize_t)64U));
+            FtDumpHexByte((const u8 *)src_b, min((fsize_t)GDMA_BUF_B_LEN, (fsize_t)64U));
             printf("[B]dst buf...\r\n");
-            FtDumpHexByte((const u8 *)dst_b, min(GDMA_BUF_B_LEN, (fsize_t)64U));
+            FtDumpHexByte((const u8 *)dst_b, min((fsize_t)GDMA_BUF_B_LEN, (fsize_t)64U));
             taskEXIT_CRITICAL();
         }
         else

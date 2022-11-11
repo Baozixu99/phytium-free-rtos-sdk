@@ -74,6 +74,8 @@ E2000D上使用的Nor Flash介质型号是GD25Q128，容量为16MB;
 - make load_ft2004_aarch32  将预设32bit ft2004 下的配置加载至工程中
 - make load_e2000d_aarch64  将预设64bit e2000d 下的配置加载至工程中
 - make load_e2000d_aarch32  将预设32bit e2000d 下的配置加载至工程中
+- make load_e2000q_aarch64  将预设64bit e2000q 下的配置加载至工程中
+- make load_e2000q_aarch32  将预设32bit e2000q 下的配置加载至工程中
 - make menuconfig   配置目录下的参数变量
 - make backup_kconfig 将目录下的sdkconfig 备份到./configs下
 
@@ -137,8 +139,8 @@ bootelf -p 0x90100000
 
 ## 3. 如何解决问题
 
-- 若出现读写异常，需确认menuconfig中是否选择了正确的Norflash型号；
-
+- 若出现读写异常，需确认Norflash型号是否已经适配；
+- FLASH_ADDR需要根据实际的flash大小来确定；
 - 由于开发板上的QSPI接口的NorFlash用于固件启动，因此不建议在不了解固件大小的情况下，使用qspi write写数据，因为这可能导致固件无法正常启动；
 
 ## 4. 修改历史记录

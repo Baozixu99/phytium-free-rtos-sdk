@@ -9,10 +9,10 @@
 
 #include <string.h>
 
-#include "parameters.h"
+#include "fparameters.h"
 
-#include "ft_debug.h"
-#include "interrupt.h"
+#include "fdebug.h"
+#include "finterrupt.h"
 #include "ff.h"
 #include "diskio.h"		/* FatFs lower layer API */
 #include "fpcie.h"

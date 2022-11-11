@@ -43,7 +43,7 @@ static xTaskHandle write_handle;
 static TimerHandle_t xOneShotTimer;
 
 /* write and read start address */
-#define FLASH_ADDR 0x700000
+#define FLASH_ADDR (7 * SZ_1M)
 
 /* write and read cs channel */
 #define QSPI_CS_CHANNEL 0

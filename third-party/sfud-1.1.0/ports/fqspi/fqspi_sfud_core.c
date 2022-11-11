@@ -21,7 +21,7 @@
  * ----- ------     --------    --------------------------------------
  */
 
-#include "parameters.h"
+#include "fparameters.h"
 #include "fqspi_sfud_core.h"
 #include "sdkconfig.h"
 #include "fqspi_os.h"

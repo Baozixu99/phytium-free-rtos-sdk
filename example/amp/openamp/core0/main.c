@@ -22,12 +22,12 @@
  */
 
 
-#include "ft_types.h"
-#include "psci.h"
+#include "ftypes.h"
+#include "fpsci.h"
 #include "shell.h"
 #include "fsleep.h"
-#include "f_printk.h"
-#include "ft_debug.h"
+#include "fprintk.h"
+#include "fdebug.h"
 #include "shell_port.h"
 
 #define OPENAMP_MAIN_DEBUG_TAG "OPENAMP_MAIN"

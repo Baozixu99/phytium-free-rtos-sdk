@@ -18,8 +18,8 @@
 - 3. 支持的 Flash 容量不能超过 128 MB
 - 4. 不支持坏块检测和坏块处理
 
-本例程通过Freertos下的SPIFFS测试，验证了QSPI Nor-flash文件系统的基本功能，如文件系统格式化，文件的创建、读写、删除和枚举等，例程在FT2000/4上测试通过，使用的Nor Flash介质型号是GD25Q256，容量为32MB;
-E2000D上使用的Nor Flash介质型号是GD25Q128，容量为16MB;
+本例程通过Freertos下的SPIFFS测试，验证了QSPI Nor-flash文件系统的基本功能，如文件系统格式化，文件的创建、读写、删除和枚举等，例程在FT2000/4上测试通过，使用的Nor Flash介质型号是GD25LQ256E，容量为32MB;
+E2000D上使用的Nor Flash介质型号是GD25LQ128E，容量为16MB;
 
 ## 2. 如何使用例程
 
@@ -36,8 +36,6 @@ E2000D上使用的Nor Flash介质型号是GD25Q128，容量为16MB;
 - CONFIG_TARGET_F2000_4
 - CONFIG_TARGET_D2000
 - CONFIG_TARGET_E2000D
-
-![hardware](./figs/hardware.png)
 
 - 本例程适配了GD25Q256、GD25Q128、GD25Q64、S25FS256的Nor-Flash芯片，如使用其他型号，需自行参考适配
 
@@ -135,7 +133,8 @@ bootelf -p 0x90100000
 
 ><font size="1">主要记录使用例程中可能会遇到的问题，给出相应的解决方案</font><br />
 
-- FSPIFFS_IF_FORMAT决定初始化阶段是否格式化指定的区域，TRUE为格式化，FLASE为不格式化
+- FSPIFFS_IF_FORMAT决定初始化阶段是否格式化指定的区域，TRUE为格式化，FLASE为不格式化；
+- FSPIFFS_START_ADDR和FSPIFFS_USE_SIZE需要根据实际的flash大小来确定；
 
 ## 4. 修改历史记录
 

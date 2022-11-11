@@ -32,7 +32,7 @@
 ## 2. 如何使用例程
 
 本例程需要用到
-- Phytium开发板（FT2000-4/D2000/E2000D）
+- Phytium开发板（FT2000-4/D2000/E2000D/E2000Q）
 - [Phytium freeRTOS SDK](https://gitee.com/phytium_embedded/phytium-free-rtos-sdk)
 - [Phytium standalone SDK](https://gitee.com/phytium_embedded/phytium-standalone-sdk)
 ### 2.1 硬件配置方法
@@ -42,13 +42,14 @@
 - FT2000-4
 - D2000
 - E2000D
+- E2000Q
 
 对应的配置项是，
 
 - CONFIG_TARGET_F2000_4
 - CONFIG_TARGET_D2000
 - CONFIG_TARGET_E2000D
-
+- CONFIG_TARGET_E2000Q
 ### 2.2 SDK配置方法
 
 本例程需要，
@@ -69,6 +70,8 @@
 - make load_ft2004_aarch32  将预设32bit ft2004 下的配置加载至工程中
 - make load_e2000d_aarch64  将预设64bit e2000d 下的配置加载至工程中
 - make load_e2000d_aarch32  将预设32bit e2000d 下的配置加载至工程中
+- make load_e2000q_aarch64  将预设64bit e2000q 下的配置加载至工程中
+- make load_e2000q_aarch32  将预设32bit e2000q 下的配置加载至工程中
 - make menuconfig   配置目录下的参数变量
 - make backup_kconfig 将目录下的sdkconfig 备份到./configs下
 
@@ -137,8 +140,14 @@ bootelf -p 0x90100000
 - 系统进入后，输入```resource```查看指令说明
 - 输入```resource mutex_cre```，启动互斥信号量任务测试
 - 输入```resource mutex_del```，删除互斥信号量任务测试
+
+![mutex](./figs/resource_mutex.png)
+
 - 输入```resource gate_cre```，启动守护任务测试
 - 输入```resource gate_del```，删除守护任务测试
+
+![gate](./figs/resource_gate.png)
+
 - 测试任务能够能正常创建和删除，输入```ps```查看任务状态正常，即测试正常
 
 ## 3. 如何解决问题

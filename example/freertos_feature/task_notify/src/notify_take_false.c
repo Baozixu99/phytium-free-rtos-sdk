@@ -10,8 +10,8 @@ that have occurred, and the number of events that have been processed.
 #include "FreeRTOS.h"
 #include "task.h"
 #include "semphr.h"
-#include "interrupt.h"
-#include "cpu_info.h"
+#include "finterrupt.h"
+#include "fcpu_info.h"
 
 #define TASK_STACK_SIZE	        1024
 

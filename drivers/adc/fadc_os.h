@@ -26,10 +26,10 @@
 
 #include <FreeRTOS.h>
 #include <semphr.h>
-#include "ft_error_code.h"
+#include "ferror_code.h"
 #include "fadc.h"
-#include "ft_types.h"
-#include "parameters.h"
+#include "ftypes.h"
+#include "fparameters.h"
 
 /* freertos adc error */
 #define FREERTOS_ADC_SEM_ERROR    FT_CODE_ERR(ErrModBsp, ErrBspAdc, 10)

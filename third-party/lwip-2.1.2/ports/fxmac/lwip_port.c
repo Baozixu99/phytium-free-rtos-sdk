@@ -55,9 +55,9 @@
 
 #include "netif/etharp.h"
 #include "lwip_port.h"
-#include "parameters.h"
-#include "f_printk.h"
-#include "ft_debug.h"
+#include "fparameters.h"
+#include "fprintk.h"
+#include "fdebug.h"
 
 #if !NO_SYS
 #include "lwip/tcpip.h"

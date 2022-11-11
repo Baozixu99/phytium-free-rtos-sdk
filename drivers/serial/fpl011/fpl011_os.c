@@ -24,11 +24,11 @@
 #include "fpl011_os.h"
 #include "fpl011.h"
 #include "fpl011_hw.h"
-#include "interrupt.h"
-#include "ft_types.h"
-#include "ft_assert.h"
+#include "finterrupt.h"
+#include "ftypes.h"
+#include "fassert.h"
 #include "sdkconfig.h"
-#include "cpu_info.h"
+#include "fcpu_info.h"
 #include <stdio.h>
 
 /* Callback events  */

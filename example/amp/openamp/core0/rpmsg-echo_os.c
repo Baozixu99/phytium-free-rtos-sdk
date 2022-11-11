@@ -40,9 +40,9 @@ This application echoes back data that was sent to it by the master core. */
 #include "FreeRTOS.h"
 #include "task.h"
 #include "shell.h"
-#include "interrupt.h"
-#include "cache.h"
-#include "psci.h"
+#include "finterrupt.h"
+#include "fcache.h"
+#include "fpsci.h"
 
 
 /************************** Constant Definitions *****************************/

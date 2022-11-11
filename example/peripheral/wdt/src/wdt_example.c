@@ -26,10 +26,10 @@
 #include "task.h"
 #include "queue.h"
 #include "timers.h"
-#include "generic_timer.h"
+#include "fgeneric_timer.h"
 #include "fwdt.h"
 #include "fwdt_os.h"
-#include "cpu_info.h"
+#include "fcpu_info.h"
 #include "wdt_example.h"
 
 /* The periods assigned to the one-shot timers. */

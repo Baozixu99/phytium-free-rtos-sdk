@@ -32,10 +32,10 @@
 #include "sys.h"
 #include "netif.h"
 #include <netdb.h>
-#include "ft_types.h"
+#include "ftypes.h"
 #include "shell.h"
 
-#include "ft_debug.h"
+#include "fdebug.h"
 
 #define MULTICAST_DEBUG_TAG "MULTICAST"
 #define MULTICAST_PRINT_E(format, ...) FT_DEBUG_PRINT_E(MULTICAST_DEBUG_TAG, format, ##__VA_ARGS__)

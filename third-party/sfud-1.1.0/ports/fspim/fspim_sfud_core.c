@@ -23,9 +23,10 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "semphr.h"
+#include <string.h>
 
-#include "parameters.h"
-#include "ft_assert.h"
+#include "fparameters.h"
+#include "fassert.h"
 #include "fsleep.h"
 
 #include "fspim_os.h"
@@ -62,14 +63,14 @@ static FSpimSfudOs sfud_instance =
     .is_inited = FALSE
 };
 
-static sfud_err FSpimReadWrite(const sfud_spi *flash, const uint8_t *write_buf, size_t write_size, uint8_t *read_buf,
+static sfud_err FSpimReadWrite(const sfud_spi *spi, const uint8_t *write_buf, size_t write_size, uint8_t *read_buf,
                                size_t read_size)
 {
     sfud_err result = SFUD_SUCCESS;
     FError err = FT_SUCCESS;
-    FSpimSfudOs *user_data = (FSpimSfudOs *)flash->user_data;
+    FSpimSfudOs *user_data = (FSpimSfudOs *)spi->user_data;
 
-    SFUD_DEBUG("spi_write_read@%p beg+++++++++++++++++++++++++++++++++++++++++++++++++++", flash);
+    SFUD_DEBUG("spi_write_read@%p beg+++++++++++++++++++++++++++++++++++++++++++++++++++", spi);
     if (NULL != write_buf)
     {
         SFUD_DEBUG("++++  Write %d Bytes @%p: 0x%x, 0x%x, 0x%x", 
@@ -101,31 +102,38 @@ static sfud_err FSpimReadWrite(const sfud_spi *flash, const uint8_t *write_buf, 
                     ((read_size > 1)) ? read_buf[1] : 0xff,
                     ((read_size > 2)) ? read_buf[2] : 0xff);
     }
-    SFUD_DEBUG("spi_write_read@%p end+++++++++++++++++++++++++++++++++++++++++++++++++++", flash);
+    SFUD_DEBUG("spi_write_read@%p end+++++++++++++++++++++++++++++++++++++++++++++++++++", spi);
 
     return result;    
 }
 
 sfud_err FSpimProbe(sfud_flash *flash)
 {
+    sfud_spi *spi_p = &flash->spi;
     FSpimSfudOs *user_data = &sfud_instance;
 
-    /* sfud_spi_port_init will be called for each flash candidate, 
-    and we just do controller init for the first time */
-    if (FALSE == user_data->is_inited)
+    if (!memcmp(FSPIM2_SFUD_NAME, spi_p->name, strlen(FSPIM2_SFUD_NAME)))
     {
-        /* init spi controller */
-        user_data->spi = FFreeRTOSSpimInit(user_data->spi_id, &user_data->spi_cfg);
-        if (NULL == user_data->spi)
+        /* sfud_spi_port_init will be called for each flash candidate, 
+        and we just do controller init for the first time */
+        if (FALSE == user_data->is_inited)
         {
-            return SFUD_ERR_NOT_FOUND;
+            /* init spi controller */
+            user_data->spi = FFreeRTOSSpimInit(user_data->spi_id, &user_data->spi_cfg);
+            if (NULL == user_data->spi)
+            {
+                return SFUD_ERR_NOT_FOUND;
+            }
+
+            user_data->is_inited = TRUE;        
         }
-
-        user_data->is_inited = TRUE;        
+        flash->spi.user_data = user_data;
+        flash->spi.wr = FSpimReadWrite;
     }
-
-    flash->user_data = user_data;
-    flash->spi.wr = FSpimReadWrite;
+    else
+    {
+        return SFUD_ERR_NOT_FOUND;
+    }
 
     return SFUD_SUCCESS;
 }

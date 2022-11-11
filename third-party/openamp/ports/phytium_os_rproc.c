@@ -31,12 +31,12 @@
 #include <openamp/rpmsg_virtio.h>
 #include "platform_info.h"
 #include "sdkconfig.h"
-#include "ft_debug.h"
-#include "interrupt.h"
+#include "fdebug.h"
+#include "finterrupt.h"
 #include <stdio.h>
-#include "mmu.h"
-#include "ft_types.h"
-#include "cpu_info.h"
+#include "fmmu.h"
+#include "ftypes.h"
+#include "fcpu_info.h"
 
 
 

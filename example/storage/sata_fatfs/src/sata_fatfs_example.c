@@ -32,9 +32,9 @@
 #include "timers.h"
 #include "sata_fatfs_example.h"
 #include "strto.h"
-#include "ft_assert.h"
-#include "ft_debug.h"
-#include "parameters.h"
+#include "fassert.h"
+#include "fdebug.h"
+#include "fparameters.h"
 
 /* file system */
 #include "ff.h"

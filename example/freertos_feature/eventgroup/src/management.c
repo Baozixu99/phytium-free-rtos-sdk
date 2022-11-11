@@ -9,8 +9,8 @@ This example demonstrates how to:
 #include "task.h"
 #include "event_groups.h"
 #include "timers.h" /* For the xTimerPendFunctionCallFromISR() function. */
-#include "interrupt.h"
-#include "cpu_info.h"
+#include "finterrupt.h"
+#include "fcpu_info.h"
 
 static xTaskHandle xtask1_handle;
 static xTaskHandle xtask2_handle;

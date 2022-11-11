@@ -5,8 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "ft_types.h"
-#include "ft_assert.h"
+#include "ftypes.h"
+#include "fassert.h"
 #include "tlsf.h"
 
 #if defined(__cplusplus)

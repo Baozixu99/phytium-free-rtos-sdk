@@ -47,7 +47,8 @@
  * This is simple TFTP client/server for the lwIP raw API.
  * You need to increase MEMP_NUM_SYS_TIMEOUT by one if you use TFTP!
  */
-
+#include <string.h>
+#include "fdebug.h"
 #include "tftp_client.h"
 #include "tftp_server.h"
 
@@ -87,8 +88,6 @@ enum tftp_error
 	TFTP_ERROR_FILE_EXISTS = 6,
 	TFTP_ERROR_NO_SUCH_USER = 7
 };
-
-#include <string.h>
 
 struct tftp_state
 {
@@ -234,8 +233,6 @@ resend_data(const ip_addr_t *addr, u16_t port)
 	return ret;
 }
 
-#include "ft_debug.h"
-
 static void
 send_data(const ip_addr_t *addr, u16_t port)
 {
@@ -264,8 +261,6 @@ send_data(const ip_addr_t *addr, u16_t port)
 		close_handle();
 		return;
 	}
-
-	//FtDumpHexByte((u8 *)&payload[2], 128);
 
 	pbuf_realloc(tftp_state.last_data, (u16_t)(TFTP_HEADER_LENGTH + ret));
 	resend_data(addr, port);

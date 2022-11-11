@@ -4,8 +4,8 @@
 #include "task.h"
 #include "semphr.h"
 #include "croutine.h"
-#include "interrupt.h"
-#include "cpu_info.h"
+#include "finterrupt.h"
+#include "fcpu_info.h"
 
 
 static xTaskHandle xtask1_handle;

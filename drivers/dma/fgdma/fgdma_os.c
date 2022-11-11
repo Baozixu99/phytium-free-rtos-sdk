@@ -26,11 +26,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "interrupt.h"
-#include "parameters.h"
-#include "ft_debug.h"
+#include "finterrupt.h"
+#include "fparameters.h"
+#include "fdebug.h"
 #include "fsleep.h"
-#include "cpu_info.h"
+#include "fcpu_info.h"
 
 #include "fgdma.h"
 #include "fgdma_hw.h"

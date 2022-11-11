@@ -26,9 +26,9 @@
 
 #include <FreeRTOS.h>
 #include <semphr.h>
-#include "ft_error_code.h"
+#include "ferror_code.h"
 #include "fpwm.h"
-#include "ft_types.h"
+#include "ftypes.h"
 
 /* freertos pwm error */
 #define FREERTOS_PWM_SEM_ERROR    FT_CODE_ERR(ErrModBsp, ErrBspPwm, 10)

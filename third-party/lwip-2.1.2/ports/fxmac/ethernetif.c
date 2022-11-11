@@ -37,7 +37,7 @@
 #include "ethernetif.h"
 #include "lwip_port.h"
 #include "ft_os_xmac.h"
-#include "ft_debug.h"
+#include "fdebug.h"
 
 
 #define FXMAC_LWIP_NET_DEBUG_TAG "FXMAC_LWIP_NET"

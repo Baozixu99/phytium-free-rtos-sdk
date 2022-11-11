@@ -29,7 +29,7 @@ extern "C"
 {
 #endif
 /***************************** Include Files *********************************/
-#include "ft_types.h"
+#include "ftypes.h"
 
 #include "spiffs_port.h"
 /************************** Constant Definitions *****************************/

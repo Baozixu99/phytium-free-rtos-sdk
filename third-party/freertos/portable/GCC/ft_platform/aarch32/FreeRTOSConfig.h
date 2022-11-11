@@ -29,8 +29,8 @@
 #define FREERTOS_CONFIG_H
 
 #if !defined(__ASSEMBLER__) 
-#include "parameters.h"
-#include "interrupt.h"
+#include "fparameters.h"
+#include "finterrupt.h"
 #endif
 
 /*-----------------------------------------------------------

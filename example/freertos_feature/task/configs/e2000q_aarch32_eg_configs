@@ -2,7 +2,7 @@
 #
 # Freertos Configuration
 #
-CONFIG_TARGET_NAME="e2000q_freertos_a32"
+CONFIG_TARGET_NAME="e2000d_freertos_a32"
 # end of Freertos Configuration
 
 #
@@ -207,7 +207,7 @@ CONFIG_DEFAULT_LETTER_SHELL_USE_UART1=y
 # CONFIG_DEFAULT_LETTER_SHELL_USE_UART2 is not set
 # end of Letter Shell Configuration
 
-# CONFIG_USE_TLSF is not set
+CONFIG_USE_TLSF=y
 # CONFIG_USE_SDMMC_CMD is not set
 # CONFIG_USE_CHERRY_USB is not set
 # end of FreeRTOS Setting

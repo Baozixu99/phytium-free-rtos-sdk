@@ -51,6 +51,8 @@ menu "Freertos Spim Drivers"
         bool
         prompt "Use Freertos spim driver"
         default n
+        select USE_SPI
+        select USE_FSPIM
 endmenu
 
 menu "Freertos DMA Drivers"

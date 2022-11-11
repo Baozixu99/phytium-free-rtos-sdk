@@ -25,10 +25,10 @@
 /***************************** Include Files *********************************/
 #include <string.h>
 
-#include "ft_assert.h"
-#include "ft_debug.h"
-#include "interrupt.h"
-#include "cpu_info.h"
+#include "fassert.h"
+#include "fdebug.h"
+#include "finterrupt.h"
+#include "fcpu_info.h"
 #include "fsleep.h"
 
 #include "fddma_os.h"

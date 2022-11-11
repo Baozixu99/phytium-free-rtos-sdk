@@ -55,10 +55,10 @@
 
 #include "netif/etharp.h"
 #include "lwip_port.h"
-#include "parameters.h"
-#include "ft_types.h"
-#include "ft_debug.h"
-#include "generic_timer.h"
+#include "fparameters.h"
+#include "ftypes.h"
+#include "fdebug.h"
+#include "fgeneric_timer.h"
 
 #if !NO_SYS
 #include "lwip/tcpip.h"

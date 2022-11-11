@@ -28,10 +28,10 @@
 #include "timers.h"
 #include "fcan.h"
 #include "fcan_os.h"
-#include "cpu_info.h"
+#include "fcpu_info.h"
 #include "fpinctrl.h"
-#include "ft_assert.h"
-#include "ft_debug.h"
+#include "fassert.h"
+#include "fdebug.h"
 
 #define FCAN_TEST_DEBUG_TAG "FCAN_FREERTOS_TEST"
 #define FCAN_TEST_DEBUG(format, ...) FT_DEBUG_PRINT_D(FCAN_TEST_DEBUG_TAG, format, ##__VA_ARGS__)
@@ -49,22 +49,15 @@
 #define ARB_BAUD_RATE 1000000
 #define DATA_BAUD_RATE 1000000
 
-/* test task number */
-// #define TEST_TASK_NUM 2
-
 typedef struct 
 {
 	u32 count;
 	FFreeRTOSCan *os_can_p;
 } FCanQueueData;
 
-// static xSemaphoreHandle xCountingSemaphore;
-
 /* Declare a variable of type QueueHandle_t.  This is used to store the queue
 that is accessed by all three tasks. */
 static QueueHandle_t xQueue;
-
-
 
 static xTaskHandle send_handle;
 static xTaskHandle recv_handle;
@@ -406,8 +399,6 @@ BaseType_t FFreeRTOSCanCreate(void)
 		printf("FFreeRTOSCanCreate FCanQueueData create failed.\r\n" );
 		return pdFAIL;
 	}
-
-	/* enter critical region */
 	
 	/* can init task */
 	xReturn = xTaskCreate((TaskFunction_t )FFreeRTOSCanInitTask, /* 任务入口函数 */
@@ -448,9 +439,6 @@ BaseType_t FFreeRTOSCanCreate(void)
 	{
 		vPrintf("CreateSoftwareTimerTasks xTimerCreate failed \r\n");
 	}
-	
-	/* exit critical region */
-	// taskEXIT_CRITICAL();					
                             
     return xReturn;
 }
@@ -474,9 +462,6 @@ static void FFreeRTOSCanDelete(void)
 	/* deinit can os instance */
 	FFreeRTOSCanDeinit(os_can_ctrl_p[FCAN_INSTANCE_0]);
 	FFreeRTOSCanDeinit(os_can_ctrl_p[FCAN_INSTANCE_1]);
-	
-	/* delete count sem */
-	// vSemaphoreDelete(xCountingSemaphore);
 
 	/* delete queue */
 	vQueueDelete(xQueue);

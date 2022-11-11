@@ -26,9 +26,9 @@
 #include <stdlib.h>
 #include "../src/shell.h"
 #include "../shell_port.h"
-#include "ft_io.h"
-#include "ft_types.h"
-#include "ft_debug.h"
+#include "fio.h"
+#include "ftypes.h"
+#include "fdebug.h"
 
 static int RwWriteRegister(u32 reg_addr, u32 reg_val, u32 bit_width)
 {
