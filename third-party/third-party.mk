@@ -9,6 +9,8 @@ SRC_DIR += $(THIRD_PARTY_CUR_DIR)/freertos/portable/MemMang
 SRC_DIR += $(THIRD_PARTY_CUR_DIR)/freertos/portable
 SRC_DIR += $(THIRD_PARTY_CUR_DIR)/freertos
 
+INC_DIR += $(THIRD_PARTY_CUR_DIR)/freertos/portable/GCC/ft_platform
+
 ifdef CONFIG_TARGET_ARMV8_AARCH64
 	SRC_DIR += $(THIRD_PARTY_CUR_DIR)/freertos/portable/GCC/ft_platform/aarch64
 	INC_DIR += $(THIRD_PARTY_CUR_DIR)/freertos/portable/GCC/ft_platform/aarch64
@@ -145,6 +147,11 @@ ifdef CONFIG_USE_FATFS
 	endif
 endif #CONFIG_USE_FATFS
 
+ifdef CONFIG_USE_FATFS_0_1_4
+
+include $(THIRD_PARTY_CUR_DIR)/fatfs-0.1.4/fatfs.mk
+
+endif #CONFIG_USE_FATFS_0_1_4
 
 ifdef CONFIG_USE_SFUD
 
@@ -219,18 +226,8 @@ ifdef CONFIG_USE_SDMMC_CMD
 
 $(shell export PATH=$(THIRD_PARTY_CUR_DIR)/sdmmc-1.0:$PATH)
 
-	INC_DIR +=  $(THIRD_PARTY_CUR_DIR)/sdmmc-1.0 \
-				$(THIRD_PARTY_CUR_DIR)/sdmmc-1.0/inc \
-				$(THIRD_PARTY_CUR_DIR)/sdmmc-1.0/src
-	SRC_DIR +=  $(THIRD_PARTY_CUR_DIR)/sdmmc-1.0 \
-				$(THIRD_PARTY_CUR_DIR)/sdmmc-1.0/src
+include $(THIRD_PARTY_CUR_DIR)/sdmmc-1.0/sdmmc.mk
 
-	ifdef CONFIG_SDMMC_PORT_FSDIO
-		INC_DIR +=  $(THIRD_PARTY_CUR_DIR)/sdmmc-1.0/port \
-					$(THIRD_PARTY_CUR_DIR)/sdmmc-1.0/port/fsdio
-		SRC_DIR +=  $(THIRD_PARTY_CUR_DIR)/sdmmc-1.0/port \
-					$(THIRD_PARTY_CUR_DIR)/sdmmc-1.0/port/fsdio
-	endif #CONFIG_SDMMC_PORT_FSDIO
 endif #CONFIG_USE_SDMMC_CMD
 
 ifdef CONFIG_USE_CHERRY_USB

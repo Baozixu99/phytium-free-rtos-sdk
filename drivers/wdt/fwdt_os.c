@@ -40,7 +40,7 @@
 #define FWDT_INFO(format, ...) FT_DEBUG_PRINT_I(FWDT_DEBUG_TAG, format, ##__VA_ARGS__)
 #define FWDT_DEBUG(format, ...) FT_DEBUG_PRINT_D(FWDT_DEBUG_TAG, format, ##__VA_ARGS__)
 
-static FFreeRTOSWdt os_wdt[FWDT_INSTANCE_NUM] = {0};
+static FFreeRTOSWdt os_wdt[FWDT_NUM] = {0};
 
 /**
  * @name: FFreeRTOSWdtInit
@@ -50,7 +50,7 @@ static FFreeRTOSWdt os_wdt[FWDT_INSTANCE_NUM] = {0};
  */
 FFreeRTOSWdt *FFreeRTOSWdtInit(u32 instance_id)
 {
-    FASSERT(instance_id < FWDT_INSTANCE_NUM);
+    FASSERT(instance_id < FWDT_NUM);
     FASSERT(FT_COMPONENT_IS_READY != os_wdt[instance_id].wdt_ctrl.is_ready);
 
     FWdtConfig pconfig;

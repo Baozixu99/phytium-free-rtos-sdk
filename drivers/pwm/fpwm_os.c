@@ -39,7 +39,7 @@
 #define FPWM_INFO(format, ...)  FT_DEBUG_PRINT_I(FPWM_DEBUG_TAG, format, ##__VA_ARGS__)
 #define FPWM_DEBUG(format, ...) FT_DEBUG_PRINT_D(FPWM_DEBUG_TAG, format, ##__VA_ARGS__)
 
-static FFreeRTOSPwm os_pwm[FPWM_INSTANCE_NUM] = {0};
+static FFreeRTOSPwm os_pwm[FPWM_NUM] = {0};
 
 /**
  * @name: FFreeRTOSPwmInit
@@ -49,7 +49,7 @@ static FFreeRTOSPwm os_pwm[FPWM_INSTANCE_NUM] = {0};
  */
 FFreeRTOSPwm *FFreeRTOSPwmInit(u32 instance_id)
 {
-    FASSERT(instance_id < FPWM_INSTANCE_NUM);
+    FASSERT(instance_id < FPWM_NUM);
     FASSERT(FT_COMPONENT_IS_READY != os_pwm[instance_id].pwm_ctrl.is_ready);
 
     FPwmConfig pconfig;

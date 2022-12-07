@@ -27,6 +27,10 @@ menu "Component Configuration"
     source "$(FREERTOS_SDK_ROOT)/drivers/Kconfig"
 endmenu
 
-menu "FreeRTOS Setting"
+menu "Third-Party Configuration"
     source "$(FREERTOS_SDK_ROOT)/third-party/Kconfig"
+endmenu
+
+menu "Kernel Configuration"
+    source "$(FREERTOS_SDK_ROOT)/third-party/freertos/Kconfig"
 endmenu

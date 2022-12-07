@@ -169,7 +169,7 @@ static void prvOneShotTimerCallback( TimerHandle_t xTimer )
 /* create adc test, id is adc module number */
 BaseType_t FFreeRTOSAdcCreate(u32 id)
 {
-	FASSERT(id < FADC_INSTANCE_NUM);
+	FASSERT(id < FADC_NUM);
     BaseType_t xReturn = pdPASS;/* 定义一个创建信息返回值，默认为 pdPASS */
 	BaseType_t timer_started = pdPASS;
 

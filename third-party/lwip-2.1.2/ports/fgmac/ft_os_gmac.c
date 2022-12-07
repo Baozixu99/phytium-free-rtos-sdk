@@ -402,7 +402,7 @@ void FtOsGmacStart(FtOsGmac *os_gmac)
     u32 ret = FT_SUCCESS;
     
     /* Initialize Rx Description list : ring Mode */
-    ret = FGmacSetupRxDescRing(gmac, (FGmacDmaDesc *)(gmac->rx_desc), os_gmac->rx_buffer, GMAC_MAX_PACKET_SIZE, GMAC_RX_DESCNUM);
+    ret = FGmacSetupRxDescRing(gmac, (FGmacDmaDesc *)(gmac->rx_desc), os_gmac->rx_buffer, FGMAC_MAX_PACKET_SIZE, GMAC_RX_DESCNUM);
     if (FT_SUCCESS != ret)
     {
         OS_MAC_DEBUG_E("gmac setup rx return err code %d\r\n", ret);
@@ -410,7 +410,7 @@ void FtOsGmacStart(FtOsGmac *os_gmac)
     }
 
     /* Initialize Tx Description list : ring Mode */
-    ret = FGmacSetupTxDescRing(gmac, (FGmacDmaDesc *)(gmac->tx_desc), os_gmac->tx_buffer, GMAC_MAX_PACKET_SIZE, GMAC_TX_DESCNUM);
+    ret = FGmacSetupTxDescRing(gmac, (FGmacDmaDesc *)(gmac->tx_desc), os_gmac->tx_buffer, FGMAC_MAX_PACKET_SIZE, GMAC_TX_DESCNUM);
     if (FT_SUCCESS != ret)
     {
         OS_MAC_DEBUG_E("gmac setup tx return err code %d\r\n", ret);

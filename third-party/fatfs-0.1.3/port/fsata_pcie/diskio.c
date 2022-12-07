@@ -67,25 +67,25 @@ static void FSataPcieIrqHandler(void *param)
 
 static void PCieIntxInit(FPcie* instance_p)
 {
-	InterruptSetPriority(FT_PCI_INTA_IRQ_NUM, 0);	
+	InterruptSetPriority(FPCI_INTA_IRQ_NUM, 0);	
     
-    InterruptInstall(FT_PCI_INTA_IRQ_NUM, (IrqHandler)FPcieIntxIrqHandler, instance_p, "pcieInta");
-    InterruptUmask(FT_PCI_INTA_IRQ_NUM);			
-    InterruptSetPriority(FT_PCI_INTB_IRQ_NUM, 0);
-    InterruptInstall(FT_PCI_INTB_IRQ_NUM, (IrqHandler)FPcieIntxIrqHandler, instance_p, "pcieIntB");
-    InterruptUmask(FT_PCI_INTB_IRQ_NUM);
-    InterruptSetPriority(FT_PCI_INTC_IRQ_NUM, 0);
-    InterruptInstall(FT_PCI_INTC_IRQ_NUM, (IrqHandler)FPcieIntxIrqHandler, instance_p, "pcieIntC");
-    InterruptUmask(FT_PCI_INTC_IRQ_NUM);
-    InterruptSetPriority(FT_PCI_INTD_IRQ_NUM, 0);
-    InterruptInstall(FT_PCI_INTD_IRQ_NUM, (IrqHandler)FPcieIntxIrqHandler, instance_p, "pcieIntD");
-    InterruptUmask(FT_PCI_INTD_IRQ_NUM);
+    InterruptInstall(FPCI_INTA_IRQ_NUM, (IrqHandler)FPcieIntxIrqHandler, instance_p, "pcieInta");
+    InterruptUmask(FPCI_INTA_IRQ_NUM);			
+    InterruptSetPriority(FPCI_INTB_IRQ_NUM, 0);
+    InterruptInstall(FPCI_INTB_IRQ_NUM, (IrqHandler)FPcieIntxIrqHandler, instance_p, "pcieIntB");
+    InterruptUmask(FPCI_INTB_IRQ_NUM);
+    InterruptSetPriority(FPCI_INTC_IRQ_NUM, 0);
+    InterruptInstall(FPCI_INTC_IRQ_NUM, (IrqHandler)FPcieIntxIrqHandler, instance_p, "pcieIntC");
+    InterruptUmask(FPCI_INTC_IRQ_NUM);
+    InterruptSetPriority(FPCI_INTD_IRQ_NUM, 0);
+    InterruptInstall(FPCI_INTD_IRQ_NUM, (IrqHandler)FPcieIntxIrqHandler, instance_p, "pcieIntD");
+    InterruptUmask(FPCI_INTD_IRQ_NUM);
 }
 
 static void FPcieInit()
 {	
 	/* 第一步初始化pcie_obj这个实例，初始化mem，io资源成员 */
-    FPcieCfgInitialize(&pcie_obj, FPcieLookupConfig(FT_PCIE0_ID));
+    FPcieCfgInitialize(&pcie_obj, FPcieLookupConfig(FPCIE0_ID));
     FSATA_DEBUG("\n");
 	FSATA_DEBUG("	PCI:\n");
 	FSATA_DEBUG("	B:D:F			VID:PID			parent_BDF			class_code\n");

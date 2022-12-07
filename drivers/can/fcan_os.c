@@ -39,7 +39,7 @@
 #define FCAN_INFO(format, ...)  FT_DEBUG_PRINT_I(FCAN_DEBUG_TAG, format, ##__VA_ARGS__)
 #define FCAN_DEBUG(format, ...) FT_DEBUG_PRINT_D(FCAN_DEBUG_TAG, format, ##__VA_ARGS__)
 
-static FFreeRTOSCan os_can[FCAN_INSTANCE_NUM] = {0};
+static FFreeRTOSCan os_can[FCAN_NUM] = {0};
 
 /**
  * @name: FFreeRTOSCanInit
@@ -49,7 +49,7 @@ static FFreeRTOSCan os_can[FCAN_INSTANCE_NUM] = {0};
  */
 FFreeRTOSCan *FFreeRTOSCanInit(u32 instance_id)
 {
-    FASSERT(instance_id < FCAN_INSTANCE_NUM);
+    FASSERT(instance_id < FCAN_NUM);
     FASSERT(FT_COMPONENT_IS_READY != os_can[instance_id].can_ctrl.is_ready);
 
     FCanConfig pconfig;

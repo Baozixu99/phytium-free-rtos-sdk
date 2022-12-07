@@ -27,7 +27,7 @@ static u8 mem[50000] __attribute__((aligned(1024))) = {0};
 
 #define ADDR_ALIGNMENT 1024
 
-static FSataCtrl sata_device[FSATA_INSTANCE_NUM];//最多支持16个ahci控制器，可以自行定义个数
+static FSataCtrl sata_device[FSATA_NUM];//最多支持16个ahci控制器，可以自行定义个数
 
 static boolean sata_ok = FALSE;
 
@@ -69,7 +69,7 @@ static int FSataInit(void)
         return 0;
     }
 
-	for (instance_id = 0; instance_id < FSATA_INSTANCE_NUM; instance_id++)
+	for (instance_id = 0; instance_id < FSATA_NUM; instance_id++)
 	{
         host_valid = FALSE;
 		config_p = FSataLookupConfig(instance_id, FSATA_TYPE_CONTROLLER);
@@ -137,7 +137,7 @@ static int FSataInit(void)
     sata_ok = TRUE;
 
 	/* get host number and port number which link success */
-	for(host_num = 0; host_num < FSATA_INSTANCE_NUM; host_num++)
+	for(host_num = 0; host_num < FSATA_NUM; host_num++)
     {
         for (port_num = 0; port_num < sata_device[host_num].n_ports; port_num++)
         {

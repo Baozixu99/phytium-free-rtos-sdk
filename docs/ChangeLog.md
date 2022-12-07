@@ -1,4 +1,54 @@
-# Phytium FreeRTOS SDK 2022-11-11 ChangeLog
+# Phytium FreeRTOS SDK 2022-12-6 ChangeLog
+
+Change Log sinc 2022-12-6
+
+## example
+## driver
+
+- Adapt fparameters.h in standalone sdk 
+
+# Phytium FreeRTOS SDK 2022-11-28 ChangeLog
+
+Change Log since 2022-11-25
+
+## example
+
+- add fatfs tests (usb/sdio)
+
+## driver
+
+- remove mmc driver, its implementation has been moved to sdmmc ports
+
+## third-party
+
+- add fatfs 0.1.4 freertos port
+- add sdmmc 1.0 freertos port
+
+# Phytium FreeRTOS SDK 2022-11-25 ChangeLog
+
+Change Log sinc 2022-11-17
+
+## example
+
+- add i2c example
+- add timer_tacho example
+
+## driver
+
+- add i2c os driver
+- add timer_tacho driver
+
+# Phytium FreeRTOS SDK 2022-11-17 ChangeLog
+
+Change Log sinc 2022-11-16
+
+## third-party
+
+- Add kernel configuration in menuconfig
+- Rename the "FreeRTOS Setting" to "Third-Party Configuration" in menuconfig
+- Rename cmd_os_stats.c to cmd_ps.c
+
+# Phytium FreeRTOS SDK 2022-11-11 0.3.0 ChangeLog
 
 Change Log sinc 2022-11-11
 

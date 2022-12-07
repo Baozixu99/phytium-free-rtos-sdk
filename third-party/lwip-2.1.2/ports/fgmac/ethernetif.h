@@ -43,10 +43,10 @@ typedef struct
   FGmac gctrl;
   ethernetif netifctrl;
   /* align buf and descriptor by 128 */
-  u8 tx_buf[GMAC_TX_DESCNUM * GMAC_MAX_PACKET_SIZE] __aligned(GMAC_DMA_MIN_ALIGN);
-  u8 rx_buf[GMAC_RX_DESCNUM * GMAC_MAX_PACKET_SIZE] __aligned(GMAC_DMA_MIN_ALIGN);
-  u8 tx_desc[GMAC_TX_DESCNUM * sizeof(FGmacDmaDesc)] __aligned(GMAC_DMA_MIN_ALIGN);
-  u8 rx_desc[GMAC_RX_DESCNUM * sizeof(FGmacDmaDesc) + 128] __aligned(GMAC_DMA_MIN_ALIGN);
+  u8 tx_buf[GMAC_TX_DESCNUM * FGMAC_MAX_PACKET_SIZE] __aligned(FGMAC_DMA_MIN_ALIGN);
+  u8 rx_buf[GMAC_RX_DESCNUM * FGMAC_MAX_PACKET_SIZE] __aligned(FGMAC_DMA_MIN_ALIGN);
+  u8 tx_desc[GMAC_TX_DESCNUM * sizeof(FGmacDmaDesc)] __aligned(FGMAC_DMA_MIN_ALIGN);
+  u8 rx_desc[GMAC_RX_DESCNUM * sizeof(FGmacDmaDesc) + 128] __aligned(FGMAC_DMA_MIN_ALIGN);
 }netif_config;
 
 err_t ethernetif_init(struct netif *netif);

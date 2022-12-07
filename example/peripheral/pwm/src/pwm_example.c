@@ -172,7 +172,7 @@ static void prvOneShotTimerCallback( TimerHandle_t xTimer )
 /* create pwm test, id is pwm module number */
 BaseType_t FFreeRTOSPwmCreate(u32 id)
 {
-	FASSERT(id < FPWM_INSTANCE_NUM);
+	FASSERT(id < FPWM_NUM);
     BaseType_t xReturn = pdPASS;/* 定义一个创建信息返回值，默认为 pdPASS */
 	BaseType_t xTimerStarted = pdPASS;
 

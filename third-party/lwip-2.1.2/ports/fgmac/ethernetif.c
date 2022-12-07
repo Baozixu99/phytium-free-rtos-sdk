@@ -81,7 +81,7 @@
  * But this is only an example, anyway...
  */
 
-static netif_config netif_config_instance[GMAC_INSTANCE_NUM];
+static netif_config netif_config_instance[FGMAC_NUM];
 
 void ethernet_link_thread(void *argument)
 {
@@ -333,10 +333,10 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p)
 		pay_load_offset = 0;
 
 		/* Check if the length of data to copy is bigger than Tx buffer size*/
-		while ((bytes_left_to_copy + buffer_offset) > GMAC_MAX_PACKET_SIZE)
+		while ((bytes_left_to_copy + buffer_offset) > FGMAC_MAX_PACKET_SIZE)
 		{
 			/* Copy data to Tx buffer*/
-			memcpy((u8 *)((u8 *)buffer + buffer_offset), (u8 *)((u8 *)q->payload + pay_load_offset), (GMAC_MAX_PACKET_SIZE - buffer_offset));
+			memcpy((u8 *)((u8 *)buffer + buffer_offset), (u8 *)((u8 *)q->payload + pay_load_offset), (FGMAC_MAX_PACKET_SIZE - buffer_offset));
 			FGMAC_DMA_INC_DESC(gmac->tx_ring.desc_buf_idx, gmac->tx_ring.desc_max_num);
 			/* Point to next descriptor */
 			dma_tx_desc = &gmac->tx_desc[gmac->tx_ring.desc_buf_idx];
@@ -350,9 +350,9 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p)
 			}
 
 			buffer = (u8 *)(intptr)(dma_tx_desc->buf_addr);
-			bytes_left_to_copy = bytes_left_to_copy - (GMAC_MAX_PACKET_SIZE - buffer_offset);
-			pay_load_offset = pay_load_offset + (GMAC_MAX_PACKET_SIZE - buffer_offset);
-			frame_length = frame_length + (GMAC_MAX_PACKET_SIZE - buffer_offset);
+			bytes_left_to_copy = bytes_left_to_copy - (FGMAC_MAX_PACKET_SIZE - buffer_offset);
+			pay_load_offset = pay_load_offset + (FGMAC_MAX_PACKET_SIZE - buffer_offset);
+			frame_length = frame_length + (FGMAC_MAX_PACKET_SIZE - buffer_offset);
 			buffer_offset = 0;
 
 			if (buffer == NULL)
@@ -453,10 +453,10 @@ static struct pbuf *low_level_input(struct netif *netif)
       bytes_left_to_copy = q->len;
       pay_load_offset = 0;
       /* Check if the length of bytes to copy in current pbuf is bigger than Rx buffer size*/
-      while ((bytes_left_to_copy + buffer_offset) > GMAC_MAX_PACKET_SIZE)
+      while ((bytes_left_to_copy + buffer_offset) > FGMAC_MAX_PACKET_SIZE)
       {
         /* Copy data to pbuf */
-        memcpy((u8 *)((u8 *)q->payload + pay_load_offset), (u8 *)((u8 *)buffer + buffer_offset), (GMAC_MAX_PACKET_SIZE - buffer_offset));
+        memcpy((u8 *)((u8 *)q->payload + pay_load_offset), (u8 *)((u8 *)buffer + buffer_offset), (FGMAC_MAX_PACKET_SIZE - buffer_offset));
 
         /* Point to next descriptor */
         FGMAC_DMA_INC_DESC(desc_buffer_index, gmac->rx_ring.desc_max_num);
@@ -468,8 +468,8 @@ static struct pbuf *low_level_input(struct netif *netif)
         dma_rx_desc = &gmac->rx_desc[desc_buffer_index];
         buffer = (u8 *)(intptr)(dma_rx_desc->buf_addr);
 
-        bytes_left_to_copy = bytes_left_to_copy - (GMAC_MAX_PACKET_SIZE - buffer_offset);
-        pay_load_offset = pay_load_offset + (GMAC_MAX_PACKET_SIZE - buffer_offset);
+        bytes_left_to_copy = bytes_left_to_copy - (FGMAC_MAX_PACKET_SIZE - buffer_offset);
+        pay_load_offset = pay_load_offset + (FGMAC_MAX_PACKET_SIZE - buffer_offset);
         buffer_offset = 0;
       }
       /* Copy remaining data in pbuf */

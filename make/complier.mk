@@ -14,7 +14,8 @@
 APP ?= $(CONFIG_TARGET_NAME)
 
 QUIET ?=@
-OPT_LEVEL ?= 0
+# OPT_LEVEL ?= 0
+OPT_LEVEL ?=  $(CONFIG_GCC_OPTIMIZE_LEVEL)
 
 INC_DIR ?=	# include 目录
 SRC_DIR ?=  # 源文件目录

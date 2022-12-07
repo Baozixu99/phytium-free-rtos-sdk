@@ -60,7 +60,7 @@ static int SdCmdEntry(int argc, char *argv[])
     
     if (!strcmp(argv[1], "wr"))
     {
-        u32 sdio_id = FSDIO_HOST_INSTANCE_1;
+        u32 sdio_id = FSDIO1_ID;
         boolean is_emmc = FALSE;
         u32 start_blk = 0U;
         u32 blk_num = 2U;

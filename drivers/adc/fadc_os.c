@@ -50,7 +50,7 @@
 #define FREERTOS_ADC_CTRL_INTR_ENABLE           (8) /* enable adc interrupt */
 #define FREERTOS_ADC_CTRL_INTR_DISABLE          (9) /* disable adc interrupt */
 
-static FFreeRTOSAdc os_adc[FADC_INSTANCE_NUM] = {0};
+static FFreeRTOSAdc os_adc[FADC_NUM] = {0};
 
 /**
  * @name: FFreeRTOSAdcControl
@@ -271,7 +271,7 @@ static FError FFreeRTOSAdcInterruptEnable(FFreeRTOSAdc *os_adc_p, FAdcChannel ch
  */
 FFreeRTOSAdc *FFreeRTOSAdcInit(u32 instance_id)
 {
-    FASSERT(instance_id < FADC_INSTANCE_NUM);
+    FASSERT(instance_id < FADC_NUM);
     FASSERT(FT_COMPONENT_IS_READY != os_adc[instance_id].adc_ctrl.is_ready);
 
     FAdcConfig pconfig;

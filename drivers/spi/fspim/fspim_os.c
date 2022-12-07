@@ -42,7 +42,7 @@
 /**************************** Type Definitions *******************************/
 
 /************************** Variable Definitions *****************************/
-static FFreeRTOSSpim spim[FSPI_DEVICE_NUM];
+static FFreeRTOSSpim spim[FSPI_NUM];
 
 /***************** Macros (Inline Functions) Definitions *********************/
 #define FSPIM_DEBUG_TAG "FSPIM-OS"
@@ -118,7 +118,7 @@ static void FSpimOSSetupInterrupt(FSpim *ctrl)
 FFreeRTOSSpim *FFreeRTOSSpimInit(u32 id, const FFreeRTOSSpimConifg *input_config)
 {
     FASSERT(input_config);
-    FASSERT_MSG(id < FSPI_DEVICE_NUM, "invalid spim id");
+    FASSERT_MSG(id < FSPI_NUM, "invalid spim id");
     FFreeRTOSSpim *instance = &spim[id];
     FSpim *ctrl = &instance->ctrl;
     FSpimConfig config;

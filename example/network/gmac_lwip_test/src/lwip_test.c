@@ -59,17 +59,17 @@
 #if defined(CONFIG_ENABLE_FGMAC)
 #include "ft_os_gmac.h"
 
-static FtOsGmac os_gmac[GMAC_INSTANCE_NUM] = {0};
+static FtOsGmac os_gmac[FGMAC_NUM] = {0};
 static u32 gmac_id = FT_OS_GMAC0_ID;
 
 /* the mac address of the board. this should be unique per board */
-    unsigned char mac_ethernet_address[GMAC_INSTANCE_NUM][NETIF_MAX_HWADDR_LEN] = {
+    unsigned char mac_ethernet_address[FGMAC_NUM][NETIF_MAX_HWADDR_LEN] = {
         {0x0, 0x0, 0x1, 0x11, 0x1, 0x21},
         {0x0, 0x0, 0x2, 0x22, 0x2, 0x23}
     };
 
 #if !LWIP_IPV6
-ip4_addr_t ipaddr[GMAC_INSTANCE_NUM], netmask[GMAC_INSTANCE_NUM], gw[GMAC_INSTANCE_NUM];
+ip4_addr_t ipaddr[FGMAC_NUM], netmask[FGMAC_NUM], gw[FGMAC_NUM];
 #if LWIP_DHCP
 static TaskHandle_t appTaskCreateHandle = NULL;
 void LwipDhcpTest(FtOsGmac *os_gmac)
@@ -211,7 +211,7 @@ void LwipRawInit(FtOsGmac *os_gmac)
 
 void LwipTestCreate(void * args)
 {
-    FtOsGmacConfig os_config[GMAC_INSTANCE_NUM] = 
+    FtOsGmacConfig os_config[FGMAC_NUM] = 
     {
         {
             .gmac_instance = 0,

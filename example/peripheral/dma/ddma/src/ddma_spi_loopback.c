@@ -76,7 +76,7 @@ static TimerHandle_t exit_timer = NULL;
 static u32 loopback_times = 3U;
 static boolean is_running = FALSE;
 
-static const u32 spim_rx_slave_id[FSPI_DEVICE_NUM] = 
+static const u32 spim_rx_slave_id[FSPI_NUM] = 
 {
     [FSPI0_ID] = FDDMA0_SPIM0_RX_SLAVE_ID,
     [FSPI1_ID] = FDDMA0_SPIM1_RX_SLAVE_ID,
@@ -84,7 +84,7 @@ static const u32 spim_rx_slave_id[FSPI_DEVICE_NUM] =
     [FSPI3_ID] = FDDMA0_SPIM3_RX_SLAVE_ID
 };
 
-static const u32 spim_tx_slave_id[FSPI_DEVICE_NUM] = 
+static const u32 spim_tx_slave_id[FSPI_NUM] = 
 {
     [FSPI0_ID] = FDDMA0_SPIM0_TX_SLAVE_ID,
     [FSPI1_ID] = FDDMA0_SPIM1_TX_SLAVE_ID,

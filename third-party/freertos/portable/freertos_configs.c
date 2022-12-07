@@ -64,7 +64,7 @@ void vApplicationIdleHook(void)
 
 u32 PlatformGetGicDistBase(void)
 {
-    return GICV3_BASEADDRESS;
+    return GICV3_BASE_ADDR;
 }
 
 static u32 cntfrq; /* System frequency */

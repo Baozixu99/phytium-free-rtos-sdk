@@ -64,10 +64,10 @@ static xTaskHandle recv_handle;
 
 static TimerHandle_t xOneShotTimer;
 
-static FFreeRTOSCan *os_can_ctrl_p[FCAN_INSTANCE_NUM];
+static FFreeRTOSCan *os_can_ctrl_p[FCAN_NUM];
 
-static FCanFrame send_frame[FCAN_INSTANCE_NUM];
-static FCanFrame recv_frame[FCAN_INSTANCE_NUM];
+static FCanFrame send_frame[FCAN_NUM];
+static FCanFrame recv_frame[FCAN_NUM];
 
 static void FFreeRTOSCanSendTask(void *pvParameters);
 static void FFreeRTOSCanRecvTask(void *pvParameters);
@@ -196,22 +196,22 @@ static void FFreeRTOSCanInitTask(void *pvParameters)
 {
 	FError ret = FCAN_SUCCESS;
 	BaseType_t xReturn = pdPASS;
-	FCanInstance can_id = FCAN_INSTANCE_0;
+	u32 can_id = FCAN0_ID;
 
-	for(can_id = FCAN_INSTANCE_0; can_id < FCAN_INSTANCE_NUM; can_id++)
+	for(can_id = FCAN0_ID; can_id < FCAN_NUM; can_id++)
 	{
 	#if defined(CONFIG_TARGET_F2000_4) || defined(CONFIG_TARGET_D2000)
-		if(can_id == FCAN_INSTANCE_0)
+		if(can_id == FCAN0_ID)
 		{
 			FPinSetFunc(FIOCTRL_TJTAG_TDI_PAD, FPIN_FUNC1); /* can0-tx: func 1 */
 			FPinSetFunc(FIOCTRL_SWDITMS_SWJ_PAD, FPIN_FUNC1); /* can0-rx: func 1 */
 		}
-		else if(can_id == FCAN_INSTANCE_1)
+		else if(can_id == FCAN1_ID)
 		{
 			FPinSetFunc(FIOCTRL_NTRST_SWJ_PAD, FPIN_FUNC1); /* can1-tx: func 1 */
 			FPinSetFunc(FIOCTRL_SWDO_SWJ_PAD, FPIN_FUNC1); /* can1-rx: func 1 */
 		}
-		else if(can_id == FCAN_INSTANCE_2)
+		else if(can_id == FCAN2_ID)
 		{
 			
 		}
@@ -308,7 +308,7 @@ can_init_exit:
 static void FFreeRTOSCanRecvTask(void *pvParameters)
 {
 	FError ret = FCAN_SUCCESS;
-	u8 count[FCAN_INSTANCE_NUM]= {0};
+	u8 count[FCAN_NUM]= {0};
 	int i = 0;
 	static FCanQueueData xReceiveStructure;
 	FFreeRTOSCan *os_can_p;
@@ -330,12 +330,12 @@ static void FFreeRTOSCanRecvTask(void *pvParameters)
 			for (i = 0; i < recv_frame[instance_id].candlc; i++)
 			{
 				printf("%#x ", recv_frame[instance_id].data[i]);
-				if(recv_frame[instance_id].data[i] != send_frame[FCAN_INSTANCE_1-instance_id].data[i])
+				if(recv_frame[instance_id].data[i] != send_frame[FCAN1_ID-instance_id].data[i])
 				{
-					FCAN_TEST_ERROR("\ncount=%d: can %d recv is equal to can%d send!!!\r\n", count[instance_id], instance_id, FCAN_INSTANCE_1-instance_id);
+					FCAN_TEST_ERROR("\ncount=%d: can %d recv is equal to can%d send!!!\r\n", count[instance_id], instance_id, FCAN1_ID-instance_id);
 				}
 			}
-			printf("\ncount=%d: can %d recv is equal to can%d send!!!\r\n", count[instance_id], instance_id, FCAN_INSTANCE_1-instance_id);
+			printf("\ncount=%d: can %d recv is equal to can%d send!!!\r\n", count[instance_id], instance_id, FCAN1_ID-instance_id);
 				
 			count[instance_id]++;
 		}
@@ -349,16 +349,16 @@ static void FFreeRTOSCanSendTask(void *pvParameters)
 	#define FCAN_SEND_LENGTH 8
 
 	FError ret = FCAN_SUCCESS;
-	FCanInstance can_id = FCAN_INSTANCE_0;
+	u32 can_id = FCAN0_ID;
 
-	u8 count[FCAN_INSTANCE_NUM]= {0};
+	u8 count[FCAN_NUM]= {0};
 	int i = 0;
 	
 	/* As per most tasks, this task is implemented in an infinite loop. */
 	for (;;) 
 	{
 		printf("\r\ncan send task running\r\n");
-		for(can_id = FCAN_INSTANCE_0; can_id <= FCAN_INSTANCE_1; can_id++)
+		for(can_id = FCAN0_ID; can_id <= FCAN1_ID; can_id++)
 		{
 			send_frame[can_id].canid = FCAN_SEND_ID+(can_id<<8);
 			send_frame[can_id].canid &= CAN_SFF_MASK;
@@ -460,8 +460,8 @@ static void FFreeRTOSCanDelete(void)
     }
 
 	/* deinit can os instance */
-	FFreeRTOSCanDeinit(os_can_ctrl_p[FCAN_INSTANCE_0]);
-	FFreeRTOSCanDeinit(os_can_ctrl_p[FCAN_INSTANCE_1]);
+	FFreeRTOSCanDeinit(os_can_ctrl_p[FCAN0_ID]);
+	FFreeRTOSCanDeinit(os_can_ctrl_p[FCAN1_ID]);
 
 	/* delete queue */
 	vQueueDelete(xQueue);

@@ -27,6 +27,17 @@ config USE_FATFS
         source "$(FREERTOS_SDK_ROOT)/third-party/fatfs-0.1.3/Kconfig"
     endif
 
+config USE_FATFS_0_1_4
+    bool
+    prompt "Use FATFS(0.1.4)"
+    default n
+    help
+        Include FATFS
+
+    if USE_FATFS_0_1_4
+        source "$(FREERTOS_SDK_ROOT)/third-party/fatfs-0.1.4/Kconfig"
+    endif
+
 config USE_SFUD
     bool
     prompt "Use SFUD(Spi Flash Library)"

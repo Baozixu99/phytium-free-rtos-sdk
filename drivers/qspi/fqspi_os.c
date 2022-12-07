@@ -32,17 +32,17 @@
 #include "fqspi_hw.h"
 #include "fqspi_flash.h"
 
-static FFreeRTOSQspi os_qspi[FQSPI_INSTANCE_NUM] = {0};
+static FFreeRTOSQspi os_qspi[FQSPI_NUM] = {0};
 
 /**
  * @name: FFreeRTOSQspiInit
  * @msg:  init freertos qspi instance, include init qspi and create mutex
- * @param {u32} instance_id, qspi instance id, such as FQSPI_INSTANCE_0
+ * @param {u32} instance_id, qspi instance id, such as FQSPI0_ID
  * @return {FFreeRTOSQspi *} pointer to os qspi instance
  */
 FFreeRTOSQspi *FFreeRTOSQspiInit(u32 instance_id)
 {
-    FASSERT(instance_id < FQSPI_INSTANCE_NUM);
+    FASSERT(instance_id < FQSPI_NUM);
     FASSERT(FT_COMPONENT_IS_READY != os_qspi[instance_id].qspi_ctrl.is_ready);
 
     /* qspi initialize */

@@ -26,6 +26,7 @@
 
 #include "FreeRTOS.h"
 #include "task.h"
+#include "event_groups.h"
 
 #include "fassert.h"
 #include "fdebug.h"
@@ -33,45 +34,41 @@
 #include "fkernel.h"
 #include "fcache.h"
 
-#include "fsdio_os.h"
+#include "sdmmc_host_os.h"
 /************************** Constant Definitions *****************************/
 #define SD_WR_BUF_LEN       4096
 #define SD_EVT_INIT_DONE    (0x1 << 0)
 #define SD_EVT_WRITE_DONE   (0x1 << 1)
 #define SD_EVT_READ_DONE    (0x1 << 2)
+/**************************** Type Definitions *******************************/
+typedef struct
+{
+    sdmmc_host_instance_t *cur_host;
+    sdmmc_host_config_t *cur_host_config;
+    fsize_t start_blk;
+    fsize_t block_num;
+} SdioTestInfo;
 /************************** Variable Definitions *****************************/
 static u8 sd_write_buffer[SD_WR_BUF_LEN] = {0};
 static u8 sd_read_buffer[SD_WR_BUF_LEN] = {0};
+
+static sdmmc_host_instance_t tf_host;
+static sdmmc_host_config_t tf_host_config;
+static sdmmc_host_instance_t emmc_host;
+static sdmmc_host_config_t emmc_host_config;
+static SdioTestInfo test_info = 
+{
+    .cur_host = &tf_host,
+    .cur_host_config = &tf_host_config,
+    .start_blk = 0U,
+    .block_num = 4U
+};
+
 static u32 sd_slot = 0U;
 static EventGroupHandle_t sync = NULL;
 static TaskHandle_t write_task = NULL;
-static TaskHandle_t read_task = NULL;
 static TimerHandle_t exit_timer = NULL;
-static FFreeRTOSSdio *sdio = NULL;
-static FFreeRTOSSdioConifg sdio_config =
-{
-    .en_dma = TRUE,
-    .medium_type = FFREERTOS_SDIO_MEDIUM_TF,
-    .card_detect_handler = NULL,
-    .card_detect_args = NULL
-};
-static FFreeRTOSSdioMessage read_message =
-{
-    .buf = sd_read_buffer,
-    .buf_len = SD_WR_BUF_LEN,
-    .start_block = 0U,
-    .block_num = 3U,
-    .trans_type = FFREERTOS_SDIO_TRANS_READ
-};
-static FFreeRTOSSdioMessage write_message =
-{
-    .buf = sd_write_buffer,
-    .buf_len = SD_WR_BUF_LEN,
-    .start_block = 0U,
-    .block_num = 3U,
-    .trans_type = FFREERTOS_SDIO_TRANS_WRITE
-};
-static u32 run_times = 3U;
+static u32 run_times = 2U;
 static boolean is_running = FALSE;
 /***************** Macros (Inline Functions) Definitions *********************/
 #define FSDIO_DEBUG_TAG "FSDIO-SD"
@@ -94,22 +91,10 @@ static void SDExitCallback(TimerHandle_t timer)
         write_task = NULL;
     }
 
-    if (read_task)
-    {
-        vTaskDelete(read_task);
-        read_task = NULL;
-    }
-
     if (sync)
     {
         vEventGroupDelete(sync);
         sync = NULL;
-    }
-
-    if (sdio)
-    {
-        err = FFreeRTOSSdioDeInit(sdio);
-        sdio = NULL;
     }
 
     if (pdPASS != xTimerDelete(timer, 0)) /* delete timer ifself */
@@ -146,8 +131,7 @@ static boolean SDWaitEvent(u32 evt_bits, TickType_t wait_delay)
 
 static void SDInitTask(void * args)
 {
-    sdio = FFreeRTOSSdioInit(sd_slot, &sdio_config);
-    if (NULL == sdio)
+    if (SDMMC_OK != sdmmc_host_init(test_info.cur_host, test_info.cur_host_config))
     {
         FSDIO_ERROR("init sdio failed !!!");
         goto task_exit;
@@ -159,82 +143,61 @@ task_exit:
     vTaskDelete(NULL); /* delete task itself */ 
 }
 
-static void SDReadTask(void * args)
+static void SDWriteReadTask(void * args)
 {
     u32 times = 0U;
-    const TickType_t wait_delay = pdMS_TO_TICKS(5000UL); /* wait for 5 seconds */
-    const uintptr trans_len = read_message.block_num * FFREERTOS_SDIO_BLOCK_SIZE;
+    const TickType_t wait_delay = pdMS_TO_TICKS(2000UL); /* wait for 2 seconds */
+    FError err;
+    const uintptr trans_len = test_info.block_num * 512U;
+    char ch = 'A';
 
-    FASSERT_MSG(trans_len <= SD_WR_BUF_LEN, "trans length exceed buffer limits");
-    
+    if (trans_len > SD_WR_BUF_LEN) 
+    {
+        FSDIO_ERROR("trans length exceed buffer limits");
+        goto task_exit;
+    }
+
+    SDWaitEvent(SD_EVT_INIT_DONE, portMAX_DELAY);
+
     for (;;)
     {
-        /* wait write finish to get the updated contents */
-        if (!SDWaitEvent(SD_EVT_WRITE_DONE, portMAX_DELAY))
-        {
-            FSDIO_ERROR("sdio read timeout !!!");
-            goto task_exit;
-        }        
-
         printf("start read ...\r\n");
-
-        memset(read_message.buf, 0U, trans_len);
-        FError err = FFreeRTOSSdioTransfer(sdio, &read_message);
-        if (FFREERTOS_SDIO_OK != err)
+        memset(sd_read_buffer, 0U, trans_len);
+        if (SDMMC_OK != sdmmc_os_read_sectors(&(test_info.cur_host->card), 
+                                                 sd_read_buffer, 
+                                                 test_info.start_blk,
+                                                 test_info.block_num))
         {
             FSDIO_ERROR("sdio read failed !!!");
             goto task_exit;
         }
 
-        FCacheDCacheFlushRange((uintptr)(void *)read_message.buf, trans_len);
+        FCacheDCacheFlushRange((uintptr)(void *)sd_read_buffer, trans_len);
         printf("==>Read from Block [%d:%d]\r\n", 
-                read_message.start_block, 
-                read_message.start_block + read_message.block_num);
+                test_info.start_blk, 
+                test_info.start_blk + test_info.block_num);
         
-        FtDumpHexByte(read_message.buf, trans_len);
+        FtDumpHexByte(sd_read_buffer, min(trans_len, (fsize_t)(2 * 512U)));
 
-        SDSendEvent(SD_EVT_READ_DONE); /* send read finish singal */
-        vTaskDelay(wait_delay);
+        /*************************************************************/
 
-        if (++times > run_times)
-            break;
-    }
-
-task_exit:
-    printf("exit from read task \r\n");
-    vTaskSuspend(NULL); /* suspend task */
-}
-
-static void SDWriteTask(void * args)
-{
-    u32 times = 0U;
-    const TickType_t wait_delay = pdMS_TO_TICKS(2000UL); /* wait for 2 seconds */
-    FError err;
-    const uintptr trans_len = write_message.block_num * FFREERTOS_SDIO_BLOCK_SIZE;
-    char ch = 'A';
-
-    FASSERT_MSG(trans_len <= SD_WR_BUF_LEN, "trans length exceed buffer limits");
-    SDWaitEvent(SD_EVT_INIT_DONE, portMAX_DELAY);
-
-    for (;;)
-    {
         printf("start write ...\r\n");
-        memset(write_message.buf, (ch + times), trans_len);
-        FCacheDCacheInvalidateRange((uintptr)(void *)write_message.buf, trans_len);
+        memset(sd_write_buffer, (ch + times), trans_len);
         printf("==>Write %c to Block [%d:%d]\r\n", 
-                ch, write_message.start_block, 
-                write_message.start_block + write_message.block_num);
+                ch, 
+                test_info.start_blk, 
+                test_info.start_blk + test_info.block_num);
 
-        err = FFreeRTOSSdioTransfer(sdio, &write_message);
-        if (FFREERTOS_SDIO_OK != err)
+        if (SDMMC_OK != sdmmc_os_write_sectors(&(test_info.cur_host->card),
+                                                sd_write_buffer,
+                                                test_info.start_blk,
+                                                test_info.block_num))
         {
             FSDIO_ERROR("sdio write failed !!!");
             goto task_exit;
         }
 
-        SDSendEvent(SD_EVT_WRITE_DONE); /* send write finish signal */
         vTaskDelay(wait_delay);
-        SDWaitEvent(SD_EVT_READ_DONE, portMAX_DELAY); /* wait until read done and go on next write */
 
         if (++times > run_times)
             break;
@@ -263,13 +226,16 @@ BaseType_t FFreeRTOSSdWriteRead(u32 slot_id, boolean is_emmc, u32 start_blk, u32
     FASSERT_MSG(NULL == sync, "event group exists !!!");
     FASSERT_MSG((sync = xEventGroupCreate()) != NULL, "create event group failed !!!");
 
-    sd_slot = slot_id;
-    sdio_config.medium_type = is_emmc ? FFREERTOS_SDIO_MEDIUM_EMMC: FFREERTOS_SDIO_MEDIUM_TF;
+    test_info.cur_host = is_emmc ? &emmc_host : &tf_host;
+    test_info.cur_host_config = is_emmc ? &emmc_host_config : &tf_host_config;
 
-    read_message.start_block = start_blk;
-    read_message.block_num = blk_num;
-    write_message.start_block = start_blk;
-    write_message.block_num = blk_num;
+    test_info.cur_host_config->slot = slot_id;
+    test_info.cur_host_config->type = SDMMC_HOST_TYPE_FSDIO;
+    test_info.cur_host_config->flags = SDMMC_HOST_WORK_MODE_DMA | SDMMC_HOST_WORK_MODE_IRQ;
+    test_info.cur_host_config->flags |= is_emmc ? 0U : SDMMC_HOST_REMOVABLE_CARD;
+
+    test_info.start_blk = start_blk;
+    test_info.block_num = blk_num;
     taskENTER_CRITICAL(); /* no schedule when create task */
 
     ret = xTaskCreate((TaskFunction_t )SDInitTask,
@@ -280,8 +246,8 @@ BaseType_t FFreeRTOSSdWriteRead(u32 slot_id, boolean is_emmc, u32 start_blk, u32
                             NULL);
     FASSERT_MSG(pdPASS == ret, "create task failed");
 
-    ret = xTaskCreate((TaskFunction_t )SDWriteTask,
-                            (const char* )"SDWriteTask",
+    ret = xTaskCreate((TaskFunction_t )SDWriteReadTask,
+                            (const char* )"SDWriteReadTask",
                             (uint16_t )2048,
                             NULL,
                             (UBaseType_t )configMAX_PRIORITIES - 2,
@@ -289,15 +255,6 @@ BaseType_t FFreeRTOSSdWriteRead(u32 slot_id, boolean is_emmc, u32 start_blk, u32
 
     FASSERT_MSG(pdPASS == ret, "create task failed");
     
-    ret = xTaskCreate((TaskFunction_t )SDReadTask,
-                            (const char* )"SDReadTask",
-                            (uint16_t )2048,
-                            NULL,
-                            (UBaseType_t )configMAX_PRIORITIES - 2,
-                            &read_task);
-
-    FASSERT_MSG(pdPASS == ret, "create task failed");
-
     exit_timer = xTimerCreate("Exit-Timer",		            /* Text name for the software timer - not used by FreeRTOS. */
                             total_run_time,		            /* The software timer's period in ticks. */
                             pdFALSE,						/* Setting uxAutoRealod to pdFALSE creates a one-shot software timer. */

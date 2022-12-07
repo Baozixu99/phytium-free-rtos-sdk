@@ -67,13 +67,6 @@ menu "Freertos DMA Drivers"
         default n
 endmenu
 
-menu "Freertos MMC Drivers"
-    config FREERTOS_USE_FSDIO
-        bool
-        prompt "Use Freertos sdio driver"
-        default n
-endmenu
-
 menu "Freertos Adc Drivers"
     config FREERTOS_USE_ADC
         bool
@@ -90,4 +83,25 @@ menu "Freertos Can Drivers"
         default n
         select USE_CAN
         select USE_FCAN
+endmenu
+
+menu "Freertos I2c Drivers"
+    config FREERTOS_USE_I2C
+        bool
+        prompt "Use Freertos i2c driver"
+        default n
+endmenu
+
+menu "Freertos Mio Drivers"
+    config FREERTOS_USE_MIO
+        bool
+        prompt "Use Freertos mio driver"
+        default n
+endmenu
+
+menu "Freertos Timer Drivers"
+    config FREERTOS_USE_TIMER
+        bool
+        prompt "Use Freertos timer driver"
+        default n
 endmenu

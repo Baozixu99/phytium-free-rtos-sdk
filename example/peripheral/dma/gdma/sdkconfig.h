@@ -100,6 +100,12 @@
 
 /* Compiler Options */
 
+/* Cross-Compiler Setting */
+
+#define CONFIG_GCC_OPTIMIZE_LEVEL 0
+/* CONFIG_USE_EXT_COMPILER is not set */
+/* CONFIG_USE_KLIN_SYS is not set */
+/* end of Cross-Compiler Setting */
 #define CONFIG_OUTPUT_BINARY
 /* end of Compiler Options */
 /* end of Building Option */
@@ -147,11 +153,6 @@
 #define CONFIG_FREERTOS_USE_FGDMA
 /* end of Freertos DMA Drivers */
 
-/* Freertos MMC Drivers */
-
-/* CONFIG_FREERTOS_USE_FSDIO is not set */
-/* end of Freertos MMC Drivers */
-
 /* Freertos Adc Drivers */
 
 /* CONFIG_FREERTOS_USE_ADC is not set */
@@ -161,13 +162,29 @@
 
 /* CONFIG_FREERTOS_USE_CAN is not set */
 /* end of Freertos Can Drivers */
+
+/* Freertos I2c Drivers */
+
+/* CONFIG_FREERTOS_USE_I2C is not set */
+/* end of Freertos I2c Drivers */
+
+/* Freertos Mio Drivers */
+
+/* CONFIG_FREERTOS_USE_MIO is not set */
+/* end of Freertos Mio Drivers */
+
+/* Freertos Timer Drivers */
+
+/* CONFIG_FREERTOS_USE_TIMER is not set */
+/* end of Freertos Timer Drivers */
 /* end of Component Configuration */
 
-/* FreeRTOS Setting */
+/* Third-Party Configuration */
 
 /* CONFIG_USE_LWIP is not set */
 #define CONFIG_USE_BACKTRACE
 /* CONFIG_USE_FATFS is not set */
+/* CONFIG_USE_FATFS_0_1_4 is not set */
 /* CONFIG_USE_SFUD is not set */
 /* CONFIG_USE_SPIFFS is not set */
 /* CONFIG_USE_AMP is not set */
@@ -183,6 +200,27 @@
 #define CONFIG_USE_TLSF
 /* CONFIG_USE_SDMMC_CMD is not set */
 /* CONFIG_USE_CHERRY_USB is not set */
-/* end of FreeRTOS Setting */
+/* end of Third-Party Configuration */
+
+/* Kernel Configuration */
+
+#define CONFIG_FREERTOS_OPTIMIZED_SCHEDULER
+#define CONFIG_FREERTOS_HZ 1000
+#define CONFIG_FREERTOS_MAX_PRIORITIES 32
+#define CONFIG_FREERTOS_KERNEL_INTERRUPT_PRIORITIES 13
+#define CONFIG_FREERTOS_MAX_API_CALL_INTERRUPT_PRIORITIES 11
+#define CONFIG_FREERTOS_THREAD_LOCAL_STORAGE_POINTERS 1
+#define CONFIG_FREERTOS_MINIMAL_TASK_STACKSIZE 1024
+#define CONFIG_FREERTOS_MAX_TASK_NAME_LEN 32
+#define CONFIG_FREERTOS_TIMER_TASK_PRIORITY 1
+#define CONFIG_FREERTOS_TIMER_TASK_STACK_DEPTH 2048
+#define CONFIG_FREERTOS_TIMER_QUEUE_LENGTH 10
+#define CONFIG_FREERTOS_QUEUE_REGISTRY_SIZE 0
+#define CONFIG_FREERTOS_GENERATE_RUN_TIME_STATS
+#define CONFIG_FREERTOS_USE_TRACE_FACILITY
+#define CONFIG_FREERTOS_USE_STATS_FORMATTING_FUNCTIONS
+/* CONFIG_FREERTOS_USE_TICKLESS_IDLE is not set */
+#define CONFIG_FREERTOS_TOTAL_HEAP_SIZE 10240
+/* end of Kernel Configuration */
 
 #endif

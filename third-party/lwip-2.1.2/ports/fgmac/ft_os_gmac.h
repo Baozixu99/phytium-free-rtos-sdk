@@ -36,8 +36,8 @@
 #include "lwip/netif.h"
 #include "ethernetif.h"
 
-#define FT_OS_GMAC0_ID GMAC_INSTANCE_0
-#define FT_OS_GMAC1_ID GMAC_INSTANCE_1
+#define FT_OS_GMAC0_ID FGMAC0_ID
+#define FT_OS_GMAC1_ID FGMAC1_ID
 
 #define FT_NETIF_LINKUP 0x1U
 #define FT_NETIF_DOWN 0x2U

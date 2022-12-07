@@ -44,13 +44,13 @@ typedef struct
 
 static FQspiSfudOs sfud_instance =
 {
-    .id = FQSPI_INSTANCE_0,
+    .id = FQSPI0_ID,
     .os_qspi_p = NULL,
     .cs = FQSPI_CS_0,
     .is_inited = FALSE
 };
 
-static FQspiSfudOs fqspi_sfud_os[FQSPI_INSTANCE_NUM] = {0} ;
+static FQspiSfudOs fqspi_sfud_os[FQSPI_NUM] = {0} ;
 
 
 #ifdef SFUD_USING_QSPI

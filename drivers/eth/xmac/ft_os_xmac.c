@@ -55,18 +55,18 @@
 static void FXmacInitOnError(FXmacOs *instance_p);
 static void FXmacSetupIsr(FXmacOs *instance_p);
 extern void sys_sem_signal(sys_sem_t *sem); 
-static FXmacOs fxmac_os_instace[FT_XMAC_NUM] =
+static FXmacOs fxmac_os_instace[FXMAC_NUM] =
 	{
-		[FT_XMAC0_ID] = {
+		[FXMAC0_ID] = {
 			.config =( 0)
 		},
-		[FT_XMAC1_ID] = {
+		[FXMAC1_ID] = {
 			.config =( 0)
 		},
-		[FT_XMAC2_ID] = {
+		[FXMAC2_ID] = {
 			.config =( 0)
 		},
-		[FT_XMAC3_ID] = {
+		[FXMAC3_ID] = {
 			.config =( 0 )
 		},
 };
@@ -1122,7 +1122,7 @@ FError FXmacOsInit(FXmacOs *instance_p)
     u32 dmacrreg;
 	FError status;
 	FASSERT(instance_p != NULL);
-	FASSERT( instance_p->mac_config.instance_id < FT_XMAC_NUM);
+	FASSERT( instance_p->mac_config.instance_id < FXMAC_NUM);
 	
 	xmac_p = &instance_p->instance;
 	FXMAC_OS_XMAC_PRINT_I("instance_id IS %d \r\n",instance_p->mac_config.instance_id);
@@ -1329,7 +1329,7 @@ FXmacOs *FXmacOsGetInstancePointer(FXmacOsControl *config_p)
 {
 	FXmacOs *instance_p;
 	FASSERT(config_p != NULL);
-	FASSERT(config_p->instance_id < FT_XMAC_NUM);
+	FASSERT(config_p->instance_id < FXMAC_NUM);
 	FASSERT_MSG(config_p->interface < FXMAC_OS_INTERFACE_LENGTH ,"config_p->interface %d is over %d",config_p->interface ,FXMAC_OS_INTERFACE_LENGTH);
 	FASSERT_MSG(config_p->autonegotiation <= 1 ,"config_p->autonegotiation %d is over 1",config_p->autonegotiation );
 	FASSERT_MSG(config_p->phy_speed <= FXMAC_PHY_SPEED_1000M ,"config_p->phy_speed %d is over 1000",config_p->phy_speed );

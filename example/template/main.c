@@ -20,98 +20,20 @@
  *  Ver   Who        Date         Changes
  * ----- ------     --------    --------------------------------------
  */
-
-
 #include <stdio.h>
 #include <string.h>
 #include "FreeRTOS.h"
 #include "task.h"
-#include "queue.h"
 #include "ftypes.h"
-#include "fassert.h"
-#include "fgeneric_timer.h"
-#include "finterrupt.h"
-#include "fparameters.h"
 #include "shell.h"
 #include "shell_port.h"
-
-static TaskHandle_t cpuStatsTaskHandle = NULL;
-static uint8_t CPU_RunInfo[800] = {0}; //保存任务运行时间信息
-
-static void CpuStatsTask(void* parameter)
-{
-    while (1) 
-    {
-        memset(CPU_RunInfo,0,800); //信息缓冲区清零
-        vTaskList((char *)&CPU_RunInfo); //获取任务运行时间信息
-
-        printf("---------------------------------------------\r\n"); 
-        printf("task_name  task_state  priority  stack  task_num\r\n"); 
-        printf("%s", CPU_RunInfo); 
-        printf("---------------------------------------------\r\n");
-
-        memset(CPU_RunInfo, 0, 800); //信息缓冲区清零
-        vTaskGetRunTimeStats((char *)&CPU_RunInfo);
-
-        printf("task_name\trun_time_count\tusage_rate\r\n"); 
-        printf("%s", CPU_RunInfo); 
-        printf("---------------------------------------------\r\n\n"); 
-        vTaskDelay(5000); /* 延时 */        
-    }
-}
-
-static TaskHandle_t appTaskCreateHandle = NULL;
-
-static void AppTaskCreate(void)
-{
-    BaseType_t xReturn = pdPASS;/* 定义一个创建信息返回值，默认为 pdPASS */
-
-    printf("create AppTaskCreate!\r\n");  
-    taskENTER_CRITICAL(); //进入临界区
-    /* 创建 CPU stats 任务 */
-    xReturn = xTaskCreate((TaskFunction_t )CpuStatsTask, /* 任务入口函数 */
-                        (const char* )"CPU_STATS_Task",/* 任务名字 */
-                        (uint16_t )512, /* 任务栈大小 */
-                        (void* )NULL, /* 任务入口函数参数 */
-                        (UBaseType_t )4, /* 任务的优先级 */
-                        (TaskHandle_t* )&cpuStatsTaskHandle);/* 任务控制块指针 */    
-
-    if (pdPASS == xReturn)
-    {
-        printf("create cpu stats task success!\r\n");  
-    }   
-
-    vTaskDelete(appTaskCreateHandle); //删除 AppTaskCreate 任务
-
-    taskEXIT_CRITICAL(); //退出临界区
-}
-
-BaseType_t TestFreeRTOSEntry()
-{
-    BaseType_t xReturn = pdPASS;/* 定义一个创建信息返回值，默认为 pdPASS */
-    
-    printf("get cpu stats TestCpuStatsEntry\r\n");
-    xReturn = xTaskCreate((TaskFunction_t )AppTaskCreate, /* 任务入口函数 */
-                            (const char* )"AppTaskCreate",/* 任务名字 */
-                            (uint16_t )512, /* 任务栈大小 */
-                            (void* )NULL,/* 任务入口函数参数 */
-                            (UBaseType_t )1, /* 任务的优先级 */
-                            (TaskHandle_t* )&appTaskCreateHandle); /* 任务控制 */
-                            
-    return xReturn;
-}
 
 int main()
 {
     printf("main hello ft Date: %s, Time: %s\n", __DATE__, __TIME__);
     BaseType_t xReturn = pdPASS;
 
-    /* 创建 CPU stats 任务 */
-    xReturn = TestFreeRTOSEntry();
-    if(xReturn != pdPASS)
-        goto FAIL_EXIT;  
-
-    xReturn = LSUserShellTask() ;
+    xReturn = LSUserShellTask();
     if(xReturn != pdPASS)
         goto FAIL_EXIT;
 

@@ -24,6 +24,8 @@
 #include "shell.h"
 #include "shell_port.h"
 #include <stdio.h>
+#include "sdmmc_system.h"
+#include "sd_read_write.h"
 
 int main(void)
 {
@@ -33,10 +35,13 @@ int main(void)
     if(ret != pdPASS)
         goto FAIL_EXIT;
 
-    /* ret = FFreeRTOSSdWriteRead(1U, FALSE, 0, 2); */
+    /* board init */
+    sdmmc_sys_init();
 
-    vTaskStartScheduler(); /* 启动任务，开启调度 */   
-    while (1); /* 正常不会执行到这里 */
+    ret = FFreeRTOSSdWriteRead(1U, FALSE, 0, 4);
+
+    vTaskStartScheduler();  
+    while (1);
     
 FAIL_EXIT:
     printf("failed 0x%x \r\n", ret);  
