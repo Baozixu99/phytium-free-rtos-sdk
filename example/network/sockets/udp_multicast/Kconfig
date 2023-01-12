@@ -9,9 +9,8 @@ mainmenu "Phytium FreeRTOS Configuration"
 				Build Target name for the demo
 		
 
-		if TARGET_E2000
+		
 			source "./src/Kconfig"
-		endif
 		
 	endmenu
 	

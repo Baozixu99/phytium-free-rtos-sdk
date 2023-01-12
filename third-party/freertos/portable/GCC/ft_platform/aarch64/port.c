@@ -28,6 +28,7 @@
 /* Standard includes. */
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 /* Scheduler includes. */
 #include "FreeRTOS.h"
 #include "task.h"
@@ -78,7 +79,7 @@ this value. */
 
 /* In all GICs 255 can be written to the priority mask register to unmask all
 (but the lowest) interrupt priority. */
-#define portUNMASK_VALUE (0xF0UL)
+#define portUNMASK_VALUE (0xFFUL)
 
 /* Tasks are not created with a floating point context, but can be given a
 floating point context after they have been created.  A variable is stored as
@@ -153,8 +154,16 @@ uint64_t ullPortYieldRequired = pdFALSE;
 if the nesting depth is 0. */
 uint64_t ullPortInterruptNesting = pdFALSE;
 
+/* The space on the stack required to hold the FPU registers.  This is 32 128-bit
+ * registers, that means (64 * 8) 64 double words */
+#define portFPU_REGISTER_DOUBLE_WORDS ( 64 )
+
+#define PRIORITY_TRANSLATE_SET(x) ((((x)>> 1) | 0x80) & 0xff)
+
+#define PRIORITY_TRANSLATE_GET(x) (((x)<< 1) & 0xff)
+
 /* Used in the ASM code. */
-__attribute__((used)) const uint64_t ullMaxAPIPriorityMask = (configMAX_API_CALL_INTERRUPT_PRIORITY << portPRIORITY_SHIFT);
+__attribute__((used)) const uint64_t ullMaxAPIPriorityMask = PRIORITY_TRANSLATE_SET(configMAX_API_CALL_INTERRUPT_PRIORITY << portPRIORITY_SHIFT);
 
 /*-----------------------------------------------------------*/
 
@@ -239,15 +248,37 @@ StackType_t *pxPortInitialiseStack(StackType_t *pxTopOfStack, TaskFunction_t pxC
 	*pxTopOfStack = (StackType_t)pxCode; /* Exception return address. */
 	pxTopOfStack--;
 
+	#if( configUSE_TASK_FPU_SUPPORT == 1 )
+	{
 	/* The task will start with a critical nesting count of 0 as interrupts are
-	enabled. */
+		enabled. */
 	*pxTopOfStack = portNO_CRITICAL_NESTING;
-	pxTopOfStack--;
-
 	/* The task will start without a floating point context.  A task that uses
 	the floating point hardware must call vPortTaskUsesFPU() before executing
 	any floating point instructions. */
+	 pxTopOfStack--;
 	*pxTopOfStack = portNO_FLOATING_POINT_CONTEXT;
+	}
+	#elif( configUSE_TASK_FPU_SUPPORT == 2 )
+	{
+		/* The task will start with a floating point context.  Leave enough
+		 * space for the registers - and ensure they are initialised to 0. */
+		pxTopOfStack -= (portFPU_REGISTER_DOUBLE_WORDS-1);
+		memset( pxTopOfStack, 0x00, portFPU_REGISTER_DOUBLE_WORDS * sizeof( StackType_t ) );
+
+		/* The task will start with a critical nesting count of 0 as interrupts are
+			enabled. */
+		pxTopOfStack--;
+		*pxTopOfStack = portNO_CRITICAL_NESTING;
+		pxTopOfStack--;
+		*pxTopOfStack = pdTRUE;
+		ullPortTaskHasFPUContext = pdTRUE;
+	}
+	#else
+	{
+		#error Invalid configUSE_TASK_FPU_SUPPORT setting - configUSE_TASK_FPU_SUPPORT must be set to 1, 2, or left undefined.
+	}
+	#endif
 
 	return pxTopOfStack;
 }
@@ -426,7 +457,6 @@ void vPortTaskUsesFPU(void)
 	/* A task is registering the fact that it needs an FPU context.  Set the
 	FPU flag (which is saved as part of the task context). */
 	ullPortTaskHasFPUContext = pdTRUE;
-	printf("ullPortTaskHasFPUContext %x \r\n", ullPortTaskHasFPUContext);
 	/* Consider initialising the FPSR here - but probably not necessary in
 	AArch64. */
 }
@@ -440,6 +470,29 @@ void vPortClearInterruptMask(UBaseType_t uxNewMaskValue)
 	}
 }
 /*-----------------------------------------------------------*/
+/*
+Set current interrupt priority mask and translate, ICC_PMR
+• The value is right-shifted by one bit.
+• Bit [7] of the value is set to 1.
+*/
+void vPortSetPriorityMask(uint32_t value)
+{
+	uint32_t priority = PRIORITY_TRANSLATE_SET(value);
+	InterruptSetPriorityMask(priority);
+}
+
+/* Get current interrupt priority mask and translate, ICC_PMR, priority << portPRIORITY_SHIFT  */
+uint32_t vPortGetPriorityMask(void)
+{
+	return PRIORITY_TRANSLATE_GET(InterruptGetPriorityMask());
+}
+
+/* Get current interrupt priority and translate, ICC_RPR, priority << portPRIORITY_SHIFT */
+uint32_t vPortGetCurrentPriority(void)
+{
+	return PRIORITY_TRANSLATE_GET(FGicGetICC_RPR());
+}
+
 
 UBaseType_t uxPortSetInterruptMask(void)
 {
@@ -448,7 +501,7 @@ UBaseType_t uxPortSetInterruptMask(void)
 	/* Interrupt in the CPU must be turned off while the ICCPMR is being
 	updated. */
 	portDISABLE_INTERRUPTS();
-	if (FGicGetICC_PMR() == (uint32_t)(configMAX_API_CALL_INTERRUPT_PRIORITY << portPRIORITY_SHIFT))
+	if (vPortGetPriorityMask() == (uint32_t)(configMAX_API_CALL_INTERRUPT_PRIORITY << portPRIORITY_SHIFT))
 	{
 		/* Interrupts were already masked. */
 		ulReturn = pdTRUE;
@@ -456,14 +509,12 @@ UBaseType_t uxPortSetInterruptMask(void)
 	else
 	{
 		ulReturn = pdFALSE;
-		InterruptSetPriorityMask(configMAX_API_CALL_INTERRUPT_PRIORITY << portPRIORITY_SHIFT);
-		// portICCPMR_PRIORITY_MASK_REGISTER = (uint32_t)(configMAX_API_CALL_INTERRUPT_PRIORITY << portPRIORITY_SHIFT);
+		vPortSetPriorityMask(configMAX_API_CALL_INTERRUPT_PRIORITY << portPRIORITY_SHIFT);
 		__asm volatile("dsb sy		\n"
 					   "isb sy		\n" ::
 						   : "memory");
 	}
 	portENABLE_INTERRUPTS();
-
 	return ulReturn;
 }
 /*-----------------------------------------------------------*/
@@ -486,7 +537,7 @@ void vPortValidateInterruptPriority(void)
 
 		FreeRTOS maintains separate thread and ISR API functions to ensure
 		interrupt entry is as fast and simple as possible. */
-	configASSERT(FGicGetICC_RPR() >= (uint32_t)(configMAX_API_CALL_INTERRUPT_PRIORITY << portPRIORITY_SHIFT));
+	configASSERT(vPortGetCurrentPriority() >= (uint32_t)(configMAX_API_CALL_INTERRUPT_PRIORITY << portPRIORITY_SHIFT));
 
 	/* Priority grouping:  The interrupt controller (GIC) allows the bits
 		that define each interrupt's priority to be split between bits that

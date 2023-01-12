@@ -3,17 +3,20 @@
 
 /* Project Configuration */
 
-#define CONFIG_TARGET_NAME "e2000_lwip_multicast"
+#define CONFIG_TARGET_NAME "e2000q_freertos_a64"
 
 /* Example Configuration */
 
+#define CONFIG_EXAMPLE_IPV4_V6
 /* CONFIG_EXAMPLE_IPV4_ONLY is not set */
-#define CONFIG_EXAMPLE_IPV6_ONLY
+#define CONFIG_EXAMPLE_IPV4
 #define CONFIG_EXAMPLE_IPV6
+#define CONFIG_EXAMPLE_MULTICAST_IPV4_ADDR "232.10.12.10"
 #define CONFIG_EXAMPLE_MULTICAST_IPV6_ADDR "FF02::FD"
 #define CONFIG_EXAMPLE_PORT 6750
 /* CONFIG_EXAMPLE_LOOPBACK is not set */
 #define CONFIG_EXAMPLE_MULTICAST_TTL 255
+/* CONFIG_EXAMPLE_MULTICAST_LISTEN_ALL_IF is not set */
 #define CONFIG_EXAMPLE_MULTICAST_LISTEN_DEFAULT_IF
 /* end of Example Configuration */
 
@@ -90,6 +93,7 @@
 /* CONFIG_USE_ADC is not set */
 /* CONFIG_USE_PWM is not set */
 /* CONFIG_USE_IPC is not set */
+/* CONFIG_USE_MEDIA is not set */
 /* end of Components Configuration */
 #define CONFIG_USE_NEW_LIBC
 /* end of Standalone Setting */
@@ -161,6 +165,7 @@
 /* Freertos Eth Drivers */
 
 #define CONFIG_FREERTOS_USE_XMAC
+/* CONFIG_FREERTOS_USE_GMAC is not set */
 /* end of Freertos Eth Drivers */
 
 /* Freertos Gpio Drivers */
@@ -209,91 +214,47 @@
 
 #define CONFIG_USE_LWIP
 
+/* LWIP Freertos Port Configuration */
+
+#define CONFIG_LWIP_FXMAC
+/* CONFIG_LWIP_FGMAC is not set */
+
 /* LWIP Configuration */
 
 /* LWIP Port Configuration */
 
-/* CONFIG_LWIP_FGMAC is not set */
-#define CONFIG_LWIP_FXMAC
+/* CONFIG_LWIP_PORT_DEBUG_EN is not set */
 /* end of LWIP Port Configuration */
+/* CONFIG_LWIP_NO_SYS is not set */
 #define CONFIG_LWIP_LOCAL_HOSTNAME "phytium"
 
-/* memory configuration */
+/* Memory configuration */
 
 /* CONFIG_LWIP_USE_MEM_POOL is not set */
 #define CONFIG_LWIP_USE_MEM_HEAP
 #define CONFIG_MEM_SIZE 1
 #define CONFIG_MEM_ALIGNMENT 64
-/* end of memory configuration */
-
-/* NETWORK_INTERFACE_OPTIONS */
-
-/* CONFIG_LWIP_NETIF_API is not set */
-/* CONFIG_LWIP_NETIF_STATUS_CALLBACK is not set */
-/* end of NETWORK_INTERFACE_OPTIONS */
-
-/* LOOPIF */
-
-#define CONFIG_LWIP_NETIF_LOOPBACK
-#define CONFIG_LWIP_LOOPBACK_MAX_PBUFS 8
-/* end of LOOPIF */
-
-/* SLIPIF */
-
-/* CONFIG_LWIP_SLIP_SUPPORT is not set */
-/* end of SLIPIF */
+/* end of Memory configuration */
 
 /* Pbuf options */
 
 #define CONFIG_PBUF_POOL_BUFSIZE 2
+#define CONFIG_PBUF_POOL_SIZE 1
 /* end of Pbuf options */
 
-/* Internal Memory Pool Sizes */
+/* ARP */
 
-#define CONFIG_PBUF_POOL_SIZE 1
-/* end of Internal Memory Pool Sizes */
-#define CONFIG_LWIP_MAX_SOCKETS 10
+#define CONFIG_ARP_QUEUEING_EN
+/* end of ARP */
 
-/* LWIP RAW API */
-
-#define CONFIG_LWIP_MAX_RAW_PCBS 16
-/* end of LWIP RAW API */
-
-/* TCP */
-
-#define CONFIG_LWIP_MAX_ACTIVE_TCP 16
-#define CONFIG_LWIP_MAX_LISTENING_TCP 16
-#define CONFIG_LWIP_TCP_HIGH_SPEED_RETRANSMISSION
-#define CONFIG_LWIP_TCP_MAXRTX 12
-#define CONFIG_LWIP_TCP_SYNMAXRTX 12
-#define CONFIG_LWIP_TCP_MSS 1440
-#define CONFIG_LWIP_TCP_TMR_INTERVAL 250
-#define CONFIG_LWIP_TCP_MSL 60000
-#define CONFIG_LWIP_TCP_SND_BUF_DEFAULT 5744
-#define CONFIG_LWIP_TCP_WND_DEFAULT 5744
-#define CONFIG_LWIP_TCP_RECVMBOX_SIZE 6
-#define CONFIG_LWIP_TCP_QUEUE_OOSEQ
-/* CONFIG_LWIP_TCP_SACK_OUT is not set */
-#define CONFIG_LWIP_TCP_OVERSIZE_MSS
-/* CONFIG_LWIP_TCP_OVERSIZE_QUARTER_MSS is not set */
-/* CONFIG_LWIP_TCP_OVERSIZE_DISABLE is not set */
-/* end of TCP */
-
-/* UDP */
-
-#define CONFIG_LWIP_MAX_UDP_PCBS 16
-#define CONFIG_LWIP_UDP_RECVMBOX_SIZE 6
-/* CONFIG_LWIP_NETBUF_RECVINFO is not set */
-/* end of UDP */
-
-/* IPv4 */
+/* IPV4 */
 
 /* CONFIG_USE_IPV4_ONLY is not set */
 #define CONFIG_LWIP_IP4_REASSEMBLY
 #define CONFIG_LWIP_IP4_FRAG
 /* CONFIG_LWIP_IP_FORWARD is not set */
 #define CONFIG_IP_REASS_MAX_PBUFS 45
-/* end of IPv4 */
+/* end of IPV4 */
 
 /* ICMP */
 
@@ -302,9 +263,15 @@
 /* CONFIG_LWIP_BROADCAST_PING is not set */
 /* end of ICMP */
 
+/* LWIP RAW API */
+
+#define CONFIG_LWIP_RAW_API_EN
+#define CONFIG_LWIP_MAX_RAW_PCBS 16
+/* end of LWIP RAW API */
+
 /* DHCP */
 
-/* CONFIG_LWIP_DHCP_ENABLE is not set */
+#define CONFIG_LWIP_DHCP_ENABLE
 /* CONFIG_LWIP_DHCP_DOES_ARP_CHECK is not set */
 /* CONFIG_LWIP_DHCP_GET_NTP_SRV is not set */
 /* CONFIG_LWIP_DHCP_DISABLE_CLIENT_ID is not set */
@@ -318,23 +285,69 @@
 /* CONFIG_LWIP_AUTOIP is not set */
 /* end of AUTOIP */
 
+/* IGMP */
+
+#define CONFIG_LWIP_IGMP_EN
+/* end of IGMP */
+
 /* DNS */
 
 #define CONFIG_LWIP_DNS_SUPPORT_MDNS_QUERIES
 /* end of DNS */
 
-/* TCP options */
+/* UDP */
 
+#define CONFIG_LWIP_MAX_UDP_PCBS 16
+#define CONFIG_LWIP_UDP_RECVMBOX_SIZE 6
+/* CONFIG_LWIP_NETBUF_RECVINFO is not set */
+/* end of UDP */
+
+/* TCP */
+
+#define CONFIG_LWIP_TCP_WND_DEFAULT 5744
+#define CONFIG_LWIP_TCP_MAXRTX 12
+#define CONFIG_LWIP_TCP_SYNMAXRTX 12
+#define CONFIG_LWIP_TCP_QUEUE_OOSEQ
+/* CONFIG_LWIP_TCP_SACK_OUT is not set */
+#define CONFIG_LWIP_TCP_MSS 1440
+#define CONFIG_LWIP_TCP_SND_BUF_DEFAULT 5744
+#define CONFIG_LWIP_TCP_OVERSIZE_MSS
+/* CONFIG_LWIP_TCP_OVERSIZE_QUARTER_MSS is not set */
+/* CONFIG_LWIP_TCP_OVERSIZE_DISABLE is not set */
+#define CONFIG_LWIP_TCP_TMR_INTERVAL 250
+#define CONFIG_LWIP_TCP_MSL 60000
 #define CONFIG_LWIP_TCP_RTO_TIME 1500
-/* end of TCP options */
+#define CONFIG_LWIP_MAX_ACTIVE_TCP 16
+#define CONFIG_LWIP_MAX_LISTENING_TCP 16
+#define CONFIG_LWIP_TCP_HIGH_SPEED_RETRANSMISSION
+#define CONFIG_LWIP_TCP_RECVMBOX_SIZE 6
+/* end of TCP */
+
+/* Network_Interface */
+
+/* CONFIG_LWIP_NETIF_API is not set */
+/* CONFIG_LWIP_NETIF_STATUS_CALLBACK is not set */
+/* end of Network_Interface */
+
+/* LOOPIF */
+
+#define CONFIG_LWIP_NETIF_LOOPBACK
+#define CONFIG_LWIP_LOOPBACK_MAX_PBUFS 8
+/* end of LOOPIF */
+
+/* SLIPIF */
+
+/* CONFIG_LWIP_SLIP_SUPPORT is not set */
+/* end of SLIPIF */
 #define CONFIG_LWIP_TCPIP_CORE_LOCKING
 
-/* socket */
+/* Socket */
 
+#define CONFIG_LWIP_MAX_SOCKETS 10
 /* CONFIG_LWIP_SO_LINGER is not set */
 #define CONFIG_LWIP_SO_REUSE
 #define CONFIG_LWIP_SO_REUSE_RXTOALL
-/* end of socket */
+/* end of Socket */
 /* CONFIG_LWIP_STATS is not set */
 
 /* PPP */
@@ -351,7 +364,7 @@
 #define CONFIG_LWIP_CHECKSUM_CHECK_ICMP
 /* end of Checksums */
 
-/* ipv6 */
+/* IPV6 */
 
 #define CONFIG_LWIP_IPV6
 /* CONFIG_LWIP_IPV6_AUTOCONFIG is not set */
@@ -359,8 +372,9 @@
 /* CONFIG_LWIP_IPV6_FORWARD is not set */
 #define CONFIG_LWIP_IP6_FRAG
 #define CONFIG_LWIP_IP6_REASSEMBLY
-/* end of ipv6 */
+/* end of IPV6 */
 #define CONFIG_LWIP_DEBUG
+/* CONFIG_LWIP_DEBUG_ESP_LOG is not set */
 #define CONFIG_LWIP_NETIF_DEBUG
 /* CONFIG_LWIP_PBUF_DEBUG is not set */
 /* CONFIG_LWIP_ETHARP_DEBUG is not set */
@@ -368,15 +382,37 @@
 /* CONFIG_LWIP_SOCKETS_DEBUG is not set */
 /* CONFIG_LWIP_IP_DEBUG is not set */
 /* CONFIG_LWIP_ICMP_DEBUG is not set */
+/* CONFIG_LWIP_DHCP_STATE_DEBUG is not set */
 /* CONFIG_LWIP_DHCP_DEBUG is not set */
 /* CONFIG_LWIP_IP6_DEBUG is not set */
 /* CONFIG_LWIP_ICMP6_DEBUG is not set */
 /* CONFIG_LWIP_TCP_DEBUG is not set */
+/* CONFIG_LWIP_UDP_DEBUG is not set */
 /* CONFIG_LWIP_SNTP_DEBUG is not set */
 /* CONFIG_LWIP_DNS_DEBUG is not set */
 /* end of LWIP Configuration */
+
+/* Tcp/ip task resource configuration */
+
+#define CONFIG_LWIP_TCPIP_TASK_STACK_SIZE 3072
+#define CONFIG_LWIP_TCPIP_TASK_PRIO 6
+#define CONFIG_LWIP_TCPIP_RECVMBOX_SIZE 32
+/* end of Tcp/ip task resource configuration */
+
+/* lwip port thread Configuration */
+
+#define CONFIG_LWIP_PORT_USE_RECEIVE_THREAD
+#define CONFIG_LWIP_PORT_RECEIVE_THREAD_STACKSIZE 2048
+#define CONFIG_LWIP_PORT_RECEIVE_THREAD_PRIORITY 5
+#define CONFIG_LWIP_PORT_USE_LINK_DETECT_THREAD
+#define CONFIG_LWIP_PORT_LINK_DETECT_STACKSIZE 2048
+#define CONFIG_LWIP_PORT_LINK_DETECT_PRIORITY 5
+#define CONFIG_LWIP_PORT_DHCP_THREAD
+#define CONFIG_LWIP_PORT_DHCP_STACKSIZE 4096
+#define CONFIG_LWIP_PORT_DHCP_PRIORITY 5
+/* end of lwip port thread Configuration */
+/* end of LWIP Freertos Port Configuration */
 #define CONFIG_USE_BACKTRACE
-/* CONFIG_USE_FATFS is not set */
 /* CONFIG_USE_FATFS_0_1_4 is not set */
 /* CONFIG_USE_SFUD is not set */
 /* CONFIG_USE_SPIFFS is not set */
@@ -400,7 +436,7 @@
 #define CONFIG_FREERTOS_OPTIMIZED_SCHEDULER
 #define CONFIG_FREERTOS_HZ 1000
 #define CONFIG_FREERTOS_MAX_PRIORITIES 32
-#define CONFIG_FREERTOS_KERNEL_INTERRUPT_PRIORITIES 13
+#define CONFIG_FREERTOS_KERNEL_INTERRUPT_PRIORITIES 11
 #define CONFIG_FREERTOS_MAX_API_CALL_INTERRUPT_PRIORITIES 11
 #define CONFIG_FREERTOS_THREAD_LOCAL_STORAGE_POINTERS 1
 #define CONFIG_FREERTOS_MINIMAL_TASK_STACKSIZE 1024
@@ -414,6 +450,7 @@
 #define CONFIG_FREERTOS_USE_STATS_FORMATTING_FUNCTIONS
 /* CONFIG_FREERTOS_USE_TICKLESS_IDLE is not set */
 #define CONFIG_FREERTOS_TOTAL_HEAP_SIZE 10240
+#define CONFIG_FREERTOS_TASK_FPU_SUPPORT 1
 /* end of Kernel Configuration */
 
 #endif

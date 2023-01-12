@@ -12,15 +12,14 @@
  *  
  * 
  * FilePath: lwip_test.c
- * Date: 2022-09-15 10:24:38
- * LastEditTime: 2022-09-15 10:24:38
+ * Date: 2022-06-06 22:57:08
+ * LastEditTime: 2022-06-06 22:57:08
  * Description:  This file is for 
  * 
  * Modify History: 
  *  Ver   Who  Date   Changes
  * ----- ------  -------- --------------------------------------
  */
-
 
 #include <string.h>
 #include <stdio.h>
@@ -29,27 +28,27 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "ftypes.h"
-#include "fpinctrl.h"
+#include "fassert.h"
+#include "fparameters.h"
 #ifndef SDK_CONFIG_H__
 	#error "Please include sdkconfig.h first"
 #endif
+
 
 #include "lwipopts.h"
 #include "lwip_port.h"
 #include "lwip/ip4_addr.h"
 #include "lwip/init.h"
 #include "netif/ethernet.h"
-#include "ethernetif.h"
 #include "lwip/netif.h"
 #include "lwip/tcpip.h"
+#include "lwip/inet.h"
 #include "../src/shell.h"
 
 
 #if defined(CONFIG_TARGET_E2000)
-#define PHY_INTERRUPTFACE_RGMII 0
-#define PHY_INTERRUPTFACE_SGMII 1 
+extern int FXmacPhyGpioInit(u32 instance_id, u32 interface_type);
 #endif
-
 
 #if LWIP_IPV6
 #include "lwip/ip.h"
@@ -60,10 +59,21 @@
 #endif
 #endif
 
+typedef struct
+{
+    const char *ipaddr;
+    const char *gateway;
+    const char *netmask;
+}InputAddress;
 
+typedef struct
+{
+    UserConfig lwip_mac_config;
+    InputAddress input_address;
+    u32 dhcp_en; 
+} InputConfig;
 
-user_config lwip_mac_config = {0};
-
+static InputConfig input_config = {0};
 
 #if !LWIP_IPV6
 #if LWIP_DHCP
@@ -90,33 +100,50 @@ void LwipDhcpTest(struct netif *echo_netif)
 
 void LwipTestCreate(void * args)
 {
-    struct netif *echo_netif;
+    FASSERT(args != NULL);
+    struct netif *netif_p = NULL;
     static boolean init_flag = FALSE;
+    InputConfig *input_conf = (InputConfig *)args;
+    ip_addr_t ipaddr = {0}, netmask = {0}, gw = {0};
     BaseType_t ret = pdPASS;
     /* the mac address of the board. this should be unique per board */
-	unsigned char mac_ethernet_address[] =
-	{0x98, 0x0e, 0x24, 0x00, 0x11, 0x22};
+	unsigned char mac_address[6] =
+	{0x98, 0x0e, 0x24, 0x00, 0x11, 0};
 
-    echo_netif = pvPortMalloc(sizeof(struct netif));
-    if(echo_netif == NULL)
+    netif_p = pvPortMalloc(sizeof(struct netif)); /* 暂未回收内存 */
+    if(netif_p == NULL)
     {
         printf("malloc netif is error \r\n");
         goto exit;
     }
+    printf("netif_p is %p \r\n", netif_p);
+    mac_address[5] = input_conf->lwip_mac_config.mac_instance;
+    
+    
+    /* convert string to a binary address */
+    if(input_conf->input_address.ipaddr)
+    {
+        if(inet_aton(input_conf->input_address.ipaddr,&ipaddr) == 0)
+        {
+            goto failed;
+        }
+    }
 
-#if !LWIP_IPV6
-	ip_addr_t ipaddr, netmask, gw;
-#if LWIP_DHCP
-    ipaddr.addr = 0;
-	gw.addr = 0;
-	netmask.addr = 0;
-#else
-	/* initialize IP addresses to be used */
-	IP4_ADDR(&ipaddr,  192, 168,   4, 10);
-	IP4_ADDR(&netmask, 255, 255, 255,  0);
-	IP4_ADDR(&gw,      192, 168,   4,  1);
-#endif
-#endif
+    if(input_conf->input_address.gateway)
+    {
+        if(inet_aton(input_conf->input_address.gateway,&gw) == 0)
+        {
+            goto failed;
+        }
+    }
+
+    if(input_conf->input_address.netmask)
+    {
+        if(inet_aton(input_conf->input_address.netmask,&netmask) == 0)
+        {
+            goto failed;
+        }
+    }
 
     /* 初始化LwIP堆 */
     if(init_flag == FALSE)
@@ -125,87 +152,44 @@ void LwipTestCreate(void * args)
         init_flag = TRUE;
     }
 
-#if !LWIP_IPV6
 	/* Add network interface to the netif_list, and set it as default */
-	if (!lwip_port_add(echo_netif, &ipaddr, &netmask,
-						&gw, mac_ethernet_address,
-						(user_config *)args))
+	if (!LwipPortAdd(netif_p, &ipaddr, &netmask,
+						&gw, mac_address,
+						(UserConfig *)args,0))
 	{
 		printf("Error adding N/W interface\n\r");
 		return ;
 	}
-	printf("lwip_port_add is over \n\r");
-#else
-	/* Add network interface to the netif_list, and set it as default */
-	if (!lwip_port_add(echo_netif, NULL, NULL, NULL, mac_ethernet_address, (user_config *)args)) 
-	{
-		printf("Error adding N/W interface\n\r");
-		return ;
-	}
-	echo_netif->ip6_autoconfig_enabled = 1;
+	printf("LwipPortAdd is over \n\r");
 
-	netif_create_ip6_linklocal_address(echo_netif, 1);
-	netif_ip6_addr_set_state(echo_netif, 0, IP6_ADDR_VALID);
-
-	printf("Board IPv6 address %x:%x:%x:%x:%x:%x:%x:%x\n\r",
-			IP6_ADDR_BLOCK1(&echo_netif->ip6_addr[0].u_addr.ip6),
-			IP6_ADDR_BLOCK2(&echo_netif->ip6_addr[0].u_addr.ip6),
-			IP6_ADDR_BLOCK3(&echo_netif->ip6_addr[0].u_addr.ip6),
-			IP6_ADDR_BLOCK4(&echo_netif->ip6_addr[0].u_addr.ip6),
-			IP6_ADDR_BLOCK5(&echo_netif->ip6_addr[0].u_addr.ip6),
-			IP6_ADDR_BLOCK6(&echo_netif->ip6_addr[0].u_addr.ip6),
-			IP6_ADDR_BLOCK7(&echo_netif->ip6_addr[0].u_addr.ip6),
-			IP6_ADDR_BLOCK8(&echo_netif->ip6_addr[0].u_addr.ip6));
-
+#if (LWIP_IPV6 == 1)
+	netif_p->ip6_autoconfig_enabled = 1;
+	netif_create_ip6_linklocal_address(netif_p, 1);
+	netif_ip6_addr_set_state(netif_p, 0, IP6_ADDR_VALID);
 #endif
 
-	netif_set_default(echo_netif);
+	netif_set_default(netif_p);
 
-    if (netif_is_link_up(echo_netif))
+    if (netif_is_link_up(netif_p))
     {
         /* 当netif完全配置好时，必须调用该函数 */
-        netif_set_up(echo_netif);
+        netif_set_up(netif_p);
+        if(input_conf->dhcp_en)
+        {
+            LwipPortDhcpSet(netif_p,TRUE);
+        }
     }
     else
     {
         /* 当netif链接关闭时，必须调用该函数 */
-        netif_set_down(echo_netif);
+        netif_set_down(netif_p);
     }
 
-	printf("neftwork setup complete\n");
+	printf("network setup complete\n");
     
-    if (xTaskCreate((TaskFunction_t )lwip_port_input_thread,
-                    "recv_echo",
-                    8192,
-                    echo_netif, 
-                    4,
-                    NULL) != pdPASS)
-    {
-      printf("xTaskCreate is Error %s\r\n", "recv_echo");
-      FASSERT(0);
-	}
-
-#if LWIP_DHCP && LWIP_IPV4
-	/* Create a new DHCP client for this interface.
-	 * Note: you must call dhcp_fine_tmr() and dhcp_coarse_tmr() at
-	 * the predefined regular intervals after starting the client.
-	 */
-    printf("dhcp_start...\r\n");
-    
-    ret = xTaskCreate((TaskFunction_t )LwipDhcpTest, /* 任务入口函数 */
-                            (const char* )"LwipDhcpTest",/* 任务名字 */
-                            (uint16_t )4096, /* 任务栈大小 */
-                            (void* )(echo_netif),/* 任务入口函数参数 */
-                            (UBaseType_t )configMAX_PRIORITIES-1, /* 任务的优先级 */
-                            (TaskHandle_t* )&appTaskCreateHandle); /* 任务控制 */
-                            
-    if (pdPASS == ret)
-    {
-        printf("create lwip dhcp task success!\r\n");  
-    }   
-	
-#endif
-
+    goto exit ;
+failed:
+    vPortFree(netif_p);
 exit:
     vTaskDelete(NULL);
 }
@@ -221,165 +205,36 @@ void LwipTest(void *args)
                       NULL);                          /* 任务控制块指针 */
 
     FASSERT_MSG(ret == pdPASS,"LwipTestCreate Task create is failed");
-
 }
 
-
-
-int FXmacPhyGpioInit(u32 instance_id,u32 interface_type)
-{
-#if defined(CONFIG_TARGET_E2000Q)
-#if defined(CONFIG_BOARD_TYPE_B)
-    if(instance_id == 3)
-    {
-        if(interface_type == PHY_INTERRUPTFACE_RGMII)
-        {
-            FPinSetConfig(FIOPAD_J37,FPIN_FUNC1,FPIN_PULL_NONE,FPIN_DRV4); /* gsd_gmu_rgmii_txd1_0
- */
-            FPinSetConfig(FIOPAD_J39,FPIN_FUNC1,FPIN_PULL_NONE,FPIN_DRV4); /* gsd_gmu_rgmii_txd1_1
- */
-            FPinSetConfig(FIOPAD_G41,FPIN_FUNC1,FPIN_PULL_NONE,FPIN_DRV4); /* gsd_gmu_rgmii_rxd1_0
- */
-            FPinSetConfig(FIOPAD_E43,FPIN_FUNC1,FPIN_PULL_NONE,FPIN_DRV4); /* gsd_gmu_rgmii_rxd1_1
- */
-            FPinSetConfig(FIOPAD_L43,FPIN_FUNC1,FPIN_PULL_NONE,FPIN_DRV4); /* gsd_gmu_rgmii_tx_ctl1 */
-            FPinSetConfig(FIOPAD_C43,FPIN_FUNC1,FPIN_PULL_NONE,FPIN_DRV4); /* gsd_gmu_rgmii_rxd1_2 */
-            FPinSetConfig(FIOPAD_E41,FPIN_FUNC1,FPIN_PULL_NONE,FPIN_DRV4); /* gsd_gmu_rgmii_rxd1_3 */
-            FPinSetConfig(FIOPAD_L45,FPIN_FUNC1,FPIN_PULL_NONE,FPIN_DRV4); /* gsd_gmu_rgmii_rx_clk1 */
-            FPinSetConfig(FIOPAD_J43,FPIN_FUNC1,FPIN_PULL_NONE,FPIN_DRV4); /* gsd_gmu_rgmii_rx_ctl1 */
-            FPinSetConfig(FIOPAD_J41,FPIN_FUNC1,FPIN_PULL_NONE,FPIN_DRV4); /* gsd_gmu_rgmii_tx_clk1 */
-            FPinSetDelay(FIOPAD_J41_DELAY,FPIN_OUTPUT_DELAY,FPIN_DELAY_FINE_TUNING,FPIN_DELAY_7);
-            FPinSetDelay(FIOPAD_J41_DELAY,FPIN_OUTPUT_DELAY,FPIN_DELAY_COARSE_TUNING,FPIN_DELAY_5);
-            FPinSetDelayEn(FIOPAD_J41_DELAY,FPIN_OUTPUT_DELAY,1);
-
-            FPinSetConfig(FIOPAD_L39,FPIN_FUNC1,FPIN_PULL_NONE,FPIN_DRV4); /* gsd_gmu_rgmii_txd1_2 */
-            FPinSetConfig(FIOPAD_E37,FPIN_FUNC1,FPIN_PULL_NONE,FPIN_DRV4); /* gsd_gmu_rgmii_txd1_3 */
-            FPinSetConfig(FIOPAD_E35,FPIN_FUNC1,FPIN_PULL_NONE,FPIN_DRV4); /* gsd_gmu_mdc_mac3 */
-            FPinSetConfig(FIOPAD_G35,FPIN_FUNC1,FPIN_PULL_NONE,FPIN_DRV4); /* gsd_gmu_mdio_mac3 */
-        }
-        else if(interface_type == PHY_INTERRUPTFACE_SGMII)
-        {
-            FPinSetConfig(FIOPAD_E35,FPIN_FUNC1,FPIN_PULL_NONE,FPIN_DRV4); /* gsd_gmu_mdc_mac3 */
-            FPinSetConfig(FIOPAD_G35,FPIN_FUNC1,FPIN_PULL_NONE,FPIN_DRV4); /* gsd_gmu_mdio_mac3 */
-        }
-        else
-        {
-            printf("interface_type 0x%x is not support  \r\n");
-            return -1;
-        }
-    }
-#elif defined(CONFIG_BOARD_TYPE_C)
-    if(instance_id == 1)
-    {
-        FPinSetConfig(FIOPAD_AJ53,FPIN_FUNC3,FPIN_PULL_NONE,FPIN_DRV4); /* gsd_gmu_mdc_mac1 */
-        FPinSetConfig(FIOPAD_AL49,FPIN_FUNC3,FPIN_PULL_NONE,FPIN_DRV4); /* gsd_gmu_mdio_mac1 */
-    }
-    else if(instance_id == 2)
-    {
-        FPinSetConfig(FIOPAD_E29,FPIN_FUNC1,FPIN_PULL_NONE,FPIN_DRV4); /* gsd_gmu_mdc_mac2 */
-        FPinSetConfig(FIOPAD_G29,FPIN_FUNC1,FPIN_PULL_NONE,FPIN_DRV4); /* gsd_gmu_mdio_mac2 */
-    }
-    else if(instance_id == 3)
-    {
-        FPinSetConfig(FIOPAD_E35,FPIN_FUNC1,FPIN_PULL_NONE,FPIN_DRV4); /* gsd_gmu_mdc_mac3  */
-        FPinSetConfig(FIOPAD_G35,FPIN_FUNC1,FPIN_PULL_NONE,FPIN_DRV4); /* gsd_gmu_mdio_mac3 */
-    }
-    else
-    {
-        printf("interface_type 0x%x is not support  \r\n");
-        return -1;
-    }
-#endif
-#elif defined(CONFIG_TARGET_E2000D) || defined(CONFIG_TARGET_E2000S)
-
-#if defined(CONFIG_BOARD_TYPE_B)
-    if(instance_id == 3)
-    {
-        if(interface_type == PHY_INTERRUPTFACE_RGMII)
-        {
-            FPinSetConfig(FIOPAD_J33,FPIN_FUNC1,FPIN_PULL_NONE,FPIN_DRV4); /* gsd_gmu_rgmii_txd1_0
- */
-            FPinSetConfig(FIOPAD_J35,FPIN_FUNC1,FPIN_PULL_NONE,FPIN_DRV4); /* gsd_gmu_rgmii_txd1_1
- */
-            FPinSetConfig(FIOPAD_G37,FPIN_FUNC1,FPIN_PULL_NONE,FPIN_DRV4); /* gsd_gmu_rgmii_rxd1_0
- */
-            FPinSetConfig(FIOPAD_E39,FPIN_FUNC1,FPIN_PULL_NONE,FPIN_DRV4); /* gsd_gmu_rgmii_rxd1_1
- */
-            FPinSetConfig(FIOPAD_L39,FPIN_FUNC1,FPIN_PULL_NONE,FPIN_DRV4); /* gsd_gmu_rgmii_tx_ctl1 */
-            FPinSetConfig(FIOPAD_C39,FPIN_FUNC1,FPIN_PULL_NONE,FPIN_DRV4); /* gsd_gmu_rgmii_rxd1_2 */
-            FPinSetConfig(FIOPAD_E37,FPIN_FUNC1,FPIN_PULL_NONE,FPIN_DRV4); /* gsd_gmu_rgmii_rxd1_3 */
-            FPinSetConfig(FIOPAD_L41,FPIN_FUNC1,FPIN_PULL_NONE,FPIN_DRV4); /* gsd_gmu_rgmii_rx_clk1 */
-            FPinSetConfig(FIOPAD_J39,FPIN_FUNC1,FPIN_PULL_NONE,FPIN_DRV4); /* gsd_gmu_rgmii_rx_ctl1 */
-            FPinSetConfig(FIOPAD_J37,FPIN_FUNC1,FPIN_PULL_NONE,FPIN_DRV4); /* gsd_gmu_rgmii_tx_clk1 */
-            FPinSetDelay(FIOPAD_J37_DELAY,FPIN_OUTPUT_DELAY,FPIN_DELAY_COARSE_TUNING,FPIN_DELAY_5);
-            FPinSetDelay(FIOPAD_J37_DELAY,FPIN_OUTPUT_DELAY,FPIN_DELAY_FINE_TUNING,FPIN_DELAY_7);
-            FPinSetDelayEn(FIOPAD_J37_DELAY,FPIN_OUTPUT_DELAY,1);
-            FPinSetConfig(FIOPAD_L35,FPIN_FUNC1,FPIN_PULL_NONE,FPIN_DRV4); /* gsd_gmu_rgmii_txd1_2 */
-            FPinSetConfig(FIOPAD_E33,FPIN_FUNC1,FPIN_PULL_NONE,FPIN_DRV4); /* gsd_gmu_rgmii_txd1_3 */
-            FPinSetConfig(FIOPAD_E31,FPIN_FUNC1,FPIN_PULL_NONE,FPIN_DRV4); /* gsd_gmu_mdc_mac3 */
-            FPinSetConfig(FIOPAD_G31,FPIN_FUNC1,FPIN_PULL_NONE,FPIN_DRV4); /* gsd_gmu_mdio_mac3 */
-        }
-        else if(interface_type == PHY_INTERRUPTFACE_SGMII)
-        {
-            FPinSetConfig(FIOPAD_E31,FPIN_FUNC1,FPIN_PULL_NONE,FPIN_DRV4); /* gsd_gmu_mdc_mac3 */
-            FPinSetConfig(FIOPAD_G31,FPIN_FUNC1,FPIN_PULL_NONE,FPIN_DRV4); /* gsd_gmu_mdio_mac3 */
-        }
-        else
-        {
-            printf("interface_type 0x%x is not support  \r\n");
-            return -1;
-        }
-    }
-#elif defined(CONFIG_BOARD_TYPE_C)
-    if(instance_id == 1)
-    {
-        FPinSetConfig(FIOPAD_AJ49,FPIN_FUNC3,FPIN_PULL_NONE,FPIN_DRV4); /* gsd_gmu_mdc_mac1 */
-        FPinSetConfig(FIOPAD_AL45,FPIN_FUNC3,FPIN_PULL_NONE,FPIN_DRV4); /* gsd_gmu_mdio_mac1 */
-    }
-    else if(instance_id == 2)
-    {
-        FPinSetConfig(FIOPAD_E25,FPIN_FUNC1,FPIN_PULL_NONE,FPIN_DRV4); /* gsd_gmu_mdc_mac2 */
-        FPinSetConfig(FIOPAD_G25,FPIN_FUNC1,FPIN_PULL_NONE,FPIN_DRV4); /* gsd_gmu_mdio_mac2 */
-    }
-    else if(instance_id == 3)
-    {
-        FPinSetConfig(FIOPAD_E31,FPIN_FUNC1,FPIN_PULL_NONE,FPIN_DRV4); /* gsd_gmu_mdc_mac3  */
-        FPinSetConfig(FIOPAD_G31,FPIN_FUNC1,FPIN_PULL_NONE,FPIN_DRV4); /* gsd_gmu_mdio_mac3 */
-    }
-    else
-    {
-        printf("interface_type 0x%x is not support  \r\n");
-        return -1;
-    }
-
-#endif
-
-#endif
-
-}
 
 
 static int LwipDeviceSet(int argc, char *argv[])
 {
     u32 id = 0,type = 0;
-
-    static int probe_flg = 0;
-    LWIP_PORT_CONFIG_DEFAULT_INIT(lwip_mac_config);
+    const char *ipaddr = NULL;
+    const char *gateway = NULL;
+    const char *netmask = NULL;
+    memset(&input_config,0,sizeof(input_config));
+    LWIP_PORT_CONFIG_DEFAULT_INIT(input_config.lwip_mac_config);
 
     if (!strcmp(argv[1], "probe"))
     {
-        if(probe_flg == 1)
-        {
-            printf("The initialization of the instance is complete. Do not repeat this process \r\n") ;
-            return -1;
-        }
-
         switch(argc)
         {
+            case 8:
+                netmask = argv[7];    
+            case 7:
+                gateway = argv[6]; 
+            case 6:
+                ipaddr = argv[5];
+                input_config.input_address.ipaddr = ipaddr;
+                input_config.input_address.gateway = gateway;
+                input_config.input_address.netmask = netmask;
+            case 5:
+                input_config.dhcp_en = (u32)simple_strtoul(argv[4], NULL, 10);
             case 4:
                 type = (u32)simple_strtoul(argv[3], NULL, 10);
-                id = (u32)simple_strtoul(argv[2], NULL, 10);
-                break;
             case 3:
                 id = (u32)simple_strtoul(argv[2], NULL, 10);
                 break;
@@ -388,29 +243,62 @@ static int LwipDeviceSet(int argc, char *argv[])
         }
         printf("types   %d\n", type);
         printf("id   %d\n", id);
+
+#if defined(CONFIG_TARGET_E2000)
         FXmacPhyGpioInit(id,type);
-        lwip_mac_config.mac_instance = id;
+#endif
+        input_config.lwip_mac_config.mac_instance = id;
+        input_config.lwip_mac_config.name[0] = 'e';
+        itoa(id,&input_config.lwip_mac_config.name[1],10);
         if(type == 0)
         {
-            lwip_mac_config.mii_interface = LWIP_PORT_INTERFACE_RGMII;
+            input_config.lwip_mac_config.mii_interface = LWIP_PORT_INTERFACE_RGMII;
         }
         else
         {
-            lwip_mac_config.mii_interface = LWIP_PORT_INTERFACE_SGMII;
+            input_config.lwip_mac_config.mii_interface = LWIP_PORT_INTERFACE_SGMII;
         }
 
-        LwipTest(&lwip_mac_config); 
-        probe_flg = 1;
+        LwipTest(&input_config); 
+    }
+    else if(!strcmp(argv[1], "deinit"))
+    {
+        if(argc <= 1)
+        {
+            printf("Please enter lwip deinit <name> \r\n") ;
+            printf("        -- use name to deinit neitf object \r\n");
+            printf("        -- <name> is netif name \r\n");
+            return -1;
+        }
+        struct netif *netif_p = NULL;
+        netif_p = LwipPortGetByName(argv[2]);
+        if(netif_p == NULL)
+        {
+            printf("netif %s is not invalid \r\n",argv[2]);
+            return -1;
+        }
+
+        /* close rx thread */
+        vPortEnterCritical();
+        LwipPortStop(netif_p);
+        vPortFree(netif_p);
+        vPortExitCritical();
     }
     else
     {
-        printf("Please enter xmac probe <device id> <interface id > \r\n") ;
+        printf("Please enter lwip probe <device id> <interface id> <dhcp_en> <ipaddr> <gateway> <netmask> \r\n") ;
         printf("        -- device id is mac instance number \r\n");
         printf("        -- interface id is media independent interface  , 0 is rgmii ,1 is sgmii \r\n");
+        printf("        -- dhcp_en is dhcp function set ,1 is enable ,0 is disable .But this depends on whether the protocol stack supports it ");
+        printf("        -- <ipaddr> Ip address of netif \r\n");
+        printf("        -- <gateway> Gateway of netif \r\n");
+        printf("        -- <netmask> Netmask of netif \r\n"); 
+        printf("Please enter lwip deinit <name> \r\n") ;
+        printf("        -- use name to deinit neitf object \r\n");
+        printf("        -- <name> is netif name \r\n");
     }
-
     return 0;
 }
 
-SHELL_EXPORT_CMD(SHELL_CMD_TYPE(SHELL_TYPE_CMD_MAIN), xmac, LwipDeviceSet, Setup LWIP device test);
+SHELL_EXPORT_CMD(SHELL_CMD_TYPE(SHELL_TYPE_CMD_MAIN), lwip, LwipDeviceSet, Setup LWIP device test);
 

@@ -34,8 +34,15 @@ endmenu
 
 menu "Freertos Eth Drivers"
     config FREERTOS_USE_XMAC
+        select ENABLE_FXMAC
         bool
         prompt "Use Freertos xmac driver"
+        default n
+    
+    config FREERTOS_USE_GMAC
+        select ENABLE_FGMAC
+        bool
+        prompt "Use Freertos gmac driver"
         default n
 endmenu
 

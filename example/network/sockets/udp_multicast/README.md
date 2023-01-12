@@ -123,9 +123,30 @@ bootelf -p 0x90100000
 
 - 启动进入后，根据连接的xmac口，输入指令完成网口初始化
 
+### 2.4.1 如何进行实验
+
+- 当开发者配置好程序之后,通过2.3.1/2.3.2的方式将编译好的镜像文件拷贝至开发板中。
+- 以E2000D/Q demo 板为例,开发者输入以下命令则可以初始化网卡：
+
+```
+lwip probe 0 1 1 192.168.4.10 192.168.4.1 255.255.255.0
+```
+
+- 命令定义为:"lwip probe <device id> <interface id> <dhcp_en> <ipaddr> <gateway> <netmask> "
+- <device id> 为mac控制器
+- <interface id> 为gmii 控制器类型，0 is rgmii ,1 is sgmii
+- <dhcp_en> 1为使能dhcp 功能，0为关闭dhcp 功能
+- <ipaddr> 为ipv4 地址，示例为: 192.168.4.10
+- <gateway> 为网关 ，示例为: 192.168.4.1
+- <netmask> 为子网掩码，示例为255.255.255.0
+
+- 效果图如下
+
+![](./pic/lwip_probe.png)
 
 
-#### 2.4.1 基于IPv4下初始化
+
+#### 2.4.2 基于IPv4下初始化
 
 - 输入以下命令
   
@@ -137,24 +158,9 @@ make menuconfig
   
 ![](./pic/ipv4_config.png)
 
-- 输入以下命令，初始化LWIP网络协议栈, 依次配置ip地址，子网掩码，网关地址和退出时间，运行完成退出后LWIP协议栈会被暂时去使能
-
-- 关闭IPv6 选项
-![](./pic/ipv4_config2.png)
 
 
-```
-xmac probe [device id] [interface id]
-```
-
-- 其中device id 为控制器id 
-- interface id ,0 为rgmii ,1 为sgmii
-
-![xmac_probe_ipv4](./pic/xmac_probe.png "xmac_probe.png")
-
-![ping](./pic/ping.png "ping.png")
-
-#### 2.4.2 IPv6下初始化 
+#### 2.4.3 IPv4$IPv6 共存的模式
 
 - 输入以下命令
 
@@ -162,9 +168,9 @@ xmac probe [device id] [interface id]
 make menuconfig
 ```
 
-- 需将Multicast IP type 选为 IPV6
-  
-![](./pic/ipv6_config.png)
+- 需将Multicast IP type 选为 IPV4 & IPV6
+
+![](./pic/ipv4_ipv6_config.png)
 
 
 - 关闭仅仅使用IPv4 选项
@@ -172,24 +178,9 @@ make menuconfig
 ![](./pic/DisableNotusingIPV4attheaSametime.png)
 
 
-- 输入以下命令，初始化LWIP网络协议栈, 依次配置ip地址，子网掩码，网关地址和退出时间，运行完成退出后LWIP协议栈会被暂时去使能
+#### 2.4.4 进行multicast 测试
 
-```
-xmac probe [device id] [interface id]
-```
-
-- 其中device id 为控制器id 
-- interface id ,0 为rgmii ,1 为sgmii
-
-![xmac_probe](./pic/xmac_probe.png "xmac_probe.png")
-![xmac_probe2](./pic/xmac_probe_ipv6_2.png "xmac_probe_ipv6_2.png")
-
-![ping](./pic/ping_ipv6.png "ping_ipv6.png")
-
-
-#### 2.4.3 进行multicast 测试
-
-- 完成2.4.1 / 2.4.2 之后 ，可以进行multcast 的相关实验 ，以下以ipv6 的实验为例
+- 完成2.4.1 / 2.4.2 /2.4.3 之后 ，可以进行multcast 的相关实验 ，以下以ipv6 的实验为例
 - 在串口终端上输入以下指令
 ```
 multicast
@@ -227,7 +218,7 @@ multicast
 
 - 开发者在串口终端上请输入以下命令对控制器进行初始化
 ```shell
-    xmac probe 0 1
+    lwip probe 0 1 1 192.168.4.10 192.168.4.1 255.255.255.0
 ```
 
 ## 4. 修改历史记录

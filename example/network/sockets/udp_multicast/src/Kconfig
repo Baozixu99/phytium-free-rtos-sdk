@@ -2,28 +2,30 @@ menu "Example Configuration"
 
     choice EXAMPLE_IP_MODE
         prompt "Multicast IP type"
+        default EXAMPLE_IPV4_V6
         help
             Example can multicast IPV4, IPV6, or both.
+
+        config EXAMPLE_IPV4_V6
+            bool "IPV4 & IPV6"
+            select EXAMPLE_IPV4
+            select EXAMPLE_IPV6
 
         config EXAMPLE_IPV4_ONLY
             bool "IPV4"
             select EXAMPLE_IPV4
             select USE_IPV4_ONLY
-
-        config EXAMPLE_IPV6_ONLY
-            bool "IPV6"
-            select EXAMPLE_IPV6
-
     endchoice
-
+    
     config EXAMPLE_IPV4
         bool
         select LWIP_ICMP
-
+        default n
     config EXAMPLE_IPV6
         bool
         select LWIP_IPV6
-
+        default n
+        
     config EXAMPLE_MULTICAST_IPV4_ADDR
         string "Multicast IPV4 Address (send & receive)"
         default "232.10.12.10"
@@ -71,7 +73,7 @@ menu "Example Configuration"
 
         config EXAMPLE_MULTICAST_LISTEN_ALL_IF
             bool "All interfaces (IPV4 only)"
-            depends on !EXAMPLE_IPV6_ONLY
+    
 
         config EXAMPLE_MULTICAST_LISTEN_DEFAULT_IF
             bool "Default interface"
@@ -80,7 +82,7 @@ menu "Example Configuration"
 
 endmenu
 
-
+if TARGET_E2000
 menu "E2000 board Configuration"
     config TARGET_NAME
         string "Build Target Name"
@@ -104,4 +106,4 @@ menu "E2000 board Configuration"
         endchoice # BUILD_TARGET_ARCH_TYPE
 
 endmenu
-
+endif

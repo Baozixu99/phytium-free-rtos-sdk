@@ -93,6 +93,10 @@
 #ifdef CONFIG_FREERTOS_USE_TRACE_FACILITY
 #define configUSE_TRACE_FACILITY                        1       /* Used by uxTaskGetSystemState(), and other trace facility functions */
 #endif
+
+#define configUSE_TASK_FPU_SUPPORT (CONFIG_FREERTOS_TASK_FPU_SUPPORT)
+
+
 /* 与宏 configUSE_TRACE_FACILITY 同时为 1 时会编译下面 3 个函数
 * prvWriteNameToBuffer()
 * vTaskList(),

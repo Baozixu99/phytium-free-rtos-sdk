@@ -23,44 +23,44 @@ endif #CONFIG_TARGET_ARMV8_AARCH32
 
 
 ifdef CONFIG_USE_LWIP
+
+include $(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/lwip_freertos.mk 
+
 # src code of lwip
-SRC_DIR +=  $(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/api \
-			$(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/core \
-			$(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/core/ipv4 \
-			$(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/core/ipv6 \
-			$(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/netif \
-			$(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/port
+# SRC_DIR +=  $(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/api \
+# 			$(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/core \
+# 			$(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/core/ipv4 \
+# 			$(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/core/ipv6 \
+# 			$(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/netif \
+# 			$(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/ports \
+# 			$(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/ports/arch \
+# 			$(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/apps/if
 
-INC_DIR += 	$(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/include \
-		    $(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/include/compat \
-			$(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/include/lwip \
-			$(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/include/lwip/apps \
-			$(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/include/lwip/priv \
-			$(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/include/lwip/port \
-			$(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/include/netif \
-			$(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/port
+# INC_DIR += 	$(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/include \
+# 		    $(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/include/compat \
+# 			$(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/include/lwip \
+# 			$(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/include/lwip/apps \
+# 			$(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/include/lwip/priv \
+# 			$(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/include/lwip/port \
+# 			$(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/include/netif \
+# 			$(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/ports \
+# 			$(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/ports/arch
 
-# src code of ports
-ifdef CONFIG_LWIP_FGMAC
-INC_DIR +=  $(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/ports/fgmac \
-			$(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/ports/fgmac/arch 
+# EXCL_SRC +=  $(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/netif/slipif.c \
+# 			$(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/ports/arch/sys_arch_raw.c
 
-SRC_DIR +=  $(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/ports/fgmac \
-			$(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/ports/fgmac/arch 
-endif
+# # src code of ports
+# ifdef CONFIG_LWIP_FGMAC
+# INC_DIR +=  $(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/ports/rtos/fgmac 
 
-ifdef CONFIG_LWIP_FXMAC
-INC_DIR +=  $(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/ports/fxmac \
-			$(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/ports/fxmac/arch \
-			$(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/apps/ping \
-			$(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/ports
+# SRC_DIR +=  $(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/ports/rtos/fgmac 
+# endif
 
-SRC_DIR +=  $(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/ports/fxmac \
-			$(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/ports/fxmac/arch \
-			$(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/apps/ping \
-			$(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/ports
+# ifdef CONFIG_LWIP_FXMAC
+# INC_DIR +=  $(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/ports/rtos/fxmac 
+# SRC_DIR +=  $(THIRD_PARTY_CUR_DIR)/lwip-2.1.2/ports/rtos/fxmac 
 
-endif
+# endif
 
 endif #CONFIG_USE_LWIP
 
@@ -114,38 +114,6 @@ ifdef CONFIG_USE_BACKTRACE
 	INC_DIR += $(THIRD_PARTY_CUR_DIR)/backtrace
 	SRC_DIR += $(THIRD_PARTY_CUR_DIR)/backtrace
 endif #CONFIG_USE_BACKTRACE
-
-
-ifdef CONFIG_USE_FATFS
-
-	INC_DIR += $(THIRD_PARTY_CUR_DIR)/fatfs-0.1.3
-	SRC_DIR += $(THIRD_PARTY_CUR_DIR)/fatfs-0.1.3
-
-	ifdef CONFIG_SELECT_FATFS_RAM_DISK
-		INC_DIR += $(THIRD_PARTY_CUR_DIR)/fatfs-0.1.3/port/ramdisk
-		SRC_DIR += $(THIRD_PARTY_CUR_DIR)/fatfs-0.1.3/port/ramdisk
-	endif
-
-	ifdef CONFIG_SELECT_FATFS_FSDMMC
-		INC_DIR += $(THIRD_PARTY_CUR_DIR)/fatfs-0.1.3/port/fsdmmc
-		SRC_DIR += $(THIRD_PARTY_CUR_DIR)/fatfs-0.1.3/port/fsdmmc
-	endif
-
-	ifdef CONFIG_SELECT_FATFS_FSATA_PCIE
-		INC_DIR += $(THIRD_PARTY_CUR_DIR)/fatfs-0.1.3/port/fsata_pcie
-		SRC_DIR += $(THIRD_PARTY_CUR_DIR)/fatfs-0.1.3/port/fsata_pcie
-	endif
-	
-	ifdef CONFIG_SELECT_FATFS_FSATA_CONTROLLER
-		INC_DIR += $(THIRD_PARTY_CUR_DIR)/fatfs-0.1.3/port/fsata_controller
-		SRC_DIR += $(THIRD_PARTY_CUR_DIR)/fatfs-0.1.3/port/fsata_controller
-	endif
-
-	ifdef CONFIG_SELECT_FATFS_USB
-		INC_DIR += $(THIRD_PARTY_CUR_DIR)/fatfs-0.1.3/port/fusb_pcie
-		SRC_DIR += $(THIRD_PARTY_CUR_DIR)/fatfs-0.1.3/port/fusb_pcie
-	endif
-endif #CONFIG_USE_FATFS
 
 ifdef CONFIG_USE_FATFS_0_1_4
 

@@ -87,7 +87,7 @@ RM_DIRS = $(foreach dir,$(1),rm -rf $(dir)$(EOL))
 DEPEND_FLAGS = -MD -MF $@.d
 
 CPPFLAGS = $(DEFINES) $(INCLUDES) $(DEPEND_FLAGS) $(CPPFLAGS_EXTRA)
-CFLAGS =  $(DEBUG_FLAGS) -DGUEST  -ffreestanding  -Wextra -g -O$(OPT_LEVEL) 
+CFLAGS =  $(DEBUG_FLAGS) -DGUEST  -ffreestanding  -Wextra -Wno-implicit-fallthrough -g -O$(OPT_LEVEL) 
 ASFLAGS = $(CFLAGS)
 
 #mkdir 创建输出文件目录

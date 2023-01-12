@@ -120,8 +120,6 @@ not need to be guarded with a critical section. */
 interrupts that have a priority below configMAX_API_CALL_INTERRUPT_PRIORITY. */
 #define portENTER_CRITICAL() vPortEnterCritical();
 #define portEXIT_CRITICAL() vPortExitCritical();
-#define portSET_INTERRUPT_MASK_FROM_ISR() uxPortSetInterruptMask()
-#define portCLEAR_INTERRUPT_MASK_FROM_ISR(x) vPortClearInterruptMask(x)
 
 /*-----------------------------------------------------------*/
 
@@ -199,13 +197,5 @@ number of bits implemented by the interrupt controller. */
 #define portICCEOIR_END_OF_INTERRUPT_OFFSET (0x10)
 #define portICCBPR_BINARY_POINT_OFFSET (0x08)
 #define portICCRPR_RUNNING_PRIORITY_OFFSET (0x14)
-
-// #define portINTERRUPT_CONTROLLER_CPU_INTERFACE_ADDRESS (GIC_GICC_BASE)
-// #define portICCPMR_PRIORITY_MASK_REGISTER (*((volatile uint32_t *)(portINTERRUPT_CONTROLLER_CPU_INTERFACE_ADDRESS + portICCPMR_PRIORITY_MASK_OFFSET)))
-// #define portICCIAR_INTERRUPT_ACKNOWLEDGE_REGISTER_ADDRESS (portINTERRUPT_CONTROLLER_CPU_INTERFACE_ADDRESS + portICCIAR_INTERRUPT_ACKNOWLEDGE_OFFSET)
-// #define portICCEOIR_END_OF_INTERRUPT_REGISTER_ADDRESS (portINTERRUPT_CONTROLLER_CPU_INTERFACE_ADDRESS + portICCEOIR_END_OF_INTERRUPT_OFFSET)
-// #define portICCPMR_PRIORITY_MASK_REGISTER_ADDRESS (portINTERRUPT_CONTROLLER_CPU_INTERFACE_ADDRESS + portICCPMR_PRIORITY_MASK_OFFSET)
-// #define portICCBPR_BINARY_POINT_REGISTER (*((const volatile uint32_t *)(portINTERRUPT_CONTROLLER_CPU_INTERFACE_ADDRESS + portICCBPR_BINARY_POINT_OFFSET)))
-// #define portICCRPR_RUNNING_PRIORITY_REGISTER (*((const volatile uint32_t *)(portINTERRUPT_CONTROLLER_CPU_INTERFACE_ADDRESS + portICCRPR_RUNNING_PRIORITY_OFFSET)))
 
 #endif /* PORTMACRO_H */

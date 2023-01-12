@@ -3,7 +3,7 @@
 
 /* Freertos Configuration */
 
-#define CONFIG_TARGET_NAME "e2000q_freertos_a32"
+#define CONFIG_TARGET_NAME "e2000q_freertos_a64"
 /* end of Freertos Configuration */
 
 /* Standalone Setting */
@@ -12,12 +12,12 @@
 
 /* Arch Configuration */
 
-#define CONFIG_TARGET_ARMV8_AARCH32
-/* CONFIG_TARGET_ARMV8_AARCH64 is not set */
+/* CONFIG_TARGET_ARMV8_AARCH32 is not set */
+#define CONFIG_TARGET_ARMV8_AARCH64
 #define CONFIG_USE_CACHE
 #define CONFIG_USE_MMU
-#define CONFIG_USE_SYS_TICK
-#define CONFIG_USE_AARCH64_L1_TO_AARCH32
+/* CONFIG_USE_SYS_TICK is not set */
+/* CONFIG_MMU_DEBUG_PRINTS is not set */
 /* end of Arch Configuration */
 
 /* Board Configuration */
@@ -64,6 +64,7 @@
 /* CONFIG_USE_ADC is not set */
 /* CONFIG_USE_PWM is not set */
 /* CONFIG_USE_IPC is not set */
+/* CONFIG_USE_MEDIA is not set */
 /* end of Components Configuration */
 #define CONFIG_USE_NEW_LIBC
 /* end of Standalone Setting */
@@ -72,9 +73,9 @@
 
 /* CONFIG_LOG_VERBOS is not set */
 /* CONFIG_LOG_DEBUG is not set */
-#define CONFIG_LOG_INFO
+/* CONFIG_LOG_INFO is not set */
 /* CONFIG_LOG_WARN is not set */
-/* CONFIG_LOG_ERROR is not set */
+#define CONFIG_LOG_ERROR
 /* CONFIG_LOG_NONE is not set */
 #define CONFIG_USE_DEFAULT_INTERRUPT_CONFIG
 #define CONFIG_INTERRUPT_ROLE_MASTER
@@ -84,8 +85,8 @@
 
 /* Linker Options */
 
-#define CONFIG_AARCH32_RAM_LD
-/* CONFIG_AARCH64_RAM_LD is not set */
+/* CONFIG_AARCH32_RAM_LD is not set */
+#define CONFIG_AARCH64_RAM_LD
 /* CONFIG_USER_DEFINED_LD is not set */
 #define CONFIG_LINK_SCRIPT_ROM
 #define CONFIG_ROM_START_UP_ADDR 0x80100000
@@ -94,12 +95,8 @@
 #define CONFIG_RAM_START_UP_ADDR 0x81000000
 #define CONFIG_RAM_SIZE_MB 64
 #define CONFIG_HEAP_SIZE 1
-#define CONFIG_SVC_STACK_SIZE 0x1000
-#define CONFIG_SYS_STACK_SIZE 0x1000
-#define CONFIG_IRQ_STACK_SIZE 0x1000
-#define CONFIG_ABORT_STACK_SIZE 0x1000
-#define CONFIG_FIQ_STACK_SIZE 0x1000
-#define CONFIG_UNDEF_STACK_SIZE 0x1000
+#define CONFIG_STACK_SIZE 0x100000
+#define CONFIG_FPU_STACK_SIZE 0x1000
 /* end of Linker Options */
 
 /* Compiler Options */
@@ -139,6 +136,7 @@
 /* Freertos Eth Drivers */
 
 /* CONFIG_FREERTOS_USE_XMAC is not set */
+/* CONFIG_FREERTOS_USE_GMAC is not set */
 /* end of Freertos Eth Drivers */
 
 /* Freertos Gpio Drivers */
@@ -187,7 +185,6 @@
 
 /* CONFIG_USE_LWIP is not set */
 #define CONFIG_USE_BACKTRACE
-/* CONFIG_USE_FATFS is not set */
 /* CONFIG_USE_FATFS_0_1_4 is not set */
 /* CONFIG_USE_SFUD is not set */
 /* CONFIG_USE_SPIFFS is not set */
@@ -231,6 +228,7 @@
 #define CONFIG_FREERTOS_USE_STATS_FORMATTING_FUNCTIONS
 /* CONFIG_FREERTOS_USE_TICKLESS_IDLE is not set */
 #define CONFIG_FREERTOS_TOTAL_HEAP_SIZE 10240
+#define CONFIG_FREERTOS_TASK_FPU_SUPPORT 1
 /* end of Kernel Configuration */
 
 #endif

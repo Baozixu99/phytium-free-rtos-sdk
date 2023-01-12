@@ -24,8 +24,8 @@ SPIFFS技术手册：
 #include <stddef.h>
 #include <unistd.h>
 
-#include "ft_types.h"
-#include "ft_debug.h"
+#include "ftypes.h"
+#include "fdebug.h"
 
 #ifdef _SPIFFS_TEST
 #include "testrunner.h"

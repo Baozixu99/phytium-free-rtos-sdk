@@ -67,6 +67,7 @@
 #define CONFIG_USE_FPWM
 /* end of FPWM Configuration */
 /* CONFIG_USE_IPC is not set */
+/* CONFIG_USE_MEDIA is not set */
 /* end of Components Configuration */
 #define CONFIG_USE_NEW_LIBC
 /* end of Standalone Setting */
@@ -138,6 +139,7 @@
 /* Freertos Eth Drivers */
 
 /* CONFIG_FREERTOS_USE_XMAC is not set */
+/* CONFIG_FREERTOS_USE_GMAC is not set */
 /* end of Freertos Eth Drivers */
 
 /* Freertos Gpio Drivers */
@@ -186,7 +188,6 @@
 
 /* CONFIG_USE_LWIP is not set */
 #define CONFIG_USE_BACKTRACE
-/* CONFIG_USE_FATFS is not set */
 /* CONFIG_USE_FATFS_0_1_4 is not set */
 /* CONFIG_USE_SFUD is not set */
 /* CONFIG_USE_SPIFFS is not set */
@@ -224,6 +225,7 @@
 #define CONFIG_FREERTOS_USE_STATS_FORMATTING_FUNCTIONS
 /* CONFIG_FREERTOS_USE_TICKLESS_IDLE is not set */
 #define CONFIG_FREERTOS_TOTAL_HEAP_SIZE 10240
+#define CONFIG_FREERTOS_TASK_FPU_SUPPORT 1
 /* end of Kernel Configuration */
 
 #endif

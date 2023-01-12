@@ -29,7 +29,7 @@
 #include <arpa/inet.h>
 #include "../sdkconfig.h"
 
-#if defined(CONFIG_EXAMPLE_IPV6_ONLY) 
+#if defined(CONFIG_EXAMPLE_IPV4_V6)
 
 int main()
 {

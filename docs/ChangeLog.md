@@ -1,3 +1,44 @@
+# Phytium FreeRTOS SDK 2023-1-5 ChangeLog
+
+Change Log sinc 2023-1-3
+
+## example
+- network part adjust. add new example lwip_startup
+- delete xmac_lwip_test.
+- delete gmac_lwip_test.
+
+## third-party
+- lwip-2.1.2 ports part adjust.
+- delete lwip-2.1.2/api.
+- delete lwip-2.1.2/apps.
+- delete lwip-2.1.2/core.
+
+## drivers
+- add fgmac_os.
+- add fxmac_os.
+
+# Phytium FreeRTOS SDK 2023-1-3 ChangeLog
+
+Change Log sinc 2022-12-28
+
+## third-party
+
+- Fix freertos interrupt priority get and mask function in port.c
+
+# Phytium FreeRTOS SDK 2022-12-28 ChangeLog
+
+- add sata fatfs_0.1.4 port
+- delete fatfs_0.1.3 content
+- delete storage/sata_fatfs content
+
+# Phytium FreeRTOS SDK 2022-12-7 ChangeLog
+
+Change Log sinc 2022-12-6
+
+## third-party
+
+- Add FPU support by configUSE_TASK_FPU_SUPPORT in kernel configuration
+
 # Phytium FreeRTOS SDK 2022-12-6 ChangeLog
 
 Change Log sinc 2022-12-6

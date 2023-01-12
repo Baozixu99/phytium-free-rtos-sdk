@@ -186,3 +186,13 @@
         default 10240
         help
             Set the total amount of RAM available in the FreeRTOS heap, unit kbytes, less than RAM_SIZE_MB.
+
+    
+    config FREERTOS_TASK_FPU_SUPPORT
+        int "Use floating point support"
+        default 1
+        range 1 2
+        help
+            If set to 1, tasks are created without an FPU context and must call vPortTaskUsesFPU() to give
+            themselves an FPU context before using any FPU instructions.
+            If set to 2, all tasks will have an FPU context by default.

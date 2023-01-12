@@ -66,9 +66,8 @@ FT-2000/4 是一款面向桌面应用的高性能通用 4 核处理器。每 2 �
 - 集成 34 Lane PCIE3.0 接口：2 个 X16（每个可拆分成 2 个 X8），2 个 X1
 - 集成 2 个 GMAC，RGMII 接口，支持 10/100/1000 自适应
 - 集成 1 个 SD 卡控制器，兼容 SD 2.0 规范
-- 集成 1 个 HDAudio，支持音频输出，可同时支持最多 4 个 Codec
-- 集成 SM2、SM3、SM4 模块
-- 集成 4 个 UART，1 个 LPC，32 个 GPIO，4 个 I2C，1 个 QSPI，2 个通 用 SPI，2 个 WDT，16 个外部中断（和 GPIO 共用 IO）
+- 集成 加密计算单元
+- 集成 4 个 UART，32 个 GPIO，4 个 I2C，1 个 QSPI，2 个通 用 SPI，2 个 WDT，16 个外部中断（和 GPIO 共用 IO）
 - 集成温度传感器
 
 ### 3.2 D2000
@@ -84,38 +83,55 @@ D2000 是一款面向桌面应用的高性能通用 8 核处理器。每 2 个�
 - 集成 1 个 SD 卡控制器，兼容 SD 2.0 规范
 - 集成 1 个 HDAudio，支持音频输出，可同时支持最多 4 个 Codec
 - 集成 SM2、SM3、SM4、SM9 模块
-- 集成 4 个 UART，1 个 LPC，32 个 GPIO，4 个 I2C，1 个 QSPI，2 个通用 SPI，2 个 WDT，16 个外部中断（和 GPIO 共用 IO）
+- 集成 4 个 UART，32 个 GPIO，4 个 I2C，1 个 QSPI，2 个通用 SPI，2 个 WDT，16 个外部中断（和 GPIO 共用 IO）
 - 集成 2 个温度传感器
 
-### 3.3 E2000D
+### 3.3 E2000Q
 
-- E2000D 1个cluster有2个cpu，共两核。主要技术特征如下：
+- E2000Q 集成2个FTC664核和2个FTC310核。主要技术特征如下：
 
 - 兼容ARM v8 64 位指令系统，兼容32 位指令
+- 集成 1 路 16 通道 General DMA 和 1 路 8 通道 Device DMA
 - 支持单精度、双精度浮点运算指令
-- L1有32KB，L2有256KB
-- 集成1个DDR4 通道，可对DDR 存储数据进行实时加密
-- 集成4 Lane PCIE3.0 接口（4X1）
-- 集成网络接口4x1000M SGMII，1路支持RGMII/RMII，支持1路TSN
-- 集成2个USB2.0(OTG)接口
-- 集成1个HDAudio，支持音频输出;2路DP显示接口
+- 两个 FTC664 核各包含 1MB 私有 L2 Cache,由两个 FTC310 核组成的Cluster 内含 256KB 共享的 L2 Cache
+- 集成1个DDR4 通道
+- 集成6Lane PCIE3.0 接口（X4+2*X1 、X2+4*X2、6*X1）
+- 集成4个1000M以太网控制器，支持2路SGMII接口和2路SGMII/RGMII接口
+- 集成3路USB2.0(OTG)和2路USB3.0(兼容 2.0)
 - 集成2路SATA3.0模块
-- 集成常用低速接口：WDT，DMAC，QSPI，PWM，Nand，SD/SDIO/eMMC ，SPI_M，UART，I2C，MIO，CAN， LPC_M_S，GPIO，LBC，Timer
+- 2路 DisplayPort1.4 接口
+- 集成常用低速接口：WDT、QSPI、PWM、Nand、SD/SDIO/eMMC 、SPI_M、UART、I2C、I2S、MIO、CAN-FD、GPIO、LocalBus、Timer
 
-### 3.4 E2000S
+### 3.4 E2000D
 
-- E2000S 1个cluster有1个cpu，单核结构。主要技术特征如下：
+- E2000D 集成 2 个 FTC310 核。主要技术特征如下：
 
 - 兼容ARM v8 64 位指令系统，兼容32 位指令
+- 集成 1 路 16 通道 General DMA 和 1 路 8 通道 Device DMA
 - 支持单精度、双精度浮点运算指令
-- L1有32KB，L2有256KB
-- 集成1个DDR4 通道，可对DDR 存储数据进行实时加密
+- L2 Cache 有256KB
+- 集成1个DDR4 通道
+- 集成4 Lane PCIE3.0 接口（4X1）
+- 集成4个1000M以太网控制器，支持 2 路 SGMII 接口和 2 路 SGMII/RGMII 接口
+- 集成3路USB2.0(OTG)和2路USB3.0(兼容 2.0)
+- 集成2路SATA3.0模块
+- 2路 DisplayPort1.4 接口
+- 集成常用低速接口：WDT，QSPI，PWM，Nand，SD/SDIO/eMMC ，SPI_M，UART，I2C，MIO，CAN-FD，GPIO，LocalBus，Timer
+
+### 3.5 E2000S
+
+- E2000S 集成 1 个 FTC310 核，单核结构。主要技术特征如下：
+
+- 兼容ARM v8 64 位指令系统，兼容32 位指令
+- 集成 1 路 16 通道 General DMA 和 1 路 8 通道 Device DMA
+- 支持单精度、双精度浮点运算指令
+- L2 Cache 有256KB
+- 集成1个DDR4 通道
 - 集成2 Lane PCIE3.0 接口（2X1）
-- 集成网络接口2x1000M SGMII/RGMII/RMII，支持2路NCSI
-- 集成2个USB2.0(OTG)接口
-- 集成1个HDAudio，支持音频输出;2路DP显示接口
-- 集成JPEG Encoder模块
-- 集成常用低速接口：WDT，DMAC，PWM，QSPI，SD/SDIO/eMMC，SPI_M，UART，I2C，MIO，I3C，PMBUS， LPC_M_S，GPIO，oneWire，Timer
+- 集成3个1000M以太网控制器，支持1路SGMII接口和2路RGMII/RMII接口
+- 集成1路USB2.0(Device)和2路USB2.0(OTG)
+- 2路 DisplayPort1.4 接口
+- 集成常用低速接口：WDT、DMAC、PWM、QSPI、SD/SDIO/eMMC、SPI Master、UART、I2C、MIO、I3C、PMBUS、GPIO、SGPIO、One-Wire、Timer、One-Wire
 
 ---
 

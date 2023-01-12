@@ -34,6 +34,8 @@
 #include "fexception.h"
 #include "fprintf.h"
 
+static volatile u32 is_in_irq = 0 ;
+
 void vMainAssertCalled(const char *pcFileName, uint32_t ulLineNumber)
 {
     printf("Assert Error is %s : %d \r\n", pcFileName, ulLineNumber);
@@ -97,10 +99,10 @@ volatile unsigned int gCpuRuntime;
 void vApplicationInterruptHandler(uint32_t ulICCIAR)
 {
     int ulInterruptID;
-    
+    is_in_irq ++;
     /* Interrupts cannot be re-enabled until the source of the interrupt is
-	  cleared. The ID of the interrupt is obtained by bitwise ANDing the ICCIAR
-	  value with 0x3FF. */
+    cleared. The ID of the interrupt is obtained by bitwise ANDing the ICCIAR
+    value with 0x3FF. */
     ulInterruptID = ulICCIAR & 0x3FFUL;
 
     /* call handler function */
@@ -114,6 +116,20 @@ void vApplicationInterruptHandler(uint32_t ulICCIAR)
     {
         FExceptionInterruptHandler((void *)(uintptr)ulInterruptID);
     }
+    is_in_irq --;
+}
+
+
+/**
+ * @name: vApplicationInIrq 
+ * @msg:  Used to indicate whether you are currently in an interrupt
+ * @return {int} 1:is in an irq ,0 is not in
+ * @note: 
+ */
+
+int vApplicationInIrq(void)
+{
+  return is_in_irq;
 }
 
 static InterruptDrvType finterrupt;

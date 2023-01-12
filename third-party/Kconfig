@@ -16,17 +16,6 @@ config USE_BACKTRACE
     prompt "Display a backtrace."
     default y
 
-config USE_FATFS
-    bool
-    prompt "Use FATFS"
-    default n
-    help
-        Include FATFS
-
-    if USE_FATFS
-        source "$(FREERTOS_SDK_ROOT)/third-party/fatfs-0.1.3/Kconfig"
-    endif
-
 config USE_FATFS_0_1_4
     bool
     prompt "Use FATFS(0.1.4)"

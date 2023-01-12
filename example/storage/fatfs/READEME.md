@@ -3,7 +3,7 @@
 ## 1. 例程介绍
 
 - 文件系统是一类负责管理和存储文件信息的软件机构，在磁盘上组织文件的方法。作为常用的文件系统，FATFS免费开源，专门为小型嵌入式系统设计。
-- 本例程中通过在文件系统的根目录下挂载多个目录，支持在 RAM Disk, MicroSD 卡，eMMC 卡和 U盘上同时使用和测试 FATFS 文件系统
+- 本例程中通过在文件系统的根目录下挂载多个目录，支持在 RAM Disk, MicroSD 卡，eMMC 卡，SATA硬盘 和 U盘上同时使用和测试 FATFS 文件系统
 
 
 ## 2. 如何使用例程
@@ -95,6 +95,8 @@ bootelf -p 0x90100000
 - 打开配置 CONFIG_FATFS_SDIO_TF, 使能 MicroSD(TF) 卡
 - 打开配置 CONFIG_FATFS_SDIO_EMMC, 使能 eMMC
 - 打开配置 CONFIG_FATFS_USB, 使能 U 盘
+- 打开配置 CONFIG_FATFS_FSATA, 使能 SATA 硬盘
+- 打开配置 CONFIG_FATFS_FSATA_PCIE, 使能 SATA 硬盘与 PCIE 接口
 
 - 打开配置 CONFIG_FATFS_BASIC_TEST，测试 FATFS 的基本功能
 - 打开配置 CONFIG_FATFS_SPEED_TEST, 测试 FATFS 的读写速度，会破环文件系统
@@ -110,5 +112,7 @@ bootelf -p 0x90100000
 ![](./figures/test_1.png)
 ![](./figures/test_2.png)
 ![](./figures/test_3.png)
+![](./figures/test_4.png)
+![](./figures/test_5.png)
 
 ## 3. 如何解决问题

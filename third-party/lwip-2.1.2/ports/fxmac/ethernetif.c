@@ -34,9 +34,8 @@
 #include "lwip/stats.h"
 #include "lwip/igmp.h"
 #include "netif/etharp.h"
-#include "ethernetif.h"
 #include "lwip_port.h"
-#include "ft_os_xmac.h"
+#include "fxmac_os.h"
 #include "fdebug.h"
 
 
@@ -51,9 +50,49 @@
 #include "lwip/ethip6.h"
 #endif
 
-/* Define those to better describe your network interface. */
-#define IFNAME0 'f'
-#define IFNAME1 't'
+static void ethernetif_input(struct netif *netif);
+
+enum lwip_port_link_status ethernetif_link_detect(struct netif *netif)
+{
+	struct LwipPort *xmac_netif_p = (struct LwipPort *)(netif->state);
+	FXmacOs *instance_p;
+	if(xmac_netif_p == NULL)
+	{
+		return ETH_LINK_UNDEFINED;
+	}
+	instance_p = (FXmacOs *)xmac_netif_p->state;
+	if (instance_p->instance.is_ready != FT_COMPONENT_IS_READY)
+	{
+		return ETH_LINK_UNDEFINED;
+	}
+
+	return  FXmacPhyReconnect(xmac_netif_p);
+}
+
+static void ethernetif_start(struct netif *netif)
+{
+    struct LwipPort *xmac_netif_p = (struct LwipPort *)(netif->state);
+    if(xmac_netif_p == NULL)
+    {
+        FXMAC_LWIP_NET_PRINT_E("%s,xmac_netif_p is NULL\n", __FUNCTION__);
+        return;
+    }
+    FXmacOs *instance_p = (FXmacOs *)(xmac_netif_p->state);
+    FXmacOsStart(instance_p);
+}
+
+static void ethernetif_deinit(struct netif *netif)
+{
+    struct LwipPort *xmac_netif_p = (struct LwipPort *)(netif->state);
+    if(xmac_netif_p == NULL)
+    {
+        FXMAC_LWIP_NET_PRINT_E("%s,xmac_netif_p is NULL\n", __FUNCTION__);
+        return;
+    }
+
+    FXmacOs *instance_p = (FXmacOs *)(xmac_netif_p->state);
+    FXmacOsStop(instance_p);
+}
 
 /*
  * low_level_output():
@@ -126,7 +165,7 @@ static struct pbuf *low_level_input(struct netif *netif)
  *
  */
 
-void ethernetif_input(struct netif *netif)
+static void ethernetif_input(struct netif *netif)
 {
     struct eth_hdr *ethhdr;
     struct pbuf *p;
@@ -199,7 +238,7 @@ static err_t low_level_init(struct netif *netif)
     s32_t status = FT_SUCCESS;
     FASSERT(netif != NULL);
     FASSERT(netif->state != NULL);
-    user_config *config_p;
+    UserConfig *config_p;
 
     xmac_netif_p = mem_malloc(sizeof *xmac_netif_p);
     if (xmac_netif_p == NULL)
@@ -214,7 +253,7 @@ static err_t low_level_init(struct netif *netif)
     /* obtain config of this emac */
     FXMAC_LWIP_NET_PRINT_I("netif->state is %p \r\n ",netif->state);
 
-    config_p = (user_config *)netif->state;
+    config_p = (UserConfig *)netif->state;
     os_config.instance_id = config_p->mac_instance;
 
     switch (config_p->mii_interface)
@@ -276,7 +315,6 @@ static err_t low_level_init(struct netif *netif)
     netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP |
                    NETIF_FLAG_LINK_UP;
 
-
     #if LWIP_IPV6 && LWIP_IPV6_MLD
         netif->flags |= NETIF_FLAG_MLD6;
     #endif
@@ -285,9 +323,13 @@ static err_t low_level_init(struct netif *netif)
         netif->flags |= NETIF_FLAG_IGMP;
     #endif
 
+        xmac_netif_p->ops.eth_detect = ethernetif_link_detect ;
+        xmac_netif_p->ops.eth_input = ethernetif_input;
+        xmac_netif_p->ops.eth_deinit = ethernetif_deinit;
+        xmac_netif_p->ops.eth_start = ethernetif_start;
 
-    FXMAC_LWIP_NET_PRINT_I("ready to leave netif \r\n");
-    return ERR_OK;
+        FXMAC_LWIP_NET_PRINT_I("ready to leave netif \r\n");
+        return ERR_OK;
 }
 
 
@@ -322,9 +364,6 @@ err_t ethernetif_init(struct netif *netif)
 {
     LWIP_DEBUGF(NETIF_DEBUG, ("*******start init eth\n"));
 
-    netif->name[0] = IFNAME0;
-    netif->name[1] = IFNAME1;
-
 #if LWIP_NETIF_HOSTNAME
 	/* Initialize interface hostname */
   	netif->hostname = "lwip";
@@ -340,7 +379,7 @@ err_t ethernetif_init(struct netif *netif)
 #endif /* LWIP_ARP */
 #endif /* LWIP_ARP || LWIP_ETHERNET */
 #endif /* LWIP_IPV4 */
-
+    
     netif->linkoutput = low_level_output;
 #if LWIP_IPV6
     netif->output_ip6 = ethip6_output;
@@ -349,4 +388,5 @@ err_t ethernetif_init(struct netif *netif)
     low_level_init(netif);
     return ERR_OK;
 }
+
 

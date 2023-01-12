@@ -50,7 +50,9 @@ static const char *mount_points[FFREERTOS_DISK_TYPE_NUM] =
     [FFREERTOS_FATFS_RAM_DISK] = FF_RAM_DISK_MOUNT_POINT,
     [FFREERTOS_FATFS_TF_CARD] = FF_FSDIO_TF_DISK_MOUNT_POINT,
     [FFREERTOS_FATFS_EMMC_CARD] = FF_FSDIO_EMMC_DISK_MOUNT_POINT,
-    [FFREERTOS_FATFS_USB_DISK] = FF_USB_DISK_MOUNT_POINT
+    [FFREERTOS_FATFS_USB_DISK] = FF_USB_DISK_MOUNT_POINT,
+    [FFREERTOS_FATFS_SATA_DISK] = FF_SATA_DISK_MOUNT_POINT,
+    [FFREERTOS_FATFS_SATA_PCIE_DISK] = FF_SATA_PCIE_DISK_MOUNT_POINT
 };
 static const MKFS_PARM fs_option = 
 {
@@ -109,7 +111,7 @@ static void FatfsInitTask(void * args)
 
     if (FR_OK != fr)
     {
-        FF_ERROR("ram disk init failed, err = %d", fr);
+        FF_ERROR("RAM disk init failed, err = %d", fr);
         goto task_exit;
     }
 #endif
@@ -121,7 +123,7 @@ static void FatfsInitTask(void * args)
 
     if (FR_OK != fr)
     {
-        FF_ERROR("sdio card init failed, err = %d", fr);
+        FF_ERROR("TF card init failed, err = %d", fr);
         goto task_exit;
     }
 #endif
@@ -133,7 +135,7 @@ static void FatfsInitTask(void * args)
 
     if (FR_OK != fr)
     {
-        FF_ERROR("sdio card init failed, err = %d", fr);
+        FF_ERROR("SDIO card init failed, err = %d", fr);
         goto task_exit;
     }
 #endif
@@ -145,7 +147,30 @@ static void FatfsInitTask(void * args)
 
     if (FR_OK != fr)
     {
-        FF_ERROR("sdio card init failed, err = %d", fr);
+        FF_ERROR("USB init failed, err = %d", fr);
+        goto task_exit;
+    }
+#endif
+
+#ifdef CONFIG_FATFS_FSATA
+    fr = ff_setup(&file_sys[FFREERTOS_FATFS_SATA_DISK],
+                mount_points[FFREERTOS_FATFS_SATA_DISK],
+                &fs_option, pdFALSE);
+
+    if (FR_OK != fr)
+    {
+        FF_ERROR("SATA init failed, err = %d", fr);
+        goto task_exit;
+    }
+#endif
+#ifdef CONFIG_FATFS_FSATA_PCIE
+    fr = ff_setup(&file_sys[FFREERTOS_FATFS_SATA_PCIE_DISK],
+                mount_points[FFREERTOS_FATFS_SATA_PCIE_DISK],
+                &fs_option, pdFALSE);
+
+    if (FR_OK != fr)
+    {
+        FF_ERROR("SATA PCIE init failed, err = %d", fr);
         goto task_exit;
     }
 #endif
@@ -168,7 +193,7 @@ static void FatfsTestTask(void * args)
         fr = ff_basic_test(mount_points[FFREERTOS_FATFS_RAM_DISK], "logfile.txt");
         if (FR_OK != fr)
         {
-            FF_ERROR("ram disk basic test failed, err = %d", fr);
+            FF_ERROR("RAM disk basic test failed, err = %d", fr);
             goto task_exit;
         }
     #endif
@@ -178,7 +203,7 @@ static void FatfsTestTask(void * args)
         fr = ff_basic_test(mount_points[FFREERTOS_FATFS_TF_CARD], "logfile.txt");
         if (FR_OK != fr)
         {
-            FF_ERROR("tf card basic test failed, err = %d", fr);
+            FF_ERROR("TF card basic test failed, err = %d", fr);
             goto task_exit;
         }
     #endif
@@ -188,7 +213,7 @@ static void FatfsTestTask(void * args)
         fr = ff_basic_test(mount_points[FFREERTOS_FATFS_EMMC_CARD], "logfile.txt");
         if (FR_OK != fr)
         {
-            FF_ERROR("sdio basic test failed, err = %d", fr);
+            FF_ERROR("SDIO basic test failed, err = %d", fr);
             goto task_exit;
         }
     #endif
@@ -198,10 +223,30 @@ static void FatfsTestTask(void * args)
         fr = ff_basic_test(mount_points[FFREERTOS_FATFS_USB_DISK], "logfile.txt");
         if (FR_OK != fr)
         {
-            FF_ERROR("sdio basic test failed, err = %d", fr);
+            FF_ERROR("USB basic test failed, err = %d", fr);
             goto task_exit;
         }
-    #endif  
+    #endif
+
+    #ifdef CONFIG_FATFS_FSATA
+        printf("\r\n========Basic test for SATA Disk=================\r\n");
+        fr = ff_basic_test(mount_points[FFREERTOS_FATFS_SATA_DISK], "logfile.txt");
+        if (FR_OK != fr)
+        {
+            FF_ERROR("SATA basic test failed, err = %d", fr);
+            goto task_exit;
+        }
+    #endif
+
+    #ifdef CONFIG_FATFS_FSATA_PCIE
+        printf("\r\n========Basic test for SATA PCIE Disk=================\r\n");
+        fr = ff_basic_test(mount_points[FFREERTOS_FATFS_SATA_PCIE_DISK], "logfile.txt");
+        if (FR_OK != fr)
+        {
+            FF_ERROR("SATA PCIE basic test failed, err = %d", fr);
+            goto task_exit;
+        }
+    #endif   
     }
 #endif
 
@@ -213,7 +258,7 @@ static void FatfsTestTask(void * args)
         fr = ff_speed_bench(mount_points[FFREERTOS_FATFS_RAM_DISK], 300000U);
         if (FR_OK != fr)
         {
-            FF_ERROR("ram disk speed test failed, err = %d", fr);
+            FF_ERROR("RAM disk speed test failed, err = %d", fr);
             goto task_exit;
         }
     #endif
@@ -223,7 +268,7 @@ static void FatfsTestTask(void * args)
         fr = ff_speed_bench(mount_points[FFREERTOS_FATFS_TF_CARD], 300000U);
         if (FR_OK != fr)
         {
-            FF_ERROR("sdio speed test failed, err = %d", fr);
+            FF_ERROR("TF speed test failed, err = %d", fr);
             goto task_exit;
         }
     #endif
@@ -233,7 +278,7 @@ static void FatfsTestTask(void * args)
         fr = ff_speed_bench(mount_points[FFREERTOS_FATFS_EMMC_CARD], 300000U);
         if (FR_OK != fr)
         {
-            FF_ERROR("sdio speed test failed, err = %d", fr);
+            FF_ERROR("SDIO speed test failed, err = %d", fr);
             goto task_exit;
         }
     #endif
@@ -243,7 +288,27 @@ static void FatfsTestTask(void * args)
         fr = ff_speed_bench(mount_points[FFREERTOS_FATFS_USB_DISK], 300000U);
         if (FR_OK != fr)
         {
-            FF_ERROR("sdio speed test failed, err = %d", fr);
+            FF_ERROR("USB speed test failed, err = %d", fr);
+            goto task_exit;
+        }
+    #endif
+
+    #ifdef CONFIG_FATFS_FSATA
+        printf("\r\n========Speed test for SATA Disk=================\r\n");
+        fr = ff_speed_bench(mount_points[FFREERTOS_FATFS_SATA_DISK], 30000U);
+        if (FR_OK != fr)
+        {
+            FF_ERROR("SATA speed test failed, err = %d", fr);
+            goto task_exit;
+        }
+    #endif
+
+    #ifdef CONFIG_FATFS_FSATA_PCIE
+        printf("\r\n========Speed test for SATA PCIE Disk=================\r\n");
+        fr = ff_speed_bench(mount_points[FFREERTOS_FATFS_SATA_PCIE_DISK], 30000U);
+        if (FR_OK != fr)
+        {
+            FF_ERROR("SATA PCIE speed test failed, err = %d", fr);
             goto task_exit;
         }
     #endif
@@ -260,18 +325,32 @@ static void FatfsTestTask(void * args)
     #endif
 
     #ifdef CONFIG_FATFS_SDMMC_FSDIO_TF
-        printf("\r\n========Cycle test for RAM Disk=================\r\n");
+        printf("\r\n========Cycle test for TF Disk=================\r\n");
         if (ff_cycle_test(mount_points[FFREERTOS_FATFS_TF_CARD], 3))
             goto task_exit;
     #endif
 
     #ifdef CONFIG_FATFS_SDMMC_FSDIO_EMMC
+        printf("\r\n========Cycle test for SDIO Disk=================\r\n");
         if (ff_cycle_test(mount_points[FFREERTOS_FATFS_EMMC_CARD], 3))
             goto task_exit;
     #endif
 
     #ifdef CONFIG_FATFS_USB
+        printf("\r\n========Cycle test for USB Disk=================\r\n");
         if (ff_cycle_test(mount_points[FFREERTOS_FATFS_USB_DISK], 3))
+            goto task_exit;
+    #endif
+
+    #ifdef CONFIG_FATFS_FSATA
+        printf("\r\n========Cycle test for SATA Disk=================\r\n");
+        if (ff_cycle_test(mount_points[FFREERTOS_FATFS_SATA_DISK], 3))
+            goto task_exit;
+    #endif
+
+    #ifdef CONFIG_FATFS_FSATA_PCIE
+        printf("\r\n========Cycle test for SATA PCIE Disk=================\r\n");
+        if (ff_cycle_test(mount_points[FFREERTOS_FATFS_SATA_PCIE_DISK], 3))
             goto task_exit;
     #endif
     }
@@ -279,7 +358,7 @@ static void FatfsTestTask(void * args)
 
 task_exit:
     FatfsSendEvent(FATFS_EVT_CYC_TEST_DONE);
-    printf("exit from test task \r\n");
+    printf("Exit from test task.\r\n");
     vTaskDelete(NULL); /* delete task itself */
 }
 
@@ -305,7 +384,7 @@ BaseType_t FFreeRTOSFatfsTest(void)
         return pdPASS;
     }
 
-    FASSERT_MSG(NULL == sync, "event group exists !!!");
+    FASSERT_MSG(NULL == sync, "Event group exists !!!");
     FASSERT_MSG((sync = xEventGroupCreate()) != NULL, "create event group failed !!!");
 
     taskENTER_CRITICAL(); /* no schedule when create task */
@@ -316,7 +395,7 @@ BaseType_t FFreeRTOSFatfsTest(void)
                             NULL,
                             (UBaseType_t )configMAX_PRIORITIES - 1,
                             NULL);
-    FASSERT_MSG(pdPASS == ret, "create task failed");
+    FASSERT_MSG(pdPASS == ret, "Create task failed.");
 
     ret = xTaskCreate((TaskFunction_t )FatfsTestTask,
                             (const char* )"FatfsTestTask",
@@ -324,7 +403,7 @@ BaseType_t FFreeRTOSFatfsTest(void)
                             NULL,
                             (UBaseType_t )configMAX_PRIORITIES - 1,
                             NULL);
-    FASSERT_MSG(pdPASS == ret, "create task failed");
+    FASSERT_MSG(pdPASS == ret, "Create task failed.");
 
     exit_timer = xTimerCreate("FatfsExitTimer",		        /* Text name for the software timer - not used by FreeRTOS. */
                             total_run_time,		            /* The software timer's period in ticks. */
@@ -332,7 +411,7 @@ BaseType_t FFreeRTOSFatfsTest(void)
                             NULL,				            /* use timer id to pass task data for reference. */
                             FatfsExitCallback);             /* The callback function to be used by the software timer being created. */
 
-    FASSERT_MSG(NULL != exit_timer, "create exit timer failed");
+    FASSERT_MSG(NULL != exit_timer, "Create exit timer failed.");
 
     taskEXIT_CRITICAL(); /* allow schedule since task created */ 
     return ret;
