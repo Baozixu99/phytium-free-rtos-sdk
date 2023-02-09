@@ -1,22 +1,22 @@
 /*
- * Copyright : (C) 2022 Phytium Information Technology, Inc. 
+ * Copyright : (C) 2022 Phytium Information Technology, Inc.
  * All Rights Reserved.
- *  
- * This program is OPEN SOURCE software: you can redistribute it and/or modify it  
- * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,  
- * either version 1.0 of the License, or (at your option) any later version. 
- *  
- * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;  
+ *
+ * This program is OPEN SOURCE software: you can redistribute it and/or modify it
+ * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,
+ * either version 1.0 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the Phytium Public License for more details. 
- *  
- * 
+ * See the Phytium Public License for more details.
+ *
+ *
  * FilePath: usb_input.c
  * Date: 2022-07-22 13:57:42
  * LastEditTime: 2022-07-22 13:57:43
- * Description:  This files is for 
- * 
- * Modify History: 
+ * Description:  This file is for the usb input functions.
+ *
+ * Modify History:
  *  Ver   Who        Date         Changes
  * ----- ------     --------    --------------------------------------
  * 1.0   zhugengyu  2022/9/20  init commit
@@ -199,10 +199,12 @@ static void UsbMouseHandleInput(struct usb_hid_mouse_report *input)
 /* look up new key in previous keys */
 static inline boolean FindKeyInPrevInput(const struct usb_hid_kbd_report *report, u8 keycode)
 {
-    for(u8 i=0; i < 6; i++)
+    for (u8 i = 0; i < 6; i++)
     {
-        if (report->key[i] == keycode)  
+        if (report->key[i] == keycode)
+        {
             return TRUE;
+        }
     }
 
     return FALSE;
@@ -257,7 +259,7 @@ static void UsbHidCallback(void *arg, int nbytes)
     intf_protocol = UsbInputGetInterfaceProtocol(hid_class);
     if (HID_PROTOCOL_KEYBOARD == intf_protocol) /* handle input from keyboard */
     {
-        if (nbytes < (int)sizeof(struct usb_hid_kbd_report)) 
+        if (nbytes < (int)sizeof(struct usb_hid_kbd_report))
         {
             FUSB_ERROR("nbytes = %d", nbytes);
         }
@@ -268,24 +270,24 @@ static void UsbHidCallback(void *arg, int nbytes)
     }
     else if (HID_PROTOCOL_MOUSE == intf_protocol) /* handle input from mouse */
     {
-        if (nbytes < (int)sizeof(struct usb_hid_mouse_report)) 
+        if (nbytes < (int)sizeof(struct usb_hid_mouse_report))
         {
             FUSB_ERROR("nbytes = %d", nbytes);
         }
         else
         {
-            UsbMouseHandleInput((struct usb_hid_mouse_report *)hid_buffer);            
+            UsbMouseHandleInput((struct usb_hid_mouse_report *)hid_buffer);
         }
     }
     else
     {
-        FUSB_ERROR("unsupported hid interface %d", intf_protocol);
+        FUSB_ERROR("Unsupported hid interface %d", intf_protocol);
     }
-    
+
     usbh_submit_urb(&hid_intin_urb); /* ask for next inputs */
 }
 
-static void UsbInputTask(void * args)
+static void UsbInputTask(void *args)
 {
     int ret;
     struct usbh_hid *hid_class;
@@ -294,9 +296,9 @@ static void UsbInputTask(void * args)
     while (TRUE)
     {
         hid_class = (struct usbh_hid *)usbh_find_class_instance("/dev/input0");
-        if (hid_class == NULL) 
+        if (hid_class == NULL)
         {
-            FUSB_ERROR("do not find /dev/input0");
+            FUSB_ERROR("Do not find /dev/input0.");
             goto err_exit;
         }
 
@@ -316,15 +318,15 @@ BaseType_t FFreeRTOSRunUsbInput(void)
 
     taskENTER_CRITICAL(); /* no schedule when create task */
 
-    ret = xTaskCreate((TaskFunction_t )UsbInputTask,
-                        (const char* )"UsbInputTask",
-                        (uint16_t )2048,
-                        NULL,
-                        (UBaseType_t )configMAX_PRIORITIES - 1,
-                        NULL);
+    ret = xTaskCreate((TaskFunction_t)UsbInputTask,
+                      (const char *)"UsbInputTask",
+                      (uint16_t)2048,
+                      NULL,
+                      (UBaseType_t)configMAX_PRIORITIES - 1,
+                      NULL);
     FASSERT_MSG(pdPASS == ret, "create task failed");
 
     taskEXIT_CRITICAL(); /* allow schedule since task created */
 
-    return ret;      
+    return ret;
 }

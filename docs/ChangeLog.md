@@ -1,3 +1,64 @@
+# Phytium FreeRTOS SDK 2023-2-9 0.4.0 ChangeLog
+
+Change Log sinc 2023-2-6
+
+## example 
+- freertos_feature/queue readme update
+- peripheral/spi readme update
+- peripheral/spi e2000d_aarch32_eg_configs update(CONFIG_SFUD_CTRL_FSPIM=y)
+
+# Phytium FreeRTOS SDK 2023-2-8 ChangeLog
+
+Change Log sinc 2023-2-5
+
+## example 
+- modify qspi_spiffs example
+- modify qspi example
+
+## driver
+- modify can example
+
+# Phytium FreeRTOS SDK 2023-2-6 ChangeLog
+
+Change Log sinc 2023-1-30
+
+## driver
+- add developer information in file header
+- add file description in file header
+- all .c .h file format update
+- print interface check 
+- print statement syntax checking and punctuation supplementation
+## example 
+- all example xxxx_eg_configs update
+- all example sdkconfig sdkconfig.h update
+- add developer information in file header
+- add file description in file header
+- all .c .h file format update
+- print interface check 
+- print statement syntax checking and punctuation supplementation
+## third-party
+- add developer information in file header
+- add file description in file header
+- all .c .h file format update
+- third-party/lwip-2.1.2/ports/arch/cc.h modified
+- print interface check 
+- print statement syntax checking and punctuation supplementation
+## install.py
+- modefiy the standalone_sdk_v、standalone_branche、standalone_remote value
+- add script statements which can delete standalone/third-party/lwip-2.1.2/ports/arch dir
+# Phytium FreeRTOS SDK 2023-1-6 ChangeLog
+
+Change Log sinc 2023-1-5
+
+## third-party
+
+add lvgl and modify the third-party.mk and the Kconfig
+
+## example 
+## driver
+
+add the media example and driver,modify the corresponding config
+
 # Phytium FreeRTOS SDK 2023-1-5 ChangeLog
 
 Change Log sinc 2023-1-3

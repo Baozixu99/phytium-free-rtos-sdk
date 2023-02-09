@@ -1,24 +1,25 @@
 /*
- * Copyright : (C) 2022 Phytium Information Technology, Inc. 
+ * Copyright : (C) 2022 Phytium Information Technology, Inc.
  * All Rights Reserved.
- *  
- * This program is OPEN SOURCE software: you can redistribute it and/or modify it  
- * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,  
- * either version 1.0 of the License, or (at your option) any later version. 
- *  
- * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;  
+ *
+ * This program is OPEN SOURCE software: you can redistribute it and/or modify it
+ * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,
+ * either version 1.0 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the Phytium Public License for more details. 
- *  
- * 
+ * See the Phytium Public License for more details.
+ *
+ *
  * FilePath: sd_read_write.c
  * Date: 2022-07-25 15:58:24
  * LastEditTime: 2022-07-25 15:58:25
- * Description:  This files is for 
- * 
- * Modify History: 
+ * Description:   This file is for providing functions used in cmd_sd.c file.
+ *
+ * Modify History:
  *  Ver   Who        Date         Changes
  * ----- ------     --------    --------------------------------------
+ *  1.0  zhugengyu  2022/8/26    first commit
  */
 /***************************** Include Files *********************************/
 #include <stdio.h>
@@ -56,7 +57,7 @@ static sdmmc_host_instance_t tf_host;
 static sdmmc_host_config_t tf_host_config;
 static sdmmc_host_instance_t emmc_host;
 static sdmmc_host_config_t emmc_host_config;
-static SdioTestInfo test_info = 
+static SdioTestInfo test_info =
 {
     .cur_host = &tf_host,
     .cur_host_config = &tf_host_config,
@@ -83,7 +84,7 @@ static boolean is_running = FALSE;
 static void SDExitCallback(TimerHandle_t timer)
 {
     FError err = FT_SUCCESS;
-    printf("exiting.....\r\n");
+    printf("Exiting.....\r\n");
 
     if (write_task)
     {
@@ -99,11 +100,11 @@ static void SDExitCallback(TimerHandle_t timer)
 
     if (pdPASS != xTimerDelete(timer, 0)) /* delete timer ifself */
     {
-        FSDIO_ERROR("delete exit timer failed !!!");
+        FSDIO_ERROR("Delete exit timer failed.");
         exit_timer = NULL;
     }
 
-    is_running = FALSE;        
+    is_running = FALSE;
 }
 
 static void SDSendEvent(u32 evt_bits)
@@ -111,7 +112,7 @@ static void SDSendEvent(u32 evt_bits)
     FASSERT(sync);
     BaseType_t x_result = pdFALSE;
 
-    FSDIO_DEBUG("ack evt 0x%x", evt_bits);
+    FSDIO_DEBUG("Ack evt 0x%x", evt_bits);
     x_result = xEventGroupSetBits(sync, evt_bits);
 }
 
@@ -129,21 +130,21 @@ static boolean SDWaitEvent(u32 evt_bits, TickType_t wait_delay)
     return FALSE;
 }
 
-static void SDInitTask(void * args)
+static void SDInitTask(void *args)
 {
     if (SDMMC_OK != sdmmc_host_init(test_info.cur_host, test_info.cur_host_config))
     {
-        FSDIO_ERROR("init sdio failed !!!");
+        FSDIO_ERROR("Init sdio failed.");
         goto task_exit;
     }
 
     SDSendEvent(SD_EVT_INIT_DONE);
 
 task_exit:
-    vTaskDelete(NULL); /* delete task itself */ 
+    vTaskDelete(NULL); /* delete task itself */
 }
 
-static void SDWriteReadTask(void * args)
+static void SDWriteReadTask(void *args)
 {
     u32 times = 0U;
     const TickType_t wait_delay = pdMS_TO_TICKS(2000UL); /* wait for 2 seconds */
@@ -151,9 +152,9 @@ static void SDWriteReadTask(void * args)
     const uintptr trans_len = test_info.block_num * 512U;
     char ch = 'A';
 
-    if (trans_len > SD_WR_BUF_LEN) 
+    if (trans_len > SD_WR_BUF_LEN)
     {
-        FSDIO_ERROR("trans length exceed buffer limits");
+        FSDIO_ERROR("Trans length exceeds the buffer limits.");
         goto task_exit;
     }
 
@@ -161,50 +162,52 @@ static void SDWriteReadTask(void * args)
 
     for (;;)
     {
-        printf("start read ...\r\n");
+        printf("Start reading ...\r\n");
         memset(sd_read_buffer, 0U, trans_len);
-        if (SDMMC_OK != sdmmc_os_read_sectors(&(test_info.cur_host->card), 
-                                                 sd_read_buffer, 
-                                                 test_info.start_blk,
-                                                 test_info.block_num))
+        if (SDMMC_OK != sdmmc_os_read_sectors(&(test_info.cur_host->card),
+                                              sd_read_buffer,
+                                              test_info.start_blk,
+                                              test_info.block_num))
         {
-            FSDIO_ERROR("sdio read failed !!!");
+            FSDIO_ERROR("Sdio read failed.");
             goto task_exit;
         }
 
         FCacheDCacheFlushRange((uintptr)(void *)sd_read_buffer, trans_len);
-        printf("==>Read from Block [%d:%d]\r\n", 
-                test_info.start_blk, 
-                test_info.start_blk + test_info.block_num);
-        
+        printf("==>Read from Block [%d:%d]\r\n",
+               test_info.start_blk,
+               test_info.start_blk + test_info.block_num);
+
         FtDumpHexByte(sd_read_buffer, min(trans_len, (fsize_t)(2 * 512U)));
 
         /*************************************************************/
 
-        printf("start write ...\r\n");
+        printf("Start writing ...\r\n");
         memset(sd_write_buffer, (ch + times), trans_len);
-        printf("==>Write %c to Block [%d:%d]\r\n", 
-                ch, 
-                test_info.start_blk, 
-                test_info.start_blk + test_info.block_num);
+        printf("==>Write %c to Block [%d:%d]\r\n",
+               ch,
+               test_info.start_blk,
+               test_info.start_blk + test_info.block_num);
 
         if (SDMMC_OK != sdmmc_os_write_sectors(&(test_info.cur_host->card),
-                                                sd_write_buffer,
-                                                test_info.start_blk,
-                                                test_info.block_num))
+                                               sd_write_buffer,
+                                               test_info.start_blk,
+                                               test_info.block_num))
         {
-            FSDIO_ERROR("sdio write failed !!!");
+            FSDIO_ERROR("Sdio write failed.");
             goto task_exit;
         }
 
         vTaskDelay(wait_delay);
 
         if (++times > run_times)
+        {
             break;
+        }
     }
 
 task_exit:
-    printf("exit from write task \r\n");
+    printf("Exit from write task.\r\n");
     vTaskSuspend(NULL); /* suspend task */
 }
 
@@ -215,16 +218,16 @@ BaseType_t FFreeRTOSSdWriteRead(u32 slot_id, boolean is_emmc, u32 start_blk, u32
 
     if (is_running)
     {
-        FSDIO_ERROR("task is running !!!!");
+        FSDIO_ERROR("Task is running.");
         return pdPASS;
     }
 
     is_running = TRUE;
 
-    printf("sd write read task\r\n");
+    printf("This is sd write read task.\r\n");
 
-    FASSERT_MSG(NULL == sync, "event group exists !!!");
-    FASSERT_MSG((sync = xEventGroupCreate()) != NULL, "create event group failed !!!");
+    FASSERT_MSG(NULL == sync, "Event group exists.");
+    FASSERT_MSG((sync = xEventGroupCreate()) != NULL, "Create event group failed.");
 
     test_info.cur_host = is_emmc ? &emmc_host : &tf_host;
     test_info.cur_host_config = is_emmc ? &emmc_host_config : &tf_host_config;
@@ -238,36 +241,36 @@ BaseType_t FFreeRTOSSdWriteRead(u32 slot_id, boolean is_emmc, u32 start_blk, u32
     test_info.block_num = blk_num;
     taskENTER_CRITICAL(); /* no schedule when create task */
 
-    ret = xTaskCreate((TaskFunction_t )SDInitTask,
-                            (const char* )"SDInitTask",
-                            (uint16_t )2048,
-                            NULL,
-                            (UBaseType_t )configMAX_PRIORITIES - 1,
-                            NULL);
-    FASSERT_MSG(pdPASS == ret, "create task failed");
+    ret = xTaskCreate((TaskFunction_t)SDInitTask,
+                      (const char *)"SDInitTask",
+                      (uint16_t)2048,
+                      NULL,
+                      (UBaseType_t)configMAX_PRIORITIES - 1,
+                      NULL);
+    FASSERT_MSG(pdPASS == ret, "Create task failed.");
 
-    ret = xTaskCreate((TaskFunction_t )SDWriteReadTask,
-                            (const char* )"SDWriteReadTask",
-                            (uint16_t )2048,
-                            NULL,
-                            (UBaseType_t )configMAX_PRIORITIES - 2,
-                            &write_task);
+    ret = xTaskCreate((TaskFunction_t)SDWriteReadTask,
+                      (const char *)"SDWriteReadTask",
+                      (uint16_t)2048,
+                      NULL,
+                      (UBaseType_t)configMAX_PRIORITIES - 2,
+                      &write_task);
 
-    FASSERT_MSG(pdPASS == ret, "create task failed");
-    
-    exit_timer = xTimerCreate("Exit-Timer",		            /* Text name for the software timer - not used by FreeRTOS. */
-                            total_run_time,		            /* The software timer's period in ticks. */
-                            pdFALSE,						/* Setting uxAutoRealod to pdFALSE creates a one-shot software timer. */
-                            NULL,				            /* use timer id to pass task data for reference. */
-                            SDExitCallback);                /* The callback function to be used by the software timer being created. */
+    FASSERT_MSG(pdPASS == ret, "Create task failed.");
 
-    FASSERT_MSG(NULL != exit_timer, "create exit timer failed");
+    exit_timer = xTimerCreate("Exit-Timer",                 /* Text name for the software timer - not used by FreeRTOS. */
+                              total_run_time,                 /* The software timer's period in ticks. */
+                              pdFALSE,                        /* Setting uxAutoRealod to pdFALSE creates a one-shot software timer. */
+                              NULL,                           /* use timer id to pass task data for reference. */
+                              SDExitCallback);                /* The callback function to be used by the software timer being created. */
+
+    FASSERT_MSG(NULL != exit_timer, "Create exit timer failed.");
 
     taskEXIT_CRITICAL(); /* allow schedule since task created */
 
     ret = xTimerStart(exit_timer, 0); /* start */
 
-    FASSERT_MSG(pdPASS == ret, "start exit timer failed");
+    FASSERT_MSG(pdPASS == ret, "Start exit timer failed.");
 
     return ret;
 }

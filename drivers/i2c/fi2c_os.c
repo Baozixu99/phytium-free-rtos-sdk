@@ -1,24 +1,25 @@
 /*
- * Copyright : (C) 2022 Phytium Information Technology, Inc. 
+ * Copyright : (C) 2022 Phytium Information Technology, Inc.
  * All Rights Reserved.
- *  
- * This program is OPEN SOURCE software: you can redistribute it and/or modify it  
- * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,  
- * either version 1.0 of the License, or (at your option) any later version. 
- *  
- * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;  
+ *
+ * This program is OPEN SOURCE software: you can redistribute it and/or modify it
+ * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,
+ * either version 1.0 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the Phytium Public License for more details. 
- *  
- * 
+ * See the Phytium Public License for more details.
+ *
+ *
  * FilePath: fi2c_os.c
  * Date: 2022-07-15 10:43:29
  * LastEditTime: 2022-07-15 10:43:29
- * Description:  This file is for 
- * 
- * Modify History: 
+ * Description:  This file is for required function implementations of i2c driver used in FreeRTOS.
+ *
+ * Modify History:
  *  Ver   Who        Date         Changes
  * ----- ------     --------    --------------------------------------
+ * 1.0 liushengming 2022/11/25  first commit
  */
 
 #include <stdio.h>
@@ -34,9 +35,9 @@
 #include "fdebug.h"
 #include "fpinctrl.h"
 #if defined(CONFIG_TARGET_E2000)
-#include "fmio_hw.h"
-#include "fmio.h"
-#include "fiopad.h"
+    #include "fmio_hw.h"
+    #include "fmio.h"
+    #include "fiopad.h"
 #endif
 
 #if defined(CONFIG_TARGET_E2000)
@@ -57,25 +58,25 @@ static void FI2cMasterSlaveSetIoMux(u32 instance_id)
 #if defined(CONFIG_TARGET_D2000)
     switch (instance_id)
     {
-    case FI2C0_ID: 
-        FPinSetFunc(FIOCTRL_I2C0_SCL_PAD, FPIN_FUNC0);
-        FPinSetFunc(FIOCTRL_I2C0_SDA_PAD, FPIN_FUNC0);
-        break;
-    case FI2C1_ID:
-        FPinSetFunc(FIOCTRL_ALL_PLL_LOCK_PAD, FPIN_FUNC2);
-        FPinSetFunc(FIOCTRL_CRU_CLK_OBV_PAD, FPIN_FUNC2);
-        break;
-    case FI2C2_ID:
-        FPinSetFunc(FIOCTRL_SWDO_SWJ_PAD, FPIN_FUNC2);
-        FPinSetFunc(FIOCTRL_TDO_SWJ_IN_PAD, FPIN_FUNC2);
-        break;
-    case FI2C3_ID:
-        FPinSetFunc(FIOCTRL_HDT_MB_DONE_STATE_PAD, FPIN_FUNC2);
-        FPinSetFunc(FIOCTRL_HDT_MB_FAIL_STATE_PAD, FPIN_FUNC2);
-        break;
-    default:
-        FASSERT(0);
-        break;
+        case FI2C0_ID:
+            FPinSetFunc(FIOCTRL_I2C0_SCL_PAD, FPIN_FUNC0);
+            FPinSetFunc(FIOCTRL_I2C0_SDA_PAD, FPIN_FUNC0);
+            break;
+        case FI2C1_ID:
+            FPinSetFunc(FIOCTRL_ALL_PLL_LOCK_PAD, FPIN_FUNC2);
+            FPinSetFunc(FIOCTRL_CRU_CLK_OBV_PAD, FPIN_FUNC2);
+            break;
+        case FI2C2_ID:
+            FPinSetFunc(FIOCTRL_SWDO_SWJ_PAD, FPIN_FUNC2);
+            FPinSetFunc(FIOCTRL_TDO_SWJ_IN_PAD, FPIN_FUNC2);
+            break;
+        case FI2C3_ID:
+            FPinSetFunc(FIOCTRL_HDT_MB_DONE_STATE_PAD, FPIN_FUNC2);
+            FPinSetFunc(FIOCTRL_HDT_MB_FAIL_STATE_PAD, FPIN_FUNC2);
+            break;
+        default:
+            FASSERT(0);
+            break;
     }
 #endif
 #if defined(CONFIG_TARGET_F2000_4)
@@ -83,33 +84,33 @@ static void FI2cMasterSlaveSetIoMux(u32 instance_id)
     FPinFunc scl_fun, sda_fun;
     switch (instance_id)
     {
-    case FI2C0_ID: 
-        sclpad_off = FIOCTRL_I2C0_SCL_PAD; /* i2c0-scl: func 0 */
-        sdapad_off = FIOCTRL_I2C0_SDA_PAD; /* i2c0-sda: func 0 */
-        scl_fun = FPIN_FUNC0;
-        sda_fun = FPIN_FUNC0;
-        break;
-    case FI2C1_ID:
-        sclpad_off = FIOCTRL_ALL_PLL_LOCK_PAD; /* i2c1-scl: func 2 */
-        sdapad_off = FIOCTRL_CRU_CLK_OBV_PAD; /* i2c1-sda: func 2 */
-        scl_fun = FPIN_FUNC2;
-        sda_fun = FPIN_FUNC2;
-        break;
-    case FI2C2_ID:
-        sclpad_off = FIOCTRL_SWDO_SWJ_PAD; /* i2c2-scl: func 2 */
-        sdapad_off = FIOCTRL_TDO_SWJ_IN_PAD; /* i2c2-sda: func 2 */
-        scl_fun = FPIN_FUNC2;
-        sda_fun = FPIN_FUNC2;
-        break;
-    case FI2C3_ID:
-        sclpad_off = FIOCTRL_HDT_MB_DONE_STATE_PAD; /* i2c3-scl: func 2 */
-        sdapad_off = FIOCTRL_HDT_MB_FAIL_STATE_PAD; /* i2c3-sda: func 2 */
-        scl_fun = FPIN_FUNC2;
-        sda_fun = FPIN_FUNC2;
-        break;
-    default:
-        FASSERT(0);
-        break;
+        case FI2C0_ID:
+            sclpad_off = FIOCTRL_I2C0_SCL_PAD; /* i2c0-scl: func 0 */
+            sdapad_off = FIOCTRL_I2C0_SDA_PAD; /* i2c0-sda: func 0 */
+            scl_fun = FPIN_FUNC0;
+            sda_fun = FPIN_FUNC0;
+            break;
+        case FI2C1_ID:
+            sclpad_off = FIOCTRL_ALL_PLL_LOCK_PAD; /* i2c1-scl: func 2 */
+            sdapad_off = FIOCTRL_CRU_CLK_OBV_PAD; /* i2c1-sda: func 2 */
+            scl_fun = FPIN_FUNC2;
+            sda_fun = FPIN_FUNC2;
+            break;
+        case FI2C2_ID:
+            sclpad_off = FIOCTRL_SWDO_SWJ_PAD; /* i2c2-scl: func 2 */
+            sdapad_off = FIOCTRL_TDO_SWJ_IN_PAD; /* i2c2-sda: func 2 */
+            scl_fun = FPIN_FUNC2;
+            sda_fun = FPIN_FUNC2;
+            break;
+        case FI2C3_ID:
+            sclpad_off = FIOCTRL_HDT_MB_DONE_STATE_PAD; /* i2c3-scl: func 2 */
+            sdapad_off = FIOCTRL_HDT_MB_FAIL_STATE_PAD; /* i2c3-sda: func 2 */
+            scl_fun = FPIN_FUNC2;
+            sda_fun = FPIN_FUNC2;
+            break;
+        default:
+            FASSERT(0);
+            break;
     }
     FPinSetFunc(sclpad_off, scl_fun);
     FPinSetFunc(sdapad_off, sda_fun);
@@ -129,9 +130,9 @@ static void FI2cOsSetupInterrupt(FI2c *pctrl)
     FI2cConfig *pconfig = &pctrl->config;
     u32 cpu_id;
     FError err = FREERTOS_I2C_SUCCESS;
-    
+
     GetCpuId(&cpu_id);
-    vPrintf("cpu_id is %d \r\n",cpu_id);
+    vPrintf("cpu_id is %d \r\n", cpu_id);
     InterruptSetTargetCpus(pconfig->irq_num, cpu_id);
 
     /* interrupt init */
@@ -154,22 +155,22 @@ static void FI2cOsResetInterrupt(FI2c *pctrl)
  * @return {FFreeRTOSI2c *}pointer to os i2c instance
  * @param {u32} instance_id,i2c instance_id
  */
-FFreeRTOSI2c *FFreeRTOSI2cInit(u32 instance_id,u32 work_mode,u32 slave_address,u32 speed_rate)
+FFreeRTOSI2c *FFreeRTOSI2cInit(u32 instance_id, u32 work_mode, u32 slave_address, u32 speed_rate)
 {
     FASSERT((os_i2c[instance_id].wr_semaphore = xSemaphoreCreateMutex()) != NULL);
     FASSERT((os_i2c[instance_id].trx_event = xEventGroupCreate()) != NULL);
-    
+
     FError err = FREERTOS_I2C_SUCCESS;
 
     FI2cConfig i2c_config;
-    
+
     /* E2000 use MIO -> I2C */
 #if defined(CONFIG_TARGET_E2000)
     FASSERT(instance_id < FMIO_NUM);
-    
-    if(FT_COMPONENT_IS_READY == os_i2c[instance_id].i2c_device.is_ready)
+
+    if (FT_COMPONENT_IS_READY == os_i2c[instance_id].i2c_device.is_ready)
     {
-        vPrintf("I2c device %d is already initialized.\r\n",instance_id);
+        vPrintf("I2c device %d is already initialized.\r\n", instance_id);
         return NULL;
     }
 
@@ -189,15 +190,15 @@ FFreeRTOSI2c *FFreeRTOSI2cInit(u32 instance_id,u32 work_mode,u32 slave_address,u
     mio_config_p = FMioLookupConfig(instance_id);
     if (NULL == mio_config_p)
     {
-        vPrintf("config of mio_i2c instance %d non found\r\n", instance_id);
+        vPrintf("Config of mio_i2c instance %d non found.\r\n", instance_id);
         return NULL;
     }
 
-    
+
     pctrl->config = *mio_config_p;
 
     err = FMioFuncInit(pctrl, FMIO_FUNC_SET_I2C);
-    if(err != FREERTOS_I2C_SUCCESS)
+    if (err != FREERTOS_I2C_SUCCESS)
     {
         vPrintf("Mio I2c initialize is error.\r\n ");
         return NULL;
@@ -207,7 +208,7 @@ FFreeRTOSI2c *FFreeRTOSI2cInit(u32 instance_id,u32 work_mode,u32 slave_address,u
     i2c_config.work_mode = work_mode;
     i2c_config.slave_addr = slave_address;
     i2c_config.speed_rate = speed_rate;
-    
+
     if (work_mode == FI2C_MASTER)/* 主机中断优先级低于从机接收 */
     {
         i2c_config.instance_id = i2c_master.config.instance_id;
@@ -226,13 +227,13 @@ FFreeRTOSI2c *FFreeRTOSI2cInit(u32 instance_id,u32 work_mode,u32 slave_address,u
 #endif
 #if defined(CONFIG_TARGET_D2000)
     FASSERT(instance_id < FI2C_NUM);
-    
-    if(FT_COMPONENT_IS_READY == os_i2c[instance_id].i2c_device.is_ready)
+
+    if (FT_COMPONENT_IS_READY == os_i2c[instance_id].i2c_device.is_ready)
     {
-        vPrintf("I2c device %d is already initialized.\r\n",instance_id);
+        vPrintf("I2c device %d is already initialized.\r\n", instance_id);
         return NULL;
     }
-    
+
     i2c_config = *FI2cLookupConfig(instance_id);
     if (work_mode == FI2C_MASTER) /* 主机中断优先级低于从机接收 */
     {
@@ -281,11 +282,11 @@ void FFreeRTOSI2cDeinit(FFreeRTOSI2c *os_i2c_p)
     InterruptMask(os_i2c_p->i2c_device.config.irq_num);
     FI2cDeInitialize(&os_i2c_p->i2c_device);
 
-    FASSERT_MSG(NULL != os_i2c_p->wr_semaphore, "semaphore not exists !!!");
+    FASSERT_MSG(NULL != os_i2c_p->wr_semaphore, "Semaphore not exists!!!");
     vSemaphoreDelete(os_i2c_p->wr_semaphore);
     os_i2c_p->wr_semaphore = NULL;
 
-    FASSERT_MSG(NULL != os_i2c_p->trx_event, "event group not exists !!!");
+    FASSERT_MSG(NULL != os_i2c_p->trx_event, "Event group not exists!!!");
     vEventGroupDelete(os_i2c_p->trx_event);
     os_i2c_p->trx_event = NULL;
 }
@@ -310,7 +311,7 @@ FError FFreeRTOSI2cTransfer(FFreeRTOSI2c *os_i2c_p, FFreeRTOSI2cMessage *message
         vPrintf("I2c xSemaphoreTake failed.\r\n");
         return FREERTOS_I2C_MESG_ERROR;
     }
-    
+
     FError ret = FREERTOS_I2C_SUCCESS;
     FI2c *instance_p = &os_i2c_p->i2c_device;
     EventBits_t ev;
@@ -320,7 +321,7 @@ FError FFreeRTOSI2cTransfer(FFreeRTOSI2c *os_i2c_p, FFreeRTOSI2cMessage *message
     {
         instance_p->config.slave_addr = message->slave_addr;
     }
-    
+
     if (message->mode == FI2C_READ_DATA_POLL)
     {
         memset(message->buf, 0, message->buf_length);
@@ -331,13 +332,13 @@ FError FFreeRTOSI2cTransfer(FFreeRTOSI2c *os_i2c_p, FFreeRTOSI2cMessage *message
         FI2cOsSetupInterrupt(instance_p);
         memset(message->buf, 0, message->buf_length);
         ret = FI2cMasterReadIntr(instance_p, message->mem_addr, message->mem_byte_len, message->buf, message->buf_length);
-        ev = xEventGroupWaitBits(os_i2c_p->trx_event,RTOS_I2C_TRANS_ABORTED | RTOS_I2C_READ_DONE,pdTRUE, pdFALSE, portMAX_DELAY);
+        ev = xEventGroupWaitBits(os_i2c_p->trx_event, RTOS_I2C_TRANS_ABORTED | RTOS_I2C_READ_DONE, pdTRUE, pdFALSE, portMAX_DELAY);
         if (ev & RTOS_I2C_TRANS_ABORTED)
         {
-            vPrintf( "RTOS_I2C_TRANS_ABORTED ");
+            vPrintf("RTOS_I2C_TRANS_ABORTED ");
             ret = FREERTOS_I2C_TASK_ERROR;
         }
-        else if(ev & RTOS_I2C_READ_DONE)
+        else if (ev & RTOS_I2C_READ_DONE)
         {
             vPrintf("RTOS_I2C_READ_DONE,data_lenth:0d%d.\r\n", message->buf_length);
         }
@@ -352,13 +353,13 @@ FError FFreeRTOSI2cTransfer(FFreeRTOSI2c *os_i2c_p, FFreeRTOSI2cMessage *message
         FI2cOsSetupInterrupt(instance_p);
         ret = FI2cMasterWriteIntr(instance_p, message->mem_addr, message->mem_byte_len, message->buf, message->buf_length);
         /*   wait intr is finish */
-        ev = xEventGroupWaitBits(os_i2c_p->trx_event,RTOS_I2C_TRANS_ABORTED | RTOS_I2C_WRITE_DONE,pdTRUE, pdFALSE, portMAX_DELAY);
+        ev = xEventGroupWaitBits(os_i2c_p->trx_event, RTOS_I2C_TRANS_ABORTED | RTOS_I2C_WRITE_DONE, pdTRUE, pdFALSE, portMAX_DELAY);
         if (ev & RTOS_I2C_TRANS_ABORTED)
         {
             vPrintf("RTOS_I2C_TRANS_ABORTED ");
             ret = FREERTOS_I2C_TASK_ERROR;
         }
-        else if(ev & RTOS_I2C_WRITE_DONE)
+        else if (ev & RTOS_I2C_WRITE_DONE)
         {
             vPrintf("RTOS_I2C_WRITE_DONE,data_lenth:0d%d.\r\n", message->buf_length);
         }
@@ -375,7 +376,7 @@ FError FFreeRTOSI2cTransfer(FFreeRTOSI2c *os_i2c_p, FFreeRTOSI2cMessage *message
 
     if (ret != FREERTOS_I2C_SUCCESS)
     {
-        vPrintf("FFreeRTOSI2cTransfer error,id:%d.\r\n",instance_p->config.instance_id);
+        vPrintf("FFreeRTOSI2cTransfer error,id:%d.\r\n", instance_p->config.instance_id);
         return FREERTOS_I2C_TASK_ERROR;
     }
     return ret;

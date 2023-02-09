@@ -1,29 +1,29 @@
 /*
- * Copyright : (C) 2022 Phytium Information Technology, Inc. 
+ * Copyright : (C) 2022 Phytium Information Technology, Inc.
  * All Rights Reserved.
- *  
- * This program is OPEN SOURCE software: you can redistribute it and/or modify it  
- * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,  
- * either version 1.0 of the License, or (at your option) any later version. 
- *  
- * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;  
+ *
+ * This program is OPEN SOURCE software: you can redistribute it and/or modify it
+ * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,
+ * either version 1.0 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the Phytium Public License for more details. 
- *  
- * 
+ * See the Phytium Public License for more details.
+ *
+ *
  * FilePath: fpl011_os.h
  * Date: 2022-02-24 13:42:19
  * LastEditTime: 2022-03-21 16:59:58
- * Description:  This file is for 
- * 
- * Modify History: 
+ * Description:  This file is for providing function related definitions of pl011 driver used in FreeRTOS.
+ *
+ * Modify History:
  *  Ver   Who        Date         Changes
  * ----- ------     --------    --------------------------------------
+ * 1.0   huanghe   2022/04/21   first commit
  */
 
-
-#ifndef DRIVERS_SERIAL_FPL011_H
-#define DRIVERS_SERIAL_FPL011_H
+#ifndef FPL011_OS_H
+#define FPL011_OS_H
 
 #include <FreeRTOS.h>
 #include <event_groups.h>
@@ -32,6 +32,11 @@
 #include "fpl011_hw.h"
 #include "ftypes.h"
 #include "ferror_code.h"
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 
 #define FREERTOS_UART_SEM_ERROR FT_CODE_ERR(ErrModPort, 0, 0x1)
 #define FREERTOS_UART_EVENT_ERROR FT_CODE_ERR(ErrModPort, 0, 0x2)
@@ -48,7 +53,7 @@
 * @cond RTOS_PRIVATE
 * @name UART FreeRTOS handler
 *
-* These are the only valid states for txEvent and rxEvent 
+* These are the only valid states for txEvent and rxEvent
 */
 /*@{*/
 /*! @brief Event flag - transfer complete. */
@@ -90,5 +95,9 @@ typedef struct
 void FtFreertosUartInit(FtFreertosUart *uart_p, FtFreertosUartConfig *config_p);
 FError FtFreertosUartBlcokingSend(FtFreertosUart *uart_p, u8 *buffer, u32 length);
 FError FtFreertosUartReceiveBuffer(FtFreertosUart *uart_p, u8 *buffer, u32 length, u32 *received_length);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // !

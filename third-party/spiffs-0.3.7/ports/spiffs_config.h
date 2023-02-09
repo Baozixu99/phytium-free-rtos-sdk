@@ -5,8 +5,8 @@
  *      Author: petera
  */
 
-#ifndef SPIFFS_CONFIG_H_
-#define SPIFFS_CONFIG_H_
+#ifndef SPIFFS_CONFIG_H
+#define SPIFFS_CONFIG_H
 
 // ----------- 8< ------------
 // Following includes are for the linux test build of spiffs
@@ -20,8 +20,13 @@
 #include "ftypes.h"
 #include "fdebug.h"
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #ifdef _SPIFFS_TEST
-#include "testrunner.h"
+    #include "testrunner.h"
 #endif
 // ----------- >8 ------------
 
@@ -30,23 +35,23 @@
 // port debug printfs
 // Set generic spiffs debug output call.
 #ifndef SPIFFS_DBG
-#define SPIFFS_DBG(_f, ...) FT_DEBUG_PRINT_D("SPIFFS", _f, ##__VA_ARGS__)
+    #define SPIFFS_DBG(_f, ...) FT_DEBUG_PRINT_D("SPIFFS", _f, ##__VA_ARGS__)
 #endif
 // Set spiffs debug output call for garbage collecting.
 #ifndef SPIFFS_GC_DBG
-#define SPIFFS_GC_DBG(_f, ...) FT_DEBUG_PRINT_D("SPIFFS-GC", _f, ##__VA_ARGS__)
+    #define SPIFFS_GC_DBG(_f, ...) FT_DEBUG_PRINT_D("SPIFFS-GC", _f, ##__VA_ARGS__)
 #endif
 // Set spiffs debug output call for caching.
 #ifndef SPIFFS_CACHE_DBG
-#define SPIFFS_CACHE_DBG(_f, ...) FT_DEBUG_PRINT_D("SPIFFS-CACHE", _f, ##__VA_ARGS__)
+    #define SPIFFS_CACHE_DBG(_f, ...) FT_DEBUG_PRINT_D("SPIFFS-CACHE", _f, ##__VA_ARGS__)
 #endif
 // Set spiffs debug output call for system consistency checks.
 #ifndef SPIFFS_CHECK_DBG
-#define SPIFFS_CHECK_DBG(_f, ...) FT_DEBUG_PRINT_D("SPIFFS-CHECK", _f, ##__VA_ARGS__)
+    #define SPIFFS_CHECK_DBG(_f, ...) FT_DEBUG_PRINT_D("SPIFFS-CHECK", _f, ##__VA_ARGS__)
 #endif
 // Set spiffs debug output call for all api invocations.
 #ifndef SPIFFS_API_DBG
-#define SPIFFS_API_DBG(_f, ...) FT_DEBUG_PRINT_D("SPIFFS-API", _f, ##__VA_ARGS__)
+    #define SPIFFS_API_DBG(_f, ...) FT_DEBUG_PRINT_D("SPIFFS-API", _f, ##__VA_ARGS__)
 #endif
 
 
@@ -54,35 +59,35 @@
 // Defines spiffs debug print formatters
 // some general signed number
 #ifndef _SPIPRIi
-#define _SPIPRIi   "%d"
+    #define _SPIPRIi   "%d"
 #endif
 // address
 #ifndef _SPIPRIad
-#define _SPIPRIad  "%08x"
+    #define _SPIPRIad  "%08x"
 #endif
 // block
 #ifndef _SPIPRIbl
-#define _SPIPRIbl  "%04x"
+    #define _SPIPRIbl  "%04x"
 #endif
 // page
 #ifndef _SPIPRIpg
-#define _SPIPRIpg  "%04x"
+    #define _SPIPRIpg  "%04x"
 #endif
 // span index
 #ifndef _SPIPRIsp
-#define _SPIPRIsp  "%04x"
+    #define _SPIPRIsp  "%04x"
 #endif
 // file descriptor
 #ifndef _SPIPRIfd
-#define _SPIPRIfd  "%d"
+    #define _SPIPRIfd  "%d"
 #endif
 // file object id
 #ifndef _SPIPRIid
-#define _SPIPRIid  "%04x"
+    #define _SPIPRIid  "%04x"
 #endif
 // file flags
 #ifndef _SPIPRIfl
-#define _SPIPRIfl  "%02x"
+    #define _SPIPRIfl  "%02x"
 #endif
 
 
@@ -90,40 +95,40 @@
 // for filedescriptor and cache buffers. Once decided for a configuration,
 // this can be disabled to reduce flash.
 #ifndef SPIFFS_BUFFER_HELP
-#define SPIFFS_BUFFER_HELP              0
+    #define SPIFFS_BUFFER_HELP              0
 #endif
 
 // Enables/disable memory read caching of nucleus file system operations.
 // If enabled, memory area must be provided for cache in SPIFFS_mount.
 #ifndef  SPIFFS_CACHE
-#define SPIFFS_CACHE                    1  /* 在RAM中为SPIFFS提供缓存区 */
+    #define SPIFFS_CACHE                    1  /* 在RAM中为SPIFFS提供缓存区 */
 #endif
 #if SPIFFS_CACHE
-// Enables memory write caching for file descriptors in hydrogen
-#ifndef  SPIFFS_CACHE_WR
-#define SPIFFS_CACHE_WR                 1  /* 使能文件描述符写缓存 */
-#endif
+    // Enables memory write caching for file descriptors in hydrogen
+    #ifndef  SPIFFS_CACHE_WR
+        #define SPIFFS_CACHE_WR                 1  /* 使能文件描述符写缓存 */
+    #endif
 
-// Enable/disable statistics on caching. Debug/test purpose only.
-#ifndef  SPIFFS_CACHE_STATS
-#define SPIFFS_CACHE_STATS              0
-#endif
+    // Enable/disable statistics on caching. Debug/test purpose only.
+    #ifndef  SPIFFS_CACHE_STATS
+        #define SPIFFS_CACHE_STATS              0
+    #endif
 #endif
 
 // Always check header of each accessed page to ensure consistent state.
 // If enabled it will increase number of reads, will increase flash.
 #ifndef SPIFFS_PAGE_CHECK
-#define SPIFFS_PAGE_CHECK               1  /* 检查每页是否可以访问 */
+    #define SPIFFS_PAGE_CHECK               1  /* 检查每页是否可以访问 */
 #endif
 
 // Define maximum number of gc runs to perform to reach desired free pages.
 #ifndef SPIFFS_GC_MAX_RUNS
-#define SPIFFS_GC_MAX_RUNS              5
+    #define SPIFFS_GC_MAX_RUNS              5
 #endif
 
 // Enable/disable statistics on gc. Debug/test purpose only.
 #ifndef SPIFFS_GC_STATS
-#define SPIFFS_GC_STATS                 0
+    #define SPIFFS_GC_STATS                 0
 #endif
 
 // Garbage collecting examines all pages in a block which and sums up
@@ -136,23 +141,23 @@
 
 // Garbage collecting heuristics - weight used for deleted pages.
 #ifndef SPIFFS_GC_HEUR_W_DELET
-#define SPIFFS_GC_HEUR_W_DELET          (5)
+    #define SPIFFS_GC_HEUR_W_DELET          (5)
 #endif
 // Garbage collecting heuristics - weight used for used pages.
 #ifndef SPIFFS_GC_HEUR_W_USED
-#define SPIFFS_GC_HEUR_W_USED           (-1)
+    #define SPIFFS_GC_HEUR_W_USED           (-1)
 #endif
 // Garbage collecting heuristics - weight used for time between
 // last erased and erase of this block.
 #ifndef SPIFFS_GC_HEUR_W_ERASE_AGE
-#define SPIFFS_GC_HEUR_W_ERASE_AGE      (50)
+    #define SPIFFS_GC_HEUR_W_ERASE_AGE      (50)
 #endif
 
 // Object name maximum length. Note that this length include the
 // zero-termination character, meaning maximum string of characters
 // can at most be SPIFFS_OBJ_NAME_LEN - 1.
 #ifndef SPIFFS_OBJ_NAME_LEN
-#define SPIFFS_OBJ_NAME_LEN             (32)  /* 文件名最大长度为32字节 */
+    #define SPIFFS_OBJ_NAME_LEN             (32)  /* 文件名最大长度为32字节 */
 #endif
 
 // Maximum length of the metadata associated with an object.
@@ -166,14 +171,14 @@
 // logical_page_size - (SPIFFS_OBJ_NAME_LEN + sizeof(spiffs_page_header) +
 // spiffs_object_ix_header fields + at least some LUT entries)
 #ifndef SPIFFS_OBJ_META_LEN
-#define SPIFFS_OBJ_META_LEN             (0)
+    #define SPIFFS_OBJ_META_LEN             (0)
 #endif
 
 // Size of buffer allocated on stack used when copying data.
 // Lower value generates more read/writes. No meaning having it bigger
 // than logical page size.
 #ifndef SPIFFS_COPY_BUFFER_STACK
-#define SPIFFS_COPY_BUFFER_STACK        (64)
+    #define SPIFFS_COPY_BUFFER_STACK        (64)
 #endif
 
 // Enable this to have an identifiable spiffs filesystem. This will look for
@@ -181,18 +186,18 @@
 // not on mount point. If not, SPIFFS_format must be called prior to mounting
 // again.
 #ifndef SPIFFS_USE_MAGIC
-#define SPIFFS_USE_MAGIC                (1)  /* SPIFF会利用Magic num去检查Flash中的文件系统是否ok */
+    #define SPIFFS_USE_MAGIC                (1)  /* SPIFF会利用Magic num去检查Flash中的文件系统是否ok */
 #endif
 
 #if SPIFFS_USE_MAGIC
-// Only valid when SPIFFS_USE_MAGIC is enabled. If SPIFFS_USE_MAGIC_LENGTH is
-// enabled, the magic will also be dependent on the length of the filesystem.
-// For example, a filesystem configured and formatted for 4 megabytes will not
-// be accepted for mounting with a configuration defining the filesystem as 2
-// megabytes.
-#ifndef SPIFFS_USE_MAGIC_LENGTH
-#define SPIFFS_USE_MAGIC_LENGTH         (1)
-#endif
+    // Only valid when SPIFFS_USE_MAGIC is enabled. If SPIFFS_USE_MAGIC_LENGTH is
+    // enabled, the magic will also be dependent on the length of the filesystem.
+    // For example, a filesystem configured and formatted for 4 megabytes will not
+    // be accepted for mounting with a configuration defining the filesystem as 2
+    // megabytes.
+    #ifndef SPIFFS_USE_MAGIC_LENGTH
+        #define SPIFFS_USE_MAGIC_LENGTH         (1)
+    #endif
 #endif
 
 extern void FSpiffsSemLock(void);
@@ -203,49 +208,49 @@ extern void FSpiffsSemUnlock(void);
 
 // define this to enter a mutex if you're running on a multithreaded system
 #ifndef SPIFFS_LOCK
-#define SPIFFS_LOCK(fs) FSpiffsSemLock()
+    #define SPIFFS_LOCK(fs) FSpiffsSemLock()
 #endif
 // define this to exit a mutex if you're running on a multithreaded system
 #ifndef SPIFFS_UNLOCK
 
-#define SPIFFS_UNLOCK(fs) FSpiffsSemUnlock()
+    #define SPIFFS_UNLOCK(fs) FSpiffsSemUnlock()
 #endif
 
 // Enable if only one spiffs instance with constant configuration will exist
 // on the target. This will reduce calculations, flash and memory accesses.
 // Parts of configuration must be defined below instead of at time of mount.
 #ifndef SPIFFS_SINGLETON
-#define SPIFFS_SINGLETON 0  /* 只使用单个SPIFFS实例 */
+    #define SPIFFS_SINGLETON 0  /* 只使用单个SPIFFS实例 */
 #endif
 
 #if SPIFFS_SINGLETON
-// Instead of giving parameters in config struct, singleton build must
-// give parameters in defines below.
-#ifndef SPIFFS_CFG_PHYS_SZ
-#define SPIFFS_CFG_PHYS_SZ(ignore)        (1024*1024*2) /* flash 容量 2MB */
-#endif
-#ifndef SPIFFS_CFG_PHYS_ERASE_SZ
-#define SPIFFS_CFG_PHYS_ERASE_SZ(ignore)  (65536) /* flash 擦除单位 */
-#endif
-#ifndef SPIFFS_CFG_PHYS_ADDR
-#define SPIFFS_CFG_PHYS_ADDR(ignore)      (0) /* flash 起始物理地址 */
-#endif
-#ifndef SPIFFS_CFG_LOG_PAGE_SZ
-#define SPIFFS_CFG_LOG_PAGE_SZ(ignore)    (256) /* 页大小，写数据的单位，为256的整数倍 */
-#endif
-#ifndef SPIFFS_CFG_LOG_BLOCK_SZ
-#define SPIFFS_CFG_LOG_BLOCK_SZ(ignore)   (65536) /* 块大小，一般与 flash 擦除单位保持一致 */
-#endif
+    // Instead of giving parameters in config struct, singleton build must
+    // give parameters in defines below.
+    #ifndef SPIFFS_CFG_PHYS_SZ
+        #define SPIFFS_CFG_PHYS_SZ(ignore)        (1024*1024*2) /* flash 容量 2MB */
+    #endif
+    #ifndef SPIFFS_CFG_PHYS_ERASE_SZ
+        #define SPIFFS_CFG_PHYS_ERASE_SZ(ignore)  (65536) /* flash 擦除单位 */
+    #endif
+    #ifndef SPIFFS_CFG_PHYS_ADDR
+        #define SPIFFS_CFG_PHYS_ADDR(ignore)      (0) /* flash 起始物理地址 */
+    #endif
+    #ifndef SPIFFS_CFG_LOG_PAGE_SZ
+        #define SPIFFS_CFG_LOG_PAGE_SZ(ignore)    (256) /* 页大小，写数据的单位，为256的整数倍 */
+    #endif
+    #ifndef SPIFFS_CFG_LOG_BLOCK_SZ
+        #define SPIFFS_CFG_LOG_BLOCK_SZ(ignore)   (65536) /* 块大小，一般与 flash 擦除单位保持一致 */
+    #endif
 #endif
 
 // Enable this if your target needs aligned data for index tables
 #ifndef SPIFFS_ALIGNED_OBJECT_INDEX_TABLES
-#define SPIFFS_ALIGNED_OBJECT_INDEX_TABLES       1  /* 文件索引使用对齐内存 */
+    #define SPIFFS_ALIGNED_OBJECT_INDEX_TABLES       1  /* 文件索引使用对齐内存 */
 #endif
 
 // Enable this if you want the HAL callbacks to be called with the spiffs struct
 #ifndef SPIFFS_HAL_CALLBACK_EXTRA
-#define SPIFFS_HAL_CALLBACK_EXTRA            1
+    #define SPIFFS_HAL_CALLBACK_EXTRA            1
 #endif
 
 // Enable this if you want to add an integer offset to all file handles
@@ -255,7 +260,7 @@ extern void FSpiffsSemUnlock(void);
 // NB: This adds config field fh_ix_offset in the configuration struct when
 // mounting, which must be defined.
 #ifndef SPIFFS_FILEHDL_OFFSET
-#define SPIFFS_FILEHDL_OFFSET                 0
+    #define SPIFFS_FILEHDL_OFFSET                 0
 #endif
 
 // Enable this to compile a read only version of spiffs.
@@ -269,7 +274,7 @@ extern void FSpiffsSemUnlock(void);
 // returned.
 // Might be useful for e.g. bootloaders and such.
 #ifndef SPIFFS_READ_ONLY
-#define SPIFFS_READ_ONLY                      0
+    #define SPIFFS_READ_ONLY                      0
 #endif
 
 // Enable this to add a temporal file cache using the fd buffer.
@@ -291,7 +296,7 @@ extern void FSpiffsSemUnlock(void);
 // directly. If all available descriptors become opened, all cache memory is
 // lost.
 #ifndef SPIFFS_TEMPORAL_FD_CACHE
-#define SPIFFS_TEMPORAL_FD_CACHE              1 /* 启用此选项可优化文件的打开。spiffs 获得的文件描述符越多，缓存就越有效。请注意，这会向每个文件描述符添加额外的 6 个字节 */
+    #define SPIFFS_TEMPORAL_FD_CACHE              1 /* 启用此选项可优化文件的打开。spiffs 获得的文件描述符越多，缓存就越有效。请注意，这会向每个文件描述符添加额外的 6 个字节 */
 #endif
 
 // Temporal file cache hit score. Each time a file is opened, all cached files
@@ -300,7 +305,7 @@ extern void FSpiffsSemUnlock(void);
 // value for the specific access patterns of the application. However, it must
 // be between 1 (no gain for hitting a cached entry often) and 255.
 #ifndef SPIFFS_TEMPORAL_CACHE_HIT_SCORE
-#define SPIFFS_TEMPORAL_CACHE_HIT_SCORE       4
+    #define SPIFFS_TEMPORAL_CACHE_HIT_SCORE       4
 #endif
 
 // Enable to be able to map object indices to memory.
@@ -316,35 +321,35 @@ extern void FSpiffsSemUnlock(void);
 // file is modified in some way. The index buffer is tied to the file
 // descriptor.
 #ifndef SPIFFS_IX_MAP
-#define SPIFFS_IX_MAP                         1
+    #define SPIFFS_IX_MAP                         1
 #endif
 
 // Set SPIFFS_TEST_VISUALISATION to non-zero to enable SPIFFS_vis function
 // in the api. This function will visualize all filesystem using given printf
 // function.
 #ifndef SPIFFS_TEST_VISUALISATION
-#define SPIFFS_TEST_VISUALISATION         1
+    #define SPIFFS_TEST_VISUALISATION         1
 #endif
 #if SPIFFS_TEST_VISUALISATION
-#ifndef spiffs_printf
-#define spiffs_printf(...)                printf(__VA_ARGS__)
-#endif
-// spiffs_printf argument for a free page
-#ifndef SPIFFS_TEST_VIS_FREE_STR
-#define SPIFFS_TEST_VIS_FREE_STR          "_"
-#endif
-// spiffs_printf argument for a deleted page
-#ifndef SPIFFS_TEST_VIS_DELE_STR
-#define SPIFFS_TEST_VIS_DELE_STR          "/"
-#endif
-// spiffs_printf argument for an index page for given object id
-#ifndef SPIFFS_TEST_VIS_INDX_STR
-#define SPIFFS_TEST_VIS_INDX_STR(id)      "i"
-#endif
-// spiffs_printf argument for a data page for given object id
-#ifndef SPIFFS_TEST_VIS_DATA_STR
-#define SPIFFS_TEST_VIS_DATA_STR(id)      "d"
-#endif
+    #ifndef spiffs_printf
+        #define spiffs_printf(...)                printf(__VA_ARGS__)
+    #endif
+    // spiffs_printf argument for a free page
+    #ifndef SPIFFS_TEST_VIS_FREE_STR
+        #define SPIFFS_TEST_VIS_FREE_STR          "_"
+    #endif
+    // spiffs_printf argument for a deleted page
+    #ifndef SPIFFS_TEST_VIS_DELE_STR
+        #define SPIFFS_TEST_VIS_DELE_STR          "/"
+    #endif
+    // spiffs_printf argument for an index page for given object id
+    #ifndef SPIFFS_TEST_VIS_INDX_STR
+        #define SPIFFS_TEST_VIS_INDX_STR(id)      "i"
+    #endif
+    // spiffs_printf argument for a data page for given object id
+    #ifndef SPIFFS_TEST_VIS_DATA_STR
+        #define SPIFFS_TEST_VIS_DATA_STR(id)      "d"
+    #endif
 #endif
 
 /* typedefs for porting */
@@ -374,5 +379,9 @@ typedef u16_t spiffs_obj_id;
 // hold the largest possible span index on the system -
 // i.e. (spiffs_file_system_size / log_page_size) - 1
 typedef u16_t spiffs_span_ix;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* SPIFFS_CONFIG_H_ */

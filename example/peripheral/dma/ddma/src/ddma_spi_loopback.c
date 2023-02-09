@@ -1,24 +1,25 @@
 /*
- * Copyright : (C) 2022 Phytium Information Technology, Inc. 
+ * Copyright : (C) 2022 Phytium Information Technology, Inc.
  * All Rights Reserved.
- *  
- * This program is OPEN SOURCE software: you can redistribute it and/or modify it  
- * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,  
- * either version 1.0 of the License, or (at your option) any later version. 
- *  
- * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;  
+ *
+ * This program is OPEN SOURCE software: you can redistribute it and/or modify it
+ * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,
+ * either version 1.0 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the Phytium Public License for more details. 
- *  
- * 
+ * See the Phytium Public License for more details.
+ *
+ *
  * FilePath: ddma_spi_loopback.c
  * Date: 2022-07-20 09:24:39
  * LastEditTime: 2022-07-20 09:24:39
- * Description:  This files is for 
- * 
- * Modify History: 
+ * Description:  This file is for DDMA task implementations 
+ *
+ * Modify History:
  *  Ver   Who        Date         Changes
  * ----- ------     --------    --------------------------------------
+ * 1.0 zhugengyu    2022/08/26   first commit
  */
 /***************************** Include Files *********************************/
 #include <string.h>
@@ -76,7 +77,7 @@ static TimerHandle_t exit_timer = NULL;
 static u32 loopback_times = 3U;
 static boolean is_running = FALSE;
 
-static const u32 spim_rx_slave_id[FSPI_NUM] = 
+static const u32 spim_rx_slave_id[FSPI_NUM] =
 {
     [FSPI0_ID] = FDDMA0_SPIM0_RX_SLAVE_ID,
     [FSPI1_ID] = FDDMA0_SPIM1_RX_SLAVE_ID,
@@ -84,7 +85,7 @@ static const u32 spim_rx_slave_id[FSPI_NUM] =
     [FSPI3_ID] = FDDMA0_SPIM3_RX_SLAVE_ID
 };
 
-static const u32 spim_tx_slave_id[FSPI_NUM] = 
+static const u32 spim_tx_slave_id[FSPI_NUM] =
 {
     [FSPI0_ID] = FDDMA0_SPIM0_TX_SLAVE_ID,
     [FSPI1_ID] = FDDMA0_SPIM1_TX_SLAVE_ID,
@@ -104,7 +105,7 @@ static const u32 spim_tx_slave_id[FSPI_NUM] =
 static void DdmaSpiLoopbackExitCallback(TimerHandle_t timer)
 {
     FError err = FT_SUCCESS;
-    printf("exiting.....");
+    printf("exiting.....\r\n");
 
     if (send_task) /* stop and delete send task */
     {
@@ -168,8 +169,8 @@ static void DdmaSpiLoopbackAckDMADone(FDdmaChan *const dma_chan, void *arg)
     BaseType_t xhigher_priority_task_woken = pdFALSE;
     BaseType_t x_result = pdFALSE;
 
-    FDDMA_INFO("ack chan-%d %s done for ddma", dma_chan->config.id,
-              (dma_chan->config.id == rx_chan_id) ? "rx" : "tx");
+    FDDMA_INFO("ack chan-%d %s done for ddma.", dma_chan->config.id,
+               (dma_chan->config.id == rx_chan_id) ? "rx" : "tx");
     FASSERT_MSG(chan_evt, "rx event group not exists !!!");
     x_result = xEventGroupSetBitsFromISR(chan_evt,
                                          CHAN_REQ_DONE(dma_chan->config.id),
@@ -186,8 +187,8 @@ static boolean DdmaSpiLoopbackWaitDmaEnd(void)
     u32 wait_bits = CHAN_REQ_DONE(rx_chan_id) | CHAN_REQ_DONE(tx_chan_id);
 
     ev = xEventGroupWaitBits(chan_evt,
-                            wait_bits,
-                            pdTRUE, pdTRUE, wait_delay);    
+                             wait_bits,
+                             pdTRUE, pdTRUE, wait_delay);
     if ((ev & wait_bits) == wait_bits)
     {
         FDDMA_INFO("ddma transfer success !!!");
@@ -252,7 +253,7 @@ static void DdmaInitTask(void *args)
     FASSERT_MSG(spim, "init spim failed");
 
     ddma = FFreeRTOSDdmaInit(ddma_id, &ddma_config); /* deinit ddma */
-    FASSERT_MSG(ddma, "init ddma failed");  
+    FASSERT_MSG(ddma, "init ddma failed");
 
     spi_base = spim->ctrl.config.base_addr;
 
@@ -278,7 +279,7 @@ static void DdmaInitTask(void *args)
 
     DdmaSpiLoopbackGiveSync(); /* give sync and allow sending */
 
-    vTaskDelete(NULL);    
+    vTaskDelete(NULL);
 }
 
 static void DdmaSpiLoopbackSendTask(void *args)
@@ -315,7 +316,7 @@ static void DdmaSpiLoopbackSendTask(void *args)
         spi_msg.tx_buf = tx_buf;
         spi_msg.tx_len = trans_len;
 
-        if ((FFREERTOS_DDMA_OK != FFreeRTOSDdmaStartChannel(ddma, rx_chan_id)) || 
+        if ((FFREERTOS_DDMA_OK != FFreeRTOSDdmaStartChannel(ddma, rx_chan_id)) ||
             (FFREERTOS_DDMA_OK != FFreeRTOSDdmaStartChannel(ddma, tx_chan_id)))
         {
             FDDMA_ERROR("start dma failed !!!");
@@ -332,7 +333,9 @@ static void DdmaSpiLoopbackSendTask(void *args)
         }
 
         if (times++ > loopback_times)
+        {
             break;
+        }
 
         vTaskDelay(wait_delay);
     }
@@ -350,7 +353,7 @@ static void DdmaSpiLoopbackRecvTask(void *args)
     for (;;)
     {
         FDDMA_INFO("waiting recv data...");
-        
+
         /* block recv task until rx done */
         if (!DdmaSpiLoopbackWaitDmaEnd())
         {
@@ -383,7 +386,9 @@ static void DdmaSpiLoopbackRecvTask(void *args)
         }
 
         if (times++ > loopback_times)
+        {
             break;
+        }
 
         DdmaSpiLoopbackGiveSync(); /* recv finished, give send sync and allow sending */
     }
@@ -397,7 +402,7 @@ BaseType_t FFreeRTOSRunDDMASpiLoopback(u32 spi_id, u32 bytes)
 {
     BaseType_t ret = pdPASS;
     const TickType_t total_run_time = pdMS_TO_TICKS(30000UL); /* loopback run for 10 secs deadline */
-  
+
     if (is_running)
     {
         FDDMA_ERROR("task is running !!!!");
@@ -416,38 +421,38 @@ BaseType_t FFreeRTOSRunDDMASpiLoopback(u32 spi_id, u32 bytes)
 
     taskENTER_CRITICAL(); /* no schedule when create task */
 
-    ret = xTaskCreate((TaskFunction_t )DdmaInitTask, /* task entry */
-                        (const char* )"DdmaInitTask",/* task name */
-                        (uint16_t )4096, /* task stack size in words */
-                        NULL, /* task params */
-                        (UBaseType_t )configMAX_PRIORITIES - 1, /* task priority */
-                        NULL); /* task handler */
+    ret = xTaskCreate((TaskFunction_t)DdmaInitTask,  /* task entry */
+                      (const char *)"DdmaInitTask",/* task name */
+                      (uint16_t)4096,  /* task stack size in words */
+                      NULL, /* task params */
+                      (UBaseType_t)configMAX_PRIORITIES - 1,  /* task priority */
+                      NULL); /* task handler */
 
     FASSERT_MSG(pdPASS == ret, "create task failed");
 
-    ret = xTaskCreate((TaskFunction_t )DdmaSpiLoopbackSendTask, /* task entry */
-                        (const char* )"DdmaSpiLoopbackSendTask",/* task name */
-                        (uint16_t )4096, /* task stack size in words */
-                        NULL, /* task params */
-                        (UBaseType_t )configMAX_PRIORITIES - 2, /* task priority */
-                        (TaskHandle_t* )&send_task); /* task handler */
+    ret = xTaskCreate((TaskFunction_t)DdmaSpiLoopbackSendTask,  /* task entry */
+                      (const char *)"DdmaSpiLoopbackSendTask",/* task name */
+                      (uint16_t)4096,  /* task stack size in words */
+                      NULL, /* task params */
+                      (UBaseType_t)configMAX_PRIORITIES - 2,  /* task priority */
+                      (TaskHandle_t *)&send_task); /* task handler */
 
     FASSERT_MSG(pdPASS == ret, "create task failed");
 
-    ret = xTaskCreate((TaskFunction_t )DdmaSpiLoopbackRecvTask, /* task entry */
-                        (const char* )"DdmaSpiLoopbackRecvTask",/* task name */
-                        (uint16_t )4096, /* task stack size in words */
-                        NULL, /* task params */
-                        (UBaseType_t )configMAX_PRIORITIES - 1, /* task priority */
-                        (TaskHandle_t* )&recv_task); /* task handler */
+    ret = xTaskCreate((TaskFunction_t)DdmaSpiLoopbackRecvTask,  /* task entry */
+                      (const char *)"DdmaSpiLoopbackRecvTask",/* task name */
+                      (uint16_t)4096,  /* task stack size in words */
+                      NULL, /* task params */
+                      (UBaseType_t)configMAX_PRIORITIES - 1,  /* task priority */
+                      (TaskHandle_t *)&recv_task); /* task handler */
 
     FASSERT_MSG(pdPASS == ret, "create task failed");
 
-    exit_timer = xTimerCreate("Exit-Timer",		            /* Text name for the software timer - not used by FreeRTOS. */
-                            total_run_time,		            /* The software timer's period in ticks. */
-                            pdFALSE,						/* Setting uxAutoRealod to pdFALSE creates a one-shot software timer. */
-                            NULL,				            /* use timer id to pass task data for reference. */
-                            DdmaSpiLoopbackExitCallback);   /* The callback function to be used by the software timer being created. */
+    exit_timer = xTimerCreate("Exit-Timer",                 /* Text name for the software timer - not used by FreeRTOS. */
+                              total_run_time,                 /* The software timer's period in ticks. */
+                              pdFALSE,                        /* Setting uxAutoRealod to pdFALSE creates a one-shot software timer. */
+                              NULL,                           /* use timer id to pass task data for reference. */
+                              DdmaSpiLoopbackExitCallback);   /* The callback function to be used by the software timer being created. */
 
     FASSERT_MSG(NULL != exit_timer, "create exit timer failed");
 

@@ -1,35 +1,30 @@
 /*
- * Copyright : (C) 2022 Phytium Information Technology, Inc. 
+ * Copyright : (C) 2022 Phytium Information Technology, Inc.
  * All Rights Reserved.
- *  
- * This program is OPEN SOURCE software: you can redistribute it and/or modify it  
- * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,  
- * either version 1.0 of the License, or (at your option) any later version. 
- *  
- * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;  
+ *
+ * This program is OPEN SOURCE software: you can redistribute it and/or modify it
+ * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,
+ * either version 1.0 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the Phytium Public License for more details. 
- *  
- * 
+ * See the Phytium Public License for more details.
+ *
+ *
  * FilePath: fmemory_pool.h
  * Date: 2021-11-25 15:18:57
  * LastEditTime: 2022-02-17 18:02:16
  * Description:  This files is for memory pool API definition
- * 
- * Modify History: 
+ *
+ * Modify History:
  *  Ver   Who        Date         Changes
  * ----- ------     --------    --------------------------------------
  * 1.0   zhugengyu  2021/12/2    init
  * 1.1   zhugengyu  2022/2/28    support memory tag for trace
  */
 
-#ifndef _FT_MEMORY_POOL_H_
-#define _FT_MEMORY_POOL_H_
-
-#ifdef __cplusplus
-extern "C"
-{
-#endif
+#ifndef FMEMORY_POOL_H
+#define FMEMORY_POOL_H
 
 #include <stdio.h>
 #include "FreeRTOS.h"
@@ -41,7 +36,12 @@ extern "C"
 #include "tlsf.h"
 #include "fslink_list.h"
 
-#define FMEMP_SUCCESS           FT_SUCCESS  
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+#define FMEMP_SUCCESS           FT_SUCCESS
 #define FMEMP_ERR_INVALID_BUF   FT_MAKE_ERRCODE(ErrorModGeneral, ErrCommMemp, 0)
 #define FMEMP_ERR_INIT_TLFS     FT_MAKE_ERRCODE(ErrorModGeneral, ErrCommMemp, 1)
 #define FMEMP_ERR_BAD_MALLOC    FT_MAKE_ERRCODE(ErrorModGeneral, ErrCommMemp, 2)

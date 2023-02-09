@@ -52,11 +52,11 @@ extern "C"
 #define portSTACK_TYPE uint32_t
 #define portBASE_TYPE long
 
-	typedef portSTACK_TYPE StackType_t;
-	typedef long BaseType_t;
-	typedef unsigned long UBaseType_t;
+typedef portSTACK_TYPE StackType_t;
+typedef long BaseType_t;
+typedef unsigned long UBaseType_t;
 
-	typedef uint32_t TickType_t;
+typedef uint32_t TickType_t;
 #define portMAX_DELAY (TickType_t)0xffffffffUL
 
 /* 32-bit tick type on a 32-bit architecture, so reads of the tick count do
@@ -76,28 +76,28 @@ not need to be guarded with a critical section. */
 
 /* Called at the end of an ISR that can cause a context switch. */
 #define portEND_SWITCHING_ISR(xSwitchRequired) \
-	{                                          \
-		extern uint32_t ulPortYieldRequired;   \
+    {                                          \
+        extern uint32_t ulPortYieldRequired;   \
                                                \
-		if (xSwitchRequired != pdFALSE)        \
-		{                                      \
-			ulPortYieldRequired = pdTRUE;      \
-		}                                      \
-	}
+        if (xSwitchRequired != pdFALSE)        \
+        {                                      \
+            ulPortYieldRequired = pdTRUE;      \
+        }                                      \
+    }
 
 #define portYIELD_FROM_ISR(x) portEND_SWITCHING_ISR(x)
 #define portYIELD() __asm volatile("SWI 0" :: \
-									   : "memory");
+                                       : "memory");
 
-	/*-----------------------------------------------------------
- * Critical section control
- *----------------------------------------------------------*/
+/*-----------------------------------------------------------
+* Critical section control
+*----------------------------------------------------------*/
 
-	extern void vPortEnterCritical(void);
-	extern void vPortExitCritical(void);
-	extern uint32_t ulPortSetInterruptMask(void);
-	extern void vPortClearInterruptMask(uint32_t ulNewMaskValue);
-	extern void vPortInstallFreeRTOSVectorTable(void);
+extern void vPortEnterCritical(void);
+extern void vPortExitCritical(void);
+extern uint32_t ulPortSetInterruptMask(void);
+extern void vPortClearInterruptMask(uint32_t ulNewMaskValue);
+extern void vPortInstallFreeRTOSVectorTable(void);
 
 /* These macros do not globally disable/enable interrupts.  They do mask off
 interrupts that have a priority below configMAX_API_CALL_INTERRUPT_PRIORITY. */
@@ -114,9 +114,9 @@ macros is used. */
 #define portTASK_FUNCTION_PROTO(vFunction, pvParameters) void vFunction(void *pvParameters)
 #define portTASK_FUNCTION(vFunction, pvParameters) void vFunction(void *pvParameters)
 
-	/* Prototype of the FreeRTOS tick handler.  This must be installed as the
+/* Prototype of the FreeRTOS tick handler.  This must be installed as the
 handler for whichever peripheral is used to generate the RTOS tick. */
-	void FreeRTOS_Tick_Handler(void);
+void FreeRTOS_Tick_Handler(void);
 
 /* If configUSE_TASK_FPU_SUPPORT is set to 1 (or left undefined) then tasks are
 created without an FPU context and must call vPortTaskUsesFPU() to give
@@ -124,10 +124,10 @@ themselves an FPU context before using any FPU instructions.  If
 configUSE_TASK_FPU_SUPPORT is set to 2 then all tasks will have an FPU context
 by default. */
 #if (configUSE_TASK_FPU_SUPPORT != 2)
-	void vPortTaskUsesFPU(void);
+void vPortTaskUsesFPU(void);
 #else
 /* Each task has an FPU context already, so define this function away to
-	nothing to prevent it being called accidentally. */
+    nothing to prevent it being called accidentally. */
 #define vPortTaskUsesFPU()
 #endif
 #define portTASK_USES_FLOATING_POINT() vPortTaskUsesFPU()
@@ -146,14 +146,14 @@ by default. */
 #define portRECORD_READY_PRIORITY(uxPriority, uxReadyPriorities) (uxReadyPriorities) |= (1UL << (uxPriority))
 #define portRESET_READY_PRIORITY(uxPriority, uxReadyPriorities) (uxReadyPriorities) &= ~(1UL << (uxPriority))
 
-	/*-----------------------------------------------------------*/
+/*-----------------------------------------------------------*/
 
 #define portGET_HIGHEST_PRIORITY(uxTopPriority, uxReadyPriorities) uxTopPriority = (31UL - (uint32_t)__builtin_clz(uxReadyPriorities))
 
 #endif /* configUSE_PORT_OPTIMISED_TASK_SELECTION */
 
 #ifdef configASSERT
-	void vPortValidateInterruptPriority(void);
+void vPortValidateInterruptPriority(void);
 #define portASSERT_IF_INTERRUPT_PRIORITY_INVALID() vPortValidateInterruptPriority()
 #endif /* configASSERT */
 
@@ -167,22 +167,22 @@ by default. */
 /* The number of bits to shift for an interrupt priority is dependent on the
 number of bits implemented by the interrupt controller. */
 #if configUNIQUE_INTERRUPT_PRIORITIES == 16
-#define portPRIORITY_SHIFT 4
-#define portMAX_BINARY_POINT_VALUE 3
+    #define portPRIORITY_SHIFT 4
+    #define portMAX_BINARY_POINT_VALUE 3
 #elif configUNIQUE_INTERRUPT_PRIORITIES == 32
-#define portPRIORITY_SHIFT 3
-#define portMAX_BINARY_POINT_VALUE 2
+    #define portPRIORITY_SHIFT 3
+    #define portMAX_BINARY_POINT_VALUE 2
 #elif configUNIQUE_INTERRUPT_PRIORITIES == 64
-#define portPRIORITY_SHIFT 2
-#define portMAX_BINARY_POINT_VALUE 1
+    #define portPRIORITY_SHIFT 2
+    #define portMAX_BINARY_POINT_VALUE 1
 #elif configUNIQUE_INTERRUPT_PRIORITIES == 128
-#define portPRIORITY_SHIFT 1
-#define portMAX_BINARY_POINT_VALUE 0
+    #define portPRIORITY_SHIFT 1
+    #define portMAX_BINARY_POINT_VALUE 0
 #elif configUNIQUE_INTERRUPT_PRIORITIES == 256
-#define portPRIORITY_SHIFT 0
-#define portMAX_BINARY_POINT_VALUE 0
+    #define portPRIORITY_SHIFT 0
+    #define portMAX_BINARY_POINT_VALUE 0
 #else
-#error Invalid configUNIQUE_INTERRUPT_PRIORITIES setting.  configUNIQUE_INTERRUPT_PRIORITIES must be set to the number of unique priorities implemented by the target hardware
+    #error Invalid configUNIQUE_INTERRUPT_PRIORITIES setting.  configUNIQUE_INTERRUPT_PRIORITIES must be set to the number of unique priorities implemented by the target hardware
 #endif
 
 /* Interrupt controller access addresses. */
@@ -194,6 +194,6 @@ number of bits implemented by the interrupt controller. */
 
 
 #define portMEMORY_BARRIER() __asm volatile("" :: \
-												: "memory")
+                                                : "memory")
 
 #endif /* PORTMACRO_H */

@@ -1,24 +1,25 @@
 /*
- * Copyright : (C) 2022 Phytium Information Technology, Inc. 
+ * Copyright : (C) 2022 Phytium Information Technology, Inc.
  * All Rights Reserved.
- *  
- * This program is OPEN SOURCE software: you can redistribute it and/or modify it  
- * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,  
- * either version 1.0 of the License, or (at your option) any later version. 
- *  
- * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;  
+ *
+ * This program is OPEN SOURCE software: you can redistribute it and/or modify it
+ * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,
+ * either version 1.0 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the Phytium Public License for more details. 
- *  
- * 
+ * See the Phytium Public License for more details.
+ *
+ *
  * FilePath: fpwm_os.c
  * Date: 2022-08-15 14:20:19
  * LastEditTime: 2022-08-25 16:59:51
- * Description:  This file is for 
- * 
- * Modify History: 
+ * Description:  This file is for required function implementations of pwm driver used in FreeRTOS.
+ *
+ * Modify History:
  *  Ver   Who        Date         Changes
  * ----- ------     --------    --------------------------------------
+ * 1.0 wangxiaodong 2022/08/26  first commit
  */
 #include <stdio.h>
 #include <string.h>
@@ -59,7 +60,7 @@ FFreeRTOSPwm *FFreeRTOSPwmInit(u32 instance_id)
 
     FASSERT(FPwmCfgInitialize(&os_pwm[instance_id].pwm_ctrl, &pconfig) == FT_SUCCESS);
     FASSERT((os_pwm[instance_id].pwm_semaphore = xSemaphoreCreateMutex()) != NULL);
-    
+
     return (&os_pwm[instance_id]);
 }
 
@@ -73,11 +74,11 @@ FError FFreeRTOSPwmDeinit(FFreeRTOSPwm *os_pwm_p)
 {
     FASSERT(os_pwm_p);
     FASSERT(os_pwm_p->pwm_semaphore != NULL);
-    
+
     FPwmDeInitialize(&os_pwm_p->pwm_ctrl);
     vSemaphoreDelete(os_pwm_p->pwm_semaphore);
     memset(os_pwm_p, 0, sizeof(*os_pwm_p));
-    
+
     return FPWM_SUCCESS;
 }
 
@@ -97,12 +98,12 @@ static FError FFreeRTOSPwmControl(FFreeRTOSPwm *os_pwm_p, int cmd, void *arg)
     /* New contrl can be performed only after current one is finished */
     if (pdFALSE == xSemaphoreTake(os_pwm_p->pwm_semaphore, portMAX_DELAY))
     {
-        FPWM_ERROR("Pwm xSemaphoreTake failed\r\n");
+        FPWM_ERROR("Pwm xSemaphoreTake failed.");
         /* We could not take the semaphore, exit with 0 data received */
         return FREERTOS_PWM_SEM_ERROR;
     }
 
-    switch (cmd) 
+    switch (cmd)
     {
         case FREERTOS_PWM_CTRL_SET:
             ret = FPwmVariableSet(&os_pwm_p->pwm_ctrl, configuration->channel, &configuration->pwm_cfg);
@@ -133,7 +134,7 @@ static FError FFreeRTOSPwmControl(FFreeRTOSPwm *os_pwm_p, int cmd, void *arg)
             break;
 
         default:
-            FPWM_ERROR("invalid cmd.");
+            FPWM_ERROR("Invalid cmd.");
             ret = FPWM_ERR_NOT_SUPPORT;
             break;
     }
@@ -142,7 +143,7 @@ static FError FFreeRTOSPwmControl(FFreeRTOSPwm *os_pwm_p, int cmd, void *arg)
     if (pdFALSE == xSemaphoreGive(os_pwm_p->pwm_semaphore))
     {
         /* We could not post the semaphore, exit with error */
-        FPWM_ERROR("Pwm xSemaphoreGive failed\r\n");
+        FPWM_ERROR("Pwm xSemaphoreGive failed.");
         return FREERTOS_PWM_SEM_ERROR;
     }
 
@@ -188,9 +189,9 @@ FError FFreeRTOSPwmGet(FFreeRTOSPwm *os_pwm_p, FPwmChannel channel, FPwmVariable
     FError ret = FPWM_SUCCESS;
     FFreeRTOSPwmConfig configuration = {0};
     configuration.channel = channel;
-    
+
     ret = FFreeRTOSPwmControl(os_pwm_p, FREERTOS_PWM_CTRL_GET, &configuration);
-    if(ret == FPWM_SUCCESS)
+    if (ret == FPWM_SUCCESS)
     {
         *pwm_cfg_p = configuration.pwm_cfg;
     }
@@ -210,12 +211,12 @@ FError FFreeRTOSPwmEnable(FFreeRTOSPwm *os_pwm_p, FPwmChannel channel, boolean s
     FASSERT(os_pwm_p);
     FASSERT(os_pwm_p->pwm_semaphore != NULL);
     FASSERT(channel < FPWM_CHANNEL_NUM);
-    
+
     FError ret = FPWM_SUCCESS;
     FFreeRTOSPwmConfig configuration = {0};
     configuration.channel = channel;
 
-    if (state==TRUE)
+    if (state == TRUE)
     {
         ret = FFreeRTOSPwmControl(os_pwm_p, FREERTOS_PWM_CTRL_ENABLE, &configuration);
     }
@@ -223,7 +224,7 @@ FError FFreeRTOSPwmEnable(FFreeRTOSPwm *os_pwm_p, FPwmChannel channel, boolean s
     {
         ret = FFreeRTOSPwmControl(os_pwm_p, FREERTOS_PWM_CTRL_DISABLE, &configuration);
     }
-    
+
     return ret;
 }
 
@@ -250,7 +251,7 @@ FError FFreeRTOSPwmDbSet(FFreeRTOSPwm *os_pwm_p, FPwmDbVariableConfig *db_cfg_p)
  * @name: FFreeRTOSPwmDbGet
  * @msg:  get pwm db config, include polarity, input source, delay time.
  * @param {FFreeRTOSPwm} *os_pwm_p, pointer to os pwm instance
- * @param {FPwmDbVariableConfig} db_cfg_p, pwm db config parameters 
+ * @param {FPwmDbVariableConfig} db_cfg_p, pwm db config parameters
  * @return err code information, FPWM_SUCCESS indicates success，others indicates failed
  */
 FError FFreeRTOSPwmDbGet(FFreeRTOSPwm *os_pwm_p, FPwmDbVariableConfig *db_cfg_p)
@@ -260,9 +261,9 @@ FError FFreeRTOSPwmDbGet(FFreeRTOSPwm *os_pwm_p, FPwmDbVariableConfig *db_cfg_p)
     FASSERT(db_cfg_p != NULL);
     FError ret = FPWM_SUCCESS;
     FFreeRTOSPwmConfig configuration = {0};
-    
+
     ret = FFreeRTOSPwmControl(os_pwm_p, FREERTOS_PWM_CTRL_DB_GET, &configuration);
-    if(ret == FPWM_SUCCESS)
+    if (ret == FPWM_SUCCESS)
     {
         *db_cfg_p = configuration.db_cfg;
     }

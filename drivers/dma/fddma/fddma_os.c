@@ -1,22 +1,22 @@
 /*
- * Copyright : (C) 2022 Phytium Information Technology, Inc. 
+ * Copyright : (C) 2022 Phytium Information Technology, Inc.
  * All Rights Reserved.
- *  
- * This program is OPEN SOURCE software: you can redistribute it and/or modify it  
- * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,  
- * either version 1.0 of the License, or (at your option) any later version. 
- *  
- * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;  
+ *
+ * This program is OPEN SOURCE software: you can redistribute it and/or modify it
+ * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,
+ * either version 1.0 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the Phytium Public License for more details. 
- *  
- * 
+ * See the Phytium Public License for more details.
+ *
+ *
  * FilePath: fddma_os.c
  * Date: 2022-07-18 08:51:25
  * LastEditTime: 2022-07-18 08:51:25
- * Description:  This files is for 
- * 
- * Modify History: 
+ * Description:  This file is for required function implementations of ddma driver used in FreeRTOS.
+ *
+ * Modify History:
  *  Ver   Who        Date         Changes
  * ----- ------     --------    --------------------------------------
  * 1.0   zhugengyu  2022/7/27   init commit
@@ -50,10 +50,10 @@ static FFreeRTOSDdma ddma[FDDMA_INSTANCE_NUM];
 /************************** Function Prototypes ******************************/
 static inline FError FDdmaOsTakeSema(SemaphoreHandle_t locker)
 {
-    FASSERT_MSG((NULL != locker), "locker not exists");
+    FASSERT_MSG((NULL != locker), "Locker not exists.");
     if (pdFALSE == xSemaphoreTake(locker, portMAX_DELAY))
     {
-        FDDMA_ERROR("failed to give locker !!!");
+        FDDMA_ERROR("Failed to give locker!!!");
         return FFREERTOS_DDMA_SEMA_ERR;
     }
 
@@ -62,10 +62,10 @@ static inline FError FDdmaOsTakeSema(SemaphoreHandle_t locker)
 
 static inline void FDdmaOsGiveSema(SemaphoreHandle_t locker)
 {
-    FASSERT_MSG((NULL != locker), "locker not exists");
+    FASSERT_MSG((NULL != locker), "Locker not exists.");
     if (pdFALSE == xSemaphoreGive(locker))
     {
-        FDDMA_ERROR("failed to give locker !!!");
+        FDDMA_ERROR("Failed to give locker!!!");
     }
 
     return;
@@ -74,7 +74,7 @@ static inline void FDdmaOsGiveSema(SemaphoreHandle_t locker)
 /*****************************************************************************/
 static void FDdmaOsSetupInterrupt(FDdma *const instance)
 {
-	FASSERT(instance);
+    FASSERT(instance);
     FDdmaConfig *config = &instance->config;
     uintptr base_addr = config->base_addr;
     u32 cpu_id = 0;
@@ -85,15 +85,15 @@ static void FDdmaOsSetupInterrupt(FDdma *const instance)
     InterruptSetPriority(config->irq_num, config->irq_prority);
 
     /* register intr callback */
-    InterruptInstall(config->irq_num, 
-                     FDdmaIrqHandler, 
-                     instance, 
+    InterruptInstall(config->irq_num,
+                     FDdmaIrqHandler,
+                     instance,
                      NULL);
 
     /* enable ddma0 irq */
     InterruptUmask(config->irq_num);
 
-    FDDMA_INFO("ddma interrupt setup done !!!");
+    FDDMA_INFO("ddma interrupt setup done!!!");
     return;
 }
 
@@ -127,12 +127,12 @@ FFreeRTOSDdma *FFreeRTOSDdmaInit(u32 id, const FFreeRTOSDdmaConfig *input_config
     err = FDdmaCfgInitialization(ctrl, &config);
     if (FDDMA_SUCCESS != err)
     {
-        FDDMA_ERROR("init ddma-%d failed, err: 0x%x !!!", id, err);
+        FDDMA_ERROR("Init ddma-%d failed, err: 0x%x!!!", id, err);
         goto err_exit;
     }
 
-    FASSERT_MSG(NULL == instance->locker, "locker exists !!!");
-    FASSERT_MSG((instance->locker = xSemaphoreCreateMutex()) != NULL, "create mutex failed !!!");
+    FASSERT_MSG(NULL == instance->locker, "Locker exists!!!");
+    FASSERT_MSG((instance->locker = xSemaphoreCreateMutex()) != NULL, "Create mutex failed!!!");
 
     FDdmaOsSetupInterrupt(ctrl);
 
@@ -156,14 +156,14 @@ FError FFreeRTOSDdmaDeinit(FFreeRTOSDdma *const instance)
 
     if (FT_COMPONENT_IS_READY != ctrl->is_ready)
     {
-        FDDMA_ERROR("ddma-%d not yet init !!!", ctrl->config.id);
+        FDDMA_ERROR("ddma-%d not yet init!!!", ctrl->config.id);
         return FFREERTOS_DDMA_NOT_INIT;
     }
 
     /* no scheduler during deinit */
-    taskENTER_CRITICAL(); 
+    taskENTER_CRITICAL();
 
-    FASSERT_MSG(NULL != instance->locker, "locker not exists !!!");
+    FASSERT_MSG(NULL != instance->locker, "Locker not exists!!!");
 
     /* disable ddma irq */
     FDdmaStop(ctrl);
@@ -199,31 +199,33 @@ FError FFreeRTOSDdmaSetupChannel(FFreeRTOSDdma *const instance, u32 chan_id, con
 
     err = FDdmaOsTakeSema(instance->locker);
     if (FFREERTOS_DDMA_OK != err)
+    {
         return err;
+    }
 
     /* parpare channel configs */
     chan_config->id = chan_id;
     chan_config->slave_id = request->slave_id;
-    FASSERT_MSG((0 != request->mem_addr), "invaild memory address");
+    FASSERT_MSG((0 != request->mem_addr), "Invaild memory address.");
     chan_config->ddr_addr = request->mem_addr;
     chan_config->dev_addr = request->dev_addr;
     chan_config->req_mode = request->is_rx ? FDDMA_CHAN_REQ_RX : FDDMA_CHAN_REQ_TX;
     chan_config->timeout = 0xffff;
-    chan_config->trans_len = request->trans_len;  
+    chan_config->trans_len = request->trans_len;
 
     FDDMA_INFO("channel: %d, slave id: %d, ddr: 0x%x, dev: 0x%x, req mode: %s, trans len: %d",
-                chan_config->id,
-                chan_config->slave_id,
-                chan_config->ddr_addr,
-                chan_config->dev_addr,
-                (FDDMA_CHAN_REQ_TX == chan_config->req_mode) ? "mem=>dev" : "dev=>mem",
-                chan_config->trans_len);
+               chan_config->id,
+               chan_config->slave_id,
+               chan_config->ddr_addr,
+               chan_config->dev_addr,
+               (FDDMA_CHAN_REQ_TX == chan_config->req_mode) ? "mem=>dev" : "dev=>mem",
+               chan_config->trans_len);
 
     /* allocate channel */
     err = FDdmaAllocateChan(ctrl, chan, chan_config);
     if (FDDMA_SUCCESS != err)
     {
-        FDDMA_ERROR("channel bind failed: 0x%x", err);
+        FDDMA_ERROR("Channel bind failed: 0x%x", err);
         goto err_exit;
     }
 
@@ -252,25 +254,27 @@ FError FFreeRTOSDdmaRevokeChannel(FFreeRTOSDdma *const instance, u32 chan_id)
 
     err = FDdmaOsTakeSema(instance->locker);
     if (FFREERTOS_DDMA_OK != err)
+    {
         return err;
+    }
 
     err = FDdmaDeactiveChan(chan); /* deactive channel in use */
     if (FDDMA_SUCCESS != err)
     {
-        FDDMA_ERROR("channel deactive failed: 0x%x", err);
+        FDDMA_ERROR("Channel deactive failed: 0x%x", err);
         goto err_exit;
     }
 
     err = FDdmaDellocateChan(chan); /* free channel resource */
     if (FDDMA_SUCCESS != err)
     {
-        FDDMA_ERROR("channel deallocate failed: 0x%x", err);
+        FDDMA_ERROR("Channel deallocate failed: 0x%x", err);
         goto err_exit;
     }
 
 err_exit:
     FDdmaOsGiveSema(instance->locker);
-    return err;    
+    return err;
 }
 
 /**
@@ -289,7 +293,9 @@ FError FFreeRTOSDdmaStartChannel(FFreeRTOSDdma *const instance, u32 chan_id)
 
     err = FDdmaOsTakeSema(instance->locker);
     if (FFREERTOS_DDMA_OK != err)
+    {
         return err;
+    }
 
     /* active all channel allocated */
     chan = ctrl->chan[chan_id];
@@ -298,21 +304,21 @@ FError FFreeRTOSDdmaStartChannel(FFreeRTOSDdma *const instance, u32 chan_id)
         err = FDdmaActiveChan(chan); /* active channel if in use */
         if (FDDMA_SUCCESS != err)
         {
-            FDDMA_ERROR("channel start failed: 0x%x", err);
+            FDDMA_ERROR("Channel start failed: 0x%x", err);
             goto err_exit;
-        } 
+        }
     }
 
     err = FDdmaStart(ctrl); /* start ddma controller */
     if (FDDMA_SUCCESS != err)
     {
-        FDDMA_ERROR("start ddma failed: 0x%x", err);
+        FDDMA_ERROR("Start ddma failed: 0x%x", err);
         goto err_exit;
-    }       
+    }
 
 err_exit:
     FDdmaOsGiveSema(instance->locker);
-    return err; 
+    return err;
 }
 
 FError FFreeRTOSDdmaStopChannel(FFreeRTOSDdma *const instance, u32 chan_id)
@@ -325,7 +331,9 @@ FError FFreeRTOSDdmaStopChannel(FFreeRTOSDdma *const instance, u32 chan_id)
 
     err = FDdmaOsTakeSema(instance->locker);
     if (FFREERTOS_DDMA_OK != err)
+    {
         return err;
+    }
 
     /* deactive all channel allocated */
     chan = ctrl->chan[chan_id];
@@ -334,14 +342,14 @@ FError FFreeRTOSDdmaStopChannel(FFreeRTOSDdma *const instance, u32 chan_id)
         err = FDdmaDeactiveChan(chan); /* deactive channel if in use */
         if (FDDMA_SUCCESS != err)
         {
-            FDDMA_ERROR("channel start failed: 0x%x", err);
+            FDDMA_ERROR("Channel start failed: 0x%x", err);
             goto err_exit;
-        }  
+        }
     }
 
 err_exit:
     FDdmaOsGiveSema(instance->locker);
-    return err;         
+    return err;
 }
 
 /**
@@ -361,16 +369,18 @@ FError FFreeRTOSDdmaStop(FFreeRTOSDdma *const instance)
 
     err = FDdmaOsTakeSema(instance->locker);
     if (FFREERTOS_DDMA_OK != err)
+    {
         return err;
+    }
 
     err = FDdmaStop(ctrl); /* stop ddma controller */
     if (FDDMA_SUCCESS != err)
     {
-        FDDMA_ERROR("stop ddma failed: 0x%x", err);
+        FDDMA_ERROR("Stop ddma failed: 0x%x", err);
         goto err_exit;
     }
 
 err_exit:
     FDdmaOsGiveSema(instance->locker);
-    return err;     
+    return err;
 }

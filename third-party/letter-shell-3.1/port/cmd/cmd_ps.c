@@ -1,24 +1,25 @@
 /*
- * Copyright : (C) 2022 Phytium Information Technology, Inc. 
+ * Copyright : (C) 2022 Phytium Information Technology, Inc.
  * All Rights Reserved.
- *  
- * This program is OPEN SOURCE software: you can redistribute it and/or modify it  
- * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,  
- * either version 1.0 of the License, or (at your option) any later version. 
- *  
- * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;  
+ *
+ * This program is OPEN SOURCE software: you can redistribute it and/or modify it
+ * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,
+ * either version 1.0 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the Phytium Public License for more details. 
- *  
- * 
+ * See the Phytium Public License for more details.
+ *
+ *
  * FilePath: cmd_os_stats.c
  * Date: 2022-02-25 08:34:53
  * LastEditTime: 2022-02-25 08:34:53
- * Description:  This file is for 
- * 
- * Modify History: 
-*  Ver   Who        Date         Changes
- * ----- ------     --------    --------------------------------------
+ * Description:  This file is for the ps command functions
+ *
+ * Modify History:
+*  Ver     Who          Date         Changes
+ * -----  ------      --------    --------------------------------------
+ * 1.0  wangxiaodong  2022/11/24  first release
  */
 #include "FreeRTOS.h"
 #include "task.h"
@@ -35,18 +36,18 @@ static int DisplayTaskStats(int argc, char *argv[])
     memset(CPU_RunInfo, 0, PS_LENGTH); /*信息缓冲区清零*/
     vTaskList((char *)&CPU_RunInfo); //获取任务运行时间信息
 
-    printf("---------------------------------------------\r\n"); 
-    printf("task_name\ttask_state\tpriority\tstack\ttask_num\r\n"); 
-    printf("%s", CPU_RunInfo); 
+    printf("---------------------------------------------\r\n");
+    printf("task_name\ttask_state\tpriority\tstack\ttask_num\r\n");
+    printf("%s", CPU_RunInfo);
     printf("---------------------------------------------\r\n");
 
     memset(CPU_RunInfo, 0, PS_LENGTH); //信息缓冲区清零
 
     vTaskGetRunTimeStats((char *)&CPU_RunInfo);
 
-    printf("task_name\trun_time_count\tusage_rate\r\n"); 
-    printf("%s", CPU_RunInfo); 
-    printf("---------------------------------------------\r\n\n"); 
+    printf("task_name\trun_time_count\tusage_rate\r\n");
+    printf("%s", CPU_RunInfo);
+    printf("---------------------------------------------\r\n\n");
 
     return 0;
 }

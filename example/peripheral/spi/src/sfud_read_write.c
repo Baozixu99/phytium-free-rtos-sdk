@@ -1,24 +1,25 @@
 /*
- * Copyright : (C) 2022 Phytium Information Technology, Inc. 
+ * Copyright : (C) 2022 Phytium Information Technology, Inc.
  * All Rights Reserved.
- *  
- * This program is OPEN SOURCE software: you can redistribute it and/or modify it  
- * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,  
- * either version 1.0 of the License, or (at your option) any later version. 
- *  
- * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;  
+ *
+ * This program is OPEN SOURCE software: you can redistribute it and/or modify it
+ * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,
+ * either version 1.0 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the Phytium Public License for more details. 
- *  
- * 
+ * See the Phytium Public License for more details.
+ *
+ *
  * FilePath: sfud_read_write.c
  * Date: 2022-07-12 09:53:00
  * LastEditTime: 2022-07-12 09:53:02
- * Description:  This files is for 
- * 
- * Modify History: 
+ * Description:  This file is for providing functions used in cmd_sf.c file.
+ *
+ * Modify History:
  *  Ver   Who        Date         Changes
  * ----- ------     --------    --------------------------------------
+ *  1.0  zhugengyu  2022/8/26    first commit
  */
 /***************************** Include Files *********************************/
 #include <stdio.h>
@@ -35,7 +36,7 @@
 
 /************************** Constant Definitions *****************************/
 #define SFUD_WR_BUF_LEN   64
-#define SFUD_FLASH_INDEX  SFUD_FSPIM2_INDEX  
+#define SFUD_FLASH_INDEX  SFUD_FSPIM2_INDEX
 
 /************************** Variable Definitions *****************************/
 static u32 flash_addr = 0x0;
@@ -50,24 +51,26 @@ static u8 flash_buffer[SFUD_WR_BUF_LEN];
 /************************** Function Prototypes ******************************/
 
 /*****************************************************************************/
-static void SfudInitTask(void * args)
+static void SfudInitTask(void *args)
 {
     sfud_err sfud_ret = sfud_init();
     if (SFUD_SUCCESS != sfud_ret)
+    {
         goto task_exit;
+    }
 
     const sfud_flash *flash = sfud_get_device(SFUD_FLASH_INDEX);
     if (NULL == flash)
     {
-        FSPIM_ERROR("flash not found !!!");
+        FSPIM_ERROR("Flash not found.");
         goto task_exit;
     }
 
     /* print flash info */
-    printf("flash %s is found !!!!\r\n", flash->name);
+    printf("Flash %s is found.\r\n", flash->name);
     printf("    manufacturer id: 0x%x \r\n", flash->chip.mf_id);
     printf("    memory-type id: 0x%x \r\n", flash->chip.type_id);
-    printf("    capacity id: 0x%x \r\n", flash->chip.capacity_id);    
+    printf("    capacity id: 0x%x \r\n", flash->chip.capacity_id);
 
     if (flash->chip.capacity < SZ_1M)
     {
@@ -75,16 +78,16 @@ static void SfudInitTask(void * args)
     }
     else
     {
-        printf("    cacpity: %d MB\r\n", flash->chip.capacity / SZ_1M);        
+        printf("    cacpity: %d MB\r\n", flash->chip.capacity / SZ_1M);
     }
 
-    printf("    erase granularity: %d Bytes\r\n", flash->chip.erase_gran);
+    printf("    Erase granularity: %d Bytes\r\n", flash->chip.erase_gran);
 
 task_exit:
-    vTaskDelete(NULL); /* delete task itself */    
+    vTaskDelete(NULL); /* delete task itself */
 }
 
-static void SfudWriteTask(void * args)
+static void SfudWriteTask(void *args)
 {
     sfud_err sfud_ret;
     u32 in_chip_addr = flash_addr;
@@ -95,7 +98,7 @@ static void SfudWriteTask(void * args)
     flash = sfud_get_device(SFUD_FLASH_INDEX);
     if (NULL == flash)
     {
-        FSPIM_ERROR("flash not found!!!");
+        FSPIM_ERROR("Flash not found.");
         goto task_exit;
     }
 
@@ -103,25 +106,25 @@ static void SfudWriteTask(void * args)
     sfud_ret = sfud_write_status(flash, TRUE, status);
     if (SFUD_SUCCESS != sfud_ret)
     {
-        FSPIM_ERROR("write flash status failed !!!");
+        FSPIM_ERROR("Write flash status failed.");
         goto task_exit;
-    }   
+    }
 
     /* get flash status */
     sfud_ret = sfud_read_status(flash, &status);
     if (SFUD_SUCCESS != sfud_ret)
     {
-        FSPIM_ERROR("read flash status failed !!!");
+        FSPIM_ERROR("Read flash status failed.");
         goto task_exit;
     }
     else
     {
-        printf("flash status: 0x%x\r\n", status);
+        printf("Flash status: 0x%x\r\n", status);
     }
 
     /* write to flash */
     taskENTER_CRITICAL(); /* no schedule when printf bulk */
-    printf("data to write @0x%x...\r\n", in_chip_addr);
+    printf("Data to write @0x%x...\r\n", in_chip_addr);
     FtDumpHexByte(write_buf, SFUD_WR_BUF_LEN);
     taskEXIT_CRITICAL();
 
@@ -129,14 +132,14 @@ static void SfudWriteTask(void * args)
     sfud_ret = sfud_erase(flash, in_chip_addr, SFUD_WR_BUF_LEN);
     if (SFUD_SUCCESS != sfud_ret)
     {
-        FSPIM_ERROR("erase flash failed !!!");
+        FSPIM_ERROR("Erase flash failed.");
         goto task_exit;
     }
 
     sfud_ret = sfud_write(flash, in_chip_addr, SFUD_WR_BUF_LEN, write_buf);
     if (SFUD_SUCCESS != sfud_ret)
     {
-        FSPIM_ERROR("write flash failed !!!");
+        FSPIM_ERROR("Write flash failed.");
         goto task_exit;
     }
 
@@ -144,7 +147,7 @@ task_exit:
     vTaskDelete(NULL); /* delete task itself */
 }
 
-static void SfudReadTask(void * args)
+static void SfudReadTask(void *args)
 {
     sfud_err sfud_ret;
     u32 in_chip_addr = flash_addr;
@@ -155,7 +158,7 @@ static void SfudReadTask(void * args)
     flash = sfud_get_device(SFUD_FLASH_INDEX);
     if (NULL == flash)
     {
-        FSPIM_ERROR("flash not found!!!");
+        FSPIM_ERROR("Flash not found.");
         goto task_exit;
     }
 
@@ -163,12 +166,12 @@ static void SfudReadTask(void * args)
     sfud_ret = sfud_read_status(flash, &status);
     if (SFUD_SUCCESS != sfud_ret)
     {
-        FSPIM_ERROR("read flash status failed !!!");
+        FSPIM_ERROR("Read flash status failed.");
         goto task_exit;
     }
     else
     {
-        printf("flash status: 0x%x\r\n", status);
+        printf("Flash status: 0x%x\r\n", status);
     }
 
     /* read from flash */
@@ -176,12 +179,12 @@ static void SfudReadTask(void * args)
     sfud_ret = sfud_read(flash, in_chip_addr, SFUD_WR_BUF_LEN, read_buf);
     if (SFUD_SUCCESS != sfud_ret)
     {
-        FSPIM_ERROR("read flash failed !!!");
+        FSPIM_ERROR("Read flash failed.");
         goto task_exit;
     }
 
     taskENTER_CRITICAL(); /* no schedule when printf bulk */
-    printf("data read from flash @0x%x...\r\n", in_chip_addr);
+    printf("Data read from flash @0x%x...\r\n", in_chip_addr);
     FtDumpHexByte(read_buf, SFUD_WR_BUF_LEN);
     taskEXIT_CRITICAL();
 
@@ -192,31 +195,31 @@ task_exit:
 BaseType_t FFreeRTOSSfudRead(u32 in_chip_addr)
 {
     BaseType_t xReturn = pdPASS;
-    
-    printf("sfud read task\r\n");
-    
+
+    printf("This is sfud read task.\r\n");
+
     memset(flash_buffer, 0, sizeof(flash_buffer));
     flash_addr = in_chip_addr;
 
     taskENTER_CRITICAL(); /* no schedule when create task */
 
-    xReturn = xTaskCreate((TaskFunction_t )SfudReadTask,
-                            (const char* )"SfudReadTask",
-                            (uint16_t )2048,
-                            NULL,
-                            (UBaseType_t )configMAX_PRIORITIES - 1,
-                            NULL);
-    
+    xReturn = xTaskCreate((TaskFunction_t)SfudReadTask,
+                          (const char *)"SfudReadTask",
+                          (uint16_t)2048,
+                          NULL,
+                          (UBaseType_t)configMAX_PRIORITIES - 1,
+                          NULL);
+
     taskEXIT_CRITICAL(); /* allow schedule since task created */
-                            
+
     return xReturn;
 }
 
 BaseType_t FFreeRTOSSfudWrite(u32 in_chip_addr, const char *content)
 {
     BaseType_t xReturn = pdPASS;
-    
-    printf("sfud write task\r\n");
+
+    printf("This is sfud write task.\r\n");
 
     flash_addr = in_chip_addr;
     if (strlen(content) + 1 > SFUD_WR_BUF_LEN)
@@ -226,16 +229,16 @@ BaseType_t FFreeRTOSSfudWrite(u32 in_chip_addr, const char *content)
 
     memset(flash_buffer, 0, sizeof(flash_buffer));
     memcpy(flash_buffer, content, strlen(content) + 1);
-    
+
     taskENTER_CRITICAL(); /* no schedule when create task */
 
-    xReturn = xTaskCreate((TaskFunction_t )SfudWriteTask,
-                            (const char* )"SfudWriteTask",
-                            (uint16_t )2048,
-                            NULL,
-                            (UBaseType_t )configMAX_PRIORITIES - 1,
-                            NULL);
-                            
+    xReturn = xTaskCreate((TaskFunction_t)SfudWriteTask,
+                          (const char *)"SfudWriteTask",
+                          (uint16_t)2048,
+                          NULL,
+                          (UBaseType_t)configMAX_PRIORITIES - 1,
+                          NULL);
+
     taskEXIT_CRITICAL(); /* allow schedule since task created */
 
     return xReturn;
@@ -244,18 +247,18 @@ BaseType_t FFreeRTOSSfudWrite(u32 in_chip_addr, const char *content)
 BaseType_t FFreeRTOSSfudInit(void)
 {
     BaseType_t xReturn = pdPASS;
-    
-    printf("sfud init task\r\n");
+
+    printf("This is sfud init task.\r\n");
 
     taskENTER_CRITICAL(); /* no schedule when create task */
 
-    xReturn = xTaskCreate((TaskFunction_t )SfudInitTask,
-                            (const char* )"SfudInitTask",
-                            (uint16_t )2048,
-                            NULL,
-                            (UBaseType_t )configMAX_PRIORITIES - 1,
-                            NULL);
-                            
+    xReturn = xTaskCreate((TaskFunction_t)SfudInitTask,
+                          (const char *)"SfudInitTask",
+                          (uint16_t)2048,
+                          NULL,
+                          (UBaseType_t)configMAX_PRIORITIES - 1,
+                          NULL);
+
     taskEXIT_CRITICAL(); /* allow schedule since task created */
 
     return pdPASS;

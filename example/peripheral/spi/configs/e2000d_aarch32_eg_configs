@@ -222,7 +222,7 @@ CONFIG_USE_SFUD=y
 #
 # SFUD Configuration
 #
-# CONFIG_SFUD_CTRL_FSPIM is not set
+CONFIG_SFUD_CTRL_FSPIM=y
 # CONFIG_SFUD_CTRL_FQSPI is not set
 # end of SFUD Configuration
 

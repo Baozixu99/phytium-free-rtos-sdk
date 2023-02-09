@@ -1,34 +1,29 @@
 /*
- * Copyright : (C) 2022 Phytium Information Technology, Inc. 
+ * Copyright : (C) 2022 Phytium Information Technology, Inc.
  * All Rights Reserved.
- *  
- * This program is OPEN SOURCE software: you can redistribute it and/or modify it  
- * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,  
- * either version 1.0 of the License, or (at your option) any later version. 
- *  
- * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;  
+ *
+ * This program is OPEN SOURCE software: you can redistribute it and/or modify it
+ * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,
+ * either version 1.0 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the Phytium Public License for more details. 
- *  
- * 
+ * See the Phytium Public License for more details.
+ *
+ *
  * FilePath: fspim_os.h
  * Date: 2022-07-18 09:05:48
  * LastEditTime: 2022-07-18 09:05:48
- * Description:  This files is for 
- * 
- * Modify History: 
+ * Description:  This file is for providing function related definitions of spi master driver used in FreeRTOS.
+ *
+ * Modify History:
  *  Ver   Who        Date         Changes
  * ----- ------     --------    --------------------------------------
  * 1.0   zhugengyu  2022/7/27   init commit
  */
-#ifndef  DRIVERS_FSPIM_OS_H
-#define  DRIVERS_FSPIM_OS_H
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
+#ifndef  FSPIM_OS_H
+#define  FSPIM_OS_H
 /***************************** Include Files *********************************/
 #include <FreeRTOS.h>
 #include <semphr.h>
@@ -37,6 +32,10 @@ extern "C"
 #include "fparameters.h"
 #include "fspim.h"
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 /************************** Constant Definitions *****************************/
 #define FFREERTOS_SPIM_OK                   FT_SUCCESS
 #define FFREERTOS_SPIM_NOT_INIT             FT_CODE_ERR(ErrModPort, ErrBspSpi, 0)
@@ -49,7 +48,7 @@ extern "C"
 
 #define FFREERTOS_SPIM_MODE_0               0U /* CPOL = 0, CPHA = 0 */
 #define FFREERTOS_SPIM_MODE_1               1U /* CPOL = 1, CPHA = 0 */
-#define FFREERTOS_SPIM_MODE_2               1U /* CPOL = 0, CPHA = 1 */  
+#define FFREERTOS_SPIM_MODE_2               2U /* CPOL = 0, CPHA = 1 */
 #define FFREERTOS_SPIM_MODE_3               3U /* CPOL = 1, CPHA = 1 */
 /**************************** Type Definitions *******************************/
 
@@ -90,7 +89,7 @@ FFreeRTOSSpim *FFreeRTOSSpimInit(u32 instance_id, const FFreeRTOSSpimConifg *con
 /* deinit spi instance */
 FError FFreeRTOSSpimDeInit(FFreeRTOSSpim *const instance);
 
-/* for NON-DMA transfer, start spi transfer and wait transfer done in this function, 
+/* for NON-DMA transfer, start spi transfer and wait transfer done in this function,
    for DMA transfer, start DMA channel first, then call this function and wait DMA channel end later */
 FError FFreeRTOSSpimTransfer(FFreeRTOSSpim *const instance, const FFreeRTOSSpiMessage *message);
 

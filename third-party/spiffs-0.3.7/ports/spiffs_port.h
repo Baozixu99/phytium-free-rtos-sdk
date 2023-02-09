@@ -1,38 +1,41 @@
 /*
- * Copyright : (C) 2022 Phytium Information Technology, Inc. 
+ * Copyright : (C) 2022 Phytium Information Technology, Inc.
  * All Rights Reserved.
- *  
- * This program is OPEN SOURCE software: you can redistribute it and/or modify it  
- * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,  
- * either version 1.0 of the License, or (at your option) any later version. 
- *  
- * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;  
+ *
+ * This program is OPEN SOURCE software: you can redistribute it and/or modify it
+ * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,
+ * either version 1.0 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the Phytium Public License for more details. 
- *  
- * 
+ * See the Phytium Public License for more details.
+ *
+ *
  * FilePath: spiffs_port.h
  * Date: 2022-02-10 14:53:42
  * LastEditTime: 2022-02-18 08:24:52
- * Description:  This files is for 
- * 
- * Modify History: 
+ * Description:  This files is for giving tolal spiffs init api.
+ *
+ * Modify History:
  *  Ver   Who        Date         Changes
  * ----- ------     --------    --------------------------------------
+ * 1.0   wangxiaodong 2022/8/9   first release
  */
 
-#ifndef  SPIFFS_PORT_H
-#define  SPIFFS_PORT_H
+#ifndef SPIFFS_PORT_H
+#define SPIFFS_PORT_H
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
 /***************************** Include Files *********************************/
 #include "ftypes.h"
 
 #include "spiffs.h"
 /************************** Constant Definitions *****************************/
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 typedef enum
 {
     FSPIFFS_PORT_TO_FSPIM = 0,
@@ -46,7 +49,7 @@ enum
 
 /**************************** Type Definitions *******************************/
 typedef struct spiffs_t spiffs;
-typedef struct 
+typedef struct
 {
     spiffs fs;
     u32    fs_ready;

@@ -1,24 +1,25 @@
 /*
- * Copyright : (C) 2022 Phytium Information Technology, Inc. 
+ * Copyright : (C) 2022 Phytium Information Technology, Inc.
  * All Rights Reserved.
- *  
- * This program is OPEN SOURCE software: you can redistribute it and/or modify it  
- * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,  
- * either version 1.0 of the License, or (at your option) any later version. 
- *  
- * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;  
+ *
+ * This program is OPEN SOURCE software: you can redistribute it and/or modify it
+ * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,
+ * either version 1.0 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the Phytium Public License for more details. 
- *  
- * 
+ * See the Phytium Public License for more details.
+ *
+ *
  * FilePath: usb_disk.c
  * Date: 2022-09-23 08:24:09
  * LastEditTime: 2022-09-23 08:24:10
- * Description:  This files is for 
- * 
- * Modify History: 
- *  Ver   Who        Date         Changes
+ * Description:  This file is for the usb disk functions.
+ *
+ * Modify History:
+ *  Ver   Who         Date         Changes
  * ----- ------     --------    --------------------------------------
+ * 1.0   zhugengyu  2022/10/19   init commit
  */
 /***************************** Include Files *********************************/
 #include <stdio.h>
@@ -51,7 +52,7 @@
 
 
 /*****************************************************************************/
-static void UsbMscTask(void * args)
+static void UsbMscTask(void *args)
 {
     int ret;
     struct usbh_msc *msc_class;
@@ -62,9 +63,9 @@ static void UsbMscTask(void * args)
     while (TRUE)
     {
         msc_class = (struct usbh_msc *)usbh_find_class_instance("/dev/sda");
-        if (msc_class == NULL) 
+        if (msc_class == NULL)
         {
-            USB_LOG_RAW("do not find /dev/sda\r\n");
+            USB_LOG_RAW("Do not find /dev/sda. \r\n");
             goto err_exit;
         }
 
@@ -76,29 +77,29 @@ static void UsbMscTask(void * args)
         }
 
         ret = usbh_msc_scsi_write10(msc_class, 0, wr_table, 1);
-        if (ret < 0) 
+        if (ret < 0)
         {
-            USB_LOG_ERR("scsi_write10 error,ret:%d\r\n", ret);
+            USB_LOG_ERR("Error in scsi_write10 error, ret:%d", ret);
             goto err_exit;
         }
 
         /* get the partition table */
         ret = usbh_msc_scsi_read10(msc_class, 0, rd_table, 1);
-        if (ret < 0) 
+        if (ret < 0)
         {
-            USB_LOG_RAW("scsi_read10 error,ret:%d\r\n", ret);
+            USB_LOG_RAW("Error in scsi_read10, ret:%d", ret);
             goto err_exit;
         }
-        
+
         /* check if read table == write table */
         if (0 != memcmp(wr_table, rd_table, sizeof(rd_table)))
         {
-            USB_LOG_ERR("check read and write failed !!!\r\n");
+            USB_LOG_ERR("Failed to check read and write.\r\n");
             goto err_exit;
         }
         else
         {
-            printf("[%d] disk read and write successful\r\n", loop++);
+            printf("[%d] disk read and write successfully.\r\n", loop++);
         }
 
         vTaskDelay(10);
@@ -114,15 +115,15 @@ BaseType_t FFreeRTOSRunUsbDisk(void)
 
     taskENTER_CRITICAL(); /* no schedule when create task */
 
-    ret = xTaskCreate((TaskFunction_t )UsbMscTask,
-                            (const char* )"UsbMscTask",
-                            (uint16_t )2048,
-                            NULL,
-                            (UBaseType_t )configMAX_PRIORITIES - 1,
-                            NULL);
+    ret = xTaskCreate((TaskFunction_t)UsbMscTask,
+                      (const char *)"UsbMscTask",
+                      (uint16_t)2048,
+                      NULL,
+                      (UBaseType_t)configMAX_PRIORITIES - 1,
+                      NULL);
     FASSERT_MSG(pdPASS == ret, "create task failed");
 
     taskEXIT_CRITICAL(); /* allow schedule since task created */
 
-    return ret;    
+    return ret;
 }

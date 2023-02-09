@@ -1,5 +1,5 @@
 /*
-This example demonstrates: 
+This example demonstrates:
 Rewriting vPrintString() to use a mutex semaphore.
 */
 #include <stdio.h>
@@ -11,60 +11,60 @@ Rewriting vPrintString() to use a mutex semaphore.
 #include "semphr.h"
 #include "croutine.h"
 
-#define TASK_STACK_SIZE	        1024
+#define TASK_STACK_SIZE         1024
 
 static xTaskHandle xtask1_handle;
 static xTaskHandle xtask2_handle;
 
 static xSemaphoreHandle xMutex;
 
-static void prvNewPrintString(const char* pcString) 
+static void prvNewPrintString(const char *pcString)
 {
-	xSemaphoreTake(xMutex, portMAX_DELAY);
-	printf("Mutex pcString = %s\n", pcString);
-	xSemaphoreGive(xMutex);
+    xSemaphoreTake(xMutex, portMAX_DELAY);
+    printf("Mutex pcString = %s\n", pcString);
+    xSemaphoreGive(xMutex);
 }
 
-static void prvPrintTask(void *pvParameters) 
+static void prvPrintTask(void *pvParameters)
 {
-	char *pcStringToPrint;
-	pcStringToPrint = (char*)pvParameters;
+    char *pcStringToPrint;
+    pcStringToPrint = (char *)pvParameters;
 
-	for (;;) 
-  {
-		prvNewPrintString(pcStringToPrint);
+    for (;;)
+    {
+        prvNewPrintString(pcStringToPrint);
 
-		/* Just delay with random time,
-    Don't use rand() in secure applications. It's not reentrant!*/
-		vTaskDelay(/*rand() & 0x3FF*/5000);
-	}
+        /* Just delay with random time,
+        Don't use rand() in secure applications. It's not reentrant!*/
+        vTaskDelay(/*rand() & 0x3FF*/5000);
+    }
 }
 
 void CreateResourceTasks(void)
 {
 
-  xMutex = xSemaphoreCreateMutex();
+    xMutex = xSemaphoreCreateMutex();
 
-  if (xMutex != NULL)
-  {
+    if (xMutex != NULL)
+    {
 
-	  xTaskCreate(prvPrintTask, "Mutex Print1", TASK_STACK_SIZE,
-			  "Task 1 ******************************\n", 1, &xtask1_handle);
-	  xTaskCreate(prvPrintTask, "Mutex Print2", TASK_STACK_SIZE,
-			  "Task 2 ==============================\n", 2, &xtask2_handle);
-  }
+        xTaskCreate(prvPrintTask, "Mutex Print1", TASK_STACK_SIZE,
+                    "Task 1 ******************************\n", 1, &xtask1_handle);
+        xTaskCreate(prvPrintTask, "Mutex Print2", TASK_STACK_SIZE,
+                    "Task 2 ==============================\n", 2, &xtask2_handle);
+    }
 
 }
 
 void DeleteResourceTasks(void)
 {
-    if(xtask1_handle)
+    if (xtask1_handle)
     {
         vTaskDelete(xtask1_handle);
         printf("Resource Task1 deletion \r\n");
     }
 
-    if(xtask2_handle)
+    if (xtask2_handle)
     {
         vTaskDelete(xtask2_handle);
         printf("Resource Task2 deletion \r\n");

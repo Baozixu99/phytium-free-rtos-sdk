@@ -1,24 +1,25 @@
 /*
- * Copyright : (C) 2022 Phytium Information Technology, Inc. 
+ * Copyright : (C) 2022 Phytium Information Technology, Inc.
  * All Rights Reserved.
- *  
- * This program is OPEN SOURCE software: you can redistribute it and/or modify it  
- * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,  
- * either version 1.0 of the License, or (at your option) any later version. 
- *  
- * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;  
+ *
+ * This program is OPEN SOURCE software: you can redistribute it and/or modify it
+ * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,
+ * either version 1.0 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the Phytium Public License for more details. 
- *  
- * 
+ * See the Phytium Public License for more details.
+ *
+ *
  * FilePath: cmd_gpio.c
  * Date: 2022-06-28 14:42:53
  * LastEditTime: 2022-06-28 14:42:53
- * Description:  This files is for 
- * 
- * Modify History: 
+ * Description:  This file is for gpio shell command implmentation.
+ *
+ * Modify History:
  *  Ver   Who        Date         Changes
  * ----- ------     --------    --------------------------------------
+ *  1.0  zhugengyu  2022/8/26    init commit
  */
 /***************************** Include Files *********************************/
 #include <string.h>
@@ -42,25 +43,25 @@
 /*****************************************************************************/
 static boolean GpioParseIndex(const char *str, u32 *pin)
 {
-	FASSERT(str && pin);
-	u32 id_num = 0;
-	char port = 'a';
-	u32 pin_num = 0;
+    FASSERT(str && pin);
+    u32 id_num = 0;
+    char port = 'a';
+    u32 pin_num = 0;
     u32 port_num = 0;
 
     if (3 != sscanf(str, "%d-%c-%d", &id_num, &port, &pin_num))
-	{
-		printf("Parse as %d-%c-%d", id_num, port, pin_num);
-		return FALSE;
-	}
+    {
+        printf("Parse as %d-%c-%d", id_num, port, pin_num);
+        return FALSE;
+    }
 
-	if ((id_num >= FGPIO_NUM) || 
-	    ((port != 'a') && (port != 'b')) ||
-		( pin_num >= FGPIO_PIN_NUM))
-	{
-		printf("Wrong pin index");
-		return FALSE;
-	}
+    if ((id_num >= FGPIO_NUM) ||
+        ((port != 'a') && (port != 'b')) ||
+        (pin_num >= FGPIO_PIN_NUM))
+    {
+        printf("Wrong pin index.");
+        return FALSE;
+    }
 
     port_num = (('a' == port) ? 0 : 1); /* 0 = port-a, 1 = port-b */
     *pin = FFREERTOS_GPIO_PIN_INDEX(id_num, port_num, pin_num);
@@ -88,7 +89,7 @@ static int GpioCmdEntry(int argc, char *argv[])
             in_pin_str = argv[3];
         }
 
-        if ((FALSE == GpioParseIndex(out_pin_str, &out_pin)) || 
+        if ((FALSE == GpioParseIndex(out_pin_str, &out_pin)) ||
             (FALSE == GpioParseIndex(in_pin_str, &in_pin)))
         {
             return -2;

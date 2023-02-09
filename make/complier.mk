@@ -138,6 +138,8 @@ ifdef CONFIG_USE_NEW_LIBC
 	LDFLAGS += -lgcc  -L $(LIBPATH)	
 endif
 
+OBJ_FILES += $(LIB_OBJ_FILES)
+
 # 不使用Libc库
 ifdef CONFIG_USE_NOSTD_LIBC
 	LDFLAGS += -nostdlib -nostartfiles

@@ -1,24 +1,25 @@
 /*
- * Copyright : (C) 2022 Phytium Information Technology, Inc. 
+ * Copyright : (C) 2022 Phytium Information Technology, Inc.
  * All Rights Reserved.
- *  
- * This program is OPEN SOURCE software: you can redistribute it and/or modify it  
- * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,  
- * either version 1.0 of the License, or (at your option) any later version. 
- *  
- * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;  
+ *
+ * This program is OPEN SOURCE software: you can redistribute it and/or modify it
+ * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,
+ * either version 1.0 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the Phytium Public License for more details. 
- *  
- * 
+ * See the Phytium Public License for more details.
+ *
+ *
  * FilePath: rsc_table.h
  * Date: 2022-02-23 11:24:12
  * LastEditTime: 2022-02-23 11:44:06
- * Description:  This file is for 
- * 
- * Modify History: 
+ * Description:  This file populates resource table for BM remote 
+ *
+ * Modify History:
  *  Ver   Who        Date         Changes
  * ----- ------     --------    --------------------------------------
+ * 1.0	 huanghe	2022/03/25   first release
  */
 
 
@@ -34,32 +35,33 @@
 extern "C" {
 #endif
 
-/************************** Constant Definitions *****************************/
+    /************************** Constant Definitions *****************************/
 
-/************************** Variable Definitions *****************************/
+    /************************** Variable Definitions *****************************/
 
-/************************** Function Prototypes ******************************/
+    /************************** Function Prototypes ******************************/
 
-/***************** Macros (Inline Functions) Definitions *********************/
+    /***************** Macros (Inline Functions) Definitions *********************/
 
 
 #define NO_RESOURCE_ENTRIES         8
 
-/**************************** Type Definitions *******************************/
+    /**************************** Type Definitions *******************************/
 
-/* Resource table for the given remote */
-struct remote_resource_table {
-	unsigned int version;
-	unsigned int num;
-	unsigned int reserved[2];
-	unsigned int offset[NO_RESOURCE_ENTRIES];
-	/* rpmsg vdev entry */
-	struct fw_rsc_vdev rpmsg_vdev;
-	struct fw_rsc_vdev_vring rpmsg_vring0;
-	struct fw_rsc_vdev_vring rpmsg_vring1;
-}__attribute__((packed, aligned(0x100)));
+    /* Resource table for the given remote */
+    struct remote_resource_table
+    {
+        unsigned int version;
+        unsigned int num;
+        unsigned int reserved[2];
+        unsigned int offset[NO_RESOURCE_ENTRIES];
+        /* rpmsg vdev entry */
+        struct fw_rsc_vdev rpmsg_vdev;
+        struct fw_rsc_vdev_vring rpmsg_vring0;
+        struct fw_rsc_vdev_vring rpmsg_vring1;
+    } __attribute__((packed, aligned(0x100)));
 
-void *get_resource_table (int rsc_id, int *len);
+    void *get_resource_table(int rsc_id, int *len);
 
 #if defined __cplusplus
 }

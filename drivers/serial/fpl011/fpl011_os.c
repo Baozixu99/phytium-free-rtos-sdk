@@ -1,24 +1,25 @@
 /*
- * Copyright : (C) 2022 Phytium Information Technology, Inc. 
+ * Copyright : (C) 2022 Phytium Information Technology, Inc.
  * All Rights Reserved.
- *  
- * This program is OPEN SOURCE software: you can redistribute it and/or modify it  
- * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,  
- * either version 1.0 of the License, or (at your option) any later version. 
- *  
- * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;  
+ *
+ * This program is OPEN SOURCE software: you can redistribute it and/or modify it
+ * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,
+ * either version 1.0 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the Phytium Public License for more details. 
- *  
- * 
+ * See the Phytium Public License for more details.
+ *
+ *
  * FilePath: fpl011_os.c
  * Date: 2022-02-24 13:42:19
  * LastEditTime: 2022-03-21 16:59:51
- * Description:  This file is for 
- * 
- * Modify History: 
+ * Description:  This file is for required function implementations of pl011 driver used in FreeRTOS.
+ *
+ * Modify History:
  *  Ver   Who        Date         Changes
  * ----- ------     --------    --------------------------------------
+ * 1.0   huanghe   2022/04/21   first commit
  */
 
 #include "fpl011_os.h"
@@ -27,9 +28,16 @@
 #include "finterrupt.h"
 #include "ftypes.h"
 #include "fassert.h"
+#include "fdebug.h"
 #include "sdkconfig.h"
 #include "fcpu_info.h"
 #include <stdio.h>
+
+#define FPL011_DEBUG_TAG "FFreeRTOSPl001"
+#define FPL011_ERROR(format, ...)   FT_DEBUG_PRINT_E(FPL011_DEBUG_TAG, format, ##__VA_ARGS__)
+#define FPL011_WARN(format, ...)   FT_DEBUG_PRINT_W(FPL011_DEBUG_TAG, format, ##__VA_ARGS__)
+#define FPL011_INFO(format, ...) FT_DEBUG_PRINT_I(FPL011_DEBUG_TAG, format, ##__VA_ARGS__)
+#define FPL011_DEBUG(format, ...) FT_DEBUG_PRINT_D(FPL011_DEBUG_TAG, format, ##__VA_ARGS__)
 
 /* Callback events  */
 static void FPl011IrqClearReciveTimeOut(FPl011 *uart_p)
@@ -101,7 +109,7 @@ void FtFreertosUartInit(FtFreertosUart *uart_p, FtFreertosUartConfig *config_p)
     bsp_uart_p = &uart_p->bsp_uart;
     uart_p->config = *config_p;
     driver_config = *FPl011LookupConfig(config_p->uart_instance);
-    
+
     driver_config.baudrate = config_p->uart_baudrate;
     ret = FPl011CfgInitialize(bsp_uart_p, &driver_config);
     FASSERT(FT_SUCCESS == ret);
@@ -115,10 +123,10 @@ void FtFreertosUartInit(FtFreertosUart *uart_p, FtFreertosUartConfig *config_p)
     GetCpuId(&cpu_id);
     InterruptSetTargetCpus(bsp_uart_p->config.irq_num, cpu_id);
 
-    FPl011SetRxFifoThreadhold(bsp_uart_p,FPL011IFLS_RXIFLSEL_1_4);
-    FPl011SetTxFifoThreadHold(bsp_uart_p,FPL011IFLS_TXIFLSEL_1_2);
+    FPl011SetRxFifoThreadhold(bsp_uart_p, FPL011IFLS_RXIFLSEL_1_4);
+    FPl011SetTxFifoThreadHold(bsp_uart_p, FPL011IFLS_TXIFLSEL_1_2);
     intr_mask = config_p->isr_event_mask;
-    FPl011SetInterruptMask(bsp_uart_p,intr_mask);
+    FPl011SetInterruptMask(bsp_uart_p, intr_mask);
     FPl011SetOptions(bsp_uart_p, FPL011_OPTION_UARTEN | FPL011_OPTION_RXEN | FPL011_OPTION_TXEN | FPL011_OPTION_FIFOEN);
 
     InterruptSetPriority(bsp_uart_p->config.irq_num, config_p->isr_priority);
@@ -136,7 +144,7 @@ FError FtFreertosUartReceiveBuffer(FtFreertosUart *uart_p, u8 *buffer, u32 lengt
     FASSERT(NULL != buffer);
     bsp_uart_p = &uart_p->bsp_uart;
 
-    if(length == 0)
+    if (length == 0)
     {
         *received_length = 0;
         return FT_SUCCESS;
@@ -151,7 +159,7 @@ FError FtFreertosUartReceiveBuffer(FtFreertosUart *uart_p, u8 *buffer, u32 lengt
 
 
 
-    if(uart_p->config.isr_event_mask & (RTOS_UART_ISR_RTIM_MASK|RTOS_UART_ISR_RXIM_MASK) )
+    if (uart_p->config.isr_event_mask & (RTOS_UART_ISR_RTIM_MASK | RTOS_UART_ISR_RXIM_MASK))
     {
         get_length = FPl011Receive(bsp_uart_p, buffer, length);
         if (get_length > 0)
@@ -164,8 +172,8 @@ FError FtFreertosUartReceiveBuffer(FtFreertosUart *uart_p, u8 *buffer, u32 lengt
             FPl011IrqEnableReciveTimeOut(bsp_uart_p);
 
             ev = xEventGroupWaitBits(uart_p->rx_event,
-                                    RTOS_UART_COMPLETE | RTOS_UART_HARDWARE_BUFFER_OVERRUN | RTOS_UART_RECV_ERROR,
-                                    pdTRUE, pdFALSE, portMAX_DELAY);
+                                     RTOS_UART_COMPLETE | RTOS_UART_HARDWARE_BUFFER_OVERRUN | RTOS_UART_RECV_ERROR,
+                                     pdTRUE, pdFALSE, portMAX_DELAY);
 
             if (ev & RTOS_UART_HARDWARE_BUFFER_OVERRUN)
             {
@@ -200,7 +208,7 @@ FError FtFreertosUartReceiveBuffer(FtFreertosUart *uart_p, u8 *buffer, u32 lengt
     if (pdFALSE == xSemaphoreGive(uart_p->rx_semaphore))
     {
         /* We could not post the semaphore, exit with error */
-        printf("FST_FAILURE xSemaphoreGive \r\n");
+        FPL011_ERROR("FST_FAILURE xSemaphoreGive.");
         ret = FREERTOS_UART_RECV_ERROR;
     }
 
@@ -222,10 +230,10 @@ FError FtFreertosUartBlcokingSend(FtFreertosUart *uart_p, u8 *buffer, u32 length
         return FREERTOS_UART_SEM_ERROR;
     }
 
-    if(uart_p->config.isr_event_mask & RTOS_UART_ISR_TXIM_MASK)
+    if (uart_p->config.isr_event_mask & RTOS_UART_ISR_TXIM_MASK)
     {
         send_length = FPl011Send(bsp_uart_p, buffer, length);
-        if(send_length != length)
+        if (send_length != length)
         {
             ev = xEventGroupWaitBits(uart_p->tx_event, RTOS_UART_COMPLETE, pdTRUE, pdFALSE, portMAX_DELAY);
             if (!(ev & RTOS_UART_COMPLETE))
@@ -236,7 +244,7 @@ FError FtFreertosUartBlcokingSend(FtFreertosUart *uart_p, u8 *buffer, u32 length
     }
     else
     {
-        FPl011BlockSend(bsp_uart_p,buffer,length);
+        FPl011BlockSend(bsp_uart_p, buffer, length);
     }
 
     if (pdFALSE == xSemaphoreGive(uart_p->tx_semaphore))

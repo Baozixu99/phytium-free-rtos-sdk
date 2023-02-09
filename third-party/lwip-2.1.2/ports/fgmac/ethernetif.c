@@ -1,24 +1,26 @@
 /*
- * Copyright : (C) 2022 Phytium Information Technology, Inc. 
+ * Copyright : (C) 2022 Phytium Information Technology, Inc.
  * All Rights Reserved.
- *  
- * This program is OPEN SOURCE software: you can redistribute it and/or modify it  
- * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,  
- * either version 1.0 of the License, or (at your option) any later version. 
- *  
- * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;  
+ *
+ * This program is OPEN SOURCE software: you can redistribute it and/or modify it
+ * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,
+ * either version 1.0 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the Phytium Public License for more details. 
- *  
- * 
+ * See the Phytium Public License for more details.
+ *
+ *
  * FilePath: ethernetif.c
  * Date: 2022-12-09 16:42:31
  * LastEditTime: 2022-12-14 10:05:50
- * Description:  This file is for 
- * 
- * Modify History: 
- *  Ver   Who  Date   Changes
- * ----- ------  -------- --------------------------------------
+ * Description:  This file is the function file of the gmac adaptation to lwip stack.
+ *
+ * Modify History:
+ *  Ver   Who            Date      Changes
+ * ----- ------        --------   --------------------------------------
+ * 1.0   wangxiaodong  2022/6/20  first release
+ * 2.0   liuzhihong    2022/1/12  restructure
  */
 
 
@@ -33,7 +35,7 @@
 #include "fparameters.h"
 #include "lwip_port.h"
 #if LWIP_IPV6
-#include "lwip/ethip6.h"
+    #include "lwip/ethip6.h"
 #endif
 
 #include "fgmac_os.h"
@@ -46,11 +48,11 @@
 #include "fgeneric_timer.h"
 
 #ifndef SDK_CONFIG_H__
-	#error "Please include sdkconfig.h first"
+    #error "Please include sdkconfig.h first"
 #endif
 
 #ifndef CONFIG_USE_SYS_TICK
-	#error "Please enable system tick by CONFIG_USE_SYS_TICK first"
+    #error "Please enable system tick by CONFIG_USE_SYS_TICK first"
 #endif
 
 
@@ -95,7 +97,7 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p)
 #if ETH_PAD_SIZE
     pbuf_header(p, -ETH_PAD_SIZE); /* drop the padding word */
 #endif
-    
+
     ret = FGmacOsTx(instance_p, p);
 
 #if ETH_PAD_SIZE
@@ -105,7 +107,7 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p)
 
     if (ret != FT_SUCCESS)
     {
-        return ERR_MEM; 
+        return ERR_MEM;
     }
 
     return ERR_OK;
@@ -152,38 +154,38 @@ static void ethernetif_input(struct netif *netif)
 
 #if LINK_STATS
         lwip_stats.link.recv++;
-    #endif /* LINK_STATS */
+#endif /* LINK_STATS */
         switch (htons(ethhdr->type))
         {
-        /* IP or ARP packet? */
-        case ETHTYPE_IP:
-        case ETHTYPE_ARP:
-    #if LWIP_IPV6
-        /*IPv6 Packet?*/
-        case ETHTYPE_IPV6:
-    #endif
-    #if PPPOE_SUPPORT
+            /* IP or ARP packet? */
+            case ETHTYPE_IP:
+            case ETHTYPE_ARP:
+#if LWIP_IPV6
+            /*IPv6 Packet?*/
+            case ETHTYPE_IPV6:
+#endif
+#if PPPOE_SUPPORT
             /* PPPoE packet? */
-        case ETHTYPE_PPPOEDISC:
-        case ETHTYPE_PPPOE:
-    #endif /* PPPOE_SUPPORT */
+            case ETHTYPE_PPPOEDISC:
+            case ETHTYPE_PPPOE:
+#endif /* PPPOE_SUPPORT */
 
-            /* full packet send to tcpip_thread to process */
-            if (netif->input(p, netif) != ERR_OK)
-            {
-                LWIP_DEBUGF(NETIF_DEBUG, ("ethernetif_input: IP input error\r\n"));
+                /* full packet send to tcpip_thread to process */
+                if (netif->input(p, netif) != ERR_OK)
+                {
+                    LWIP_DEBUGF(NETIF_DEBUG, ("ethernetif_input: IP input error\r\n"));
+                    pbuf_free(p);
+                    p = NULL;
+                }
+                break;
+
+            default:
                 pbuf_free(p);
                 p = NULL;
-            }
-            break;
-
-        default:
-            pbuf_free(p);
-            p = NULL;
-            break;
+                break;
         }
     }
-    
+
     return;
 }
 
@@ -191,7 +193,7 @@ static void ethernetif_input(struct netif *netif)
 static void ethernetif_start(struct netif *netif)
 {
     struct LwipPort *gmac_netif_p = (struct LwipPort *)(netif->state);
-    if(gmac_netif_p == NULL)
+    if (gmac_netif_p == NULL)
     {
         ETHNETIF_DEBUG_E("%s,gmac_netif_p is NULL\n", __FUNCTION__);
         return;
@@ -203,25 +205,25 @@ static void ethernetif_start(struct netif *netif)
 
 static enum lwip_port_link_status ethernetif_link_detect(struct netif *netif)
 {
-	struct LwipPort *gmac_netif_p = (struct LwipPort *)(netif->state);
-	FGmacOs *instance_p;
-	if(gmac_netif_p == NULL)
-	{
-		return ETH_LINK_UNDEFINED;
-	}
-	instance_p = (FGmacOs *)gmac_netif_p->state;
-	if (instance_p->instance.is_ready != FT_COMPONENT_IS_READY)
-	{
-		return ETH_LINK_UNDEFINED;
-	}
+    struct LwipPort *gmac_netif_p = (struct LwipPort *)(netif->state);
+    FGmacOs *instance_p;
+    if (gmac_netif_p == NULL)
+    {
+        return ETH_LINK_UNDEFINED;
+    }
+    instance_p = (FGmacOs *)gmac_netif_p->state;
+    if (instance_p->instance.is_ready != FT_COMPONENT_IS_READY)
+    {
+        return ETH_LINK_UNDEFINED;
+    }
 
-	return FGmacPhyStatus(gmac_netif_p);
+    return FGmacPhyStatus(gmac_netif_p);
 }
 
 static void ethernetif_deinit(struct netif *netif)
 {
     struct LwipPort *gmac_netif_p = (struct LwipPort *)(netif->state);
-    if(gmac_netif_p == NULL)
+    if (gmac_netif_p == NULL)
     {
         ETHNETIF_DEBUG_E("%s,gmac_netif_p is NULL\n", __FUNCTION__);
         return;
@@ -254,7 +256,7 @@ static err_t low_level_init(struct netif *netif)
     FASSERT(netif->state != NULL);
     UserConfig *config_p;
 
-    gmac_netif_p = mem_malloc(sizeof *gmac_netif_p);
+    gmac_netif_p = mem_malloc(sizeof * gmac_netif_p);
     if (gmac_netif_p == NULL)
     {
         LWIP_DEBUGF(NETIF_DEBUG, ("gmac_netif_p init: out of memory\r\n"));
@@ -262,7 +264,7 @@ static err_t low_level_init(struct netif *netif)
     }
 
     /* obtain config of this emac */
-    ETHNETIF_DEBUG_I("netif->state is %p \r\n ",netif->state);
+    ETHNETIF_DEBUG_I("netif->state is %p \r\n ", netif->state);
 
     config_p = (UserConfig *)netif->state;
     os_config.instance_id = config_p->mac_instance;
@@ -272,7 +274,7 @@ static err_t low_level_init(struct netif *netif)
     os_config.phy_duplex = config_p->phy_duplex; /* FGMAC_PHY_XXX_DUPLEX */
 
     instance_p = FGmacOsGetInstancePointer(&os_config);
-    if(instance_p == NULL)
+    if (instance_p == NULL)
     {
         ETHNETIF_DEBUG_E("FGmacOsGetInstancePointer is error\r\n");
         return ERR_ARG;
@@ -301,13 +303,13 @@ static err_t low_level_init(struct netif *netif)
     netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP |
                    NETIF_FLAG_LINK_UP;
 
-    #if LWIP_IPV6 && LWIP_IPV6_MLD
-        netif->flags |= NETIF_FLAG_MLD6;
-    #endif
+#if LWIP_IPV6 && LWIP_IPV6_MLD
+    netif->flags |= NETIF_FLAG_MLD6;
+#endif
 
-    #if LWIP_IGMP
-        netif->flags |= NETIF_FLAG_IGMP;
-    #endif
+#if LWIP_IGMP
+    netif->flags |= NETIF_FLAG_IGMP;
+#endif
 
     gmac_netif_p->ops.eth_detect = ethernetif_link_detect ;
     gmac_netif_p->ops.eth_input = ethernetif_input;
@@ -327,13 +329,13 @@ static err_t low_level_init(struct netif *netif)
  * @return ERR_OK if ...
  */
 static err_t low_level_output_arp_off(struct netif *netif, struct pbuf *q, const ip4_addr_t *ipaddr)
-{  
-  	err_t errval;
-	errval = ERR_OK;
-    
-	return errval;
+{
+    err_t errval;
+    errval = ERR_OK;
+
+    return errval;
 }
-#endif /* LWIP_ARP */ 
+#endif /* LWIP_ARP */
 
 
 
@@ -342,17 +344,17 @@ err_t ethernetif_init(struct netif *netif)
     LWIP_DEBUGF(NETIF_DEBUG, ("*******start init eth\n"));
 
 #if LWIP_NETIF_HOSTNAME
-	/* Initialize interface hostname */
-  	netif->hostname = "lwip";
+    /* Initialize interface hostname */
+    netif->hostname = "lwip";
 #endif /* LWIP_NETIF_HOSTNAME */
 
 #if LWIP_IPV4
 #if LWIP_ARP || LWIP_ETHERNET
 #if LWIP_ARP
-	netif->output = etharp_output;
+    netif->output = etharp_output;
 #else
-  	/* The user should write ist own code in low_level_output_arp_off function */
-	netif->output = low_level_output_arp_off;
+    /* The user should write ist own code in low_level_output_arp_off function */
+    netif->output = low_level_output_arp_off;
 #endif /* LWIP_ARP */
 #endif /* LWIP_ARP || LWIP_ETHERNET */
 #endif /* LWIP_IPV4 */
@@ -363,7 +365,7 @@ err_t ethernetif_init(struct netif *netif)
 #endif
 
     low_level_init(netif);
-    
+
     return ERR_OK;
 }
 

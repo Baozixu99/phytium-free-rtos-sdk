@@ -1,22 +1,22 @@
 /*
- * Copyright : (C) 2022 Phytium Information Technology, Inc. 
+ * Copyright : (C) 2022 Phytium Information Technology, Inc.
  * All Rights Reserved.
- *  
- * This program is OPEN SOURCE software: you can redistribute it and/or modify it  
- * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,  
- * either version 1.0 of the License, or (at your option) any later version. 
- *  
- * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;  
+ *
+ * This program is OPEN SOURCE software: you can redistribute it and/or modify it
+ * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,
+ * either version 1.0 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the Phytium Public License for more details. 
- *  
- * 
+ * See the Phytium Public License for more details.
+ *
+ *
  * FilePath: fmemory_pool.c
  * Date: 2021-11-25 15:19:14
  * LastEditTime: 2022-02-17 18:01:43
  * Description:  This files is for memory pool API implmentation
- * 
- * Modify History: 
+ *
+ * Modify History:
  *  Ver   Who        Date         Changes
  * ----- ------     --------    --------------------------------------
  * 1.0   zhugengyu  2021/12/2    init
@@ -42,10 +42,10 @@
 
 static inline boolean FMempTakeSema(SemaphoreHandle_t locker)
 {
-    FASSERT_MSG((NULL != locker), "locker not exists");
+    FASSERT_MSG((NULL != locker), "Locker not exists.");
     if (pdFALSE == xSemaphoreTake(locker, portMAX_DELAY))
     {
-        FMEMP_ERROR("failed to give locker !!!");
+        FMEMP_ERROR("Failed to give locker !!!");
         return FALSE;
     }
 
@@ -54,10 +54,10 @@ static inline boolean FMempTakeSema(SemaphoreHandle_t locker)
 
 static inline void FMempGiveSema(SemaphoreHandle_t locker)
 {
-    FASSERT_MSG((NULL != locker), "locker not exists");
+    FASSERT_MSG((NULL != locker), "Locker not exists.");
     if (pdFALSE == xSemaphoreGive(locker))
     {
-        FMEMP_ERROR("failed to give locker !!!");
+        FMEMP_ERROR("Failed to give locker !!!");
     }
 
     return;
@@ -100,18 +100,18 @@ static void FMempDumpTagList(FMemp *memp)
     FMempTag *cur_tag = memp->tags_list;
     FMempTag *nxt_tag;
 
-    FMEMP_INFO("memory block status:  ");
+    FMEMP_INFO("Memory block status:  ");
     while (NULL != cur_tag)
     {
         nxt_tag = cur_tag->next;
         if (FMEMP_TAG_ALLOCATED == cur_tag->status)
         {
-            FMEMP_INFO("    [%d]: @0x%lx, sz: %ld, st: %s, msg: %s", 
-                            cur_tag->id, 
-                            cur_tag->mem_addr, 
-                            cur_tag->mem_size,
-                            status_info[cur_tag->status],
-                            cur_tag->msg);
+            FMEMP_INFO("    [%d]: @0x%lx, sz: %ld, st: %s, msg: %s",
+                       cur_tag->id,
+                       cur_tag->mem_addr,
+                       cur_tag->mem_size,
+                       status_info[cur_tag->status],
+                       cur_tag->msg);
         }
         cur_tag = nxt_tag;
     }
@@ -151,14 +151,14 @@ static boolean FMempTagIfExists(FMemp *memp, uintptr mem_addr, FMempTagStatus ne
                 FMEMP_ERROR("Free twice !!!");
             }
 
-            FMEMP_DEBUG("change @0x%lx from %s to %s", cur_tag->mem_addr,
-                                                      status_info[cur_tag->status], 
-                                                      status_info[new_status]);
-            FMEMP_DEBUG("    size from %ld to %ld",   cur_tag->mem_size, 
-                                                     new_size);
+            FMEMP_DEBUG("Change @0x%lx from %s to %s.", cur_tag->mem_addr,
+                        status_info[cur_tag->status],
+                        status_info[new_status]);
+            FMEMP_DEBUG("    size from %ld to %ld.",   cur_tag->mem_size,
+                        new_size);
             cur_tag->status = new_status;
             cur_tag->mem_size = new_size;
-            
+
             if (NULL != new_msg)
             {
                 const fsize_t msg_len = min((fsize_t)(FMEMP_TAG_MSG_LEN - 1), strlen(new_msg));
@@ -252,7 +252,7 @@ void *FMempMallocTag(FMemp *memp, fsize_t size, const char *file, unsigned long 
     void *ptr = FMempMalloc(memp, size);
     snprintf(msg_buf, FMEMP_TAG_MSG_LEN, "%s_%d: %s", file, line, msg);
     FMempDoTag(memp, ptr, FMEMP_TAG_ALLOCATED, size, msg_buf);
-    return ptr;    
+    return ptr;
 }
 
 /**
@@ -273,7 +273,7 @@ void *FMempMallocAlignTag(FMemp *memp, fsize_t size, fsize_t align, const char *
     void *ptr = FMempMallocAlign(memp, size, align);
     snprintf(msg_buf, FMEMP_TAG_MSG_LEN, "%s_%d: %s", file, line, msg);
     FMempDoTag(memp, ptr, FMEMP_TAG_ALLOCATED, size, msg_buf);
-    return ptr;      
+    return ptr;
 }
 
 /**
@@ -294,7 +294,7 @@ void *FMempCallocTag(FMemp *memp, fsize_t count, fsize_t size, const char *file,
     void *ptr = FMempCalloc(memp, count, size);
     snprintf(msg_buf, FMEMP_TAG_MSG_LEN, "%s_%d: %s", file, line, msg);
     FMempDoTag(memp, ptr, FMEMP_TAG_ALLOCATED, size, msg_buf);
-    return ptr;      
+    return ptr;
 }
 
 /**
@@ -316,7 +316,7 @@ void *FMempReallocTag(FMemp *memp, void *ptr, fsize_t size, const char *file, un
     ptr = FMempRealloc(memp, ptr, size);
     snprintf(msg_buf, FMEMP_TAG_MSG_LEN, "%s_%d: %s", file, line, msg);
     FMempDoTag(memp, ptr, FMEMP_TAG_ALLOCATED, size, msg_buf);
-    return ptr;         
+    return ptr;
 }
 
 /**
@@ -357,7 +357,7 @@ FError FMempInit(FMemp *memp, void *begin_addr, void *end_addr)
 
     if ((FT_COMPONENT_IS_READY == memp->is_ready) || (NULL != memp->tlsf_ptr))
     {
-        FMEMP_ERROR("memory tlsf_ptr already inited, you may lose access to original memory tlsf_ptr");
+        FMEMP_ERROR("Memory tlsf_ptr already inited, you may lose access to original memory tlsf_ptr.");
         return FMEMP_ERR_ALREADY_INIT;
     }
 
@@ -367,7 +367,7 @@ FError FMempInit(FMemp *memp, void *begin_addr, void *end_addr)
     }
     else
     {
-        FMEMP_ERROR("invalid input buf beg: %p, end: %p", begin_addr, end_addr);
+        FMEMP_ERROR("Invalid input buf beg: %p, end: %p.", begin_addr, end_addr);
         return FMEMP_ERR_INVALID_BUF;
     }
 
@@ -375,12 +375,12 @@ FError FMempInit(FMemp *memp, void *begin_addr, void *end_addr)
     FASSERT(NULL != (memp->locker = xSemaphoreCreateMutex()));
 
     /* no scheduler when init */
-    taskENTER_CRITICAL(); 
+    taskENTER_CRITICAL();
 
     memp->tlsf_ptr = (tlsf_t)tlsf_create_with_pool(begin_addr, size);
     if (NULL == memp->tlsf_ptr)
     {
-        FMEMP_ERROR("allocate TLSF buf failed");
+        FMEMP_ERROR("Allocate TLSF buf failed.");
         ret = FMEMP_ERR_INIT_TLFS;
         goto err_ret;
     }
@@ -388,7 +388,7 @@ FError FMempInit(FMemp *memp, void *begin_addr, void *end_addr)
     memp->pools_list = FMempMalloc(memp, sizeof(FMempPoolList *));
     if (NULL == memp->pools_list)
     {
-        FMEMP_ERROR("allocate TLSF block failed");
+        FMEMP_ERROR("Allocate TLSF block failed.");
         ret = FMEMP_ERR_BAD_MALLOC;
         goto err_ret;
     }
@@ -427,17 +427,17 @@ void FMempDeinit(FMemp *memp)
 {
     FASSERT(memp != NULL);
 
-    FMempPoolList * pool_node = (FMempPoolList *)memp->pools_list;
+    FMempPoolList *pool_node = (FMempPoolList *)memp->pools_list;
     pool_t tlsf_ptr = pool_node->pool_addr;
 
     if ((FT_COMPONENT_IS_READY != memp->is_ready) && (NULL == memp->tlsf_ptr))
     {
-        FMEMP_WARN("memory tlsf_ptr not inited");
+        FMEMP_WARN("Memory tlsf_ptr not inited.");
         return;
     }
 
     /* no scheduler when init */
-    taskENTER_CRITICAL(); 
+    taskENTER_CRITICAL();
 
 #ifdef FMEMP_TAG_DEBUG
     FMempRemoveTagList(memp);
@@ -478,7 +478,9 @@ void *FMempMalloc(FMemp *memp, fsize_t nbytes)
     nbytes = (nbytes > 20) ? nbytes : 20;
 
     if (!FMempTakeSema(memp->locker))
+    {
         return ptr;
+    }
 
     if (memp->tlsf_ptr)
     {
@@ -505,7 +507,9 @@ void *FMempMallocAlign(FMemp *memp, fsize_t size, fsize_t align)
     size = (size > 20) ? size : 20;
 
     if (!FMempTakeSema(memp->locker))
+    {
         return ptr;
+    }
 
     if (memp->tlsf_ptr)
     {
@@ -533,10 +537,12 @@ void *FMempCalloc(FMemp *memp, fsize_t count, fsize_t size)
     total_size = count * size;
 
     if (!FMempTakeSema(memp->locker))
+    {
         return ptr;
+    }
 
     ptr = FMempMalloc(memp, total_size);
-    
+
     FMempGiveSema(memp->locker);
     if (ptr != NULL)
     {
@@ -560,7 +566,9 @@ void *FMempCalloc(FMemp *memp, fsize_t count, fsize_t size)
 void *FMempRealloc(FMemp *memp, void *ptr, fsize_t nbytes)
 {
     if (!FMempTakeSema(memp->locker))
+    {
         return ptr;
+    }
 
     if (memp->tlsf_ptr)
     {
@@ -582,7 +590,9 @@ void *FMempRealloc(FMemp *memp, void *ptr, fsize_t nbytes)
 void FMempFree(FMemp *memp, void *ptr)
 {
     if (!FMempTakeSema(memp->locker))
+    {
         return;
+    }
 
     if (memp->tlsf_ptr)
     {
@@ -621,7 +631,9 @@ void FMemProbe(FMemp *memp, u32 *total, u32 *used, u32 *max_used)
     total_mem = 0;
 
     if (!FMempTakeSema(memp->locker))
+    {
         return;
+    }
 
     tlsf_walk_pool(tlsf_get_pool(memp->tlsf_ptr), FMemInfo, 0);
 
@@ -644,7 +656,7 @@ void FMemListAll(FMemp *memp)
     u8 i = 0;
     u8 len = 0;
 
-    FMempPoolList * pool_node;
+    FMempPoolList *pool_node;
     FSListNode *node;
     node = &memp->pools_list->list;
 
@@ -652,7 +664,9 @@ void FMemListAll(FMemp *memp)
     total_mem = 0;
 
     if (!FMempTakeSema(memp->locker))
+    {
         return;
+    }
 
     len = FSListLen(node) + 1;
     for (i = 0; i < len; i++)
@@ -664,10 +678,10 @@ void FMemListAll(FMemp *memp)
 
     FMempGiveSema(memp->locker);
 
-    FMEMP_INFO("total memory: %d", total_mem);
-    FMEMP_INFO("used memory : %d", used_mem);
-    FMEMP_INFO("check tlsf: %d", tlsf_check(memp->tlsf_ptr));
-    FMEMP_INFO("check tlsf pool: %d", tlsf_check_pool(memp->tlsf_ptr));
+    FMEMP_INFO("Total memory: %d", total_mem);
+    FMEMP_INFO("Used memory : %d", used_mem);
+    FMEMP_INFO("Check tlsf: %d", tlsf_check(memp->tlsf_ptr));
+    FMEMP_INFO("Check tlsf pool: %d", tlsf_check_pool(memp->tlsf_ptr));
 
 #ifdef FMEMP_TAG_DEBUG
     FMempDumpTagList(memp);

@@ -1,24 +1,27 @@
 /*
- * Copyright : (C) 2022 Phytium Information Technology, Inc. 
+ * Copyright : (C) 2022 Phytium Information Technology, Inc.
  * All Rights Reserved.
- *  
- * This program is OPEN SOURCE software: you can redistribute it and/or modify it  
- * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,  
- * either version 1.0 of the License, or (at your option) any later version. 
- *  
- * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;  
+ *
+ * This program is OPEN SOURCE software: you can redistribute it and/or modify it
+ * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,
+ * either version 1.0 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the Phytium Public License for more details. 
- *  
- * 
+ * See the Phytium Public License for more details.
+ *
+ *
  * FilePath: fcan_os.c
  * Date: 2022-09-15 14:20:19
  * LastEditTime: 2022-09-21 16:59:51
- * Description:  This file is for 
- * 
- * Modify History: 
+ * Description:  This file is for required function implementations of can driver used in FreeRTOS.
+ *
+ * Modify History:
  *  Ver   Who        Date         Changes
  * ----- ------     --------    --------------------------------------
+ * 1.0 wangxiaodong 2022/09/23  first commit
+ * 1.1 wangxiaodong 2022/11/01  file name adaptation
+ * 1.2 zhangyan     2023/2/7    improve functions
  */
 #include <stdio.h>
 #include <string.h>
@@ -96,16 +99,17 @@ FError FFreeRTOSCanControl(FFreeRTOSCan *os_can_p, int cmd, void *arg)
     FCanIdMaskConfig *id_mask_p;
     FCanIntrEventConfig *intr_event_p;
     boolean use_canfd;
+    u32 *tran_mode;
 
     /* New contrl can be performed only after current one is finished */
     if (pdFALSE == xSemaphoreTake(os_can_p->can_semaphore, portMAX_DELAY))
     {
-        FCAN_ERROR("Can xSemaphoreTake failed\r\n");
+        FCAN_ERROR("Can xSemaphoreTake failed.");
         /* We could not take the semaphore, exit with 0 data received */
         return FREERTOS_CAN_SEM_ERROR;
     }
 
-    switch (cmd) 
+    switch (cmd)
     {
         case FREERTOS_CAN_CTRL_ENABLE:
             FCanEnable(&os_can_p->can_ctrl, TRUE);
@@ -133,6 +137,11 @@ FError FFreeRTOSCanControl(FFreeRTOSCan *os_can_p, int cmd, void *arg)
         case FREERTOS_CAN_CTRL_ID_MASK_ENABLE:
             FCanIdMaskFilterEnable(&os_can_p->can_ctrl);
             break;
+        
+        case FREERTOS_CAN_CTRL_MODE_SET:
+            tran_mode = (u32*)arg;
+            FCanSetMode(&os_can_p->can_ctrl, *tran_mode);
+            break;
 
         case FREERTOS_CAN_CTRL_INTR_SET:
             intr_event_p = (FCanIntrEventConfig *)arg;
@@ -145,7 +154,7 @@ FError FFreeRTOSCanControl(FFreeRTOSCan *os_can_p, int cmd, void *arg)
             FCanFdEnable(&os_can_p->can_ctrl, use_canfd);
             break;    
         default:
-            FCAN_ERROR("invalid cmd.");
+            FCAN_ERROR("Invalid cmd.");
             ret = FCAN_INVAL_PARAM;
             break;
     }
@@ -154,7 +163,7 @@ FError FFreeRTOSCanControl(FFreeRTOSCan *os_can_p, int cmd, void *arg)
     if (pdFALSE == xSemaphoreGive(os_can_p->can_semaphore))
     {
         /* We could not post the semaphore, exit with error */
-        FCAN_ERROR("Can xSemaphoreGive failed\r\n");
+        FCAN_ERROR("Can xSemaphoreGive failed.");
         return FREERTOS_CAN_SEM_ERROR;
     }
 
@@ -180,7 +189,7 @@ FError FFreeRTOSCanSend(FFreeRTOSCan *os_can_p, FCanFrame *frame_p)
     /* New contrl can be performed only after current one is finished */
     if (pdFALSE == xSemaphoreTake(os_can_p->can_semaphore, portMAX_DELAY))
     {
-        FCAN_ERROR("Can xSemaphoreTake failed\r\n");
+        FCAN_ERROR("Can xSemaphoreTake failed.");
         /* We could not take the semaphore, exit with 0 data received */
         return FREERTOS_CAN_SEM_ERROR;
     }
@@ -188,14 +197,14 @@ FError FFreeRTOSCanSend(FFreeRTOSCan *os_can_p, FCanFrame *frame_p)
     ret = FCanSend(&os_can_p->can_ctrl, frame_p);
     if (ret != FCAN_SUCCESS)
     {
-        FCAN_ERROR("Can send failed\r\n");
+        FCAN_ERROR("Can send failed.");
     }
 
     /* Enable next contrl. Current one is finished */
     if (pdFALSE == xSemaphoreGive(os_can_p->can_semaphore))
     {
         /* We could not post the semaphore, exit with error */
-        FCAN_ERROR("Can xSemaphoreGive failed\r\n");
+        FCAN_ERROR("Can xSemaphoreGive failed.");
         return FREERTOS_CAN_SEM_ERROR;
     }
 
@@ -221,7 +230,7 @@ FError FFreeRTOSCanRecv(FFreeRTOSCan *os_can_p, FCanFrame *frame_p)
     /* New contrl can be performed only after current one is finished */
     if (pdFALSE == xSemaphoreTake(os_can_p->can_semaphore, portMAX_DELAY))
     {
-        FCAN_ERROR("Can xSemaphoreTake failed\r\n");
+        FCAN_ERROR("Can xSemaphoreTake failed.");
         /* We could not take the semaphore, exit with 0 data received */
         return FREERTOS_CAN_SEM_ERROR;
     }
@@ -229,14 +238,14 @@ FError FFreeRTOSCanRecv(FFreeRTOSCan *os_can_p, FCanFrame *frame_p)
     ret = FCanRecv(&os_can_p->can_ctrl, frame_p);
     if (ret != FCAN_SUCCESS)
     {
-        FCAN_ERROR("Can recv failed\r\n");
+        FCAN_ERROR("Can recv failed.");
     }
 
     /* Enable next contrl. Current one is finished */
     if (pdFALSE == xSemaphoreGive(os_can_p->can_semaphore))
     {
         /* We could not post the semaphore, exit with error */
-        FCAN_ERROR("Can xSemaphoreGive failed\r\n");
+        FCAN_ERROR("Can xSemaphoreGive failed.");
         return FREERTOS_CAN_SEM_ERROR;
     }
     

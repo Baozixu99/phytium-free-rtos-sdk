@@ -1,22 +1,22 @@
 /*
- * Copyright : (C) 2022 Phytium Information Technology, Inc. 
+ * Copyright : (C) 2022 Phytium Information Technology, Inc.
  * All Rights Reserved.
- *  
- * This program is OPEN SOURCE software: you can redistribute it and/or modify it  
- * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,  
- * either version 1.0 of the License, or (at your option) any later version. 
- *  
- * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;  
+ *
+ * This program is OPEN SOURCE software: you can redistribute it and/or modify it
+ * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,
+ * either version 1.0 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the Phytium Public License for more details. 
- *  
- * 
+ * See the Phytium Public License for more details.
+ *
+ *
  * FilePath: fspim_os.c
  * Date: 2022-07-18 09:05:53
  * LastEditTime: 2022-07-18 09:05:53
- * Description:  This files is for 
- * 
- * Modify History: 
+ * Description:  This file is for required function implementations of spi master driver used in FreeRTOS.
+ *
+ * Modify History:
  *  Ver   Who        Date         Changes
  * ----- ------     --------    --------------------------------------
  * 1.0   zhugengyu  2022/7/27   init commit
@@ -58,10 +58,10 @@ static void FSpimOsAckTransDone(void *instance_p, void *param);
 
 static inline FError FSpimOsTakeSema(SemaphoreHandle_t locker)
 {
-    FASSERT_MSG((NULL != locker), "locker not exists");
+    FASSERT_MSG((NULL != locker), "Locker not exists.");
     if (pdFALSE == xSemaphoreTake(locker, portMAX_DELAY))
     {
-        FSPIM_ERROR("failed to give locker !!!");
+        FSPIM_ERROR("Failed to give locker!!!");
         return FFREERTOS_SPIM_SEMA_ERR;
     }
 
@@ -70,10 +70,10 @@ static inline FError FSpimOsTakeSema(SemaphoreHandle_t locker)
 
 static inline void FSpimOsGiveSema(SemaphoreHandle_t locker)
 {
-    FASSERT_MSG((NULL != locker), "locker not exists");
+    FASSERT_MSG((NULL != locker), "Locker not exists.");
     if (pdFALSE == xSemaphoreGive(locker))
     {
-        FSPIM_ERROR("failed to give locker !!!");
+        FSPIM_ERROR("Failed to give locker!!!");
     }
 
     return;
@@ -94,9 +94,9 @@ static void FSpimOSSetupInterrupt(FSpim *ctrl)
     InterruptSetPriority(config_p->irq_num, config_p->irq_prority);
 
     /* register intr callback */
-    InterruptInstall(config_p->irq_num, 
-                     FSpimInterruptHandler, 
-                     ctrl, 
+    InterruptInstall(config_p->irq_num,
+                     FSpimInterruptHandler,
+                     ctrl,
                      NULL);
 
     /* disable spi irq */
@@ -111,14 +111,14 @@ static void FSpimOSSetupInterrupt(FSpim *ctrl)
 /**
  * @name: FFreeRTOSSpimInit
  * @msg: init and get spi instance
- * @return {FFreeRTOSSpim *} return 
+ * @return {FFreeRTOSSpim *} return
  * @param {u32} id, spim instance id
  * @param {FFreeRTOSSpimConifg} *input_config, freertos spim config
  */
 FFreeRTOSSpim *FFreeRTOSSpimInit(u32 id, const FFreeRTOSSpimConifg *input_config)
 {
     FASSERT(input_config);
-    FASSERT_MSG(id < FSPI_NUM, "invalid spim id");
+    FASSERT_MSG(id < FSPI_NUM, "Invalid spim id.");
     FFreeRTOSSpim *instance = &spim[id];
     FSpim *ctrl = &instance->ctrl;
     FSpimConfig config;
@@ -126,7 +126,7 @@ FFreeRTOSSpim *FFreeRTOSSpimInit(u32 id, const FFreeRTOSSpimConifg *input_config
 
     if (FT_COMPONENT_IS_READY == ctrl->is_ready)
     {
-        FSPIM_ERROR("spi-%d already init", id);
+        FSPIM_ERROR("spi-%d already init.", id);
         return instance;
     }
 
@@ -136,7 +136,7 @@ FFreeRTOSSpim *FFreeRTOSSpimInit(u32 id, const FFreeRTOSSpimConifg *input_config
     instance->config = *input_config;
     config = *FSpimLookupConfig(id);
     config.slave_dev_id = FSPIM_SLAVE_DEV_0;
-    
+
     if (FFREERTOS_SPIM_MODE_0 == instance->config.spi_mode) /* mode 0 */
     {
         config.cpha = FSPIM_CPHA_1_EDGE;
@@ -145,7 +145,7 @@ FFreeRTOSSpim *FFreeRTOSSpimInit(u32 id, const FFreeRTOSSpimConifg *input_config
     else if (FFREERTOS_SPIM_MODE_1 == instance->config.spi_mode) /* mode 1 */
     {
         config.cpha = FSPIM_CPHA_2_EDGE;
-        config.cpol = FSPIM_CPOL_LOW;        
+        config.cpol = FSPIM_CPOL_LOW;
     }
     else if (FFREERTOS_SPIM_MODE_2 == instance->config.spi_mode) /* mode 2 */
     {
@@ -156,34 +156,34 @@ FFreeRTOSSpim *FFreeRTOSSpimInit(u32 id, const FFreeRTOSSpimConifg *input_config
     {
         config.cpha = FSPIM_CPHA_2_EDGE;
         config.cpol = FSPIM_CPOL_HIGH;
-    }    
+    }
 
     config.n_bytes = FSPIM_1_BYTE;
     config.en_test = instance->config.inner_loopback;
     config.en_dma = instance->config.en_dma;
     config.irq_prority = FFREERTOS_SPIM_IRQ_PRIORITY;
-    config.max_freq_hz = FSPIM_OS_MAX_SPEED;    
+    config.max_freq_hz = FSPIM_OS_MAX_SPEED;
 
     FIOPadSetSpimMux(id);
 
     FSPIM_INFO("init spi-%d @ 0x%x", config.instance_id, config.base_addr);
     err = FSpimCfgInitialize(ctrl, &config);
     if (FSPIM_SUCCESS != err)
-	{
-        FSPIM_ERROR("init spim-%d failed, err: 0x%x !!!", id, err);
+    {
+        FSPIM_ERROR("Init spim-%d failed, err: 0x%x!!!", id, err);
         goto err_exit;
-    }    
+    }
 
-    FASSERT_MSG(NULL == instance->locker, "locker exists !!!");
-    FASSERT_MSG((instance->locker = xSemaphoreCreateMutex()) != NULL, "create mutex failed !!!");
+    FASSERT_MSG(NULL == instance->locker, "Locker exists!!!");
+    FASSERT_MSG((instance->locker = xSemaphoreCreateMutex()) != NULL, "Create mutex failed!!!");
 
-    FASSERT_MSG(NULL == instance->evt, "event group exists !!!");
-    FASSERT_MSG((instance->evt = xEventGroupCreate()) != NULL, "create event group failed !!!");
+    FASSERT_MSG(NULL == instance->evt, "Event group exists!!!");
+    FASSERT_MSG((instance->evt = xEventGroupCreate()) != NULL, "Create event group failed!!!");
 
     FSpimOSSetupInterrupt(ctrl);
     FSpimRegisterIntrruptHandler(ctrl, FSPIM_INTR_EVT_RX_DONE, FSpimOsAckTransDone, instance);
 
-    FSPIM_INFO("init spi-%d success !!!", id);
+    FSPIM_INFO("Init spi-%d success!!!", id);
 
 err_exit:
     taskEXIT_CRITICAL(); /* allow schedule after init */
@@ -204,20 +204,20 @@ FError FFreeRTOSSpimDeInit(FFreeRTOSSpim *const instance)
 
     if (FT_COMPONENT_IS_READY != ctrl->is_ready)
     {
-        FSPIM_ERROR("ddma-%d already init");
+        FSPIM_ERROR("ddma-%d already init.");
         return FFREERTOS_SPIM_NOT_INIT;
     }
 
     /* no scheduler during deinit */
-    taskENTER_CRITICAL(); 
+    taskENTER_CRITICAL();
 
     FSpimDeInitialize(ctrl);
 
-    FASSERT_MSG(NULL != instance->locker, "locker not exists !!!");
+    FASSERT_MSG(NULL != instance->locker, "Locker not exists!!!");
     vSemaphoreDelete(instance->locker);
     instance->locker = NULL;
 
-    FASSERT_MSG(NULL != instance->evt, "event group not exists !!!");
+    FASSERT_MSG(NULL != instance->evt, "Event group not exists!!!");
     vEventGroupDelete(instance->evt);
     instance->evt = NULL;
 
@@ -227,7 +227,7 @@ FError FFreeRTOSSpimDeInit(FFreeRTOSSpim *const instance)
 }
 
 /* ack transfer finish from interrupt */
-static void FSpimOsAckTransDone(void *instance_p, void *param) 
+static void FSpimOsAckTransDone(void *instance_p, void *param)
 {
     FASSERT(param);
     FFreeRTOSSpim *instance = (FFreeRTOSSpim *)param;
@@ -243,23 +243,23 @@ static void FSpimOsAckTransDone(void *instance_p, void *param)
 }
 
 /* wait transfer finish ack from task */
-static FError FSpimOsWaitTransDone(FFreeRTOSSpim *const instance) 
+static FError FSpimOsWaitTransDone(FFreeRTOSSpim *const instance)
 {
     const TickType_t wait_delay = pdMS_TO_TICKS(5000UL); /* wait for 5 seconds */
     EventBits_t ev;
     FError err = FFREERTOS_SPIM_OK;
 
     /* block task to wait finish signal */
-    FASSERT_MSG(instance->evt, "evt not exists");
+    FASSERT_MSG(instance->evt, "Evt not exists.");
     ev = xEventGroupWaitBits(instance->evt, FFREERTOS_TRANS_DONE,
                              pdTRUE, pdFALSE, wait_delay); /* wait for trans done */
-    if ((ev & FFREERTOS_TRANS_DONE)) 
-    { 
-        FSPIM_DEBUG("trans done");
-    } 
-    else 
+    if ((ev & FFREERTOS_TRANS_DONE))
     {
-        FSPIM_ERROR("trans timeout");
+        FSPIM_DEBUG("Trans done.");
+    }
+    else
+    {
+        FSPIM_ERROR("Trans timeout.");
         err = FFREERTOS_SPIM_WAIT_EVT_TIMOUT;
     }
 
@@ -275,7 +275,7 @@ static FError FSpimOsTx(FFreeRTOSSpim *const instance, const u8 *tx_buf, fsize_t
     err = FSpimTransferByInterrupt(ctrl, tx_buf, NULL, tx_len); /* start transfer */
     if (FSPIM_SUCCESS != err)
     {
-        FSPIM_ERROR("spim transfer failed: 0x%x", err);
+        FSPIM_ERROR("Spim transfer failed: 0x%x", err);
     }
     else
     {
@@ -295,7 +295,7 @@ static FError FSpimOsRx(FFreeRTOSSpim *const instance, u8 *rx_buf, fsize_t rx_le
     err = FSpimTransferByInterrupt(ctrl, NULL, rx_buf, rx_len); /* start transfer */
     if (FSPIM_SUCCESS != err)
     {
-        FSPIM_ERROR("spim transfer failed: 0x%x", err);
+        FSPIM_ERROR("Spim transfer failed: 0x%x", err);
     }
     else
     {
@@ -322,19 +322,21 @@ FError FFreeRTOSSpimTransfer(FFreeRTOSSpim *const instance, const FFreeRTOSSpiMe
 
     err = FSpimOsTakeSema(instance->locker); /* in case other tasks try to do transfer */
     if (FFREERTOS_SPIM_OK != err)
+    {
         return err;
+    }
 
     FSpimSetChipSelection(ctrl, TRUE); /* toggle on chip selection */
-    FSPIM_INFO("tx_buf@%p, len: %d, rx_buf@%p, len: %d", 
-                message->tx_buf, message->tx_len, message->rx_buf, message->rx_len);
+    FSPIM_INFO("tx_buf@%p, len: %d, rx_buf@%p, len: %d",
+               message->tx_buf, message->tx_len, message->rx_buf, message->rx_len);
 
     if (instance->config.en_dma) /* dma-mode */
     {
-        FSPIM_INFO("start DMA tx: %d, rx: %d", message->tx_len, message->rx_len);
+        FSPIM_INFO("Start DMA tx: %d, rx: %d", message->tx_len, message->rx_len);
         err = FSpimTransferDMA(ctrl, (0U != message->tx_len), (0U != message->rx_len));
         if (FSPIM_SUCCESS != err)
         {
-            FSPIM_ERROR("spim DMA transfer failed: 0x%x", err);
+            FSPIM_ERROR("Spim DMA transfer failed: 0x%x", err);
         }
 
     }
@@ -358,5 +360,5 @@ FError FFreeRTOSSpimTransfer(FFreeRTOSSpim *const instance, const FFreeRTOSSpiMe
 
 err_exit:
     FSpimOsGiveSema(instance->locker);
-    return err;       
+    return err;
 }

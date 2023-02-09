@@ -108,7 +108,7 @@ sf probe
 - 初始化成功后，在flash的偏移量0x20位置，写入一段不带空格的连续字符串，如‘write-spi-nor-flash-from-freertos-sfud’
 
 ```
-sf write 0x10 ‘write-spi-nor-flash-from-freertos-sfud’
+sf write 0x10  "write-spi-nor-flash-from-freertos-sfud"
 ```
 
 - 写入成功后，从flash的偏移量0x0开始，读取64个字节

@@ -1,24 +1,25 @@
 /*
- * Copyright : (C) 2022 Phytium Information Technology, Inc. 
+ * Copyright : (C) 2022 Phytium Information Technology, Inc.
  * All Rights Reserved.
- *  
- * This program is OPEN SOURCE software: you can redistribute it and/or modify it  
- * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,  
- * either version 1.0 of the License, or (at your option) any later version. 
- *  
- * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;  
+ *
+ * This program is OPEN SOURCE software: you can redistribute it and/or modify it
+ * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,
+ * either version 1.0 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the Phytium Public License for more details. 
- *  
- * 
+ * See the Phytium Public License for more details.
+ *
+ *
  * FilePath: shell_port.c
  * Date: 2022-02-24 22:03:27
  * LastEditTime: 2022-02-24 22:03:28
- * Description:  This file is for 
- * 
- * Modify History: 
+ * Description:  This file is for the shell port related functions
+ *
+ * Modify History:
  *  Ver   Who        Date         Changes
  * ----- ------     --------    --------------------------------------
+ * 1.0   huanghe    2022/3/25   first release
  */
 
 #include "shell.h"
@@ -40,7 +41,7 @@ extern void LSSerialConfig();
 extern void LSSerialWaitLoop();
 
 
-void LSUserShellTaskCreate( void * args)
+void LSUserShellTaskCreate(void *args)
 {
     BaseType_t ret;
     LSSerialConfig();
@@ -50,14 +51,14 @@ void LSUserShellTaskCreate( void * args)
     shellInit(&shell_object, shell_buffer, 4096);
 
 
-    ret = xTaskCreate((TaskFunction_t )LSSerialWaitLoop, /* 任务入口函数 */
-                            (const char* )"LSSerialWaitLoop",/* 任务名字 */
-                            (uint16_t )1024, /* 任务栈大小 */
-                            (void* )NULL,/* 任务入口函数参数 */
-                            (UBaseType_t )2, /* 任务的优先级 */
-                            NULL); /* 任务控制块指针 */
+    ret = xTaskCreate((TaskFunction_t)LSSerialWaitLoop,  /* 任务入口函数 */
+                      (const char *)"LSSerialWaitLoop",/* 任务名字 */
+                      (uint16_t)1024,  /* 任务栈大小 */
+                      (void *)NULL,/* 任务入口函数参数 */
+                      (UBaseType_t)2,  /* 任务的优先级 */
+                      NULL); /* 任务控制块指针 */
 
-    FASSERT_MSG(ret == pdPASS,"LSUserShellTask create is failed");
+    FASSERT_MSG(ret == pdPASS, "LSUserShellTask create is failed");
 
     vTaskDelete(NULL);
 }
@@ -69,12 +70,12 @@ void LSUserShellTaskCreate( void * args)
  */
 BaseType_t LSUserShellTask(void)
 {
-    return xTaskCreate((TaskFunction_t )LSUserShellTaskCreate, /* 任务入口函数 */
-                            (const char* )"LSUserShellTaskCreate",/* 任务名字 */
-                            (uint16_t )1024, /* 任务栈大小 */
-                            (void* )NULL,/* 任务入口函数参数 */
-                            (UBaseType_t )2, /* 任务的优先级 */
-                            NULL); /* 任务控制块指针 */
+    return xTaskCreate((TaskFunction_t)LSUserShellTaskCreate,  /* 任务入口函数 */
+                       (const char *)"LSUserShellTaskCreate",/* 任务名字 */
+                       (uint16_t)1024,  /* 任务栈大小 */
+                       (void *)NULL,/* 任务入口函数参数 */
+                       (UBaseType_t)2,  /* 任务的优先级 */
+                       NULL); /* 任务控制块指针 */
 }
 
 
@@ -91,7 +92,7 @@ int LSUserGetLastRet(void)
 
 /**
  * @name: 通过letter shell执行一行命令
- * @msg: 
+ * @msg:
  * @return {*}
  * @param {char} *cmd
  */

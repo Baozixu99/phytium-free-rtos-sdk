@@ -1,37 +1,30 @@
 /*
- * Copyright : (C) 2022 Phytium Information Technology, Inc. 
+ * Copyright : (C) 2022 Phytium Information Technology, Inc.
  * All Rights Reserved.
- *  
- * This program is OPEN SOURCE software: you can redistribute it and/or modify it  
- * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,  
- * either version 1.0 of the License, or (at your option) any later version. 
- *  
- * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;  
+ *
+ * This program is OPEN SOURCE software: you can redistribute it and/or modify it
+ * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,
+ * either version 1.0 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the Phytium Public License for more details. 
- *  
- * 
+ * See the Phytium Public License for more details.
+ *
+ *
  * FilePath: ftimer_tacho_os.h
  * Date: 2022-08-23 17:20:58
  * LastEditTime: 2022-08-23 17:20:58
- * Description:  This file is for 
- * 
- * Modify History: 
+ * Description:  This file is for providing function related definitions of timer tacho driver used in FreeRTOS.
+ *
+ * Modify History:
  *  Ver   Who        Date         Changes
  * ----- ------     --------    --------------------------------------
- * v0.1.0 liushengming 2022.08.24 init
+ * 1.0 liushengming 2022/08/24  init
  */
 
-#ifndef TACHO_H
-#define TACHO_H
-
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
+#ifndef FTIMER_TACHO_OS_H
+#define FTIMER_TACHO_OS_H
 /***************************** Include Files *********************************/
-
 #include <FreeRTOS.h>
 #include <semphr.h>
 #include <event_groups.h>
@@ -41,6 +34,11 @@ extern "C"
 #include "ftimer_tacho_hw.h"
 #include "ftypes.h"
 /************************** Constant Definitions *****************************/
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 /*Error code from standalone tacho driver*/
 #define FREERTOS_TIMER_TACHO_SUCCESS                    FTIMER_TACHO_SUCCESS
 #define FREERTOS_TIMER_TACHO_INVAILD_PARAM_ERROR        FTIMER_TACHO_ERR_INVAL_PARM
@@ -63,7 +61,7 @@ typedef struct
 {
     FTimerTachoCtrl ctrl;
     SemaphoreHandle_t locker;
-}FFreeRTOSTimerTacho;
+} FFreeRTOSTimerTacho;
 
 /***************** Macros (Inline Functions) Definitions *********************/
 
@@ -76,7 +74,7 @@ void FFreeRTOSTimerDeinit(FFreeRTOSTimerTacho *os_timer_p);
 void FFreeRTOSTimerDebug(FFreeRTOSTimerTacho *os_timer_p);
 /*tacho*/
 FFreeRTOSTimerTacho *FFreeRTOSTachoInit(u32 id, boolean tacho_mode);
-FError FFreeRTOSTachoGetRPM(FFreeRTOSTimerTacho *os_timer_p,u32 *rpm);
+FError FFreeRTOSTachoGetRPM(FFreeRTOSTimerTacho *os_timer_p, u32 *rpm);
 u32 FFreeRTOSTachoGetCNT(FFreeRTOSTimerTacho *os_timer_p);
 void FFreeRTOSTachoDeinit(FFreeRTOSTimerTacho *os_timer_p);
 

@@ -86,9 +86,9 @@ os.system("chmod +x ./make/*.mk --silent ")
 os.system("chmod +x ./lib/Kconfiglib/*.py --silent ")
 
 # Add standalone sdk
-standalone_sdk_v="1bd89a6cfce1088a5ed61a747772e740b18f4f85"
+standalone_sdk_v="v1.0.0"
 standalone_path=freertos_sdk_path  + '/standalone'
-standalone_branche="master"
+standalone_branche="release"
 standalone_remote="https://gitee.com/phytium_embedded/phytium-standalone-sdk.git"
 
 if not os.path.exists(standalone_path):
@@ -106,12 +106,15 @@ if not os.path.exists(standalone_path):
     os.system("echo \"lib/*\" >> {}".format(r'.git/info/sparse-checkout'))
     os.system("echo \"doc/*\" >> {}".format(r'.git/info/sparse-checkout'))
     os.system("echo \"third-party/fatfs-0.1.4/*\" >> {}".format(r'.git/info/sparse-checkout'))    
-    os.system("echo \"third-party/sdmmc/*\" >> {}".format(r'.git/info/sparse-checkout'))  
-    os.system("echo \"third-party/lwip-2.1.2/*\" >> {}".format(r'.git/info/sparse-checkout'))  
+    os.system("echo \"third-party/sdmmc/*\" >> {}".format(r'.git/info/sparse-checkout'))
+    os.system("echo \"third-party/lwip-2.1.2/*\" >> {}".format(r'.git/info/sparse-checkout'))
+   
 
     os.system("git checkout {}".format(standalone_sdk_v))
     print('[1]: Standalone sdk download is succeed')
     os.chdir(current_path) # 切换回当前路径
+    lwip_port_arch_path=standalone_path + '/third-party/lwip-2.1.2/ports/arch'
+    shutil.rmtree(lwip_port_arch_path)
 else:
     print('[1]: Standalone sdk is exist')
     pass

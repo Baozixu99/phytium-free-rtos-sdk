@@ -1,34 +1,29 @@
 /*
- * Copyright : (C) 2022 Phytium Information Technology, Inc. 
+ * Copyright : (C) 2022 Phytium Information Technology, Inc.
  * All Rights Reserved.
- *  
- * This program is OPEN SOURCE software: you can redistribute it and/or modify it  
- * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,  
- * either version 1.0 of the License, or (at your option) any later version. 
- *  
- * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;  
+ *
+ * This program is OPEN SOURCE software: you can redistribute it and/or modify it
+ * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,
+ * either version 1.0 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the Phytium Public License for more details. 
- *  
- * 
+ * See the Phytium Public License for more details.
+ *
+ *
  * FilePath: fgpio_os.h
  * Date: 2022-07-22 11:33:45
  * LastEditTime: 2022-07-22 11:33:45
- * Description:  This files is for 
- * 
- * Modify History: 
+ * Description:  This file is for providing function related definitions of gpio driver used in FreeRTOS.
+ *
+ * Modify History:
  *  Ver   Who        Date         Changes
  * ----- ------     --------    --------------------------------------
  * 1.0   zhugengyu  2022/7/27   init commit
  */
-#ifndef  DRIVERS_FGPIO_OS_H
-#define  DRIVERS_FGPIO_OS_H
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
+#ifndef  FGPIO_OS_H
+#define  FGPIO_OS_H
 /***************************** Include Files *********************************/
 #include <FreeRTOS.h>
 #include <semphr.h>
@@ -37,8 +32,12 @@ extern "C"
 #include "fkernel.h"
 #include "fparameters.h"
 #include "fgpio.h"
-
 /************************** Constant Definitions *****************************/
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #define FFREERTOS_GPIO_OK                   FT_SUCCESS
 #define FFREERTOS_GPIO_NOT_INIT             FT_CODE_ERR(ErrModPort, ErrBspGpio, 0)
 #define FFREERTOS_GPIO_SEMA_ERR             FT_CODE_ERR(ErrModPort, ErrBspGpio, 1)

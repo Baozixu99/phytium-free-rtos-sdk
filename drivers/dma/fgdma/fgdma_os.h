@@ -1,34 +1,28 @@
 /*
- * Copyright : (C) 2022 Phytium Information Technology, Inc. 
+ * Copyright : (C) 2022 Phytium Information Technology, Inc.
  * All Rights Reserved.
- *  
- * This program is OPEN SOURCE software: you can redistribute it and/or modify it  
- * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,  
- * either version 1.0 of the License, or (at your option) any later version. 
- *  
- * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;  
+ *
+ * This program is OPEN SOURCE software: you can redistribute it and/or modify it
+ * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,
+ * either version 1.0 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the Phytium Public License for more details. 
- *  
- * 
+ * See the Phytium Public License for more details.
+ *
+ *
  * FilePath: fgdma_os.h
  * Date: 2022-07-20 10:54:37
  * LastEditTime: 2022-07-20 10:54:37
- * Description:  This files is for 
- * 
- * Modify History: 
+ * Description:  This file is for providing function related definitions of gdma driver used in FreeRTOS.
+ *
+ * Modify History:
  *  Ver   Who        Date         Changes
  * ----- ------     --------    --------------------------------------
  * 1.0   zhugengyu  2022/7/27   init commit
  */
-#ifndef  DRIVERS_FGDMA_OS_H
-#define  DRIVERS_FGDMA_OS_H
-
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
+#ifndef  FGDMA_OS_H
+#define  FGDMA_OS_H
 /***************************** Include Files *********************************/
 #include <FreeRTOS.h>
 #include <semphr.h>
@@ -38,6 +32,11 @@ extern "C"
 #include "fgdma.h"
 #include "fmemory_pool.h"
 /************************** Constant Definitions *****************************/
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #define FFREERTOS_GDMA_OK                   FT_SUCCESS
 #define FFREERTOS_GDMA_NOT_INIT             FT_CODE_ERR(ErrModPort, ErrGdma, 0)
 #define FFREERTOS_GDMA_SEMA_ERR             FT_CODE_ERR(ErrModPort, ErrGdma, 1)
@@ -51,7 +50,7 @@ extern "C"
 typedef struct
 {
     FGdmaChan chan;
-    FGdmaBdlDesc *bdl_list; /* descriptor of every chan, dynamic allocated */    
+    FGdmaBdlDesc *bdl_list; /* descriptor of every chan, dynamic allocated */
 } FFreeRTOSGdmaChan; /* instance of gdma channel in FreeRTOS */
 
 typedef struct

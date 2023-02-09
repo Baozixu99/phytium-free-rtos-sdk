@@ -1,28 +1,30 @@
 /*
- * Copyright : (C) 2022 Phytium Information Technology, Inc. 
+ * Copyright : (C) 2022 Phytium Information Technology, Inc.
  * All Rights Reserved.
- *  
- * This program is OPEN SOURCE software: you can redistribute it and/or modify it  
- * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,  
- * either version 1.0 of the License, or (at your option) any later version. 
- *  
- * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;  
+ *
+ * This program is OPEN SOURCE software: you can redistribute it and/or modify it
+ * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,
+ * either version 1.0 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the Phytium Public License for more details. 
- *  
- * 
+ * See the Phytium Public License for more details.
+ *
+ *
  * FilePath: cc.h
  * Date: 2022-11-07 11:49:13
  * LastEditTime: 2022-11-07 11:49:14
- * Description:  This file is for 
- * 
- * Modify History: 
- *  Ver   Who  Date   Changes
- * ----- ------  -------- --------------------------------------
+ * Description:  This file is for the lwIP TCP/IP stack.
+ *
+ * Modify History:
+ *  Ver   Who       Date   Changes
+ * ----- ------    -------- --------------------------------------
+ *  1.0   liuzhihong  2022/11/26  first release
  */
 
-#ifndef LWIP_ARCH_CC_H
-#define LWIP_ARCH_CC_H
+#ifndef CC_H
+#define CC_H
+
 
 #if defined __ANDROID__
 #define LWIP_UNIX_ANDROID
@@ -38,17 +40,22 @@
 #define LWIP_UNIX_HURD
 #endif
 
-#define LWIP_NO_STDINT_H  1 //not include "stdint.h"
+#define LWIP_NO_STDINT_H  1 /*not include "stdint.h"*/
 
 /* define basic types */
 #include <stdint.h>
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 
 typedef uint8_t       u8_t;            // unsigned 8-bit
 typedef signed char   s8_t;               // signed 8-bit
 typedef uint16_t      u16_t;          // unsigned 16-bit
 typedef short         s16_t;             // signed 16-bit
 typedef uint32_t      u32_t;          // unsigned 32-bit
-typedef long          s32_t;              // signed 32-bit
+typedef signed int         s32_t;              // signed 32-bit 
 typedef uint64_t      u64_t;          // unsigned 64-bit
 #if defined(__aarch64__)
 typedef u64_t         mem_ptr_t;
@@ -79,7 +86,7 @@ typedef u32_t         mem_ptr_t;
 #define LWIP_ERRNO_INCLUDE <errno.h>
 
 #if defined(LWIP_UNIX_LINUX) || defined(LWIP_UNIX_HURD)
-#define LWIP_ERRNO_STDINCLUDE	1
+    #define LWIP_ERRNO_STDINCLUDE   1
 #endif
 
 #define LWIP_RAND() ((u32_t)rand())
@@ -108,5 +115,10 @@ typedef struct sio_status_s sio_status_t;
 #define __sio_fd_t_defined
 
 typedef unsigned int sys_prot_t;
+
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* LWIP_ARCH_CC_H */

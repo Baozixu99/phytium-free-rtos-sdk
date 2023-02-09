@@ -1,22 +1,22 @@
 /*
- * Copyright : (C) 2022 Phytium Information Technology, Inc. 
+ * Copyright : (C) 2022 Phytium Information Technology, Inc.
  * All Rights Reserved.
- *  
- * This program is OPEN SOURCE software: you can redistribute it and/or modify it  
- * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,  
- * either version 1.0 of the License, or (at your option) any later version. 
- *  
- * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;  
+ *
+ * This program is OPEN SOURCE software: you can redistribute it and/or modify it
+ * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,
+ * either version 1.0 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the Phytium Public License for more details. 
- *  
- * 
+ * See the Phytium Public License for more details.
+ *
+ *
  * FilePath: fgpio_os.c
  * Date: 2022-07-22 11:33:51
  * LastEditTime: 2022-07-22 11:33:51
- * Description:  This files is for 
- * 
- * Modify History: 
+ * Description:  This file is for required function implementations of gpio driver used in FreeRTOS.
+ *
+ * Modify History:
  *  Ver   Who        Date         Changes
  * ----- ------     --------    --------------------------------------
  * 1.0   zhugengyu  2022/7/27   init commit
@@ -52,10 +52,10 @@ static FFreeRTOSFGpio gpio[FGPIO_NUM]; /* instance of all gpio ctrl */
 /*****************************************************************************/
 static inline FError FGpioOsTakeSema(SemaphoreHandle_t locker)
 {
-    FASSERT_MSG((NULL != locker), "locker not exists");
+    FASSERT_MSG((NULL != locker), "Locker not exists.");
     if (pdFALSE == xSemaphoreTake(locker, portMAX_DELAY))
     {
-        FGPIO_ERROR("failed to give locker !!!");
+        FGPIO_ERROR("Failed to give locker!!!");
         return FFREERTOS_GPIO_SEMA_ERR;
     }
 
@@ -64,10 +64,10 @@ static inline FError FGpioOsTakeSema(SemaphoreHandle_t locker)
 
 static inline void FGpioOsGiveSema(SemaphoreHandle_t locker)
 {
-    FASSERT_MSG((NULL != locker), "locker not exists");
+    FASSERT_MSG((NULL != locker), "Locker not exists.");
     if (pdFALSE == xSemaphoreGive(locker))
     {
-        FGPIO_ERROR("failed to give locker !!!");
+        FGPIO_ERROR("Failed to give locker!!!");
     }
 
     return;
@@ -81,7 +81,7 @@ static inline void FGpioOsGetId(u32 pin_idx, FGpioPinId *pin_id)
     pin_id->ctrl = FFREERTOS_GPIO_PIN_CTRL_ID(pin_idx);
     pin_id->port = FFREERTOS_GPIO_PIN_PORT_ID(pin_idx);
     pin_id->pin = FFREERTOS_GPIO_PIN_ID(pin_idx);
-    FGPIO_INFO("pin index = 0x%x", pin_idx);
+    FGPIO_INFO("Pin index = 0x%x", pin_idx);
     FGPIO_INFO("is gpio-%d-%d-%d", pin_id->ctrl, pin_id->port, pin_id->pin);
 }
 
@@ -94,18 +94,18 @@ static void FGpioOsSetupCtrlIRQ(FFreeRTOSFGpio *const instance)
 
     GetCpuId(&cpu_id);
     FGPIO_INFO("cpu_id is cpu_id %d", cpu_id);
-    InterruptSetTargetCpus(irq_num, cpu_id); 
+    InterruptSetTargetCpus(irq_num, cpu_id);
 
-	/* setup interrupt */
-	InterruptSetPriority(irq_num, FFREERTOS_GPIO_IRQ_PRIORITY);
+    /* setup interrupt */
+    InterruptSetPriority(irq_num, FFREERTOS_GPIO_IRQ_PRIORITY);
 
-	/* register intr handler */
-	InterruptInstall(irq_num, 
-					FGpioInterruptHandler, 
-					ctrl, 
-					NULL);
+    /* register intr handler */
+    InterruptInstall(irq_num,
+                     FGpioInterruptHandler,
+                     ctrl,
+                     NULL);
 
-	InterruptUmask(irq_num);
+    InterruptUmask(irq_num);
 
     return;
 }
@@ -119,7 +119,7 @@ static void FGpioOsSetupCtrlIRQ(FFreeRTOSFGpio *const instance)
  */
 FFreeRTOSFGpio *FFreeRTOSGpioInit(u32 id, const FFreeRTOSGpioConfig *input_config)
 {
-    FASSERT_MSG(id < FGPIO_NUM, "invalid gpio id");
+    FASSERT_MSG(id < FGPIO_NUM, "Invalid gpio id.");
     FFreeRTOSFGpio *instance = &gpio[id];
     FGpio *ctrl = &instance->ctrl;
     FGpioConfig *config = &ctrl->config;
@@ -127,7 +127,7 @@ FFreeRTOSFGpio *FFreeRTOSGpioInit(u32 id, const FFreeRTOSGpioConfig *input_confi
 
     if (FT_COMPONENT_IS_READY == ctrl->is_ready)
     {
-        FGPIO_WARN("gpio-%d already init", config->instance_id);
+        FGPIO_WARN("gpio-%d already init.", config->instance_id);
         return instance;
     }
 
@@ -136,8 +136,8 @@ FFreeRTOSFGpio *FFreeRTOSGpioInit(u32 id, const FFreeRTOSGpioConfig *input_confi
 
     *config = *FGpioLookupConfig(id);
     err = FGpioCfgInitialize(ctrl, config);
-	if (FGPIO_SUCCESS != err)
-	{
+    if (FGPIO_SUCCESS != err)
+    {
         goto err_exit;
     }
 
@@ -153,12 +153,12 @@ FFreeRTOSFGpio *FFreeRTOSGpioInit(u32 id, const FFreeRTOSGpioConfig *input_confi
         FGpioOsSetupCtrlIRQ(instance);
     }
 
-    FASSERT_MSG(NULL == instance->locker, "locker exists !!!");
-    FASSERT_MSG((instance->locker = xSemaphoreCreateMutex()) != NULL, "create mutex failed !!!");
+    FASSERT_MSG(NULL == instance->locker, "Locker exists!!!");
+    FASSERT_MSG((instance->locker = xSemaphoreCreateMutex()) != NULL, "Create mutex failed!!!");
 
 err_exit:
     taskEXIT_CRITICAL(); /* allow schedule after init */
-    return (FT_SUCCESS == err) ? instance : NULL; /* exit with NULL if failed */     
+    return (FT_SUCCESS == err) ? instance : NULL; /* exit with NULL if failed */
 }
 
 /**
@@ -175,7 +175,7 @@ FError FFreeRTOSGpioDeInit(FFreeRTOSFGpio *const instance)
 
     if (FT_COMPONENT_IS_READY != ctrl->is_ready)
     {
-        FGPIO_WARN("gpio-%d not yet init", ctrl->config.instance_id);
+        FGPIO_WARN("gpio-%d not yet init.", ctrl->config.instance_id);
         return FFREERTOS_GPIO_NOT_INIT;
     }
 
@@ -184,12 +184,12 @@ FError FFreeRTOSGpioDeInit(FFreeRTOSFGpio *const instance)
 
     FGpioDeInitialize(ctrl);
 
-    FASSERT_MSG(NULL != instance->locker, "locker not exists !!!");
+    FASSERT_MSG(NULL != instance->locker, "Locker not exists!!!");
     vSemaphoreDelete(instance->locker);
     instance->locker = NULL;
 
     taskEXIT_CRITICAL(); /* allow schedule after init */
-    return err;    
+    return err;
 }
 
 /* setup gpio pin interrupt */
@@ -204,11 +204,11 @@ static void FGpioOSSetupPinIRQ(FFreeRTOSFGpio *const instance, FGpioPin *const p
 
     InterruptSetTargetCpus(irq_num, cpu_id);
 
-	/* setup interrupt */
-	InterruptSetPriority(irq_num, FFREERTOS_GPIO_IRQ_PRIORITY);
+    /* setup interrupt */
+    InterruptSetPriority(irq_num, FFREERTOS_GPIO_IRQ_PRIORITY);
 
-	/* register intr handler */
-	InterruptInstall(irq_num, config->irq_handler, config->irq_args, NULL);  
+    /* register intr handler */
+    InterruptInstall(irq_num, config->irq_handler, config->irq_args, NULL);
 
     InterruptUmask(irq_num);
 
@@ -229,14 +229,16 @@ FError FFreeRTOSSetupPin(FFreeRTOSFGpio *const instance, const FFreeRTOSGpioPinC
     FGpioPinId pin_id;
     FGpioOsGetId(config->pin_idx, &pin_id); /* convert pin id */
     u32 ctrl_id = ctrl->config.instance_id;
-    FASSERT_MSG((ctrl_id == pin_id.ctrl), "invalid instance for pin");
+    FASSERT_MSG((ctrl_id == pin_id.ctrl), "Invalid instance for pin.");
     FGpioPin *const pin = &instance->pins[pin_id.port][pin_id.pin];
     FError err = FT_SUCCESS;
     boolean irq_one_time = TRUE;
 
     err = FGpioOsTakeSema(instance->locker);
     if (FFREERTOS_GPIO_OK != err)
+    {
         return err;
+    }
 
     /* set io pad */
     FIOPadSetGpioMux(ctrl_id, pin_id.pin);
@@ -249,22 +251,22 @@ FError FFreeRTOSSetupPin(FFreeRTOSFGpio *const instance, const FFreeRTOSGpioPinC
 
     /* init pin */
     err = FGpioPinInitialize(ctrl, pin, pin_id);
-	if (FGPIO_SUCCESS != err)
-	{
-		FGPIO_ERROR("init pin %d-%d failed, err: 0x%x", 
-					pin_id.port, 
-                    pin_id.pin, 
-					err);
+    if (FGPIO_SUCCESS != err)
+    {
+        FGPIO_ERROR("Init pin %d-%d failed, err: 0x%x",
+                    pin_id.port,
+                    pin_id.pin,
+                    err);
         goto err_exit;
-	}
+    }
 
     /* setup pin direction */
     FGpioSetDirection(pin, config->mode);
-	FGPIO_INFO("Set GPIO-%d-%c-%d direction %s", 
-			 pin_id.ctrl, 
-			 (FGPIO_PORT_A == pin_id.port) ? 'a' : 'b', 
-			 pin_id.pin, 
-			 (FGPIO_DIR_INPUT == config->mode) ? "IN" : "OUT");
+    FGPIO_INFO("Set GPIO-%d-%c-%d direction %s",
+               pin_id.ctrl,
+               (FGPIO_PORT_A == pin_id.port) ? 'a' : 'b',
+               pin_id.pin,
+               (FGPIO_DIR_INPUT == config->mode) ? "IN" : "OUT");
 
     /* setup input-pin irq */
     if (TRUE == config->en_irq)
@@ -280,7 +282,7 @@ FError FFreeRTOSSetupPin(FFreeRTOSFGpio *const instance, const FFreeRTOSGpioPinC
 
 err_exit:
     FGpioOsGiveSema(instance->locker);
-    return err;       
+    return err;
 }
 
 /**
@@ -298,18 +300,20 @@ FError FFreeRTOSSetIRQ(FFreeRTOSFGpio *const instance, u32 pin_idx, boolean en_i
     FGpioOsGetId(pin_idx, &pin_id); /* convert pin id */
     FGpio *ctrl = &instance->ctrl;
     u32 ctrl_id = ctrl->config.instance_id;
-    FASSERT_MSG((ctrl_id == pin_id.ctrl), "invalid instance for pin");
+    FASSERT_MSG((ctrl_id == pin_id.ctrl), "Invalid instance for pin.");
     FGpioPin *const pin = &instance->pins[pin_id.port][pin_id.pin];
     FError err = FT_SUCCESS;
 
     err = FGpioOsTakeSema(instance->locker);
     if (FFREERTOS_GPIO_OK != err)
+    {
         return err;
+    }
 
     FGpioSetInterruptMask(pin, en_irq);
 
     FGpioOsGiveSema(instance->locker);
-    return err;       
+    return err;
 }
 
 /**
@@ -327,24 +331,26 @@ FError FFreeRTOSPinWrite(FFreeRTOSFGpio *const instance, u32 pin_idx, u32 value)
     FGpioOsGetId(pin_idx, &pin_id); /* convert pin id */
     FGpio *ctrl = &instance->ctrl;
     u32 ctrl_id = ctrl->config.instance_id;
-    FASSERT_MSG((ctrl_id == pin_id.ctrl), "invalid instance for pin");
+    FASSERT_MSG((ctrl_id == pin_id.ctrl), "Invalid instance for pin.");
     FGpioPin *const pin = &instance->pins[pin_id.port][pin_id.pin];
     FError err = FT_SUCCESS;
 
     err = FGpioOsTakeSema(instance->locker);
     if (FFREERTOS_GPIO_OK != err)
+    {
         return err;
+    }
 
     err = FGpioSetOutputValue(pin, (FGpioPinVal)value);
 
     FGpioOsGiveSema(instance->locker);
-    return err;      
+    return err;
 }
 
 /**
  * @name: FFreeRTOSPinRead
  * @msg: get input pin value
- * @return {u32} level input by pin 
+ * @return {u32} level input by pin
  * @param {FFreeRTOSFGpio} *instance, freertos gpio instance
  * @param {u32} pin_idx, index of gpio pin
  */
@@ -355,17 +361,19 @@ u32 FFreeRTOSPinRead(FFreeRTOSFGpio *const instance, u32 pin_idx)
     FGpioPinId pin_id;
     FGpioOsGetId(pin_idx, &pin_id); /* convert pin id */
     u32 ctrl_id = ctrl->config.instance_id;
-    FASSERT_MSG((ctrl_id == pin_id.ctrl), "invalid instance for pin");
+    FASSERT_MSG((ctrl_id == pin_id.ctrl), "Invalid instance for pin.");
     FGpioPin *const pin = &instance->pins[pin_id.port][pin_id.pin];
     FError err = FT_SUCCESS;
     FGpioPinVal val = FGPIO_PIN_LOW;
 
     err = FGpioOsTakeSema(instance->locker);
     if (FFREERTOS_GPIO_OK != err)
+    {
         return val;
+    }
 
     val = FGpioGetInputValue(pin);
 
     FGpioOsGiveSema(instance->locker);
-    return val;     
+    return val;
 }

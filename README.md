@@ -157,12 +157,12 @@ D2000 是一款面向桌面应用的高性能通用 8 核处理器。每 2 个�
 | LWIP 2.1.2                     | FT2000/4<br>D2000<br>E2000 |                             | lwip-2.1.2                |
 | Letter shell 3.1               | FT2000/4<br>D2000<br>E2000 |                             | letter-shell-3.1          |
 | Sfud 1.1.0                     | FT2000/4<br>D2000<br>E2000 |                             | sfud-1.1.0                |
-| Fatfs (RAMSATA)                | FT2000/4<br>D2000<br>E2000 |                             | fatfs-0.1.3               |
+| Fatfs (RAMSATA)                | FT2000/4<br>D2000<br>E2000 |                             | fatfs-0.1.4               |
 | OpenAMP                        | FT2000/4<br>D2000<br>E2000 |                             | openamp                   |
 | SPIFFS-0.3.7                   | FT2000/4<br>D2000<br>E2000 |                             | spiffs-0.3.7              |
 | TLSF-3.1.0                     | FT2000/4<br>D2000<br>E2000 |                             | tlsf-3.1.0                |
 | Sdmmc-1.0                      | E2000                      |                             | sdmmc-1.0                 |
-| CherryUSB-0.6.0                | E2000                      |                             | cherryusb-0.5.2           |
+| CherryUSB-0.6.0                | E2000                      |                             | cherryusb-0.6.0           |
 ---
 ## 5. 参考资料
 
@@ -181,6 +181,14 @@ zhugengyu@phytium.com.cn
 wangxiaodong1030@phytium.com.cn
 
 liushengming1118@phytium.com.cn
+
+wangzongqiang1322@phytium.com.cn
+
+liqiaozhong1404@phytium.com.cn
+
+liuzhihong1235@phytium.com.cn
+
+zhangyan1491@phytium.com.cn
 
 ---
 

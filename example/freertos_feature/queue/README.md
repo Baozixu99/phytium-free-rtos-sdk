@@ -133,12 +133,12 @@ bootelf -p 0x90100000
 - 输入```queue struct_cre```，启动queue的struct类型数据的收发任务测试
 - 输入```queue struct_del```，删除queue的struct类型数据的收发任务测试
 
-![struct](./figs/queue_set.png)
+![struct](./figs/queue_struct.png)
 
 - 输入```queue set_cre```，启动queue的set函数使用，收发任务测试
 - 输入```queue set_del```，删除queue的set函数使用，收发任务测试
 
-![set](./figs/queue_struct.png)
+![set](./figs/queue_set.png)
 
 - 测试任务能够能正常创建和删除，输入```ps```查看任务状态正常，即测试正常
 

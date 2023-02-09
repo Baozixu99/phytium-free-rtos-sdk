@@ -1,24 +1,25 @@
 /*
- * Copyright : (C) 2022 Phytium Information Technology, Inc. 
+ * Copyright : (C) 2022 Phytium Information Technology, Inc.
  * All Rights Reserved.
- *  
- * This program is OPEN SOURCE software: you can redistribute it and/or modify it  
- * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,  
- * either version 1.0 of the License, or (at your option) any later version. 
- *  
- * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;  
+ *
+ * This program is OPEN SOURCE software: you can redistribute it and/or modify it
+ * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,
+ * either version 1.0 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the Phytium Public License for more details. 
- *  
- * 
+ * See the Phytium Public License for more details.
+ *
+ *
  * FilePath: gpio_io_irq.c
  * Date: 2022-07-22 13:57:42
- * LastEditTime: 2022-07-22 13:57:43
- * Description:  This files is for 
- * 
- * Modify History: 
+ * LastEditTime: 2022-07-22 13:57:43 
+ * Description:  This file is for gpio io irq implementation.
+ *
+ * Modify History:
  *  Ver   Who        Date         Changes
  * ----- ------     --------    --------------------------------------
+ *  1.0  zhugengyu  2022/8/26    init commit
  */
 /***************************** Include Files *********************************/
 #include <stdio.h>
@@ -45,7 +46,7 @@ static FFreeRTOSGpioConfig out_gpio_cfg;
 static xSemaphoreHandle init_locker = NULL;
 static u32 in_pin = FFREERTOS_GPIO_PIN_INDEX(3, 0, 5);  /* GPIO 3-A-5 */
 static u32 out_pin = FFREERTOS_GPIO_PIN_INDEX(3, 0, 4); /* GPIO 3-A-4 */
-static FFreeRTOSGpioPinConfig in_pin_config = 
+static FFreeRTOSGpioPinConfig in_pin_config =
 {
     .pin_idx = FFREERTOS_GPIO_PIN_INDEX(3, 0, 5), /* GPIO 3-A-5 */
     .mode = FGPIO_DIR_INPUT,
@@ -54,7 +55,7 @@ static FFreeRTOSGpioPinConfig in_pin_config =
     .irq_handler = NULL,
     .irq_args = NULL
 };
-static FFreeRTOSGpioPinConfig out_pin_config = 
+static FFreeRTOSGpioPinConfig out_pin_config =
 {
     .pin_idx = FFREERTOS_GPIO_PIN_INDEX(3, 0, 4), /* GPIO 3-A-4 */
     .mode = FGPIO_DIR_OUTPUT,
@@ -78,7 +79,7 @@ static boolean is_running = FALSE;
 /*****************************************************************************/
 static void GpioIOIrqExitCallback(TimerHandle_t timer)
 {
-    printf("exiting...\r\n");
+    printf("Exiting...\r\n");
 
     if (output_task) /* stop and delete send task */
     {
@@ -94,7 +95,7 @@ static void GpioIOIrqExitCallback(TimerHandle_t timer)
 
     if (FT_SUCCESS != FFreeRTOSGpioDeInit(in_gpio))
     {
-        FGPIO_ERROR("delete gpio failed !!!");
+        FGPIO_ERROR("Delete gpio failed.");
     }
     in_gpio = NULL;
 
@@ -102,8 +103,8 @@ static void GpioIOIrqExitCallback(TimerHandle_t timer)
     {
         if (FT_SUCCESS != FFreeRTOSGpioDeInit(out_gpio))
         {
-            FGPIO_ERROR("delete gpio failed !!!");
-        }        
+            FGPIO_ERROR("Delete gpio failed.");
+        }
     }
     out_gpio = NULL;
 
@@ -123,7 +124,7 @@ static void GpioIOIrqExitCallback(TimerHandle_t timer)
     {
         if (pdPASS != xTimerDelete(exit_timer, 0))
         {
-            FGPIO_ERROR("delete exit timer failed !!!");
+            FGPIO_ERROR("Delete exit timer failed.");
         }
         exit_timer = NULL;
     }
@@ -136,8 +137,8 @@ static void GpioIOAckPinIrq(s32 vector, void *param)
     BaseType_t xhigher_priority_task_woken = pdFALSE;
     BaseType_t x_result = pdFALSE;
 
-    FGPIO_INFO("ack pin irq");
-    x_result = xEventGroupSetBitsFromISR(event, PIN_IRQ_OCCURED, 
+    FGPIO_INFO("Ack pin irq.");
+    x_result = xEventGroupSetBitsFromISR(event, PIN_IRQ_OCCURED,
                                          &xhigher_priority_task_woken);
 }
 
@@ -161,22 +162,22 @@ static void GdmaInitTask(void *args)
     /* init output/input pin */
     out_pin_config.pin_idx = out_pin;
     err = FFreeRTOSSetupPin(out_gpio, &out_pin_config);
-    FASSERT_MSG(FT_SUCCESS == err, "init output gpio pin failed !!!");
+    FASSERT_MSG(FT_SUCCESS == err, "Init output gpio pin failed.");
 
     in_pin_config.pin_idx = in_pin;
     in_pin_config.irq_handler = GpioIOAckPinIrq;
     in_pin_config.irq_args = NULL;
-    printf("config input pin interrupt type as %s\r\n", irq_type_str[in_pin_config.irq_type]);
+    printf("Config input pin interrupt type as %s\r\n", irq_type_str[in_pin_config.irq_type]);
     err = FFreeRTOSSetupPin(in_gpio, &in_pin_config);
-    FASSERT_MSG(FT_SUCCESS == err, "init input gpio pin failed !!!");
+    FASSERT_MSG(FT_SUCCESS == err, "Init input gpio pin failed.");
 
-    FASSERT_MSG(init_locker, "init locker NULL");
+    FASSERT_MSG(init_locker, "Init locker NULL");
     for (u32 loop = 0U; loop < GPIO_WORK_TASK_NUM; loop++)
     {
         xSemaphoreGive(init_locker);
     }
 
-    vTaskDelete(NULL);    
+    vTaskDelete(NULL);
 }
 
 static void GpioIOIrqOutputTask(void *args)
@@ -187,15 +188,15 @@ static void GpioIOIrqOutputTask(void *args)
     const TickType_t toggle_delay = pdMS_TO_TICKS(500UL); /* toggle every 500 ms */
     FGpioPinVal out_val = FGPIO_PIN_LOW;
 
-    printf("gpio ouptut task started \r\n");
+    printf("Gpio ouptut task started. \r\n");
 
     for (;;)
     {
         printf(" ==> Set GPIO-%d-%c-%d as %s\r\n",
-                FFREERTOS_GPIO_PIN_CTRL_ID(out_pin), 
-                (FGPIO_PORT_A == FFREERTOS_GPIO_PIN_PORT_ID(out_pin)) ? 'a' : 'b', 
-                FFREERTOS_GPIO_PIN_ID(out_pin), 
-                (out_val == FGPIO_PIN_LOW) ? "low" : "high");
+               FFREERTOS_GPIO_PIN_CTRL_ID(out_pin),
+               (FGPIO_PORT_A == FFREERTOS_GPIO_PIN_PORT_ID(out_pin)) ? 'a' : 'b',
+               FFREERTOS_GPIO_PIN_ID(out_pin),
+               (out_val == FGPIO_PIN_LOW) ? "low" : "high");
 
         FFreeRTOSPinWrite(out_gpio, out_pin, out_val); /* start with low level */
         vTaskDelay(toggle_delay);
@@ -208,8 +209,8 @@ static boolean GpioIOWaitIrqOccurr(void)
     const TickType_t wait_delay = pdMS_TO_TICKS(2000U); /* just check 2sec wait */
     boolean ok = FALSE;
     EventBits_t ev = xEventGroupWaitBits(event,
-                                        PIN_IRQ_OCCURED,
-                                        pdTRUE, pdFALSE, wait_delay);
+                                         PIN_IRQ_OCCURED,
+                                         pdTRUE, pdFALSE, wait_delay);
 
     if ((ev & PIN_IRQ_OCCURED))
     {
@@ -228,7 +229,7 @@ static void GpioIOIrqInputTask(void *args)
     FError err = FT_SUCCESS;
     const TickType_t input_delay = pdMS_TO_TICKS(100UL); /* input every 500 ms */
 
-    printf("gpio input task started \r\n");
+    printf("Gpio input task started. \r\n");
     (void)FFreeRTOSSetIRQ(in_gpio, in_pin, TRUE);
 
     for (;;)
@@ -243,20 +244,20 @@ static void GpioIOIrqInputTask(void *args)
         /* check for interrupt event */
         if (GpioIOWaitIrqOccurr())
         {
-            printf("GPIO-%d-%c-%d, Interrrupt Asserted !!! \r\n", 
-                    FFREERTOS_GPIO_PIN_CTRL_ID(in_pin),
-                    (FGPIO_PORT_A == FFREERTOS_GPIO_PIN_PORT_ID(in_pin)) ? 'a' : 'b',
-                    FFREERTOS_GPIO_PIN_ID(in_pin));
+            printf("GPIO-%d-%c-%d, Interrrupt Asserted. \r\n",
+                   FFREERTOS_GPIO_PIN_CTRL_ID(in_pin),
+                   (FGPIO_PORT_A == FFREERTOS_GPIO_PIN_PORT_ID(in_pin)) ? 'a' : 'b',
+                   FFREERTOS_GPIO_PIN_ID(in_pin));
 
             (void)FFreeRTOSSetIRQ(in_gpio, in_pin, TRUE); /* enable irq to recv next one */
         }
         else
         {
-            printf("None Interrupt Assert\r\n");
+            printf("None Interrupt Assert.\r\n");
             continue;
         }
 
-        vTaskDelay(input_delay);        
+        vTaskDelay(input_delay);
     }
 }
 
@@ -267,63 +268,63 @@ BaseType_t FFreeRTOSRunGpioIOIrq(u32 out_pin_idx, u32 in_pin_idx)
 
     if (is_running)
     {
-        FGPIO_ERROR("task is running !!!!");
+        FGPIO_ERROR("The task is running.");
         return pdPASS;
     }
 
     is_running = TRUE;
 
-    FASSERT_MSG(NULL == event, "event group exists !!!");
-    FASSERT_MSG((event = xEventGroupCreate()) != NULL, "create event group failed !!!");
+    FASSERT_MSG(NULL == event, "Event group exists.");
+    FASSERT_MSG((event = xEventGroupCreate()) != NULL, "Create event group failed.");
 
-    FASSERT_MSG(NULL == init_locker, "init locker exists !!!");
-    FASSERT_MSG((init_locker = xSemaphoreCreateCounting(GPIO_WORK_TASK_NUM, 0U)) != NULL, "create event group failed !!!");
+    FASSERT_MSG(NULL == init_locker, "Init locker exists.");
+    FASSERT_MSG((init_locker = xSemaphoreCreateCounting(GPIO_WORK_TASK_NUM, 0U)) != NULL, "Create event group failed.");
 
     out_pin = out_pin_idx;
     in_pin = in_pin_idx;
 
     taskENTER_CRITICAL(); /* no schedule when create task */
 
-    ret = xTaskCreate((TaskFunction_t )GdmaInitTask, /* task entry */
-                        (const char* )"GdmaInitTask",/* task name */
-                        (uint16_t )1024, /* task stack size in words */
-                        NULL, /* task params */
-                        (UBaseType_t )configMAX_PRIORITIES - 1, /* task priority */
-                        NULL); /* task handler */
+    ret = xTaskCreate((TaskFunction_t)GdmaInitTask,  /* task entry */
+                      (const char *)"GdmaInitTask",/* task name */
+                      (uint16_t)1024,  /* task stack size in words */
+                      NULL, /* task params */
+                      (UBaseType_t)configMAX_PRIORITIES - 1,  /* task priority */
+                      NULL); /* task handler */
 
-    FASSERT_MSG(pdPASS == ret, "create task failed"); 
+    FASSERT_MSG(pdPASS == ret, "Create task failed.");
 
-    ret = xTaskCreate((TaskFunction_t )GpioIOIrqOutputTask, /* task entry */
-                        (const char* )"GpioIOIrqOutputTask",/* task name */
-                        (uint16_t )1024, /* task stack size in words */
-                        NULL, /* task params */
-                        (UBaseType_t )configMAX_PRIORITIES - 1, /* task priority */
-                        (TaskHandle_t* )&output_task); /* task handler */
+    ret = xTaskCreate((TaskFunction_t)GpioIOIrqOutputTask,  /* task entry */
+                      (const char *)"GpioIOIrqOutputTask",/* task name */
+                      (uint16_t)1024,  /* task stack size in words */
+                      NULL, /* task params */
+                      (UBaseType_t)configMAX_PRIORITIES - 1,  /* task priority */
+                      (TaskHandle_t *)&output_task); /* task handler */
 
-    FASSERT_MSG(pdPASS == ret, "create task failed"); 
+    FASSERT_MSG(pdPASS == ret, "Create task failed.");
 
-    ret = xTaskCreate((TaskFunction_t )GpioIOIrqInputTask, /* task entry */
-                        (const char* )"GpioIOIrqInputTask",/* task name */
-                        (uint16_t )1024, /* task stack size in words */
-                        NULL, /* task params */
-                        (UBaseType_t )configMAX_PRIORITIES - 2, /* task priority */
-                        (TaskHandle_t* )&input_task); /* task handler */ 
+    ret = xTaskCreate((TaskFunction_t)GpioIOIrqInputTask,  /* task entry */
+                      (const char *)"GpioIOIrqInputTask",/* task name */
+                      (uint16_t)1024,  /* task stack size in words */
+                      NULL, /* task params */
+                      (UBaseType_t)configMAX_PRIORITIES - 2,  /* task priority */
+                      (TaskHandle_t *)&input_task); /* task handler */
 
-    FASSERT_MSG(pdPASS == ret, "create task failed"); 
+    FASSERT_MSG(pdPASS == ret, "Create task failed.");
 
-    exit_timer = xTimerCreate("Exit-Timer",		            /* Text name for the software timer - not used by FreeRTOS. */
-                                total_run_time,		            /* The software timer's period in ticks. */
-                                pdFALSE,						/* Setting uxAutoRealod to pdFALSE creates a one-shot software timer. */
-                                NULL,				        /* use timer id to pass task data for reference. */
-                                GpioIOIrqExitCallback);   /* The callback function to be used by the software timer being created. */
+    exit_timer = xTimerCreate("Exit-Timer",                 /* Text name for the software timer - not used by FreeRTOS. */
+                              total_run_time,                 /* The software timer's period in ticks. */
+                              pdFALSE,                        /* Setting uxAutoRealod to pdFALSE creates a one-shot software timer. */
+                              NULL,                       /* use timer id to pass task data for reference. */
+                              GpioIOIrqExitCallback);   /* The callback function to be used by the software timer being created. */
 
-    FASSERT_MSG(NULL != exit_timer, "create exit timer failed");
+    FASSERT_MSG(NULL != exit_timer, "Create exit timer failed.");
 
     taskEXIT_CRITICAL(); /* allow schedule since task created */
 
     ret = xTimerStart(exit_timer, 0); /* start */
 
-    FASSERT_MSG(pdPASS == ret, "start exit timer failed");
+    FASSERT_MSG(pdPASS == ret, "Start exit timer failed.");
 
     return ret;
 }

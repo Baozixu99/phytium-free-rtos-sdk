@@ -108,3 +108,4 @@ config USE_CHERRY_USB
     if USE_CHERRY_USB
         source "$(FREERTOS_SDK_ROOT)/third-party/cherryusb-0.6.0/Kconfig"
     endif
+

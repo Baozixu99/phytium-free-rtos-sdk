@@ -1,24 +1,25 @@
 /*
- * Copyright : (C) 2022 Phytium Information Technology, Inc. 
+ * Copyright : (C) 2022 Phytium Information Technology, Inc.
  * All Rights Reserved.
- *  
- * This program is OPEN SOURCE software: you can redistribute it and/or modify it  
- * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,  
- * either version 1.0 of the License, or (at your option) any later version. 
- *  
- * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;  
+ *
+ * This program is OPEN SOURCE software: you can redistribute it and/or modify it
+ * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,
+ * either version 1.0 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the Phytium Public License for more details. 
- *  
- * 
+ * See the Phytium Public License for more details.
+ *
+ *
  * FilePath: gdma_memcpy.c
  * Date: 2022-07-20 11:07:42
  * LastEditTime: 2022-07-20 11:16:57
- * Description:  This files is for 
- * 
- * Modify History: 
+ * Description:  This files is for GDMA task implementations 
+ *
+ * Modify History:
  *  Ver   Who        Date         Changes
  * ----- ------     --------    --------------------------------------
+ * 1.0 zhugengyu    2022/08/26   first commit
  */
 /***************************** Include Files *********************************/
 #include <string.h>
@@ -133,8 +134,8 @@ static FFreeRTOSGdmaRequest *GdmaPrepareRequest(u8 *src, u8 *dst, fsize_t buf_le
         req->trans[loop].src_buf = src + pre_buf_len * loop;
         req->trans[loop].dst_buf = dst + pre_buf_len * loop;
         req->trans[loop].data_len = pre_buf_len;
-        FGDMA_INFO("src: %p, dst: %p, len: %d", req->trans[loop].src_buf, req->trans[loop].dst_buf, 
-                    req->trans[loop].data_len);
+        FGDMA_INFO("src: %p, dst: %p, len: %d.", req->trans[loop].src_buf, req->trans[loop].dst_buf,
+                   req->trans[loop].data_len);
         req->valid_trans_num++;
     }
 
@@ -149,8 +150,8 @@ static void GdmaMemcpyAckChanXEnd(FGdmaChan *const chan, void *args)
     BaseType_t xhigher_priority_task_woken = pdFALSE;
     BaseType_t x_result = pdFALSE;
 
-    FGDMA_INFO("ack gdma chan %d", chan_id);
-    x_result = xEventGroupSetBitsFromISR(chan_evt, GDMA_CHAN_TRANS_END(chan_id), 
+    FGDMA_INFO("ack gdma chan %d.", chan_id);
+    x_result = xEventGroupSetBitsFromISR(chan_evt, GDMA_CHAN_TRANS_END(chan_id),
                                          &xhigher_priority_task_woken);
 
     return;
@@ -167,12 +168,12 @@ static boolean GdmaMemcpyWaitChanXEnd(u32 chan_id)
                              pdTRUE, pdTRUE, wait_delay); /* wait for all bits */
     if ((ev & GDMA_CHAN_TRANS_END(chan_id))) /* wait until channel finished memcpy */
     {
-        FGDMA_INFO("memcpy finished !! chan bits: 0x%x", chan_evt_bits);
+        FGDMA_INFO("memcpy finished !! chan bits: 0x%x.", chan_evt_bits);
         ok = TRUE;
     }
     else
     {
-        FGDMA_ERROR("wait memcpy timeout !!! 0x%x != 0x%x", ev, chan_evt_bits);
+        FGDMA_ERROR("wait memcpy timeout !!! 0x%x != 0x%x.", ev, chan_evt_bits);
         ok = FALSE;
     }
 
@@ -213,7 +214,7 @@ static void GdmaMemcpyTaskA(void *args)
     err = FFreeRTOSGdmaSetupChannel(gdma, chan_id, req_a);
     if (FT_SUCCESS != err)
     {
-        FGDMA_ERROR("setup chan-%d failed", chan_id);
+        FGDMA_ERROR("setup chan-%d failed.", chan_id);
         goto task_err;
     }
 
@@ -227,7 +228,7 @@ static void GdmaMemcpyTaskA(void *args)
         memset(src_a, ch, GDMA_BUF_A_LEN);
         memset(dst_a, 0, GDMA_BUF_A_LEN);
 
-        FCacheDCacheInvalidateRange((uintptr)src_a, GDMA_BUF_A_LEN); 
+        FCacheDCacheInvalidateRange((uintptr)src_a, GDMA_BUF_A_LEN);
         FCacheDCacheInvalidateRange((uintptr)dst_a, GDMA_BUF_A_LEN);
 
         if (FT_SUCCESS != FFreeRTOSGdmaStart(gdma, chan_id))
@@ -239,7 +240,7 @@ static void GdmaMemcpyTaskA(void *args)
         if (!GdmaMemcpyWaitChanXEnd(chan_id))
         {
             goto task_err;
-        }        
+        }
 
         FCacheDCacheInvalidateRange((uintptr)src_a, GDMA_BUF_A_LEN);
         FCacheDCacheInvalidateRange((uintptr)dst_a, GDMA_BUF_A_LEN);
@@ -262,9 +263,11 @@ static void GdmaMemcpyTaskA(void *args)
         }
 
         if (times++ > memcpy_times)
+        {
             break;
+        }
 
-        vTaskDelay(wait_delay);                      
+        vTaskDelay(wait_delay);
     }
 
 task_err:
@@ -291,7 +294,7 @@ static void GdmaMemcpyTaskB(void *args)
     err = FFreeRTOSGdmaSetupChannel(gdma, chan_id, req_b);
     if (FT_SUCCESS != err)
     {
-        FGDMA_ERROR("setup chan-%d failed", chan_id);
+        FGDMA_ERROR("setup chan-%d failed.", chan_id);
         goto task_err;
     }
 
@@ -305,7 +308,7 @@ static void GdmaMemcpyTaskB(void *args)
         memset(src_b, ch, GDMA_BUF_B_LEN);
         memset(dst_b, 0, GDMA_BUF_B_LEN);
 
-        FCacheDCacheInvalidateRange((uintptr)src_b, GDMA_BUF_B_LEN);  
+        FCacheDCacheInvalidateRange((uintptr)src_b, GDMA_BUF_B_LEN);
         FCacheDCacheInvalidateRange((uintptr)dst_b, GDMA_BUF_B_LEN);
 
         if (FT_SUCCESS != FFreeRTOSGdmaStart(gdma, chan_id))
@@ -317,7 +320,7 @@ static void GdmaMemcpyTaskB(void *args)
         if (!GdmaMemcpyWaitChanXEnd(chan_id))
         {
             goto task_err;
-        }  
+        }
 
         /* compare if memcpy success */
         if (0 == memcmp(src_b, dst_b, GDMA_BUF_B_LEN))
@@ -337,9 +340,11 @@ static void GdmaMemcpyTaskB(void *args)
         }
 
         if (times++ > memcpy_times)
+        {
             break;
+        }
 
-        vTaskDelay(wait_delay);                      
+        vTaskDelay(wait_delay);
     }
 
 task_err:
@@ -369,38 +374,38 @@ BaseType_t FFreeRTOSRunGdmaMemcpy(void)
 
     taskENTER_CRITICAL(); /* no schedule when create task */
 
-    ret = xTaskCreate((TaskFunction_t )GdmaInitTask, /* task entry */
-                        (const char* )"GdmaInitTask",/* task name */
-                        (uint16_t )1024, /* task stack size in words */
-                        NULL, /* task params */
-                        (UBaseType_t )configMAX_PRIORITIES - 1, /* task priority */
-                        NULL); /* task handler */
+    ret = xTaskCreate((TaskFunction_t)GdmaInitTask,  /* task entry */
+                      (const char *)"GdmaInitTask",/* task name */
+                      (uint16_t)1024,  /* task stack size in words */
+                      NULL, /* task params */
+                      (UBaseType_t)configMAX_PRIORITIES - 1,  /* task priority */
+                      NULL); /* task handler */
 
-    FASSERT_MSG(pdPASS == ret, "create task failed");    
+    FASSERT_MSG(pdPASS == ret, "create task failed");
 
-    ret = xTaskCreate((TaskFunction_t )GdmaMemcpyTaskA, /* task entry */
-                        (const char* )"GdmaMemcpyTaskA",/* task name */
-                        (uint16_t )4096, /* task stack size in words */
-                        NULL, /* task params */
-                        (UBaseType_t )configMAX_PRIORITIES - 1, /* task priority */
-                        (TaskHandle_t* )&task_a); /* task handler */
+    ret = xTaskCreate((TaskFunction_t)GdmaMemcpyTaskA,  /* task entry */
+                      (const char *)"GdmaMemcpyTaskA",/* task name */
+                      (uint16_t)4096,  /* task stack size in words */
+                      NULL, /* task params */
+                      (UBaseType_t)configMAX_PRIORITIES - 1,  /* task priority */
+                      (TaskHandle_t *)&task_a); /* task handler */
 
-    FASSERT_MSG(pdPASS == ret, "create task failed");    
+    FASSERT_MSG(pdPASS == ret, "create task failed");
 
-    ret = xTaskCreate((TaskFunction_t )GdmaMemcpyTaskB, /* task entry */
-                        (const char* )"GdmaMemcpyTaskB",/* task name */
-                        (uint16_t )4096, /* task stack size in words */
-                        NULL, /* task params */
-                        (UBaseType_t )configMAX_PRIORITIES - 2, /* task priority */
-                        (TaskHandle_t* )&task_b); /* task handler */
+    ret = xTaskCreate((TaskFunction_t)GdmaMemcpyTaskB,  /* task entry */
+                      (const char *)"GdmaMemcpyTaskB",/* task name */
+                      (uint16_t)4096,  /* task stack size in words */
+                      NULL, /* task params */
+                      (UBaseType_t)configMAX_PRIORITIES - 2,  /* task priority */
+                      (TaskHandle_t *)&task_b); /* task handler */
 
-    FASSERT_MSG(pdPASS == ret, "create task failed");    
+    FASSERT_MSG(pdPASS == ret, "create task failed");
 
-    exit_timer = xTimerCreate("Exit-Timer",		            /* Text name for the software timer - not used by FreeRTOS. */
-                            total_run_time,		            /* The software timer's period in ticks. */
-                            pdFALSE,						/* Setting uxAutoRealod to pdFALSE creates a one-shot software timer. */
-                            NULL,				            /* use timer id to pass task data for reference. */
-                            GdmaMemcpyExitCallback);        /* The callback function to be used by the software timer being created. */
+    exit_timer = xTimerCreate("Exit-Timer",                 /* Text name for the software timer - not used by FreeRTOS. */
+                              total_run_time,                 /* The software timer's period in ticks. */
+                              pdFALSE,                        /* Setting uxAutoRealod to pdFALSE creates a one-shot software timer. */
+                              NULL,                           /* use timer id to pass task data for reference. */
+                              GdmaMemcpyExitCallback);        /* The callback function to be used by the software timer being created. */
 
     FASSERT_MSG(NULL != exit_timer, "create exit timer failed");
 

@@ -1,34 +1,40 @@
 /*
- * Copyright : (C) 2022 Phytium Information Technology, Inc. 
+ * Copyright : (C) 2022 Phytium Information Technology, Inc.
  * All Rights Reserved.
- *  
- * This program is OPEN SOURCE software: you can redistribute it and/or modify it  
- * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,  
- * either version 1.0 of the License, or (at your option) any later version. 
- *  
- * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;  
+ *
+ * This program is OPEN SOURCE software: you can redistribute it and/or modify it
+ * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,
+ * either version 1.0 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the Phytium Public License for more details. 
- *  
- * 
+ * See the Phytium Public License for more details.
+ *
+ *
  * FilePath: fwdt_os.h
  * Date: 2022-02-24 13:42:19
  * LastEditTime: 2022-03-21 16:59:58
- * Description:  This file is for 
- * 
- * Modify History: 
+ * Description:  This file is for providing function related definitions of wdt driver used in FreeRTOS.
+ *
+ * Modify History:
  *  Ver   Who        Date         Changes
  * ----- ------     --------    --------------------------------------
+ * 1.0 wangxiaodong 2022/08/09  first commit
  */
 
-#ifndef DRIVERS_FWDT_OS_H
-#define DRIVERS_FWDT_OS_H
+#ifndef FWDT_OS_H
+#define FWDT_OS_H
 
 #include <FreeRTOS.h>
 #include <semphr.h>
 #include "ferror_code.h"
 #include "fwdt.h"
 #include "ftypes.h"
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 
 /* freertos wdt error */
 #define FREERTOS_WDT_SEM_ERROR    FT_CODE_ERR(ErrModBsp, ErrBspWdt, 10)
@@ -58,5 +64,9 @@ FError FFreeRTOSWdtDeinit(FFreeRTOSWdt *os_wdt_p);
 
 /* control freertos wdt instance */
 FError FFreeRTOSWdtControl(FFreeRTOSWdt *os_wdt_p, int cmd, void *args);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // !

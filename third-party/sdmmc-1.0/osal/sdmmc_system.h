@@ -14,15 +14,16 @@
  * FilePath: sdmmc_system.h
  * Date: 2022-02-10 14:53:44
  * LastEditTime: 2022-02-25 11:46:22
- * Description:  This files is for 
+ * Description:  This files is for sdmmc baremetal port
  * 
  * Modify History: 
  *  Ver   Who        Date         Changes
  * ----- ------     --------    --------------------------------------
+ * 1.0   zhugengyu  2022/11/15  first release
  */
 
-#ifndef THIRD_PARTY_SDMMC_SYSTEM_H
-#define THIRD_PARTY_SDMMC_SYSTEM_H
+#ifndef SDMMC_SYSTEM_H
+#define SDMMC_SYSTEM_H
 
 #ifdef __cplusplus
 extern "C"

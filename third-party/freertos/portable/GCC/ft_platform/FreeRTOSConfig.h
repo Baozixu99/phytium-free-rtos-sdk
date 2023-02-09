@@ -29,9 +29,9 @@
 #define FREERTOS_CONFIG_H
 
 #include "sdkconfig.h"
-#if !defined(__ASSEMBLER__) 
-#include "fparameters.h"
-#include "finterrupt.h"
+#if !defined(__ASSEMBLER__)
+    #include "fparameters.h"
+    #include "finterrupt.h"
 #endif
 
 /*-----------------------------------------------------------
@@ -68,18 +68,18 @@
  *
  */
 
-/* the interrupt priority used by the tick interrupt */ 
+/* the interrupt priority used by the tick interrupt */
 #define configKERNEL_INTERRUPT_PRIORITY         ( CONFIG_FREERTOS_KERNEL_INTERRUPT_PRIORITIES )
 /* the highest interrupt priority from which interrupt-safe FreeRTOS API functions can be called */
-#define configMAX_API_CALL_INTERRUPT_PRIORITY   ( CONFIG_FREERTOS_MAX_API_CALL_INTERRUPT_PRIORITIES )          
+#define configMAX_API_CALL_INTERRUPT_PRIORITY   ( CONFIG_FREERTOS_MAX_API_CALL_INTERRUPT_PRIORITIES )
 
 #ifdef CONFIG_FREERTOS_OPTIMIZED_SCHEDULER
-#define configUSE_PORT_OPTIMISED_TASK_SELECTION         1
+    #define configUSE_PORT_OPTIMISED_TASK_SELECTION         1
 #endif
 
 #ifdef CONFIG_FREERTOS_USE_TICKLESS_IDLE
-#define configUSE_TICKLESS_IDLE 1
-#define configEXPECTED_IDLE_TIME_BEFORE_SLEEP           CONFIG_FREERTOS_IDLE_TIME_BEFORE_SLEEP
+    #define configUSE_TICKLESS_IDLE 1
+    #define configEXPECTED_IDLE_TIME_BEFORE_SLEEP           CONFIG_FREERTOS_IDLE_TIME_BEFORE_SLEEP
 #endif
 
 #define configTICK_RATE_HZ          ( CONFIG_FREERTOS_HZ )
@@ -91,7 +91,7 @@
 #define configTOTAL_HEAP_SIZE       ( CONFIG_FREERTOS_TOTAL_HEAP_SIZE * 1024)
 #define configMAX_TASK_NAME_LEN     ( CONFIG_FREERTOS_MAX_TASK_NAME_LEN )
 #ifdef CONFIG_FREERTOS_USE_TRACE_FACILITY
-#define configUSE_TRACE_FACILITY                        1       /* Used by uxTaskGetSystemState(), and other trace facility functions */
+    #define configUSE_TRACE_FACILITY                        1       /* Used by uxTaskGetSystemState(), and other trace facility functions */
 #endif
 
 #define configUSE_TASK_FPU_SUPPORT (CONFIG_FREERTOS_TASK_FPU_SUPPORT)
@@ -149,7 +149,7 @@ format the raw data provided by the uxTaskGetSystemState() function in to human
 readable ASCII form.  See the notes in the implementation of vTaskList() within
 FreeRTOS/Source/tasks.c for limitations. */
 #ifdef CONFIG_FREERTOS_USE_STATS_FORMATTING_FUNCTIONS
-#define configUSE_STATS_FORMATTING_FUNCTIONS            1   /* Used by vTaskList() */
+    #define configUSE_STATS_FORMATTING_FUNCTIONS            1   /* Used by vTaskList() */
 #endif
 
 
@@ -157,13 +157,13 @@ FreeRTOS/Source/tasks.c for limitations. */
 portGET_RUN_TIME_COUNTER_VALUE must be defined if configGENERATE_RUN_TIME_STATS
 is set to 1. */
 #ifdef CONFIG_FREERTOS_GENERATE_RUN_TIME_STATS
-#define configGENERATE_RUN_TIME_STATS                   1
+    #define configGENERATE_RUN_TIME_STATS                   1
 #endif
 
 #ifndef __ASSEMBLER__ // skip when preprocess asm
-extern volatile unsigned int gCpuRuntime;
-#define portCONFIGURE_TIMER_FOR_RUN_TIME_STATS() (gCpuRuntime = 0ul)
-#define portGET_RUN_TIME_COUNTER_VALUE() gCpuRuntime
+    extern volatile unsigned int gCpuRuntime;
+    #define portCONFIGURE_TIMER_FOR_RUN_TIME_STATS() (gCpuRuntime = 0ul)
+    #define portGET_RUN_TIME_COUNTER_VALUE() gCpuRuntime
 #endif
 
 /* The size of the global output buffer that is available for use when there
@@ -213,13 +213,13 @@ header file. */
 
 
 #ifdef CONFIG_TARGET_ARMV8_AARCH32
-#define FreeRTOS_IRQ_Handler IRQHandler
-#define FreeRTOS_SWI_Handler SWIHandler
+    #define FreeRTOS_IRQ_Handler IRQHandler
+    #define FreeRTOS_SWI_Handler SWIHandler
 #endif
 
 #ifdef CONFIG_TARGET_ARMV8_AARCH64
-#define FreeRTOS_IRQ_Handler IRQInterruptHandler
-#define FreeRTOS_SWI_Handler SynchronousInterruptHandler
+    #define FreeRTOS_IRQ_Handler IRQInterruptHandler
+    #define FreeRTOS_SWI_Handler SynchronousInterruptHandler
 #endif
 
 /* The following constant describe the hardware, and are correct for the
@@ -228,10 +228,10 @@ QEMU-Virt. */
 #define configINTERRUPT_CONTROLLER_CPU_INTERFACE_OFFSET (0x2000UL)
 #define configUNIQUE_INTERRUPT_PRIORITIES 16
 
-#if !defined(__ASSEMBLER__) 
-void vPrintString(const char *pcString);
-void vPrintStringAndNumber(const char *pcString, uint32_t ulValue);
-void vPrintf(const char *format, ...);
+#if !defined(__ASSEMBLER__)
+    void vPrintString(const char *pcString);
+    void vPrintStringAndNumber(const char *pcString, uint32_t ulValue);
+    void vPrintf(const char *format, ...);
 #endif
 
 #endif /* FREERTOS_CONFIG_H */

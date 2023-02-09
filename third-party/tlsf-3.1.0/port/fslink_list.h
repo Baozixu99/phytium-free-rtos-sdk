@@ -1,37 +1,37 @@
 /*
- * Copyright : (C) 2022 Phytium Information Technology, Inc. 
+ * Copyright : (C) 2022 Phytium Information Technology, Inc.
  * All Rights Reserved.
- *  
- * This program is OPEN SOURCE software: you can redistribute it and/or modify it  
- * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,  
- * either version 1.0 of the License, or (at your option) any later version. 
- *  
- * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;  
+ *
+ * This program is OPEN SOURCE software: you can redistribute it and/or modify it
+ * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,
+ * either version 1.0 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the Phytium Public License for more details. 
- *  
- * 
+ * See the Phytium Public License for more details.
+ *
+ *
  * FilePath: fslink_list.h
  * Date: 2021-12-02 13:18:02
  * LastEditTime: 2022-02-17 18:02:59
  * Description:  This files is for singal link list definition
- * 
- * Modify History: 
+ *
+ * Modify History:
  *  Ver   Who        Date         Changes
  * ----- ------     --------    --------------------------------------
  * 1.0   zhugengyu  2021/12/2    init
  */
 
-#ifndef _FT_SLINK_LIST_H_
-#define _FT_SLINK_LIST_H_
+#ifndef FSLINK_LIST_H
+#define FSLINK_LIST_H
+
+#include "ftypes.h"
+#include "fkernel.h"
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
-
-#include "ftypes.h"
-#include "fkernel.h"
 
 /**
  * Single List structure
@@ -65,7 +65,10 @@ static void FSListAppend(FSListNode *l, FSListNode *n)
     FSListNode *node;
 
     node = l;
-    while (node->next) node = node->next;
+    while (node->next)
+    {
+        node = node->next;
+    }
 
     /* append the node to the tail */
     node->next = n;
@@ -123,7 +126,10 @@ static FSListNode *FSListFirst(FSListNode *l)
  */
 static FSListNode *FSListTail(FSListNode *l)
 {
-    while (l->next) l = l->next;
+    while (l->next)
+    {
+        l = l->next;
+    }
 
     return l;
 }
@@ -161,10 +167,16 @@ static FSListNode *FSListRemove(FSListNode *l, FSListNode *n)
 {
     /* remove slist head */
     FSListNode *node = l;
-    while (node->next && node->next != n) node = node->next;
+    while (node->next && node->next != n)
+    {
+        node = node->next;
+    }
 
     /* remove node */
-    if (node->next != (FSListNode *)0) node->next = node->next->next;
+    if (node->next != (FSListNode *)0)
+    {
+        node->next = node->next->next;
+    }
 
     return l;
 }

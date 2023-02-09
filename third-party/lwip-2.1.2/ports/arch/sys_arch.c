@@ -1,24 +1,25 @@
 /*
- * Copyright : (C) 2022 Phytium Information Technology, Inc. 
+ * Copyright : (C) 2022 Phytium Information Technology, Inc.
  * All Rights Reserved.
- *  
- * This program is OPEN SOURCE software: you can redistribute it and/or modify it  
- * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,  
- * either version 1.0 of the License, or (at your option) any later version. 
- *  
- * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;  
+ *
+ * This program is OPEN SOURCE software: you can redistribute it and/or modify it
+ * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,
+ * either version 1.0 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the Phytium Public License for more details. 
- *  
- * 
+ * See the Phytium Public License for more details.
+ *
+ *
  * FilePath: sys_arch.c
  * Date: 2022-11-07 11:49:01
  * LastEditTime: 2022-11-07 11:49:01
- * Description:  This file is for 
- * 
+ * Description:  This file is for the lwIP TCP/IP stack.
+ *
  * Modify History: 
- *  Ver   Who  Date   Changes
- * ----- ------  -------- --------------------------------------
+ *  Ver     Who           Date                  Changes
+ * -----   ------       --------     --------------------------------------
+ *  1.0    liuzhihong  2022/5/26  first release
  */
 
 /* lwIP includes. */
@@ -29,9 +30,9 @@
 #include "lwip/stats.h"
 
 #ifdef __aarch64__
-#include "faarch64.h"
+    #include "faarch64.h"
 #else
-#include "fcp15.h"
+    #include "fcp15.h"
 #endif
 
 #include "fdebug.h"
@@ -48,7 +49,7 @@
 #include "task.h"
 
 #if defined(LWIP_PROVIDE_ERRNO)
-int errno;
+    int errno;
 #endif
 
 extern int vApplicationInIrq(void);
@@ -57,14 +58,16 @@ extern int vApplicationInIrq(void);
 //  Creates an empty mailbox.
 err_t sys_mbox_new(sys_mbox_t *mbox, int size)
 {
-  UBaseType_t archMessageLength = size;
+    UBaseType_t archMessageLength = size;
 
-  *mbox = xQueueCreate(archMessageLength, sizeof(void *));
+    *mbox = xQueueCreate(archMessageLength, sizeof(void *));
 
-  if (*mbox == NULL)
-    return ERR_MEM;
+    if (*mbox == NULL)
+    {
+        return ERR_MEM;
+    }
 
-  return ERR_OK;
+    return ERR_OK;
 }
 
 /*-----------------------------------------------------------------------------------*/
@@ -75,22 +78,22 @@ err_t sys_mbox_new(sys_mbox_t *mbox, int size)
 */
 void sys_mbox_free(sys_mbox_t *mbox)
 {
-  UBaseType_t uxReturn;
+    UBaseType_t uxReturn;
 
-  uxReturn = uxQueueMessagesWaiting(*mbox);
-  if (uxReturn)
-  {
-    /* Line for breakpoint.  Should never break here! */
-    portNOP();
+    uxReturn = uxQueueMessagesWaiting(*mbox);
+    if (uxReturn)
+    {
+        /* Line for breakpoint.  Should never break here! */
+        portNOP();
 #if SYS_STATS
-    lwip_stats.sys.mbox.err++;
+        lwip_stats.sys.mbox.err++;
 #endif /* SYS_STATS */
-    LWIP_ASSERT("sys_mbox_free err uxQueueMessagesWaiting.\r\n ", uxReturn == pdTRUE);
-  }
+        LWIP_ASSERT("sys_mbox_free err uxQueueMessagesWaiting.\r\n ", uxReturn == pdTRUE);
+    }
 
-  vQueueDelete(*mbox);
+    vQueueDelete(*mbox);
 #if SYS_STATS
-  --lwip_stats.sys.mbox.used;
+    --lwip_stats.sys.mbox.used;
 #endif /* SYS_STATS */
 }
 
@@ -98,87 +101,94 @@ void sys_mbox_free(sys_mbox_t *mbox)
 //   Posts the "msg" to the mailbox.
 void sys_mbox_post(sys_mbox_t *mbox, void *data)
 {
-  portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
-  if (*mbox == NULL)
-    return;
+    portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
+    if (*mbox == NULL)
+    {
+        return;
+    }
 
-  if(vApplicationInIrq() != 0)
-  {
-		xQueueSendToBackFromISR( *mbox, &data, &xHigherPriorityTaskWoken );
-		if (xHigherPriorityTaskWoken == pdTRUE) {
-			portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
-		}
-  }
-  else
-  {
-    xQueueSendToBack(*mbox, &data, portMAX_DELAY);
-  }
+    if (vApplicationInIrq() != 0)
+    {
+        xQueueSendToBackFromISR(*mbox, &data, &xHigherPriorityTaskWoken);
+        if (xHigherPriorityTaskWoken == pdTRUE)
+        {
+            portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+        }
+    }
+    else
+    {
+        xQueueSendToBack(*mbox, &data, portMAX_DELAY);
+    }
 }
 
 /*-----------------------------------------------------------------------------------*/
 //   Try to post the "msg" to the mailbox.
 err_t sys_mbox_trypost(sys_mbox_t *mbox, void *msg)
 {
-  err_t result;
-  portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
+    err_t result;
+    portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
 
-  if (*mbox == NULL)
-    return ERR_MEM;
-
-  if(vApplicationInIrq() != 0)
-  {
-    result = xQueueSendFromISR( *mbox, &msg, &xHigherPriorityTaskWoken );
-    if(xHigherPriorityTaskWoken == pdTRUE)
+    if (*mbox == NULL)
     {
-      portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+        return ERR_MEM;
     }
-  }
-  else
-  {
-    result = xQueueSend( *mbox, &msg, ( portTickType ) 0 );
-  }
 
-  if( result == pdPASS )
-	{
-		result = ERR_OK;
-	}
-	else
-	{
-		SYSTEM_ARCH_PRINT_W("Queue is full\r\n");
-		/* The queue was already full. */
-		result = ERR_MEM;
-  #if SYS_STATS
-      lwip_stats.sys.mbox.err++;
-  #endif /* SYS_STATS */
-	}
+    if (vApplicationInIrq() != 0)
+    {
+        result = xQueueSendFromISR(*mbox, &msg, &xHigherPriorityTaskWoken);
+        if (xHigherPriorityTaskWoken == pdTRUE)
+        {
+            portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+        }
+    }
+    else
+    {
+        result = xQueueSend(*mbox, &msg, (portTickType) 0);
+    }
 
-  return result;
+    if (result == pdPASS)
+    {
+        result = ERR_OK;
+    }
+    else
+    {
+        SYSTEM_ARCH_PRINT_W("Queue is full.\r\n");
+        /* The queue was already full. */
+        result = ERR_MEM;
+#if SYS_STATS
+        lwip_stats.sys.mbox.err++;
+#endif /* SYS_STATS */
+    }
+
+    return result;
 }
 
 /*-----------------------------------------------------------------------------------*/
 //   Try to post the "msg" to the mailbox.
 err_t sys_mbox_trypost_fromisr(sys_mbox_t *mbox, void *msg)
 {
-  err_t result;
-  BaseType_t xHigherPriorityTaskWoken;
+    err_t result;
+    BaseType_t xHigherPriorityTaskWoken;
 
-  if (*mbox == NULL)
-    return ERR_MEM;
+    if (*mbox == NULL)
+    {
+        return ERR_MEM;
+    }
 
-  if (xQueueSendFromISR(*mbox, &msg, &xHigherPriorityTaskWoken) == pdTRUE)
-  {
-    result = ERR_OK;
-  }
-  else
-  {
-    // could not post, queue must be full
-    result = ERR_MEM;
-  }
+    if (xQueueSendFromISR(*mbox, &msg, &xHigherPriorityTaskWoken) == pdTRUE)
+    {
+        result = ERR_OK;
+    }
+    else
+    {
+        // could not post, queue must be full
+        result = ERR_MEM;
+    }
 
-  // Actual macro used here is port specific.
-  portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+    // Actual macro used here is port specific.
+    portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 
-  return result;
+    return result;
 }
 
 /*-----------------------------------------------------------------------------------*/
@@ -199,93 +209,93 @@ err_t sys_mbox_trypost_fromisr(sys_mbox_t *mbox, void *msg)
 */
 u32_t sys_arch_mbox_fetch(sys_mbox_t *mbox, void **msg, u32_t timeout)
 {
-  void *dummyptr;
+    void *dummyptr;
 
-  BaseType_t err;
+    BaseType_t err;
 
-  portTickType xStartTime, xEndTime, xElapsed;
-  unsigned long ulReturn;
-  portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
+    portTickType xStartTime, xEndTime, xElapsed;
+    unsigned long ulReturn;
+    portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
 
-  xStartTime = xTaskGetTickCount();
+    xStartTime = xTaskGetTickCount();
 
-  if (*mbox == NULL)
-  {
-    return SYS_ARCH_TIMEOUT;
-  }
-    
-  if (msg == NULL)
-  {
-    msg = &dummyptr;
-  }
-
-  if (timeout != 0)
-  {
-
-    if(vApplicationInIrq() != 0)
+    if (*mbox == NULL)
     {
-      if( pdTRUE == xQueueReceiveFromISR( *mbox, &( *msg ), &xHigherPriorityTaskWoken ) )
-			{
-				xEndTime = xTaskGetTickCount();
-				xElapsed = ( xEndTime - xStartTime ) * portTICK_RATE_MS;
-				ulReturn = xElapsed;
-				if (xHigherPriorityTaskWoken == pdTRUE)
-				{
-					portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
-				}
-			}
-			else
-			{
-				*msg = NULL;
-				ulReturn = SYS_ARCH_TIMEOUT;
-			}
-    }
-    else
-    {
-		if( pdTRUE == xQueueReceive( *mbox, &( *msg ), timeout / portTICK_RATE_MS ) )
-		{
-			xEndTime = xTaskGetTickCount();
-			xElapsed = ( xEndTime - xStartTime ) * portTICK_RATE_MS;
-
-			ulReturn = xElapsed;
-		}
-		else
-		{
-			/* Timed out. */
-			*msg = NULL;
-			ulReturn = SYS_ARCH_TIMEOUT;
-		}
+        return SYS_ARCH_TIMEOUT;
     }
 
-  }
-  else // block forever for a message.
-  {
-
-	if(vApplicationInIrq() != 0)
+    if (msg == NULL)
     {
-		xQueueReceiveFromISR(*mbox, &(*msg), &xHigherPriorityTaskWoken);
-		if(xHigherPriorityTaskWoken == pdTRUE)
-		{
-			portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
-		}
+        msg = &dummyptr;
     }
-	else
-	{
-		xQueueReceive(*mbox, &(*msg), portMAX_DELAY);
-	}
 
-	xEndTime = xTaskGetTickCount();
-	xElapsed = ( xEndTime - xStartTime ) * portTICK_RATE_MS;
+    if (timeout != 0)
+    {
 
-	if( xElapsed == 0UL )
-	{
-		xElapsed = 1UL;
-	}
+        if (vApplicationInIrq() != 0)
+        {
+            if (pdTRUE == xQueueReceiveFromISR(*mbox, &(*msg), &xHigherPriorityTaskWoken))
+            {
+                xEndTime = xTaskGetTickCount();
+                xElapsed = (xEndTime - xStartTime) * portTICK_RATE_MS;
+                ulReturn = xElapsed;
+                if (xHigherPriorityTaskWoken == pdTRUE)
+                {
+                    portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+                }
+            }
+            else
+            {
+                *msg = NULL;
+                ulReturn = SYS_ARCH_TIMEOUT;
+            }
+        }
+        else
+        {
+            if (pdTRUE == xQueueReceive(*mbox, &(*msg), timeout / portTICK_RATE_MS))
+            {
+                xEndTime = xTaskGetTickCount();
+                xElapsed = (xEndTime - xStartTime) * portTICK_RATE_MS;
 
-	ulReturn = xElapsed;
+                ulReturn = xElapsed;
+            }
+            else
+            {
+                /* Timed out. */
+                *msg = NULL;
+                ulReturn = SYS_ARCH_TIMEOUT;
+            }
+        }
 
-  }
-  return ulReturn;
+    }
+    else // block forever for a message.
+    {
+
+        if (vApplicationInIrq() != 0)
+        {
+            xQueueReceiveFromISR(*mbox, &(*msg), &xHigherPriorityTaskWoken);
+            if (xHigherPriorityTaskWoken == pdTRUE)
+            {
+                portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+            }
+        }
+        else
+        {
+            xQueueReceive(*mbox, &(*msg), portMAX_DELAY);
+        }
+
+        xEndTime = xTaskGetTickCount();
+        xElapsed = (xEndTime - xStartTime) * portTICK_RATE_MS;
+
+        if (xElapsed == 0UL)
+        {
+            xElapsed = 1UL;
+        }
+
+        ulReturn = xElapsed;
+
+    }
+    return ulReturn;
 }
 
 /*-----------------------------------------------------------------------------------*/
@@ -295,57 +305,61 @@ u32_t sys_arch_mbox_fetch(sys_mbox_t *mbox, void **msg, u32_t timeout)
 */
 u32_t sys_arch_mbox_tryfetch(sys_mbox_t *mbox, void **msg)
 {
-	void *dummyptr;
-	long lResult;
-	unsigned long ulReturn;
-	portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
-	if (*mbox == NULL)
-	{
-		return SYS_ARCH_TIMEOUT;
-	}
-	
-	if (msg == NULL)
-	{
-		msg = &dummyptr;
-	}
+    void *dummyptr;
+    long lResult;
+    unsigned long ulReturn;
+    portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
+    if (*mbox == NULL)
+    {
+        return SYS_ARCH_TIMEOUT;
+    }
 
-	if(vApplicationInIrq() != 0)
-	{
-		lResult = xQueueReceiveFromISR( *mbox, &( *msg ), &xHigherPriorityTaskWoken );
-		if (xHigherPriorityTaskWoken == pdTRUE) 
-		{
-			portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
-		}
-	}
-	else
-	{
-		lResult = xQueueReceive( *mbox, &( *msg ), 0UL );
-	}
+    if (msg == NULL)
+    {
+        msg = &dummyptr;
+    }
 
-	if( lResult == pdPASS )
-	{
-		ulReturn = ERR_OK;
-	}
-	else
-	{
-		ulReturn = SYS_MBOX_EMPTY;
-	}
+    if (vApplicationInIrq() != 0)
+    {
+        lResult = xQueueReceiveFromISR(*mbox, &(*msg), &xHigherPriorityTaskWoken);
+        if (xHigherPriorityTaskWoken == pdTRUE)
+        {
+            portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+        }
+    }
+    else
+    {
+        lResult = xQueueReceive(*mbox, &(*msg), 0UL);
+    }
 
-	return ulReturn;
+    if (lResult == pdPASS)
+    {
+        ulReturn = ERR_OK;
+    }
+    else
+    {
+        ulReturn = SYS_MBOX_EMPTY;
+    }
+
+    return ulReturn;
 
 }
 /*----------------------------------------------------------------------------------*/
 int sys_mbox_valid(sys_mbox_t *mbox)
 {
-  if (*mbox == SYS_MBOX_NULL)
-    return 0;
-  else
-    return 1;
+    if (*mbox == SYS_MBOX_NULL)
+    {
+        return 0;
+    }
+    else
+    {
+        return 1;
+    }
 }
 /*-----------------------------------------------------------------------------------*/
 void sys_mbox_set_invalid(sys_mbox_t *mbox)
 {
-  *mbox = SYS_MBOX_NULL;
+    *mbox = SYS_MBOX_NULL;
 }
 
 /*-----------------------------------------------------------------------------------*/
@@ -353,30 +367,30 @@ void sys_mbox_set_invalid(sys_mbox_t *mbox)
 //  the initial state of the semaphore.
 err_t sys_sem_new(sys_sem_t *sem, u8_t count)
 {
-  vSemaphoreCreateBinary(*sem);
+    vSemaphoreCreateBinary(*sem);
 
-  if (*sem == NULL)
-  {
+    if (*sem == NULL)
+    {
 #if SYS_STATS
-    ++lwip_stats.sys.sem.err;
+        ++lwip_stats.sys.sem.err;
 #endif /* SYS_STATS */
-    return ERR_MEM;
-  }
+        return ERR_MEM;
+    }
 
-  if (count == 0) // Means it can't be taken
-  {
-    xSemaphoreTake(*sem, 1);
-  }
+    if (count == 0) // Means it can't be taken
+    {
+        xSemaphoreTake(*sem, 1);
+    }
 
 #if SYS_STATS
-  ++lwip_stats.sys.sem.used;
-  if (lwip_stats.sys.sem.max < lwip_stats.sys.sem.used)
-  {
-    lwip_stats.sys.sem.max = lwip_stats.sys.sem.used;
-  }
+    ++lwip_stats.sys.sem.used;
+    if (lwip_stats.sys.sem.max < lwip_stats.sys.sem.used)
+    {
+        lwip_stats.sys.sem.max = lwip_stats.sys.sem.used;
+    }
 #endif /* SYS_STATS */
 
-  return ERR_OK;
+    return ERR_OK;
 }
 
 /*-----------------------------------------------------------------------------------*/
@@ -398,102 +412,106 @@ err_t sys_sem_new(sys_sem_t *sem, u8_t count)
 
 u32_t sys_arch_sem_wait(sys_sem_t *sem, u32_t timeout)
 {
-  portTickType xStartTime, xEndTime, xElapsed;
-  portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
-  BaseType_t err;
-  unsigned long ulReturn;
+    portTickType xStartTime, xEndTime, xElapsed;
+    portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
+    BaseType_t err;
+    unsigned long ulReturn;
 
-  xStartTime = xTaskGetTickCount();
+    xStartTime = xTaskGetTickCount();
 
-  if (*sem == NULL)
-    return SYS_ARCH_TIMEOUT;
+    if (*sem == NULL)
+    {
+        return SYS_ARCH_TIMEOUT;
+    }
 
-  if (timeout != 0)
-  {
+    if (timeout != 0)
+    {
 
-	if(vApplicationInIrq() != 0)
-	{
-		if( xSemaphoreTakeFromISR( *sem, &xHigherPriorityTaskWoken ) == pdTRUE )
-		{
-			xEndTime = xTaskGetTickCount();
-			xElapsed = (xEndTime - xStartTime) * portTICK_RATE_MS;
-			ulReturn = xElapsed;
-			if (xHigherPriorityTaskWoken == pdTRUE)
-			{
-				portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
-			}
-		}
-		else
-		{
-			ulReturn = SYS_ARCH_TIMEOUT;
-		}
-	}
-	else
-	{
-		if (xSemaphoreTake(*sem, timeout / portTICK_RATE_MS) == pdTRUE)
-		{
-			xEndTime = xTaskGetTickCount();
-			xElapsed = (xEndTime - xStartTime) * portTICK_RATE_MS;
+        if (vApplicationInIrq() != 0)
+        {
+            if (xSemaphoreTakeFromISR(*sem, &xHigherPriorityTaskWoken) == pdTRUE)
+            {
+                xEndTime = xTaskGetTickCount();
+                xElapsed = (xEndTime - xStartTime) * portTICK_RATE_MS;
+                ulReturn = xElapsed;
+                if (xHigherPriorityTaskWoken == pdTRUE)
+                {
+                    portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+                }
+            }
+            else
+            {
+                ulReturn = SYS_ARCH_TIMEOUT;
+            }
+        }
+        else
+        {
+            if (xSemaphoreTake(*sem, timeout / portTICK_RATE_MS) == pdTRUE)
+            {
+                xEndTime = xTaskGetTickCount();
+                xElapsed = (xEndTime - xStartTime) * portTICK_RATE_MS;
 
-			return (xElapsed); // return time blocked TODO test
-		}
-		else
-		{
-			return SYS_ARCH_TIMEOUT;
-		}
-	}
+                return (xElapsed); // return time blocked TODO test
+            }
+            else
+            {
+                return SYS_ARCH_TIMEOUT;
+            }
+        }
 
-  }
-  else // must block without a timeout
-  {
-	
-	if(vApplicationInIrq() != 0)
-	{
-		xSemaphoreTakeFromISR( *sem, &xHigherPriorityTaskWoken );
-		if (xHigherPriorityTaskWoken == pdTRUE)
-		{
-			portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
-		}
-	}
-	else
-	{
-		xSemaphoreTake(*sem, portMAX_DELAY);
-	}
+    }
+    else // must block without a timeout
+    {
 
-	xEndTime = xTaskGetTickCount();
-	xElapsed = ( xEndTime - xStartTime ) * portTICK_RATE_MS;
+        if (vApplicationInIrq() != 0)
+        {
+            xSemaphoreTakeFromISR(*sem, &xHigherPriorityTaskWoken);
+            if (xHigherPriorityTaskWoken == pdTRUE)
+            {
+                portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+            }
+        }
+        else
+        {
+            xSemaphoreTake(*sem, portMAX_DELAY);
+        }
 
-	if( xElapsed == 0UL )
-	{
-		xElapsed = 1UL;
-	}
+        xEndTime = xTaskGetTickCount();
+        xElapsed = (xEndTime - xStartTime) * portTICK_RATE_MS;
 
-	ulReturn = xElapsed;
+        if (xElapsed == 0UL)
+        {
+            xElapsed = 1UL;
+        }
 
-  }
-  return ulReturn ;
+        ulReturn = xElapsed;
+
+    }
+    return ulReturn ;
 }
 
 /*-----------------------------------------------------------------------------------*/
 // Signals a semaphore
 void sys_sem_signal(sys_sem_t *sem)
 {
-portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
-  if (*sem == NULL)
-    return;
+    portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
+    if (*sem == NULL)
+    {
+        return;
+    }
 
-	if(vApplicationInIrq() != 0)
-	{
-		xSemaphoreGiveFromISR( *sem, &xHigherPriorityTaskWoken );
-		if (xHigherPriorityTaskWoken == pdTRUE)
-		{
-			portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
-		}
-	}
-	else
-	{
-		xSemaphoreGive(*sem);
-	}	
+    if (vApplicationInIrq() != 0)
+    {
+        xSemaphoreGiveFromISR(*sem, &xHigherPriorityTaskWoken);
+        if (xHigherPriorityTaskWoken == pdTRUE)
+        {
+            portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+        }
+    }
+    else
+    {
+        xSemaphoreGive(*sem);
+    }
 
 }
 
@@ -501,15 +519,19 @@ portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
 // Deallocates a semaphore
 void sys_sem_free(sys_sem_t *sem)
 {
-  vSemaphoreDelete(*sem);
+    vSemaphoreDelete(*sem);
 }
 /*-----------------------------------------------------------------------------------*/
 int sys_sem_valid(sys_sem_t *sem)
 {
-  if (*sem == SYS_SEM_NULL)
-    return 0;
-  else
-    return 1;
+    if (*sem == SYS_SEM_NULL)
+    {
+        return 0;
+    }
+    else
+    {
+        return 1;
+    }
 }
 
 /*-----------------------------------------------------------------------------------*/
@@ -519,14 +541,14 @@ int sys_sem_valid(sys_sem_t *sem)
  */
 void sys_sem_set_invalid(sys_sem_t *sem)
 {
-  *sem = SYS_SEM_NULL;
+    *sem = SYS_SEM_NULL;
 }
 /*-----------------------------------------------------------------------------------*/
 
 /* sys_init() must be called before anything else. */
 void sys_init(void)
 {
-  /* nothing on FreeRTOS porting */
+    /* nothing on FreeRTOS porting */
 }
 /*-----------------------------------------------------------------------------------*/
 /* Mutexes*/
@@ -545,26 +567,26 @@ void sys_init(void)
 err_t sys_mutex_new(sys_mutex_t *mutex)
 {
 
-  *mutex = xSemaphoreCreateMutex();
+    *mutex = xSemaphoreCreateMutex();
 
-  // vSemaphoreCreateBinary(*mutex);
+    // vSemaphoreCreateBinary(*mutex);
 
-  if (*mutex == NULL)
-  {
+    if (*mutex == NULL)
+    {
 #if SYS_STATS
-    ++lwip_stats.sys.mutex.err;
+        ++lwip_stats.sys.mutex.err;
 #endif /* SYS_STATS */
-    return ERR_MEM;
-  }
+        return ERR_MEM;
+    }
 
 #if SYS_STATS
-  ++lwip_stats.sys.mutex.used;
-  if (lwip_stats.sys.mutex.max < lwip_stats.sys.mutex.used)
-  {
-    lwip_stats.sys.mutex.max = lwip_stats.sys.mutex.used;
-  }
+    ++lwip_stats.sys.mutex.used;
+    if (lwip_stats.sys.mutex.max < lwip_stats.sys.mutex.used)
+    {
+        lwip_stats.sys.mutex.max = lwip_stats.sys.mutex.used;
+    }
 #endif /* SYS_STATS */
-  return ERR_OK;
+    return ERR_OK;
 }
 
 /*-----------------------------------------------------------------------------------*/
@@ -572,50 +594,56 @@ err_t sys_mutex_new(sys_mutex_t *mutex)
 void sys_mutex_free(sys_mutex_t *mutex)
 {
 #if SYS_STATS
-  --lwip_stats.sys.mutex.used;
+    --lwip_stats.sys.mutex.used;
 #endif /* SYS_STATS */
 
-  vSemaphoreDelete(*mutex);
+    vSemaphoreDelete(*mutex);
 }
 /*-----------------------------------------------------------------------------------*/
 /* Lock a mutex*/
 void sys_mutex_lock(sys_mutex_t *mutex)
 {
-	portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
-	if (*mutex == NULL)
-		return;
-	if(vApplicationInIrq() != 0)
-	{
-		xSemaphoreTakeFromISR( *mutex, &xHigherPriorityTaskWoken );
-		if (xHigherPriorityTaskWoken == pdTRUE)
-		{
-			portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
-		}
-	}
-	else
-	{
-		sys_arch_sem_wait(mutex, 0);
-	}
+    portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
+    if (*mutex == NULL)
+    {
+        return;
+    }
+    if (vApplicationInIrq() != 0)
+    {
+        xSemaphoreTakeFromISR(*mutex, &xHigherPriorityTaskWoken);
+        if (xHigherPriorityTaskWoken == pdTRUE)
+        {
+            portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+        }
+    }
+    else
+    {
+        sys_arch_sem_wait(mutex, 0);
+    }
 }
 
 /*-----------------------------------------------------------------------------------*/
 /* Unlock a mutex*/
 void sys_mutex_unlock(sys_mutex_t *mutex)
 {
-	portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
-	if (*mutex == NULL)
-		return;
+    portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
+    if (*mutex == NULL)
+    {
+        return;
+    }
 
-  	if(vApplicationInIrq() != 0)
-	{
-		xSemaphoreGiveFromISR( *mutex, &xHigherPriorityTaskWoken );
-		if (xHigherPriorityTaskWoken == pdTRUE)
-			portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
-	}
-	else
-	{
-		xSemaphoreGive(*mutex);
-	}
+    if (vApplicationInIrq() != 0)
+    {
+        xSemaphoreGiveFromISR(*mutex, &xHigherPriorityTaskWoken);
+        if (xHigherPriorityTaskWoken == pdTRUE)
+        {
+            portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+        }
+    }
+    else
+    {
+        xSemaphoreGive(*mutex);
+    }
 
 }
 #endif /*LWIP_COMPAT_MUTEX*/
@@ -630,25 +658,25 @@ void sys_mutex_unlock(sys_mutex_t *mutex)
 */
 sys_thread_t sys_thread_new(const char *name, lwip_thread_fn thread, void *arg, int stacksize, int prio)
 {
-  sys_thread_t createdTaskHandle = NULL;
+    sys_thread_t createdTaskHandle = NULL;
 
-  int result;
+    int result;
 
-  result = xTaskCreate(thread, name, stacksize, arg, prio, &createdTaskHandle);
+    result = xTaskCreate(thread, name, stacksize, arg, prio, &createdTaskHandle);
 
-  if (result == pdPASS)
-  {
-    return createdTaskHandle;
-  }
-  else
-  {
-    return NULL;
-  }
+    if (result == pdPASS)
+    {
+        return createdTaskHandle;
+    }
+    else
+    {
+        return NULL;
+    }
 }
 
 void sys_thread_delete(sys_thread_t handle)
 {
-  vTaskDelete(handle);
+    vTaskDelete(handle);
 }
 
 /*
@@ -669,16 +697,16 @@ void sys_thread_delete(sys_thread_t handle)
 */
 sys_prot_t sys_arch_protect(void)
 {
-  sys_prot_t cur;
+    sys_prot_t cur;
 
-  if(vApplicationInIrq() != 0)
-  {
-      return 0;
-  }
+    if (vApplicationInIrq() != 0)
+    {
+        return 0;
+    }
 
-	cur = MFCPSR();
-	MTCPSR(cur | 0xC0);
-	return cur;
+    cur = MFCPSR();
+    MTCPSR(cur | 0xC0);
+    return cur;
 }
 
 /*
@@ -692,25 +720,25 @@ sys_prot_t sys_arch_protect(void)
 */
 void sys_arch_unprotect(sys_prot_t lev)
 {
-  if(vApplicationInIrq() != 0)
-  {
-      return ;
-  }
-	
-  MTCPSR(lev);
+    if (vApplicationInIrq() != 0)
+    {
+        return ;
+    }
+
+    MTCPSR(lev);
 }
 
 void sys_arch_assert(const char *file, int line)
 {
 
-  SYSTEM_ARCH_PRINT_W("sys_arch_assert: %d in %s, pcTaskGetTaskName:%s.r\n", line, file, pcTaskGetTaskName(NULL));
-  while (1)
-    ;
+    SYSTEM_ARCH_PRINT_W("sys_arch_assert: %d in %s, pcTaskGetTaskName:%s.r\n", line, file, pcTaskGetTaskName(NULL));
+    while (1)
+        ;
 }
 
-void sys_arch_delay(const unsigned int msec )
+void sys_arch_delay(const unsigned int msec)
 {
-  vTaskDelay(msec / portTICK_RATE_MS);
+    vTaskDelay(msec / portTICK_RATE_MS);
 }
 
 #endif /* !NO_SYS */

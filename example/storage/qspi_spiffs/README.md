@@ -118,15 +118,18 @@ bootelf -p 0x90100000
 ### 2.4 输出与实验现象
 
 ><font size="1">描述输入输出情况，列出存在哪些输出，对应的输出是什么（建议附录相关现象图片）</font><br />
-程序启动后，依次创建Init、Read、Write任务，创建单次模式软件定时器用于删除任务，Init任务会首先初始化并挂载qspi flash的部分区域（可通过FSPIFFS_IF_FORMAT选择是否进行格式化操作），随后创建一个文件，然后释放信号量通知Read和Write任务开始执行;
+程序启动后，依次创建Init、WriteRead任务，创建单次模式软件定时器用于删除任务，Init任务会首先初始化并挂载qspi flash的部分区域（可通过FSPIFFS_IF_FORMAT选择是否进行格式化操作），随后创建一个文件，然后释放信号量通知WriteRead任务开始执行;
 
 - init完成，挂载文件系统完成，创建测试文件
+
 ![init](./figs/init.png)
 
-- 读写任务周期性执行，有两个读任务，一个写任务
+- 读写任务周期性执行
+
 ![wr](./figs/wr.png)
 
 - 软件定时器触发，删除读写任务
+
 ![delete](./figs/delete.png)
 
 ## 3. 如何解决问题

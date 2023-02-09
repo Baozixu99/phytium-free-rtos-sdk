@@ -1,38 +1,39 @@
 /*
- * Copyright : (C) 2022 Phytium Information Technology, Inc. 
+ * Copyright : (C) 2022 Phytium Information Technology, Inc.
  * All Rights Reserved.
- *  
- * This program is OPEN SOURCE software: you can redistribute it and/or modify it  
- * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,  
- * either version 1.0 of the License, or (at your option) any later version. 
- *  
- * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;  
+ *
+ * This program is OPEN SOURCE software: you can redistribute it and/or modify it
+ * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,
+ * either version 1.0 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the Phytium Public License for more details. 
- *  
- * 
+ * See the Phytium Public License for more details.
+ *
+ *
  * FilePath: sys_arch.h
  * Date: 2022-07-18 13:25:02
  * LastEditTime: 2022-07-18 13:25:02
- * Description:  This file is for 
- * 
- * Modify History: 
- *  Ver   Who  Date   Changes
- * ----- ------  -------- --------------------------------------
+ * Description:  This file is for the lwIP TCP/IP stack.
+ *
+ * Modify History:
+ *  Ver   Who         Date       Changes
+ * ----- ------      --------    --------------------------------------
+ * 1.0   liuzhihong  2022/5/26  first release
  */
 
-#ifndef __SYS_ARCH_H__
-#define __SYS_ARCH_H__
+#ifndef SYS_ARCH_H
+#define SYS_ARCH_H
 
 #include "sdkconfig.h"
 #include "lwipopts.h"
 
 #if !NO_SYS
-#include "FreeRTOS.h"
-#include "task.h"
-#include "queue.h"
-#include "semphr.h"
-#include "cc.h"
+    #include "FreeRTOS.h"
+    #include "task.h"
+    #include "queue.h"
+    #include "semphr.h"
+    #include "cc.h"
 #endif
 
 #ifdef __cplusplus
@@ -59,7 +60,7 @@ typedef struct _sys_arch_state_t
 
 /* Message queue constants. */
 void sys_thread_delete(sys_thread_t handle);
-void sys_arch_delay(const unsigned int msec );
+void sys_arch_delay(const unsigned int msec);
 #endif
 
 sys_prot_t sys_arch_protect(void);
@@ -68,7 +69,5 @@ void sys_arch_unprotect(sys_prot_t pval);
 #ifdef __cplusplus
 }
 #endif
-
-
 
 #endif /* __SYS_ARCH_H__ */

@@ -15,11 +15,12 @@
  * FilePath: sdmmc_system.c
  * Date: 2022-02-10 14:53:44
  * LastEditTime: 2022-02-25 11:47:44
- * Description:  This files is for 
+ * Description:  This files is for sdmmc baremetal port
  * 
  * Modify History: 
  *  Ver   Who        Date         Changes
  * ----- ------     --------    --------------------------------------
+ * 1.0   zhugengyu  2022/11/15  first release
  */
 #include <string.h>
 

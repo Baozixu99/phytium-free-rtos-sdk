@@ -203,3 +203,4 @@ ifdef CONFIG_USE_CHERRY_USB
 include $(THIRD_PARTY_CUR_DIR)/cherryusb-0.6.0/makefile
 
 endif #CONFIG_USE_CHERRY_USB
+

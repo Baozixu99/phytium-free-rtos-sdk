@@ -1,22 +1,22 @@
 /*
- * Copyright : (C) 2022 Phytium Information Technology, Inc. 
+ * Copyright : (C) 2022 Phytium Information Technology, Inc.
  * All Rights Reserved.
- *  
- * This program is OPEN SOURCE software: you can redistribute it and/or modify it  
- * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,  
- * either version 1.0 of the License, or (at your option) any later version. 
- *  
- * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;  
+ *
+ * This program is OPEN SOURCE software: you can redistribute it and/or modify it
+ * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,
+ * either version 1.0 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the Phytium Public License for more details. 
- *  
- * 
+ * See the Phytium Public License for more details.
+ *
+ *
  * FilePath: fgdma_os.c
  * Date: 2022-07-20 10:54:31
  * LastEditTime: 2022-07-20 10:54:31
- * Description:  This files is for 
- * 
- * Modify History: 
+ * Description:  This file is for required function implementations of gdma driver used in FreeRTOS.
+ *
+ * Modify History:
  *  Ver   Who        Date         Changes
  * ----- ------     --------    --------------------------------------
  * 1.0   zhugengyu  2022/7/27   init commit
@@ -56,10 +56,10 @@ static FFreeRTOSGdma gdma[FGDMA_INSTANCE_NUM];
 /*****************************************************************************/
 static inline FError FGdmaOsTakeSema(SemaphoreHandle_t locker)
 {
-    FASSERT_MSG((NULL != locker), "locker not exists");
+    FASSERT_MSG((NULL != locker), "Locker not exists.");
     if (pdFALSE == xSemaphoreTake(locker, portMAX_DELAY))
     {
-        FGDMA_ERROR("failed to take locker !!!");
+        FGDMA_ERROR("Failed to take locker!!!");
         return FFREERTOS_GDMA_SEMA_ERR;
     }
 
@@ -68,10 +68,10 @@ static inline FError FGdmaOsTakeSema(SemaphoreHandle_t locker)
 
 static inline void FGdmaOsGiveSema(SemaphoreHandle_t locker)
 {
-    FASSERT_MSG((NULL != locker), "locker not exists");
+    FASSERT_MSG((NULL != locker), "Locker not exists.");
     if (pdFALSE == xSemaphoreGive(locker))
     {
-        FGDMA_ERROR("failed to give locker !!!");
+        FGDMA_ERROR("Failed to give locker!!!");
     }
 
     return;
@@ -79,7 +79,7 @@ static inline void FGdmaOsGiveSema(SemaphoreHandle_t locker)
 
 static void FGdmaOsSetupInterrupt(FGdma *const ctrl)
 {
-	FASSERT(ctrl);
+    FASSERT(ctrl);
     FGdmaConfig *config = &ctrl->config;
     uintptr base_addr = config->base_addr;
     u32 cpu_id = 0;
@@ -92,21 +92,21 @@ static void FGdmaOsSetupInterrupt(FGdma *const ctrl)
     InterruptSetPriority(config->irq_num, config->irq_prority);
 
     /* register intr callback */
-    InterruptInstall(config->irq_num, 
-                     FGdmaIrqHandler, 
-                     ctrl, 
+    InterruptInstall(config->irq_num,
+                     FGdmaIrqHandler,
+                     ctrl,
                      NULL);
 
     /* enable gdma irq */
     InterruptUmask(config->irq_num);
 
-    FGDMA_INFO("gdma interrupt setup done !!!");
-    return;    
+    FGDMA_INFO("gdma interrupt setup done!!!");
+    return;
 }
 
 FFreeRTOSGdma *FFreeRTOSGdmaInit(u32 id)
 {
-    FASSERT_MSG(id < FGDMA_INSTANCE_NUM, "invalid gdma id");
+    FASSERT_MSG(id < FGDMA_INSTANCE_NUM, "Invalid gdma id.");
     FFreeRTOSGdma *instance = &gdma[id];
     FGdma *const ctrl = &instance->ctrl;
     FGdmaConfig config;
@@ -117,40 +117,40 @@ FFreeRTOSGdma *FFreeRTOSGdmaInit(u32 id)
 
     if (FT_COMPONENT_IS_READY == ctrl->is_ready)
     {
-        FGDMA_WARN("gdma ctrl %d already inited !!!", id);
+        FGDMA_WARN("gdma ctrl %d already inited!!!", id);
         return instance;
     }
 
     /* no scheduler during init */
-    taskENTER_CRITICAL(); 
+    taskENTER_CRITICAL();
 
     config = *FGdmaLookupConfig(id);
     config.irq_prority = FFREERTOS_GDMA_IRQ_PRIORITY;
     err = FGdmaCfgInitialize(ctrl, &config);
     if (FGDMA_SUCCESS != err)
-	{
-		FGDMA_ERROR("init gdma-%d failed, 0x%x", id, err);
+    {
+        FGDMA_ERROR("Init gdma-%d failed, 0x%x", id, err);
         goto err_exit;
     }
 
     FGdmaOsSetupInterrupt(ctrl);
-    
-    err = FMempInit(memp, memp_buf_beg, memp_buf_end);
-	if (FMEMP_SUCCESS != err)
-	{
-		FGDMA_ERROR("init memp failed, 0x%x", err);
-        goto err_exit;
-    }    
 
-    FASSERT_MSG(NULL == instance->locker, "locker exists !!!");
-    FASSERT_MSG((instance->locker = xSemaphoreCreateMutex()) != NULL, "create mutex failed !!!");
+    err = FMempInit(memp, memp_buf_beg, memp_buf_end);
+    if (FMEMP_SUCCESS != err)
+    {
+        FGDMA_ERROR("Init memp failed, 0x%x", err);
+        goto err_exit;
+    }
+
+    FASSERT_MSG(NULL == instance->locker, "Locker exists!!!");
+    FASSERT_MSG((instance->locker = xSemaphoreCreateMutex()) != NULL, "Create mutex failed!!!");
 
     /* start gdma first, then config gdma channel */
-	err = FGdmaStart(ctrl);
+    err = FGdmaStart(ctrl);
 
 err_exit:
     taskEXIT_CRITICAL(); /* allow schedule after init */
-    return (FT_SUCCESS == err) ? instance : NULL; /* exit with NULL if failed */ 
+    return (FT_SUCCESS == err) ? instance : NULL; /* exit with NULL if failed */
 }
 
 FError FFreeRTOSGdmaDeInit(FFreeRTOSGdma *const instance)
@@ -163,7 +163,7 @@ FError FFreeRTOSGdmaDeInit(FFreeRTOSGdma *const instance)
 
     if (FT_COMPONENT_IS_READY != ctrl->is_ready)
     {
-        FGDMA_ERROR("gdma ctrl %d not yet init !!!", ctrl->config.instance_id);
+        FGDMA_ERROR("Gdma ctrl %d not yet init!!!", ctrl->config.instance_id);
         return FFREERTOS_GDMA_NOT_INIT;
     }
 
@@ -171,13 +171,13 @@ FError FFreeRTOSGdmaDeInit(FFreeRTOSGdma *const instance)
 
     err = FGdmaStop(ctrl);
     FMempDeinit(memp);
-	FGdmaDeInitialize(ctrl);    
+    FGdmaDeInitialize(ctrl);
 
-    vSemaphoreDelete(instance->locker);    
+    vSemaphoreDelete(instance->locker);
     instance->locker = NULL;
 
     taskEXIT_CRITICAL(); /* allow schedule after deinit */
-    return err; 
+    return err;
 }
 
 FError FFreeRTOSGdmaSetupChannel(FFreeRTOSGdma *const instance, u32 chan_id, const FFreeRTOSGdmaRequest *req)
@@ -193,14 +193,16 @@ FError FFreeRTOSGdmaSetupChannel(FFreeRTOSGdma *const instance, u32 chan_id, con
 
     err = FGdmaOsTakeSema(instance->locker);
     if (FFREERTOS_GDMA_OK != err)
+    {
         return err;
+    }
 
     chan_os->bdl_list = FMempMallocAlign(memp, sizeof(FGdmaBdlDesc) * req->valid_trans_num, FGDMA_ADDR_ALIGMENT);
     if (NULL == chan_os->bdl_list)
     {
-        FGDMA_ERROR("allocate buffer failed !!!");
+        FGDMA_ERROR("Allocate buffer failed!!!");
         err = FFREERTOS_GDMA_ALLOCATE_FAIL;
-        goto err_exit;            
+        goto err_exit;
     }
 
     chan_config = &chan_os->chan.config;
@@ -208,7 +210,7 @@ FError FFreeRTOSGdmaSetupChannel(FFreeRTOSGdma *const instance, u32 chan_id, con
     err = FGdmaAllocateChan(ctrl, &chan_os->chan, chan_config);
     if (FGDMA_SUCCESS != err)
     {
-        FGDMA_ERROR("allocate chan failed !!!");
+        FGDMA_ERROR("Allocate chan failed!!!");
         goto err_exit;
     }
 
@@ -223,18 +225,18 @@ FError FFreeRTOSGdmaSetupChannel(FFreeRTOSGdma *const instance, u32 chan_id, con
         trans = &req->trans[buf_idx];
 
         /* append bdl entry */
-        err = FGdmaAppendBDLEntry(&chan_os->chan, (uintptr)trans->src_buf, 
-                                 (uintptr)trans->dst_buf, trans->data_len);
+        err = FGdmaAppendBDLEntry(&chan_os->chan, (uintptr)trans->src_buf,
+                                  (uintptr)trans->dst_buf, trans->data_len);
         if (FGDMA_SUCCESS != err)
         {
-            FGDMA_ERROR("setup bdl entry failed !!!");
+            FGDMA_ERROR("Setup bdl entry failed!!!");
             goto err_exit;
-        }    
+        }
     }
 
 err_exit:
     FGdmaOsGiveSema(instance->locker);
-    return err;  
+    return err;
 }
 
 FError FFreeRTOSGdmaRevokeChannel(FFreeRTOSGdma *const instance, u32 chan_id)
@@ -248,25 +250,27 @@ FError FFreeRTOSGdmaRevokeChannel(FFreeRTOSGdma *const instance, u32 chan_id)
 
     err = FGdmaOsTakeSema(instance->locker);
     if (FFREERTOS_GDMA_OK != err)
+    {
         return err;
+    }
 
     /* free dynamic memroy allocated for bdl */
     if (chan_os->bdl_list)
     {
         FMempFree(memp, chan_os->bdl_list);
         chan_os->bdl_list = NULL;
-    }    
+    }
 
     /* deallocate channel */
     err = FGdmaDellocateChan(&chan_os->chan);
     if (FGDMA_SUCCESS != err)
     {
-        FGDMA_ERROR("dellocate chan %d failed", chan_id);
+        FGDMA_ERROR("Dellocate chan %d failed.", chan_id);
     }
 
 err_exit:
     FGdmaOsGiveSema(instance->locker);
-    return err;      
+    return err;
 }
 
 FError FFreeRTOSGdmaStart(FFreeRTOSGdma *const instance, u32 chan_id)
@@ -278,15 +282,17 @@ FError FFreeRTOSGdmaStart(FFreeRTOSGdma *const instance, u32 chan_id)
 
     err = FGdmaOsTakeSema(instance->locker);
     if (FFREERTOS_GDMA_OK != err)
+    {
         return err;
-	   
+    }
+
     err = FGdmaBDLTransfer(&chan_os->chan); /* start transfer of each channel */
     if (FGDMA_SUCCESS != err)
     {
         goto err_exit;
-    }    
+    }
 
-    /* you may wait memcpy end in other task */    
+    /* you may wait memcpy end in other task */
 
 err_exit:
     FGdmaOsGiveSema(instance->locker);

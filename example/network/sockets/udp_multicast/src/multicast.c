@@ -1,24 +1,26 @@
 /*
- * Copyright : (C) 2022 Phytium Information Technology, Inc. 
+ * Copyright : (C) 2022 Phytium Information Technology, Inc.
  * All Rights Reserved.
- *  
- * This program is OPEN SOURCE software: you can redistribute it and/or modify it  
- * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,  
- * either version 1.0 of the License, or (at your option) any later version. 
- *  
- * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;  
+ *
+ * This program is OPEN SOURCE software: you can redistribute it and/or modify it
+ * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,
+ * either version 1.0 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the Phytium Public License for more details. 
- *  
- * 
+ * See the Phytium Public License for more details.
+ *
+ *
  * FilePath: multicast.c
  * Date: 2022-09-15 10:19:11
  * LastEditTime: 2022-09-15 10:19:11
- * Description:  This file is for 
- * 
- * Modify History: 
- *  Ver   Who  Date   Changes
- * ----- ------  -------- --------------------------------------
+ * Description:  This file is for running multicast example task
+ *
+ * Modify History:
+ *  Ver   Who       Date        Changes
+ * ----- ------     --------    --------------------------------------
+ * 1.0  huanghe     2022/10/21  init
+ * 1.1 liuzhihong   2023/01/12  driver and application restructure
  */
 
 #include <string.h>
@@ -61,9 +63,9 @@
 #define UDP_PORT CONFIG_EXAMPLE_PORT
 
 #if defined(CONFIG_EXAMPLE_LOOPBACK)
-#define MULTICAST_LOOPBACK 1
+    #define MULTICAST_LOOPBACK 1
 #else
-#define MULTICAST_LOOPBACK 0
+    #define MULTICAST_LOOPBACK 0
 #endif
 
 #define MULTICAST_TTL CONFIG_EXAMPLE_MULTICAST_TTL
@@ -72,12 +74,12 @@
 #define MULTICAST_IPV6_ADDR CONFIG_EXAMPLE_MULTICAST_IPV6_ADDR
 
 #if defined(EXAMPLE_MULTICAST_LISTEN_ALL_IF)
-#define LISTEN_ALL_IF   1
+    #define LISTEN_ALL_IF   1
 #else
-#define LISTEN_ALL_IF   0
+    #define LISTEN_ALL_IF   0
 #endif
 
-char eth_name[2] ={0};
+char eth_name[2] = {0};
 static int multicast_sock = 0;
 TaskHandle_t multicast_handle = NULL;
 static struct netif *netif_p = NULL;
@@ -98,47 +100,52 @@ static int socket_add_ipv4_multicast_group(int sock, boolean assign_source_if)
     ip_addr_t ipaddr;
 
     /* use default netif */
-    extern struct netif *netif_default; 
-    if(netif_default == NULL)
+    extern struct netif *netif_default;
+    if (netif_default == NULL)
     {
-        printf("default netif not set  \n");      
+        printf("default netif not set.\r\n");
         goto err;
     }
 
     inet_addr_from_ip4addr(&iaddr, netif_ip4_addr(netif_default));
-    
+
 #endif /*  LISTEN_ALL_IF */
     /* Configure multicast address to listen to */
     err = inet_aton(MULTICAST_IPV4_ADDR, &imreq.imr_multiaddr.s_addr);
-    if (err != 1) {
+    if (err != 1)
+    {
         IPV4_PRINT_E("Configured IPV4 multicast address '%s' is invalid.", MULTICAST_IPV4_ADDR);
         err = -1;
         goto err;
     }
-    MULTICAST_PRINT_I( "Configured IPV4 Multicast address %s", inet_ntoa(imreq.imr_multiaddr.s_addr));
-    if (!IP_MULTICAST(ntohl(imreq.imr_multiaddr.s_addr))) {
-        IPV4_PRINT_W( "Configured IPV4 multicast address '%s' is not a valid multicast address. This will probably not work.", MULTICAST_IPV4_ADDR);
+    MULTICAST_PRINT_I("Configured IPV4 Multicast address %s", inet_ntoa(imreq.imr_multiaddr.s_addr));
+    if (!IP_MULTICAST(ntohl(imreq.imr_multiaddr.s_addr)))
+    {
+        IPV4_PRINT_W("Configured IPV4 multicast address '%s' is not a valid multicast address. This will probably not work.", MULTICAST_IPV4_ADDR);
     }
 
-    if (assign_source_if) {
+    if (assign_source_if)
+    {
         /* Assign the IPv4 multicast source interface, via its IP
          (only necessary if this socket is IPV4 only) */
         err = setsockopt(sock, IPPROTO_IP, IP_MULTICAST_IF, &iaddr,
                          sizeof(struct in_addr));
-        if (err < 0) {
+        if (err < 0)
+        {
             IPV4_PRINT_E("Failed to set IP_MULTICAST_IF. Error %d", errno);
             goto err;
         }
     }
 
     err = setsockopt(sock, IPPROTO_IP, IP_ADD_MEMBERSHIP,
-                         &imreq, sizeof(struct ip_mreq));
-    if (err < 0) {
+                     &imreq, sizeof(struct ip_mreq));
+    if (err < 0)
+    {
         IPV4_PRINT_E("Failed to set IP_ADD_MEMBERSHIP. Error %d", errno);
         goto err;
     }
 
- err:
+err:
     return err;
 }
 #endif /* CONFIG_EXAMPLE_IPV4 */
@@ -155,8 +162,9 @@ static int create_multicast_ipv6_socket(struct netif *netif_test)
     int err = 0;
 
     sock = socket(PF_INET6, SOCK_DGRAM, IPPROTO_IPV6);
-    if (sock < 0) {
-        IPV6_PRINT_E( "Failed to create socket. Error %d", errno);
+    if (sock < 0)
+    {
+        IPV6_PRINT_E("Failed to create socket. Error %d", errno);
         return -1;
     }
 
@@ -165,8 +173,9 @@ static int create_multicast_ipv6_socket(struct netif *netif_test)
     saddr.sin6_port = htons(UDP_PORT);
     bzero(&saddr.sin6_addr.un, sizeof(saddr.sin6_addr.un));
     err = bind(sock, (struct sockaddr *)&saddr, sizeof(struct sockaddr_in6));
-    if (err < 0) {
-        IPV6_PRINT_E( "Failed to bind socket. Error %d", errno);
+    if (err < 0)
+    {
+        IPV6_PRINT_E("Failed to bind socket. Error %d", errno);
         goto err;
     }
 
@@ -182,29 +191,32 @@ static int create_multicast_ipv6_socket(struct netif *netif_test)
     memcpy(&if_ipaddr, &netif_test->ip6_addr[0], sizeof(ip6_addr_t));
 
     inet6_addr_from_ip6addr(&if_inaddr, &if_ipaddr);
-    inet6_ntoa_r(if_inaddr, addrbuf, sizeof(addrbuf)-1);
-    printf("addrbuf is %s \r\n",addrbuf);
+    inet6_ntoa_r(if_inaddr, addrbuf, sizeof(addrbuf) - 1);
+    printf("addrbuf is %s .\r\n", addrbuf);
 #endif /* LISTEN_ALL_IF */
 
     /* search for netif index */
     netif_index = netif_get_index(netif_test);
-    if(netif_index < 0) {
-        IPV6_PRINT_E( "Failed to get netif index");
+    if (netif_index < 0)
+    {
+        IPV6_PRINT_E("Failed to get netif index");
         goto err;
     }
-    
+
     /* Assign the multicast source interface, via its IP */
-    err = setsockopt(sock, IPPROTO_IPV6, IPV6_MULTICAST_IF, &netif_index,sizeof(uint8_t));
-    if (err < 0) {
-        IPV6_PRINT_E( "Failed to set IPV6_MULTICAST_IF. Error %d", errno);
+    err = setsockopt(sock, IPPROTO_IPV6, IPV6_MULTICAST_IF, &netif_index, sizeof(uint8_t));
+    if (err < 0)
+    {
+        IPV6_PRINT_E("Failed to set IPV6_MULTICAST_IF. Error %d", errno);
         goto err;
     }
 
     /* Assign multicast TTL (set separately from normal interface TTL) */
     uint8_t ttl = MULTICAST_TTL;
     setsockopt(sock, IPPROTO_IPV6, IPV6_MULTICAST_HOPS, &ttl, sizeof(uint8_t));
-    if (err < 0) {
-        IPV6_PRINT_E( "Failed to set IPV6_MULTICAST_HOPS. Error %d", errno);
+    if (err < 0)
+    {
+        IPV6_PRINT_E("Failed to set IPV6_MULTICAST_HOPS. Error %d", errno);
         goto err;
     }
 
@@ -214,8 +226,9 @@ static int create_multicast_ipv6_socket(struct netif *netif_test)
     uint8_t loopback_val = MULTICAST_LOOPBACK;
     err = setsockopt(sock, IPPROTO_IPV6, IPV6_MULTICAST_LOOP,
                      &loopback_val, sizeof(uint8_t));
-    if (err < 0) {
-        IPV6_PRINT_E( "Failed to set IPV6_MULTICAST_LOOP. Error %d", errno);
+    if (err < 0)
+    {
+        IPV6_PRINT_E("Failed to set IPV6_MULTICAST_LOOP. Error %d", errno);
         goto err;
     }
 #endif
@@ -225,22 +238,25 @@ static int create_multicast_ipv6_socket(struct netif *netif_test)
 #ifdef CONFIG_EXAMPLE_IPV6
     /* Configure multicast address to listen to */
     err = inet6_aton(MULTICAST_IPV6_ADDR, &v6imreq.ipv6mr_multiaddr);
-    if (err != 1) {
-        IPV6_PRINT_E( "Configured IPV6 multicast address '%s' is invalid.", MULTICAST_IPV6_ADDR);
+    if (err != 1)
+    {
+        IPV6_PRINT_E("Configured IPV6 multicast address '%s' is invalid.", MULTICAST_IPV6_ADDR);
         goto err;
     }
-    MULTICAST_PRINT_I( "Configured IPV6 Multicast address %s", inet6_ntoa(v6imreq.ipv6mr_multiaddr));
+    MULTICAST_PRINT_I("Configured IPV6 Multicast address %s", inet6_ntoa(v6imreq.ipv6mr_multiaddr));
     ip6_addr_t multi_addr;
     inet6_addr_to_ip6addr(&multi_addr, &v6imreq.ipv6mr_multiaddr);
-    if (!ip6_addr_ismulticast(&multi_addr)) {
-        MULTICAST_PRINT_W( "Configured IPV6 multicast address '%s' is not a valid multicast address. This will probably not work.", MULTICAST_IPV6_ADDR);
+    if (!ip6_addr_ismulticast(&multi_addr))
+    {
+        MULTICAST_PRINT_W("Configured IPV6 multicast address '%s' is not a valid multicast address. This will probably not work.", MULTICAST_IPV6_ADDR);
     }
     /* Configure source interface */
     v6imreq.ipv6mr_interface = (unsigned int)netif_index;
     err = setsockopt(sock, IPPROTO_IPV6, IPV6_ADD_MEMBERSHIP,
                      &v6imreq, sizeof(struct ipv6_mreq));
-    if (err < 0) {
-        IPV6_PRINT_E( "Failed to set IPV6_ADD_MEMBERSHIP. Error %d", errno);
+    if (err < 0)
+    {
+        IPV6_PRINT_E("Failed to set IPV6_ADD_MEMBERSHIP. Error %d", errno);
         goto err;
     }
 #endif
@@ -248,8 +264,9 @@ static int create_multicast_ipv6_socket(struct netif *netif_test)
     int only = 1; /* IPV6-only socket */
 
     err = setsockopt(sock, IPPROTO_IPV6, IPV6_V6ONLY, &only, sizeof(int));
-    if (err < 0) {
-        IPV6_PRINT_E( "Failed to set IPV6_V6ONLY. Error %d", errno);
+    if (err < 0)
+    {
+        IPV6_PRINT_E("Failed to set IPV6_V6ONLY. Error %d", errno);
         goto err;
     }
 
@@ -270,7 +287,8 @@ static int create_multicast_ipv4_socket(void)
     int err = 0;
 
     sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_IP);
-    if (sock < 0) {
+    if (sock < 0)
+    {
         IPV4_PRINT_E("Failed to create socket. Error %d", errno);
         return -1;
     }
@@ -280,7 +298,8 @@ static int create_multicast_ipv4_socket(void)
     saddr.sin_port = htons(UDP_PORT);
     saddr.sin_addr.s_addr = htonl(INADDR_ANY);
     err = bind(sock, (struct sockaddr *)&saddr, sizeof(struct sockaddr_in));
-    if (err < 0) {
+    if (err < 0)
+    {
         IPV4_PRINT_E("Failed to bind socket. Error %d", errno);
         goto err;
     }
@@ -289,7 +308,8 @@ static int create_multicast_ipv4_socket(void)
     /* Assign multicast TTL (set separately from normal interface TTL) */
     uint8_t ttl = MULTICAST_TTL;
     setsockopt(sock, IPPROTO_IP, IP_MULTICAST_TTL, &ttl, sizeof(uint8_t));
-    if (err < 0) {
+    if (err < 0)
+    {
         IPV4_PRINT_E("Failed to set IP_MULTICAST_TTL. Error %d", errno);
         goto err;
     }
@@ -300,7 +320,8 @@ static int create_multicast_ipv4_socket(void)
     uint8_t loopback_val = MULTICAST_LOOPBACK;
     err = setsockopt(sock, IPPROTO_IP, IP_MULTICAST_LOOP,
                      &loopback_val, sizeof(uint8_t));
-    if (err < 0) {
+    if (err < 0)
+    {
         IPV4_PRINT_E("Failed to set IP_MULTICAST_LOOP. Error %d", errno);
         goto err;
     }
@@ -309,7 +330,8 @@ static int create_multicast_ipv4_socket(void)
     /* this is also a listening socket, so add it to the multicast
      group for listening... */
     err = socket_add_ipv4_multicast_group(sock, TRUE);
-    if (err < 0) {
+    if (err < 0)
+    {
         goto err;
     }
 
@@ -325,29 +347,34 @@ err:
 static void MulticastExampleTask(void *args)
 {
     struct netif *netif_test = (struct netif *)args;
-    while (1) {
+    while (1)
+    {
         int multicast_sock;
 
 #ifdef CONFIG_EXAMPLE_IPV4_ONLY
         multicast_sock = create_multicast_ipv4_socket();
-        if (multicast_sock < 0) {
-            MULTICAST_PRINT_E( "Failed to create IPv4 multicast socket");
+        if (multicast_sock < 0)
+        {
+            MULTICAST_PRINT_E("Failed to create IPv4 multicast socket");
         }
 #else
         multicast_sock = create_multicast_ipv6_socket(netif_test);
-        if (multicast_sock < 0) {
-            MULTICAST_PRINT_E( "Failed to create IPv6 multicast socket");
+        if (multicast_sock < 0)
+        {
+            MULTICAST_PRINT_E("Failed to create IPv6 multicast socket");
         }
 #endif
 
-        if (multicast_sock < 0) {
+        if (multicast_sock < 0)
+        {
             vTaskDelay(5 / portTICK_PERIOD_MS);
             continue;
         }
 
 #ifdef CONFIG_EXAMPLE_IPV4
         /* set destination multicast addresses for sending from these sockets */
-        struct sockaddr_in sdestv4 = {
+        struct sockaddr_in sdestv4 =
+        {
             .sin_family = PF_INET,
             .sin_port = htons(UDP_PORT),
         };
@@ -356,7 +383,8 @@ static void MulticastExampleTask(void *args)
 #endif
 
 #ifdef CONFIG_EXAMPLE_IPV6
-        struct sockaddr_in6 sdestv6 = {
+        struct sockaddr_in6 sdestv6 =
+        {
             .sin6_family = PF_INET6,
             .sin6_port = htons(UDP_PORT),
         };
@@ -367,8 +395,10 @@ static void MulticastExampleTask(void *args)
         /* Loop waiting for UDP received, and sending UDP packets if we don't
         see any. */
         int err = 1;
-        while (err > 0) {
-            struct timeval tv = {
+        while (err > 0)
+        {
+            struct timeval tv =
+            {
                 .tv_sec = 2,
                 .tv_usec = 0,
             };
@@ -376,61 +406,70 @@ static void MulticastExampleTask(void *args)
             FD_ZERO(&rfds);
             FD_SET(multicast_sock, &rfds);
             /* 等待数据接收事件 */
-            int s = select(multicast_sock + 1, &rfds, NULL, NULL, &tv); 
-            if (s < 0) {
-                MULTICAST_PRINT_E( "Select failed: errno %d", errno);
+            int s = select(multicast_sock + 1, &rfds, NULL, NULL, &tv);
+            if (s < 0)
+            {
+                MULTICAST_PRINT_E("Select failed: errno %d", errno);
                 err = -1;
                 break;
             }
-            else if (s > 0) {
-                if (FD_ISSET(multicast_sock, &rfds)) {
+            else if (s > 0)
+            {
+                if (FD_ISSET(multicast_sock, &rfds))
+                {
                     /* Incoming datagram received */
                     char recvbuf[48];
                     char raddr_name[32] = { 0 };
 
                     struct sockaddr_storage raddr; /* Large enough for both IPv4 or IPv6 */
                     socklen_t socklen = sizeof(raddr);
-                    int len = recvfrom(multicast_sock, recvbuf, sizeof(recvbuf)-1, 0,
+                    int len = recvfrom(multicast_sock, recvbuf, sizeof(recvbuf) - 1, 0,
                                        (struct sockaddr *)&raddr, &socklen);
-                    if (len < 0) {
-                        MULTICAST_PRINT_E( "multicast recvfrom failed: errno %d", errno);
+                    if (len < 0)
+                    {
+                        MULTICAST_PRINT_E("multicast recvfrom failed: errno %d", errno);
                         err = -1;
                         break;
                     }
 
                     /* Get the sender's address as a string */
 #ifdef CONFIG_EXAMPLE_IPV4
-                    if (raddr.ss_family == PF_INET) {
+                    if (raddr.ss_family == PF_INET)
+                    {
                         inet_ntoa_r(((struct sockaddr_in *)&raddr)->sin_addr,
-                                    raddr_name, sizeof(raddr_name)-1);
+                                    raddr_name, sizeof(raddr_name) - 1);
                     }
 #endif
 #ifdef CONFIG_EXAMPLE_IPV6
-                    if (raddr.ss_family== PF_INET6) {
-                        inet6_ntoa_r(((struct sockaddr_in6 *)&raddr)->sin6_addr, raddr_name, sizeof(raddr_name)-1);
+                    if (raddr.ss_family == PF_INET6)
+                    {
+                        inet6_ntoa_r(((struct sockaddr_in6 *)&raddr)->sin6_addr, raddr_name, sizeof(raddr_name) - 1);
                     }
 #endif
-                    MULTICAST_PRINT_I( "received %d bytes from %s:", len, raddr_name);
+                    MULTICAST_PRINT_I("received %d bytes from %s:", len, raddr_name);
 
                     recvbuf[len] = 0; /* Null-terminate whatever we received and treat like a string... */
-                    MULTICAST_PRINT_I( "%s", recvbuf);
+                    MULTICAST_PRINT_I("%s", recvbuf);
                 }
             }
-            else { /* s == 0 */
+            else   /* s == 0 */
+            {
                 /* Timeout passed with no incoming data, so send something! */
                 static int send_count;
                 const char sendfmt[] = "Multicast #%d sent by Phytium\n";
                 char sendbuf[48];
                 char addrbuf[32] = { 0 };
                 size_t len = snprintf(sendbuf, sizeof(sendbuf), sendfmt, send_count++);
-                if (len > sizeof(sendbuf)) {
-                    MULTICAST_PRINT_E( "Overflowed multicast sendfmt buffer!!");
+                if (len > sizeof(sendbuf))
+                {
+                    MULTICAST_PRINT_E("Overflowed multicast sendfmt buffer!!");
                     send_count = 0;
                     err = -1;
                     break;
                 }
 
-                struct addrinfo hints = {
+                struct addrinfo hints =
+                {
                     .ai_flags = AI_PASSIVE,
                     .ai_socktype = SOCK_DGRAM,
                 };
@@ -445,27 +484,30 @@ static void MulticastExampleTask(void *args)
                                       NULL,
                                       &hints,
                                       &res);
-                if (err < 0) {
-                    MULTICAST_PRINT_E( "getaddrinfo() failed for IPV4 destination address. error: %d", err);
+                if (err < 0)
+                {
+                    MULTICAST_PRINT_E("getaddrinfo() failed for IPV4 destination address. error: %d", err);
                     break;
                 }
-                if (res == 0) {
-                    MULTICAST_PRINT_E( "getaddrinfo() did not return any addresses");
+                if (res == 0)
+                {
+                    MULTICAST_PRINT_E("getaddrinfo() did not return any addresses");
                     break;
                 }
 #ifdef CONFIG_EXAMPLE_IPV4_ONLY
                 ((struct sockaddr_in *)res->ai_addr)->sin_port = htons(UDP_PORT);
-                inet_ntoa_r(((struct sockaddr_in *)res->ai_addr)->sin_addr, addrbuf, sizeof(addrbuf)-1);
-                MULTICAST_PRINT_I( "Sending to IPV4 multicast address %s:%d...",  addrbuf, UDP_PORT);
+                inet_ntoa_r(((struct sockaddr_in *)res->ai_addr)->sin_addr, addrbuf, sizeof(addrbuf) - 1);
+                MULTICAST_PRINT_I("Sending to IPV4 multicast address %s:%d...",  addrbuf, UDP_PORT);
 #else
                 ((struct sockaddr_in6 *)res->ai_addr)->sin6_port = htons(UDP_PORT);
-                inet6_ntoa_r(((struct sockaddr_in6 *)res->ai_addr)->sin6_addr, addrbuf, sizeof(addrbuf)-1);
-                MULTICAST_PRINT_I( "Sending to IPV6 (V4 mapped) multicast address %s port %d (%s)...",  addrbuf, UDP_PORT, CONFIG_EXAMPLE_MULTICAST_IPV4_ADDR);
+                inet6_ntoa_r(((struct sockaddr_in6 *)res->ai_addr)->sin6_addr, addrbuf, sizeof(addrbuf) - 1);
+                MULTICAST_PRINT_I("Sending to IPV6 (V4 mapped) multicast address %s port %d (%s)...",  addrbuf, UDP_PORT, CONFIG_EXAMPLE_MULTICAST_IPV4_ADDR);
 #endif
                 err = sendto(multicast_sock, sendbuf, len, 0, res->ai_addr, res->ai_addrlen);
                 freeaddrinfo(res);
-                if (err < 0) {
-                    MULTICAST_PRINT_E( "IPV4 sendto failed. errno: %d", errno);
+                if (err < 0)
+                {
+                    MULTICAST_PRINT_E("IPV4 sendto failed. errno: %d", errno);
                     break;
                 }
 #endif
@@ -476,26 +518,28 @@ static void MulticastExampleTask(void *args)
                                   NULL,
                                   &hints,
                                   &res);
-                if (err < 0) {
-                    MULTICAST_PRINT_E( "getaddrinfo() failed for IPV6 destination address. error: %d", err);
+                if (err < 0)
+                {
+                    MULTICAST_PRINT_E("getaddrinfo() failed for IPV6 destination address. error: %d", err);
                     break;
                 }
 
                 struct sockaddr_in6 *s6addr = (struct sockaddr_in6 *)res->ai_addr;
                 s6addr->sin6_port = htons(UDP_PORT);
-                inet6_ntoa_r(s6addr->sin6_addr, addrbuf, sizeof(addrbuf)-1);
-                MULTICAST_PRINT_I( "Sending to IPV6 multicast address %s port %d...",  addrbuf, UDP_PORT);
+                inet6_ntoa_r(s6addr->sin6_addr, addrbuf, sizeof(addrbuf) - 1);
+                MULTICAST_PRINT_I("Sending to IPV6 multicast address %s port %d...",  addrbuf, UDP_PORT);
                 err = sendto(multicast_sock, sendbuf, len, 0, res->ai_addr, res->ai_addrlen);
                 freeaddrinfo(res);
-                if (err < 0) {
-                    MULTICAST_PRINT_E( "IPV6 sendto failed. errno: %d", errno);
+                if (err < 0)
+                {
+                    MULTICAST_PRINT_E("IPV6 sendto failed. errno: %d", errno);
                     break;
                 }
 #endif
             }
         }
 
-        MULTICAST_PRINT_E( "Shutting down socket and restarting...");
+        MULTICAST_PRINT_E("Shutting down socket and restarting...");
         shutdown(multicast_sock, 0);
         close(multicast_sock);
     }
@@ -506,25 +550,25 @@ static int MulticastMain(int argc, char *argv[])
 {
     static int create_flg = 0;
     BaseType_t task_ret;
-    
+
     /* prase multicast */
 
-    if(argc > 1 )
+    if (argc > 1)
     {
         /* first find netif  */
         netif_p = LwipPortGetByName(argv[1]);
-        if(netif_p == NULL)
+        if (netif_p == NULL)
         {
-            printf("netif %s is not invalid \r\n",argv[1]);
+            printf("netif %s is not invalid.\r\n", argv[1]);
             return -1;
         }
 
-        if(create_flg == 0)
+        if (create_flg == 0)
         {
             /* step 1: Create multicast task */
             task_ret = xTaskCreate(&MulticastExampleTask, "mcast_task", 4096, netif_p, 5, &multicast_handle);
 
-            if(task_ret != pdPASS)
+            if (task_ret != pdPASS)
             {
                 create_flg = 0;
                 MULTICAST_PRINT_E("Failed to create multicast task ");
@@ -534,7 +578,7 @@ static int MulticastMain(int argc, char *argv[])
         }
         else
         {
-            printf("multicast task is already created,do not repeat the creation \r\n");
+            printf("Multicast task is already created,do not repeat the creation \r\n");
         }
     }
     else

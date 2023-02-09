@@ -1,24 +1,25 @@
 /*
- * Copyright : (C) 2022 Phytium Information Technology, Inc. 
+ * Copyright : (C) 2022 Phytium Information Technology, Inc.
  * All Rights Reserved.
- *  
- * This program is OPEN SOURCE software: you can redistribute it and/or modify it  
- * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,  
- * either version 1.0 of the License, or (at your option) any later version. 
- *  
- * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;  
+ *
+ * This program is OPEN SOURCE software: you can redistribute it and/or modify it
+ * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,
+ * either version 1.0 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the Phytium Public License for more details. 
- *  
- * 
+ * See the Phytium Public License for more details.
+ *
+ *
  * FilePath: fwdt_os.c
  * Date: 2022-07-14 13:42:19
  * LastEditTime: 2022-07-25 16:59:51
- * Description:  This file is for 
- * 
- * Modify History: 
+ * Description:  This file is for required function implementations of wdt driver used in FreeRTOS.
+ *
+ * Modify History:
  *  Ver   Who        Date         Changes
  * ----- ------     --------    --------------------------------------
+ * 1.0 wangxiaodong 2022/08/09  first commit
  */
 #include <stdio.h>
 #include <string.h>
@@ -59,7 +60,7 @@ FFreeRTOSWdt *FFreeRTOSWdtInit(u32 instance_id)
 
     FASSERT(FWdtCfgInitialize(&os_wdt[instance_id].wdt_ctrl, &pconfig) == FT_SUCCESS);
     FASSERT((os_wdt[instance_id].wdt_semaphore = xSemaphoreCreateMutex()) != NULL);
-    
+
     return (&os_wdt[instance_id]);
 }
 
@@ -73,11 +74,11 @@ FError FFreeRTOSWdtDeinit(FFreeRTOSWdt *os_wdt_p)
 {
     FASSERT(os_wdt_p);
     FASSERT(os_wdt_p->wdt_semaphore != NULL);
-    
+
     FWdtDeInitialize(&os_wdt_p->wdt_ctrl);
     vSemaphoreDelete(os_wdt_p->wdt_semaphore);
     memset(os_wdt_p, 0, sizeof(*os_wdt_p));
-    
+
     return FWDT_SUCCESS;
 }
 
@@ -101,40 +102,40 @@ FError FFreeRTOSWdtControl(FFreeRTOSWdt *os_wdt_p, int cmd, void *args)
     /* New contrl can be performed only after current one is finished */
     if (pdFALSE == xSemaphoreTake(os_wdt_p->wdt_semaphore, portMAX_DELAY))
     {
-        FWDT_ERROR("Wdt xSemaphoreTake failed\r\n");
+        FWDT_ERROR("Wdt xSemaphoreTake failed.");
         /* We could not take the semaphore, exit with 0 data received */
         return FREERTOS_WDT_SEM_ERROR;
     }
-    
-    switch(cmd)
+
+    switch (cmd)
     {
         case FREERTOS_WDT_CTRL_GET_TIMEOUT:
-            *((u32*)args) = os_wdt_p->timeout_value;
+            *((u32 *)args) = os_wdt_p->timeout_value;
             break;
 
         case FREERTOS_WDT_CTRL_SET_TIMEOUT:
-            os_wdt_p->timeout_value = *((u32*)args);
-            if(os_wdt_p->timeout_value >= FWDT_MAX_TIMEOUT)
+            os_wdt_p->timeout_value = *((u32 *)args);
+            if (os_wdt_p->timeout_value >= FWDT_MAX_TIMEOUT)
             {
                 goto control_exit;
             }
             ret = FWdtSetTimeout(pctrl, os_wdt_p->timeout_value);
             if (FWDT_SUCCESS != ret)
             {
-                FWDT_ERROR("FFreeRTOSWdtControl FWdtSetTimeout failed\n");
+                FWDT_ERROR("FFreeRTOSWdtControl FWdtSetTimeout failed.");
                 goto control_exit;
             }
             break;
-        
+
         case FREERTOS_WDT_CTRL_GET_TIMELEFT:
-            *((u32*)args) = FWdtGetTimeleft(pctrl);
+            *((u32 *)args) = FWdtGetTimeleft(pctrl);
             break;
 
         case FREERTOS_WDT_CTRL_KEEPALIVE:
             ret = FWdtRefresh(pctrl);
             if (FWDT_SUCCESS != ret)
             {
-                FWDT_ERROR("FFreeRTOSWdtControl FWdtRefresh failed\n");
+                FWDT_ERROR("FFreeRTOSWdtControl FWdtRefresh failed.");
                 goto control_exit;
             }
             break;
@@ -143,22 +144,22 @@ FError FFreeRTOSWdtControl(FFreeRTOSWdt *os_wdt_p, int cmd, void *args)
             ret = FWdtStart(pctrl);
             if (FWDT_SUCCESS != ret)
             {
-                FWDT_ERROR("FFreeRTOSWdtControl FWdtStart failed\n");
+                FWDT_ERROR("FFreeRTOSWdtControl FWdtStart failed.");
                 goto control_exit;
             }
             break;
-        
+
         case FREERTOS_WDT_CTRL_STOP:
             ret = FWdtStop(pctrl);
             if (FWDT_SUCCESS != ret)
             {
-                FWDT_ERROR("FFreeRTOSWdtControl FWdtStop failed\n");
+                FWDT_ERROR("FFreeRTOSWdtControl FWdtStop failed.");
                 goto control_exit;
             }
             break;
 
         default:
-            FWDT_ERROR("control cmd is invalid \r\n");
+            FWDT_ERROR("Control cmd is invalid.");
             break;
     }
 
@@ -168,7 +169,7 @@ control_exit:
     if (pdFALSE == xSemaphoreGive(os_wdt_p->wdt_semaphore))
     {
         /* We could not post the semaphore, exit with error */
-        FWDT_ERROR("Wdt xSemaphoreGive failed\r\n");
+        FWDT_ERROR("Wdt xSemaphoreGive failed.");
         return FREERTOS_WDT_SEM_ERROR;
     }
 

@@ -1,28 +1,26 @@
 /*
- * Copyright : (C) 2022 Phytium Information Technology, Inc. 
+ * Copyright : (C) 2022 Phytium Information Technology, Inc.
  * All Rights Reserved.
- *  
- * This program is OPEN SOURCE software: you can redistribute it and/or modify it  
- * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,  
- * either version 1.0 of the License, or (at your option) any later version. 
- *  
- * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;  
+ *
+ * This program is OPEN SOURCE software: you can redistribute it and/or modify it
+ * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,
+ * either version 1.0 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the Phytium Public License for more details. 
- *  
- * 
+ * See the Phytium Public License for more details.
+ *
+ *
  * FilePath: fxmac_os.h
  * Date: 2022-07-15 16:33:19
  * LastEditTime: 2022-07-15 16:33:19
- * Description:  This file is for xmac driver.Functions in this file are the minimum required functions for drivers. 
- * 
- * Modify History: 
+ * Description:  This file is for xmac driver.Functions in this file are the minimum required functions for drivers.
+ *
+ * Modify History:
  *  Ver   Who        Date                   Changes
  * ----- ------    --------     --------------------------------------
  *  1.0  huanghe  2022/11/15            first release
  */
-
-
 
 #ifndef FXMAC_OS_H
 #define FXMAC_OS_H
@@ -34,15 +32,13 @@
 #include "fkernel.h"
 #include "ferror_code.h"
 
-#define FREERTOS_XMAC_INIT_ERROR FT_CODE_ERR(ErrModPort, 0, 0x1)
-#define FREERTOS_XMAC_PARAM_ERROR FT_CODE_ERR(ErrModPort, 0, 0x2)
-#define FREERTOS_XMAC_NO_VALID_SPACE FT_CODE_ERR(ErrModPort, 0, 0x3)
-
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+#define FREERTOS_XMAC_INIT_ERROR FT_CODE_ERR(ErrModPort, 0, 0x1)
+#define FREERTOS_XMAC_PARAM_ERROR FT_CODE_ERR(ErrModPort, 0, 0x2)
+#define FREERTOS_XMAC_NO_VALID_SPACE FT_CODE_ERR(ErrModPort, 0, 0x3)
 
 #define FXMAX_RX_BDSPACE_LENGTH    0x20000 /* default set 64KB*/
 #define FXMAX_TX_BDSPACE_LENGTH    0x20000 /* default set 64KB*/
@@ -74,19 +70,19 @@ extern "C" {
 /*  frame queue */
 #define PQ_QUEUE_SIZE 4096
 
-    typedef struct 
-    {
-        uintptr data[PQ_QUEUE_SIZE];
-        int head, tail, len;
-    } PqQueue;
+typedef struct
+{
+    uintptr data[PQ_QUEUE_SIZE];
+    int head, tail, len;
+} PqQueue;
 
-    typedef enum
-    {
-        FXMAC_OS_INTERFACE_SGMII = 0 ,
-        FXMAC_OS_INTERFACE_RMII  ,
-        FXMAC_OS_INTERFACE_RGMII ,
-        FXMAC_OS_INTERFACE_LENGTH
-    }FXmacFreeRtosInterface;
+typedef enum
+{
+    FXMAC_OS_INTERFACE_SGMII = 0,
+    FXMAC_OS_INTERFACE_RMII,
+    FXMAC_OS_INTERFACE_RGMII,
+    FXMAC_OS_INTERFACE_LENGTH
+} FXmacFreeRtosInterface;
 
 
 typedef struct
@@ -96,7 +92,7 @@ typedef struct
 
     uintptr rx_pbufs_storage[FXMAX_RX_PBUFS_LENGTH];
     uintptr tx_pbufs_storage[FXMAX_TX_PBUFS_LENGTH];
-    
+
 } FXmacNetifBuffer;
 
 typedef struct
@@ -116,24 +112,25 @@ typedef struct
     FXmacNetifBuffer buffer;
 
     /* queue to store overflow packets */
-	PqQueue recv_q;
-	PqQueue send_q;
+    PqQueue recv_q;
+    PqQueue send_q;
 
     /* configuration */
     u32 config;
 
     struct LwipPort *stack_pointer; /* Docking data stack data structure */
     u8 hwaddr[FXMAX_MAX_HARDWARE_ADDRESS_LENGTH];
-}FXmacOs;
+} FXmacOs;
 
 FXmacOs *FXmacOsGetInstancePointer(FXmacOsControl *config_p);
 FError FXmacOsInit(FXmacOs *instance_p);
-FError FXmacOsConfig(FXmacOs *instance_p,int cmd ,void *arg);
+FError FXmacOsConfig(FXmacOs *instance_p, int cmd, void *arg);
 void *FXmacOsRx(FXmacOs *instance_p);
-FError FXmacOsTx(FXmacOs *instance_p,void *tx_buf);
+FError FXmacOsTx(FXmacOs *instance_p, void *tx_buf);
 void FXmacOsStop(FXmacOs *instance_p);
 void FXmacOsStart(FXmacOs *instance_p);
 enum lwip_port_link_status FXmacPhyReconnect(struct LwipPort *xmac_netif_p);
+
 #ifdef __cplusplus
 }
 #endif

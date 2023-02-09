@@ -40,11 +40,11 @@
 #include "semphr.h"
 
 #ifdef CONFIG_SFUD_CTRL_FSPIM
-#include "fspim_sfud_core.h"
+    #include "fspim_sfud_core.h"
 #endif
 #ifdef CONFIG_SFUD_CTRL_FQSPI
-#include "fqspi_sfud_core.h"
-#endif 
+    #include "fqspi_sfud_core.h"
+#endif
 
 
 static char log_buf[256];
@@ -54,18 +54,18 @@ static xSemaphoreHandle xSemaphore;
 void sfud_log_debug(const char *file, const long line, const char *format, ...);
 void sfud_log_info(const char *format, ...);
 
-static void spi_lock(const sfud_spi *spi) 
+static void spi_lock(const sfud_spi *spi)
 {
     xSemaphoreTake(xSemaphore, portMAX_DELAY);
 }
 
-static void spi_unlock(const sfud_spi *spi) 
+static void spi_unlock(const sfud_spi *spi)
 {
     xSemaphoreGive(xSemaphore);
 }
 
 /* about 100 microsecond delay */
-static void retry_delay_100us(void) 
+static void retry_delay_100us(void)
 {
     fsleep_microsec(100);
 }
@@ -76,7 +76,7 @@ static void retry_delay_100us(void)
  * @return {*}
  * @param {sfud_flash} *flash
  */
-sfud_err sfud_spi_port_init(sfud_flash *flash) 
+sfud_err sfud_spi_port_init(sfud_flash *flash)
 {
     sfud_err result = SFUD_SUCCESS;
 
@@ -141,7 +141,7 @@ ret:
  * @param format output format
  * @param ... args
  */
-void sfud_log_debug(const char *file, const long line, const char *format, ...) 
+void sfud_log_debug(const char *file, const long line, const char *format, ...)
 {
     va_list args;
 
@@ -160,7 +160,7 @@ void sfud_log_debug(const char *file, const long line, const char *format, ...)
  * @param format output format
  * @param ... args
  */
-void sfud_log_info(const char *format, ...) 
+void sfud_log_info(const char *format, ...)
 {
     va_list args;
 

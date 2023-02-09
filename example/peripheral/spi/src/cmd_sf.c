@@ -1,24 +1,25 @@
 /*
- * Copyright : (C) 2022 Phytium Information Technology, Inc. 
+ * Copyright : (C) 2022 Phytium Information Technology, Inc.
  * All Rights Reserved.
- *  
- * This program is OPEN SOURCE software: you can redistribute it and/or modify it  
- * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,  
- * either version 1.0 of the License, or (at your option) any later version. 
- *  
- * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;  
+ *
+ * This program is OPEN SOURCE software: you can redistribute it and/or modify it
+ * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,
+ * either version 1.0 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the Phytium Public License for more details. 
- *  
- * 
+ * See the Phytium Public License for more details.
+ *
+ *
  * FilePath: cmd_sf.c
  * Date: 2022-07-12 09:33:12
  * LastEditTime: 2022-07-12 09:33:12
- * Description:  This files is for 
- * 
- * Modify History: 
+ * Description:  This file is for providing user command functions.
+ *
+ * Modify History:
  *  Ver   Who        Date         Changes
  * ----- ------     --------    --------------------------------------
+ *  1.0  zhugengyu  2022/8/26    first commit
  */
 /***************************** Include Files *********************************/
 #include <string.h>
@@ -43,11 +44,11 @@
 /*****************************************************************************/
 static void SfudCmdUsage()
 {
-	printf("usage:\r\n");
-	printf("    sf probe\r\n");
-    printf("        -- probe and init SPI flash\r\n");
+    printf("Usage:\r\n");
+    printf("    sf probe\r\n");
+    printf("        -- Probe and init SPI flash\r\n");
     printf("    sf rw <inchip-addr>\r\n");
-    printf("        -- demo read and write by sfud\r\n");
+    printf("        -- Demo read and write by sfud\r\n");
 }
 
 static int SfudCmdEntry(int argc, char *argv[])
@@ -56,11 +57,11 @@ static int SfudCmdEntry(int argc, char *argv[])
     static boolean inited = FALSE;
 
     if (argc < 2)
-	{
-		SfudCmdUsage();
+    {
+        SfudCmdUsage();
         return -1;
-	}
-    
+    }
+
     if ((FALSE == inited) || (!strcmp(argv[1], "probe")))
     {
         if (pdPASS != FFreeRTOSSfudInit())
@@ -70,19 +71,21 @@ static int SfudCmdEntry(int argc, char *argv[])
 
         inited = TRUE;
     }
-    
+
     if (!strcmp(argv[1], "read"))
     {
         u32 in_chip_addr = 0x0;
 
         if (argc > 2)
         {
-            in_chip_addr = (u32)simple_strtoul(argv[2], NULL, 16);            
+            in_chip_addr = (u32)simple_strtoul(argv[2], NULL, 16);
         }
 
         BaseType_t task_ret = FFreeRTOSSfudRead(in_chip_addr);
         if (pdPASS != task_ret)
+        {
             return -2;
+        }
     }
     else if (!strcmp(argv[1], "write"))
     {
@@ -91,7 +94,7 @@ static int SfudCmdEntry(int argc, char *argv[])
 
         if (argc > 2)
         {
-            in_chip_addr = (u32)simple_strtoul(argv[2], NULL, 16);            
+            in_chip_addr = (u32)simple_strtoul(argv[2], NULL, 16);
         }
 
         if (argc > 3)
@@ -101,7 +104,9 @@ static int SfudCmdEntry(int argc, char *argv[])
 
         BaseType_t task_ret = FFreeRTOSSfudWrite(in_chip_addr, wr_str);
         if (pdPASS != task_ret)
-            return -2;        
+        {
+            return -2;
+        }
     }
 
     return 0;

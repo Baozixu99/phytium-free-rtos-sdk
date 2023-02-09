@@ -1,34 +1,29 @@
 /*
- * Copyright : (C) 2022 Phytium Information Technology, Inc. 
+ * Copyright : (C) 2022 Phytium Information Technology, Inc.
  * All Rights Reserved.
- *  
- * This program is OPEN SOURCE software: you can redistribute it and/or modify it  
- * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,  
- * either version 1.0 of the License, or (at your option) any later version. 
- *  
- * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;  
+ *
+ * This program is OPEN SOURCE software: you can redistribute it and/or modify it
+ * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,
+ * either version 1.0 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the Phytium Public License for more details. 
- *  
- * 
+ * See the Phytium Public License for more details.
+ *
+ *
  * FilePath: fddma_os.h
  * Date: 2022-07-20 09:15:37
  * LastEditTime: 2022-07-20 09:15:38
- * Description:  This files is for 
- * 
- * Modify History: 
+ * Description:  This files is for providing function related definitions of ddma driver used in FreeRTOS.
+ *
+ * Modify History:
  *  Ver   Who        Date         Changes
  * ----- ------     --------    --------------------------------------
  * 1.0   zhugengyu  2022/7/27   init commit
  */
-#ifndef  DRIVERS_FDDMA_OS_H
-#define  DRIVERS_FDDMA_OS_H
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
+#ifndef  FDDMA_OS_H
+#define  FDDMA_OS_H
 /***************************** Include Files *********************************/
 #include <FreeRTOS.h>
 #include <semphr.h>
@@ -36,8 +31,12 @@ extern "C"
 
 #include "fparameters.h"
 #include "fddma.h"
-
 /************************** Constant Definitions *****************************/
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #define FFREERTOS_DDMA_OK                   FT_SUCCESS
 #define FFREERTOS_DDMA_NOT_INIT             FT_CODE_ERR(ErrModPort, ErrDdma, 0)
 #define FFREERTOS_DDMA_SEMA_ERR             FT_CODE_ERR(ErrModPort, ErrDdma, 1)
@@ -50,7 +49,7 @@ extern "C"
 
 typedef struct
 {
-    
+
 } FFreeRTOSDdmaConfig; /* freertos ddma config, reserved for future use */
 
 typedef struct

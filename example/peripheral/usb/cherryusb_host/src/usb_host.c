@@ -1,22 +1,22 @@
 /*
- * Copyright : (C) 2022 Phytium Information Technology, Inc. 
+ * Copyright : (C) 2022 Phytium Information Technology, Inc.
  * All Rights Reserved.
- *  
- * This program is OPEN SOURCE software: you can redistribute it and/or modify it  
- * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,  
- * either version 1.0 of the License, or (at your option) any later version. 
- *  
- * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;  
+ *
+ * This program is OPEN SOURCE software: you can redistribute it and/or modify it
+ * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,
+ * either version 1.0 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the Phytium Public License for more details. 
- *  
- * 
+ * See the Phytium Public License for more details.
+ *
+ *
  * FilePath: usb_host.c
  * Date: 2022-07-22 13:57:42
  * LastEditTime: 2022-07-22 13:57:43
- * Description:  This files is for 
- * 
- * Modify History: 
+ * Description:  This file is for the usb host functions.
+ *
+ * Modify History:
  *  Ver   Who        Date         Changes
  * ----- ------     --------    --------------------------------------
  * 1.0   zhugengyu  2022/9/20  init commit
@@ -73,9 +73,9 @@ static void UsbHcSetupInterrupt(void)
     InterruptSetPriority(irq_num, irq_priority);
 
     /* register intr callback */
-    InterruptInstall(irq_num, 
-                     UsbHcInterrruptHandler, 
-                     NULL, 
+    InterruptInstall(irq_num,
+                     UsbHcInterrruptHandler,
+                     NULL,
                      NULL);
 
     /* enable irq */
@@ -110,17 +110,21 @@ void *usb_hc_malloc(size_t size)
 void *usb_hc_malloc_align(size_t align, size_t size)
 {
     void *result = FMempMallocAlign(&memp, size, align);
-    
+
     if (result)
+    {
         memset(result, 0U, size);
+    }
 
     return result;
 }
 
 void usb_hc_free(void *ptr)
 {
-	if (NULL != ptr)
-		FMempFree(&memp, ptr);    
+    if (NULL != ptr)
+    {
+        FMempFree(&memp, ptr);
+    }
 }
 
 void usb_assert(const char *filename, int linenum)
@@ -134,15 +138,15 @@ void usb_hc_dcache_invalidate(void *addr, unsigned long len)
 }
 /*****************************************/
 
-static void UsbInitTask(void * args)
+static void UsbInitTask(void *args)
 {
-    if (0 == usbh_initialize()) 
+    if (0 == usbh_initialize())
     {
-        printf("init cherryusb host success !!! input 'usb lsusb -t' to see devices\r\n");
+        printf("Init cherryusb host successfully.put 'usb lsusb -t' to see devices.\r\n");
     }
     else
     {
-        FUSB_ERROR("init cherryusb host failed !!!");
+        FUSB_ERROR("Init cherryusb host failed.");
     }
 
     vTaskDelete(NULL);
@@ -154,12 +158,12 @@ BaseType_t FFreeRTOSInitUsb(void)
 
     taskENTER_CRITICAL(); /* no schedule when create task */
 
-    ret = xTaskCreate((TaskFunction_t )UsbInitTask,
-                            (const char* )"UsbInitTask",
-                            (uint16_t )2048,
-                            NULL,
-                            (UBaseType_t )configMAX_PRIORITIES - 1,
-                            NULL);
+    ret = xTaskCreate((TaskFunction_t)UsbInitTask,
+                      (const char *)"UsbInitTask",
+                      (uint16_t)2048,
+                      NULL,
+                      (UBaseType_t)configMAX_PRIORITIES - 1,
+                      NULL);
     FASSERT_MSG(pdPASS == ret, "create task failed");
 
     taskEXIT_CRITICAL(); /* allow schedule since task created */
