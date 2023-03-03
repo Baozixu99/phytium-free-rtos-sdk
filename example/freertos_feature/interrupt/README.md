@@ -26,7 +26,7 @@
 ## 1. 例程介绍
 
 本例程示范了freertos环境下的inteerrupt的使用。
-主要介绍了二值信号量、计数信号量、在中断中使用队列等方法
+主要介绍了二值信号量、计数信号量、在中断中使用队列、中断嵌套的使用等方法
 
 ## 2. 如何使用例程
 
@@ -135,18 +135,23 @@ bootelf -p 0x90100000
 
 ![count](./figs/intr_count.png)
 
-- 输入```intr queue_cre```，启动在中服务程序中使用queue测试
-- 输入```intr queue_del```，删除在中服务程序中使用queue测试
+- 输入```intr queue_cre```，启动在中断服务程序中使用queue测试
+- 输入```intr queue_del```，删除在中断服务程序中使用queue测试
 
 ![queue](./figs/intr_queue.png)
+
+- 输入```intr nest_cre```，启动中断嵌套测试
+- 输入```intr nest_del```，删除中断嵌套测试
+
+![nested](./figs/intr_nested.png)
 
 - 测试任务能够能正常创建和删除，输入```ps```查看任务状态正常，即测试正常
 
 ## 3. 如何解决问题
 
-Q: 三个例程同时运行异常
+Q: 例程同时运行异常
 
-A: 这三个例程都初始化了intr的软中断，所以同时用会有问题;
+A: 例程都初始化了intr的软中断，所以同时用会有问题;
 
 ## 4. 修改历史记录
 

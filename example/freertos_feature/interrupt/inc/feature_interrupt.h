@@ -20,6 +20,7 @@
  *  Ver   Who  Date   Changes
  * ----- ------  -------- --------------------------------------
  * 1.0 wangxiaodong 2022/08/09  first commit
+ * 1.1 wangxiaodong 2023/02/25  add nested interrupt test
  */
 
 
@@ -40,6 +41,9 @@ void DeleteCountSemTasks(void);
 
 void CreateQueueTasks(void);
 void DeleteQueueTasks(void);
+
+void CreateNestedTasks(void);
+void DeleteNestedTasks(void);
 
 #ifdef __cplusplus
 }

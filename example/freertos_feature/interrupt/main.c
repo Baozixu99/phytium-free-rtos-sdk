@@ -12,14 +12,14 @@
  *
  *
  * FilePath: main.c
- * Date: 2022-06-17 08:17:59
- * LastEditTime: 2022-06-17 08:17:59
- * Description:  This file is for interrupt example that running shell task and open scheduler
+ * Date: 2023-02-22 08:17:59
+ * LastEditTime: 2023-3-1 08:17:59
+ * Description:  This file is for nested interrupt test main entry.
  *
  * Modify History:
- *  Ver   Who  Date   Changes
+ *  Ver   Who        Date         Changes
  * ----- ------  -------- --------------------------------------
- * 
+ * 1.0  wangxiaodong 2023/2/23	  first release
  */
 
 #include "shell.h"
@@ -29,7 +29,7 @@
 int main(void)
 {
     BaseType_t ret;
-
+    
     ret = LSUserShellTask() ;
     if (ret != pdPASS)
     {

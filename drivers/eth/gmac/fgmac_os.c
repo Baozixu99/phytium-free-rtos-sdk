@@ -206,7 +206,6 @@ static int FGmacSetupIsr(FGmac *gmac_p)
     u32 irq_num = config_p->irq_num;
     u32 cpu_id;
 
-    u32 irq_priority = IRQ_PRIORITY_VALUE_12 ;
 
     /* gic initialize */
     GetCpuId(&cpu_id);
@@ -216,7 +215,7 @@ static int FGmacSetupIsr(FGmac *gmac_p)
     FGmacSetInterruptMask(gmac_p, FGMAC_CTRL_INTR, FGMAC_ISR_MASK_ALL_BITS);
     FGmacSetInterruptMask(gmac_p, FGMAC_DMA_INTR, FGMAC_DMA_INTR_ENA_ALL_MASK);
 
-    InterruptSetPriority(irq_num, irq_priority);
+    InterruptSetPriority(irq_num, GMAC_OS_IRQ_PRIORITY_VALUE);
     InterruptInstall(irq_num, FGmacInterruptHandler, gmac_p, "GMAC-IRQ");
 
     /* register intr callback */

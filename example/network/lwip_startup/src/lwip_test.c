@@ -210,7 +210,7 @@ void LwipTest(void *args)
                       (UBaseType_t)configMAX_PRIORITIES - 1, /* 任务的优先级 */
                       NULL);                          /* 任务控制块指针 */
 
-    FASSERT_MSG(ret == pdPASS, "LwipTestCreate Task create is failed");
+    FASSERT_MSG(ret == pdPASS, "LwipTestCreate Task creation is failed");
 }
 
 

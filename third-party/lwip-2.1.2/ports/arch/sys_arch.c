@@ -43,7 +43,7 @@
 #define SYSTEM_ARCH_PRINT_D(format, ...) FT_DEBUG_PRINT_D(SYSTEM_ARCH_DEBUG_TAG, format, ##__VA_ARGS__)
 #define SYSTEM_ARCH_PRINT_W(format, ...) FT_DEBUG_PRINT_W(SYSTEM_ARCH_DEBUG_TAG, format, ##__VA_ARGS__)
 
-#if !NO_SYS
+
 
 #include "FreeRTOS.h"
 #include "task.h"
@@ -741,4 +741,4 @@ void sys_arch_delay(const unsigned int msec)
     vTaskDelay(msec / portTICK_RATE_MS);
 }
 
-#endif /* !NO_SYS */
+

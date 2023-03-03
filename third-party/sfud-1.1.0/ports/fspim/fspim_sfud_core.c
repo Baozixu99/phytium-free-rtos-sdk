@@ -42,25 +42,90 @@ typedef struct
     boolean is_inited;
 } FSpimSfudOs;
 
-static FSpimSfudOs sfud_instance =
+static FSpimSfudOs sfud_instance[FSPI_NUM] =
 {
-    .spi_id = FSPI2_ID,
-    .spi = NULL,
-    .spi_cfg =
+    [FSPI0_ID] =
     {
-        /* you may need to assign spi mode according to flash spec. */
-        .spi_mode = FFREERTOS_SPIM_MODE_0,
-        .en_dma = FALSE,
-        .inner_loopback = FALSE
+        .spi_id = FSPI0_ID,
+        .spi = NULL,
+        .spi_cfg =
+        {
+            /* you may need to assign spi mode according to flash spec. */
+            .spi_mode = FFREERTOS_SPIM_MODE_0,
+            .en_dma = FALSE,
+            .inner_loopback = FALSE
+        },
+        .spi_msg =
+        {
+            .rx_buf = NULL,
+            .rx_len = 0U,
+            .tx_buf = NULL,
+            .tx_len = 0U
+        },
+        .is_inited = FALSE
     },
-    .spi_msg =
+    [FSPI1_ID] =
     {
-        .rx_buf = NULL,
-        .rx_len = 0U,
-        .tx_buf = NULL,
-        .tx_len = 0U
+        .spi_id = FSPI1_ID,
+        .spi = NULL,
+        .spi_cfg =
+        {
+            /* you may need to assign spi mode according to flash spec. */
+            .spi_mode = FFREERTOS_SPIM_MODE_0,
+            .en_dma = FALSE,
+            .inner_loopback = FALSE
+        },
+        .spi_msg =
+        {
+            .rx_buf = NULL,
+            .rx_len = 0U,
+            .tx_buf = NULL,
+            .tx_len = 0U
+        },
+        .is_inited = FALSE
     },
-    .is_inited = FALSE
+#if defined(CONFIG_TARGET_E2000)
+    [FSPI2_ID] =
+    {
+        .spi_id = FSPI2_ID,
+        .spi = NULL,
+        .spi_cfg =
+        {
+            /* you may need to assign spi mode according to flash spec. */
+            .spi_mode = FFREERTOS_SPIM_MODE_0,
+            .en_dma = FALSE,
+            .inner_loopback = FALSE
+        },
+        .spi_msg =
+        {
+            .rx_buf = NULL,
+            .rx_len = 0U,
+            .tx_buf = NULL,
+            .tx_len = 0U
+        },
+        .is_inited = FALSE
+    },
+    [FSPI3_ID] =
+    {
+        .spi_id = FSPI3_ID,
+        .spi = NULL,
+        .spi_cfg =
+        {
+            /* you may need to assign spi mode according to flash spec. */
+            .spi_mode = FFREERTOS_SPIM_MODE_0,
+            .en_dma = FALSE,
+            .inner_loopback = FALSE
+        },
+        .spi_msg =
+        {
+            .rx_buf = NULL,
+            .rx_len = 0U,
+            .tx_buf = NULL,
+            .tx_len = 0U
+        },
+        .is_inited = FALSE
+    },
+#endif
 };
 
 static sfud_err FSpimReadWrite(const sfud_spi *spi, const uint8_t *write_buf, size_t write_size, uint8_t *read_buf,
@@ -110,30 +175,45 @@ static sfud_err FSpimReadWrite(const sfud_spi *spi, const uint8_t *write_buf, si
 sfud_err FSpimProbe(sfud_flash *flash)
 {
     sfud_spi *spi_p = &flash->spi;
-    FSpimSfudOs *user_data = &sfud_instance;
-
-    if (!memcmp(FSPIM2_SFUD_NAME, spi_p->name, strlen(FSPIM2_SFUD_NAME)))
+    u32 spim_id = FSPI2_ID;
+    
+    if (!memcmp(FSPIM0_SFUD_NAME, spi_p->name, strlen(FSPIM0_SFUD_NAME)))
     {
-        /* sfud_spi_port_init will be called for each flash candidate,
-        and we just do controller init for the first time */
-        if (FALSE == user_data->is_inited)
-        {
-            /* init spi controller */
-            user_data->spi = FFreeRTOSSpimInit(user_data->spi_id, &user_data->spi_cfg);
-            if (NULL == user_data->spi)
-            {
-                return SFUD_ERR_NOT_FOUND;
-            }
-
-            user_data->is_inited = TRUE;
-        }
-        flash->spi.user_data = user_data;
-        flash->spi.wr = FSpimReadWrite;
+        spim_id = FSPI0_ID;
+    } 
+    else if (!memcmp(FSPIM1_SFUD_NAME, spi_p->name, strlen(FSPIM1_SFUD_NAME)))
+    {
+        spim_id = FSPI1_ID;
     }
+#if defined(CONFIG_TARGET_E2000)
+    else if (!memcmp(FSPIM2_SFUD_NAME, spi_p->name, strlen(FSPIM2_SFUD_NAME)))
+    {
+        spim_id = FSPI2_ID;
+    } 
+    else if (!memcmp(FSPIM3_SFUD_NAME, spi_p->name, strlen(FSPIM3_SFUD_NAME)))
+    {
+        spim_id = FSPI3_ID;
+    } 
+#endif
     else
     {
         return SFUD_ERR_NOT_FOUND;
     }
+    FSpimSfudOs *user_data = &sfud_instance[spim_id];
+    /* sfud_spi_port_init will be called for each flash candidate,
+    and we just do controller init for the first time */
+    if (FALSE == user_data->is_inited)
+    {
+        /* init spi controller */
+        user_data->spi = FFreeRTOSSpimInit(user_data->spi_id, &user_data->spi_cfg);
+        if (NULL == user_data->spi)
+        {
+            return SFUD_ERR_NOT_FOUND;
+        }
+        user_data->is_inited = TRUE;
+    }
+        flash->spi.user_data = user_data;
+        flash->spi.wr = FSpimReadWrite;
 
     return SFUD_SUCCESS;
 }

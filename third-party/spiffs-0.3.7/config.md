@@ -1,14 +1,14 @@
 # SPIFFS文件系统移植配置解释
 移植SPIFFS过程中需要对其文件目录`spiffs-0.3.7\src\default`下`spiffs_config.h`配置文件进行一定修改，来使其适配不同的应用环境。本文档介绍飞腾FreeTROS环境下SPIFFS的相关配置。
 
-####github
+### github
 在github上有wiki说明SPIFFS相关配置信息：
 - http://github.com/pellepl/spiffs/wiki
 
 SPIFFS技术手册：
 - http://blog.csdn.net/zhangjinxing_2006/article/details/75050611
 
-####重要移植概述
+### 重要移植概述
 在SPIFFS暴露的配置中，由许多是不需要修改的。在用户移植的过程中，可以参考如下配置设置。
 #####基础函数库配置
 ```
@@ -34,7 +34,7 @@ SPIFFS技术手册：
 ```
 在一系列C语言库函数后，我们加入了飞腾的定义库`"ft_types.h"`与debug库`"ft_debug.h"`
 
-#####Debug方式
+#### Debug方式
 使用飞腾定义好的debug方法
 ```
 // port debug printfs
@@ -59,7 +59,7 @@ SPIFFS技术手册：
 #define SPIFFS_API_DBG(_f, ...) FT_DEBUG_PRINT_D("SPIFFS-API", _f, ##__VA_ARGS__)
 #endif
 ```
-#####Cache配置
+#### Cache配置
 如果启用Cache缓存机制，会大大加速执行速度，但是必须为SPIFFS提供额外的RAM内存。强烈建议打开`SPIFFS_CACHE_WR`选项，这个选项会使得写入flash的数据进入缓存区，多次得到写入的数据后，再一次性写入flash。如果没有打开这个选项，所有对flash的写入都是直接的，这样会使得flash寿命减少。
 ```
 // Enables/disable memory read caching of nucleus file system operations.
@@ -93,7 +93,7 @@ SPIFFS技术手册：
 
 
 ```
-#####基本flash信息配置
+#### 基本flash信息配置
 飞腾不止使用单个SPIFFS实例，故将`SPIFFS_SINGLETON`设为0。并且不需要预设flash信息为某一固定值，通过其他模块的接口，可以实现读取装在SPIM上的flash信息。对于一般用户来说，可以将此选项打开，并直接在SPIFFS层面设置好相关配置。
 ```
 #ifndef SPIFFS_SINGLETON
@@ -127,7 +127,7 @@ SPIFFS技术手册：
 #endif
 ```
 如果不能正确配置这些类型，可能会由溢出和一堆其他问题造成死循环。在您无法弄清楚文件系统的需求配置时，可以选择将容量设置稍大一点，因为如果设置得太小，会导致更加严重的后果。
-#####flash文件系统检查
+#### flash文件系统检查
 打开flash检查magic开关，设置启用按文件系统长度来检查flash配置，保证flash配置符合SPIFFS要求，如果进一步打开`SPIFFS_USE_MAGIC_LENGTH`，则会进一步比较挂载文件系统与flash配置长度是否一致。
 ```
 #ifndef SPIFFS_USE_MAGIC
@@ -147,7 +147,7 @@ SPIFFS技术手册：
 
 #endif
 ```
-#####上锁操作
+#### 上锁操作
 为了适配FreeRTOS这种多任务的实时操作系统，需要打开SPIFFS的上锁功能开关，并将写好的上锁和解锁接口告诉SPIFFS。
 ```
 extern void FSpiffsSemLock(void);
@@ -178,7 +178,7 @@ void FSpiffsSemUnlock(void)
     xSemaphoreGive(xSpiffsSemaphore);
 }
 ```
-#####读写函数接口
+#### 读写函数接口
 在创建的SPIFFS文件系统config实例中，需要添加读写文件与擦除数据的操作
 ```
 static const spiffs_config cfg =

@@ -111,11 +111,13 @@ point is zero. */
 /* The I bit in the DAIF bits. */
 #define portDAIF_I (0x80)
 
+static void vPortSetPriorityMask(uint32_t value);
+
 /* Macro to unmask all interrupt priorities. */
 #define portCLEAR_INTERRUPT_MASK()         \
     {                                      \
         portDISABLE_INTERRUPTS();          \
-        InterruptSetPriorityMask(portUNMASK_VALUE); \
+        vPortSetPriorityMask(portUNMASK_VALUE); \
         __asm volatile("DSB SY		\n"        \
                        "ISB SY		\n");  \
         portENABLE_INTERRUPTS();           \
@@ -432,14 +434,10 @@ void FreeRTOS_Tick_Handler(void)
     necessary to turn off interrupts in the CPU itself while the ICCPMR is being
     updated. */
 
-    InterruptSetPriorityMask(configMAX_API_CALL_INTERRUPT_PRIORITY << portPRIORITY_SHIFT);
+    vPortSetPriorityMask(configMAX_API_CALL_INTERRUPT_PRIORITY << portPRIORITY_SHIFT);
     __asm volatile("dsb sy		\n"
                    "isb sy		\n" ::
                    : "memory");
-
-    /* Ok to enable interrupts after the interrupt source has been cleared. */
-    configCLEAR_TICK_INTERRUPT();
-    portENABLE_INTERRUPTS();
 
     /* Increment the RTOS tick. */
     if (xTaskIncrementTick() != pdFALSE)
@@ -447,8 +445,12 @@ void FreeRTOS_Tick_Handler(void)
         ullPortYieldRequired = pdTRUE;
     }
 
-    /* Ensure all interrupt priorities are active again. */
-    portCLEAR_INTERRUPT_MASK();
+    /* unmask all interrupt priorities. */
+    vPortSetPriorityMask(portUNMASK_VALUE);
+
+    /* interrupt clear. */
+    configCLEAR_TICK_INTERRUPT();
+
 }
 /*-----------------------------------------------------------*/
 
@@ -475,20 +477,20 @@ Set current interrupt priority mask and translate, ICC_PMR
 • The value is right-shifted by one bit.
 • Bit [7] of the value is set to 1.
 */
-void vPortSetPriorityMask(uint32_t value)
+static void vPortSetPriorityMask(uint32_t value)
 {
     uint32_t priority = PRIORITY_TRANSLATE_SET(value);
     InterruptSetPriorityMask(priority);
 }
 
 /* Get current interrupt priority mask and translate, ICC_PMR, priority << portPRIORITY_SHIFT  */
-uint32_t vPortGetPriorityMask(void)
+static uint32_t vPortGetPriorityMask(void)
 {
     return PRIORITY_TRANSLATE_GET(InterruptGetPriorityMask());
 }
 
 /* Get current interrupt priority and translate, ICC_RPR, priority << portPRIORITY_SHIFT */
-uint32_t vPortGetCurrentPriority(void)
+static uint32_t vPortGetCurrentPriority(void)
 {
     return PRIORITY_TRANSLATE_GET(FGicGetICC_RPR());
 }

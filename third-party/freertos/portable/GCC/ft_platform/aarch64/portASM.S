@@ -314,7 +314,6 @@ FreeRTOS_IRQ_Handler:
 	/* Maintain the interrupt nesting information across the function call. */
 	STP		X1, X5, [SP, #-0x10]!
 
-
 	/* Read value from the interrupt acknowledge register, which is stored in W0
 	for future parameter and interrupt clearing use. */
 
@@ -335,9 +334,7 @@ FreeRTOS_IRQ_Handler:
 	LDP		X0, X1, [SP], #0x10
 
 	/* End IRQ processing by writing ICCIAR to the EOI register. */
-
 	MSR   ICC_EOIR1_EL1, x0
-
 
 	/* Restore the critical nesting count. */
 	LDP		X1, X5, [SP], #0x10

@@ -480,9 +480,9 @@ void FXmacRecvHandler(void *arg)
         /* free up the BD's */
         FXmacBdRingFree(rxring, bd_processed, rxbdset);
         SetupRxBds(instance_p, rxring);
-#if !NO_SYS
+
         sys_sem_signal(&xmac_netif_p->sem_rx_data_available);
-#endif
+
     }
 
     return;
@@ -1096,8 +1096,7 @@ static void FXmacSetupIsr(FXmacOs *instance_p)
     FXmacSetHandler(&instance_p->instance, FXMAC_HANDLER_DMARECV, FXmacRecvHandler, instance_p);
     FXmacSetHandler(&instance_p->instance, FXMAC_HANDLER_ERROR, FXmacErrorHandler, instance_p);
     FXmacSetHandler(&instance_p->instance, FXMAC_HANDLER_LINKCHANGE, FXmacLinkChange, instance_p);
-
-    InterruptSetPriority(instance_p->instance.config.queue_irq_num[0], IRQ_PRIORITY_VALUE_12);
+    InterruptSetPriority(instance_p->instance.config.queue_irq_num[0], XMAC_OS_IRQ_PRIORITY_VALUE);
     InterruptInstall(instance_p->instance.config.queue_irq_num[0], FxmacOsIntrHandler, &instance_p->instance, "fxmac");
     InterruptUmask(instance_p->instance.config.queue_irq_num[0]);
 }
@@ -1248,8 +1247,8 @@ FError FXmacOsInit(FXmacOs *instance_p)
 
     /* initialize dma */
     dmacrreg = FXMAC_READREG32(xmac_p->config.base_address, FXMAC_DMACR_OFFSET);
-    dmacrreg & ~(FXMAC_DMACR_BLENGTH_MASK);
-    dmacrreg = dmacrreg | FXMAC_DMACR_INCR16_AHB_AXI_BURST; /* Attempt to use bursts of up to 16. */
+    dmacrreg &= (~(FXMAC_DMACR_BLENGTH_MASK));
+    dmacrreg |= (FXMAC_DMACR_INCR16_AHB_AXI_BURST); /* Attempt to use bursts of up to 16. */
     FXMAC_WRITEREG32(xmac_p->config.base_address, FXMAC_DMACR_OFFSET, dmacrreg);
     FXmacInitDma(instance_p);
 

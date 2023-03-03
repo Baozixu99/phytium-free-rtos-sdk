@@ -57,7 +57,7 @@ menu "LWIP Freertos Port Configuration"
                 default 2048 if TARGET_ARMV8_AARCH64
                 default 1024
             config LWIP_PORT_RECEIVE_THREAD_PRIORITY
-                int "the stack priority of the receive thread"
+                int "the priority of the receive thread"
                 default 5
         endif 
 
@@ -71,7 +71,7 @@ menu "LWIP Freertos Port Configuration"
                 default 2048 if TARGET_ARMV8_AARCH64
                 default 1024
             config LWIP_PORT_LINK_DETECT_PRIORITY
-                int "the stack priority of the mac link detect thread"
+                int "the priority of the mac link detect thread"
                 default 5
         endif
 
@@ -85,7 +85,7 @@ menu "LWIP Freertos Port Configuration"
                 default 4096 if TARGET_ARMV8_AARCH64
                 default 2048
             config LWIP_PORT_DHCP_PRIORITY
-                int "the stack priority of the dhcp thread"
+                int "the priority of the dhcp thread"
                 default 5
         endif
         

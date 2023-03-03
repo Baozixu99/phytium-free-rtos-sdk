@@ -11,7 +11,7 @@
  * See the Phytium Public License for more details.
  *
  *
- * FilePath: cmd_os_stats.c
+ * FilePath: cmd_ps.c
  * Date: 2022-02-25 08:34:53
  * LastEditTime: 2022-02-25 08:34:53
  * Description:  This file is for the ps command functions
@@ -37,7 +37,7 @@ static int DisplayTaskStats(int argc, char *argv[])
     vTaskList((char *)&CPU_RunInfo); //获取任务运行时间信息
 
     printf("---------------------------------------------\r\n");
-    printf("task_name\ttask_state\tpriority\tstack\ttask_num\r\n");
+    printf("task_name\t\t  task_state  priority  stack  task_num\r\n");
     printf("%s", CPU_RunInfo);
     printf("---------------------------------------------\r\n");
 
@@ -45,7 +45,7 @@ static int DisplayTaskStats(int argc, char *argv[])
 
     vTaskGetRunTimeStats((char *)&CPU_RunInfo);
 
-    printf("task_name\trun_time_count\tusage_rate\r\n");
+    printf("task_name\t\t\trun_time_count\tusage_rate\r\n");
     printf("%s", CPU_RunInfo);
     printf("---------------------------------------------\r\n\n");
 

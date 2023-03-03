@@ -28,13 +28,12 @@
 #include "sdkconfig.h"
 #include "lwipopts.h"
 
-#if !NO_SYS
-    #include "FreeRTOS.h"
-    #include "task.h"
-    #include "queue.h"
-    #include "semphr.h"
-    #include "cc.h"
-#endif
+#include "FreeRTOS.h"
+#include "task.h"
+#include "queue.h"
+#include "semphr.h"
+#include "cc.h"
+
 
 #ifdef __cplusplus
 extern "C"
@@ -44,7 +43,7 @@ extern "C"
 #define SYS_MBOX_NULL (xQueueHandle)0
 #define SYS_SEM_NULL (xSemaphoreHandle)0
 #define SYS_DEFAULT_THREAD_STACK_DEPTH configMINIMAL_STACK_SIZE
-#if !NO_SYS
+
 typedef xSemaphoreHandle sys_sem_t;
 typedef xSemaphoreHandle sys_mutex_t;
 typedef xQueueHandle sys_mbox_t;
@@ -61,7 +60,7 @@ typedef struct _sys_arch_state_t
 /* Message queue constants. */
 void sys_thread_delete(sys_thread_t handle);
 void sys_arch_delay(const unsigned int msec);
-#endif
+
 
 sys_prot_t sys_arch_protect(void);
 void sys_arch_unprotect(sys_prot_t pval);

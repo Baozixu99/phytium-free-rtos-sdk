@@ -134,9 +134,9 @@ static void ethernetif_input(struct netif *netif)
     struct pbuf *p;
     SYS_ARCH_DECL_PROTECT(lev);
 
-#if !NO_SYS
+
     while (1)
-#endif
+
     {
         /* move received packet into a new pbuf */
         SYS_ARCH_PROTECT(lev);
@@ -339,9 +339,9 @@ static err_t low_level_output_arp_off(struct netif *netif, struct pbuf *q, const
 
 
 
-err_t ethernetif_init(struct netif *netif)
+err_t ethernetif_gmac_init(struct netif *netif)
 {
-    LWIP_DEBUGF(NETIF_DEBUG, ("*******start init eth\n"));
+    LWIP_DEBUGF(NETIF_DEBUG, ("*******Start init eth\n"));
 
 #if LWIP_NETIF_HOSTNAME
     /* Initialize interface hostname */

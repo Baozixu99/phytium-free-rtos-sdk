@@ -173,9 +173,9 @@ static void ethernetif_input(struct netif *netif)
     struct pbuf *p;
     SYS_ARCH_DECL_PROTECT(lev);
 
-#if !NO_SYS
+
     while (1)
-#endif
+    
     {
         /* move received packet into a new pbuf */
         SYS_ARCH_PROTECT(lev);
@@ -249,9 +249,9 @@ static err_t low_level_init(struct netif *netif)
         return ERR_MEM;
     }
 
-#if !NO_SYS
+
     sys_sem_new(&xmac_netif_p->sem_rx_data_available, 0);
-#endif
+
     /* obtain config of this emac */
     FXMAC_LWIP_NET_PRINT_I("netif->state is %p \r\n ", netif->state);
 
@@ -354,7 +354,7 @@ static err_t low_level_output_arp_off(struct netif *netif, struct pbuf *q, const
 #endif /* LWIP_ARP */
 
 /*
- * ethernetif_init():
+ * ethernetif_xmac_init():
  *
  * Should be called at the beginning of the program to set up the
  * network interface. It calls the function low_level_init() to do the
@@ -362,7 +362,7 @@ static err_t low_level_output_arp_off(struct netif *netif, struct pbuf *q, const
  *
  */
 
-err_t ethernetif_init(struct netif *netif)
+err_t ethernetif_xmac_init(struct netif *netif)
 {
     LWIP_DEBUGF(NETIF_DEBUG, ("*******Start init eth\n"));
 

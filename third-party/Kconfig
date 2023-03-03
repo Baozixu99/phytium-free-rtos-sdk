@@ -101,11 +101,11 @@ config USE_SDMMC_CMD
 config USE_CHERRY_USB
     bool
     default n
-    prompt "Use CherryUSB"
+    prompt "Use CherryUSB(0.7.0)"
     help
-        Include CherryUSB
+        Include CherryUSB for XHCI controller
 
     if USE_CHERRY_USB
-        source "$(FREERTOS_SDK_ROOT)/third-party/cherryusb-0.6.0/Kconfig"
+        source "$(FREERTOS_SDK_ROOT)/third-party/cherryusb-0.7.0/Kconfig"
     endif
 

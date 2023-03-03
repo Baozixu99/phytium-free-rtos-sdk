@@ -172,9 +172,6 @@ FreeRTOS_IRQ_Handler:
 	MRS		lr, SPSR
 	PUSH	{lr}
 
-	/* Change to supervisor mode to allow reentry. */
-	CPS		#SVC_MODE
-
 	/* Push used registers. */
 	PUSH	{r0-r4, r12}
 
@@ -188,7 +185,6 @@ FreeRTOS_IRQ_Handler:
 
 	/* Read value from the interrupt acknowledge register, which is stored in r0
 	for future parameter and interrupt clearing use. */
-
 	mrc p15, 0, r0, c12, c12, 0
     isb
 
@@ -206,12 +202,7 @@ FreeRTOS_IRQ_Handler:
 	POP		{r0-r4, lr}
 	ADD		sp, sp, r2
 
-	CPSID	i
-	DSB
-	ISB
-
 	/* Write the value read from ICCIAR to ICCEOIR.*/
-	
 	mcr p15, 0, r0, c12, c12, 1
 	isb
 
@@ -234,7 +225,7 @@ exit_without_switch:
 	/* No context switch.  Restore used registers, LR_irq and SPSR before
 	returning. */
 	POP		{r0-r4, r12}
-	CPS		#IRQ_MODE
+
 	POP		{LR}
 	MSR		SPSR_cxsf, LR
 	POP		{LR}
@@ -249,7 +240,7 @@ switch_before_exit:
 	/* Restore used registers, LR-irq and SPSR before saving the context
 	to the task stack. */
 	POP		{r0-r4, r12}
-	CPS		#IRQ_MODE
+
 	POP		{LR}
 	MSR		SPSR_cxsf, LR
 	POP		{LR}

@@ -81,6 +81,10 @@ extern "C"
 #define GMAC_RX_DESCNUM     128
 #define GMAC_TX_DESCNUM     128
 
+/*irq priority value*/
+#define GMAC_OS_IRQ_PRIORITY_VALUE (configMAX_API_CALL_INTERRUPT_PRIORITY+1)
+FASSERT_STATIC((GMAC_OS_IRQ_PRIORITY_VALUE <= IRQ_PRIORITY_VALUE_15) && (GMAC_OS_IRQ_PRIORITY_VALUE >= configMAX_API_CALL_INTERRUPT_PRIORITY));
+
 typedef struct
 {
     u32 instance_id;

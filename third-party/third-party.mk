@@ -123,24 +123,7 @@ endif #CONFIG_USE_FATFS_0_1_4
 
 ifdef CONFIG_USE_SFUD
 
-# $(shell export PATH=$(THIRD_PARTY_CUR_DIR)/sfud:$PATH)
-
-	INC_DIR +=  $(THIRD_PARTY_CUR_DIR)/sfud-1.1.0 \
-				$(THIRD_PARTY_CUR_DIR)/sfud-1.1.0/inc \
-				$(THIRD_PARTY_CUR_DIR)/sfud-1.1.0/ports
-	SRC_DIR +=  $(THIRD_PARTY_CUR_DIR)/sfud-1.1.0 \
-				$(THIRD_PARTY_CUR_DIR)/sfud-1.1.0/src \
-				$(THIRD_PARTY_CUR_DIR)/sfud-1.1.0/ports
-
-	ifdef CONFIG_SFUD_CTRL_FSPIM
-		INC_DIR += $(THIRD_PARTY_CUR_DIR)/sfud-1.1.0/ports/fspim
-		SRC_DIR += $(THIRD_PARTY_CUR_DIR)/sfud-1.1.0/ports/fspim	
-	endif
-
-	ifdef CONFIG_SFUD_CTRL_FQSPI
-		INC_DIR += $(THIRD_PARTY_CUR_DIR)/sfud-1.1.0/ports/fqspi
-		SRC_DIR += $(THIRD_PARTY_CUR_DIR)/sfud-1.1.0/ports/fqspi	
-	endif
+include $(THIRD_PARTY_CUR_DIR)/sfud-1.1.0/sfud.mk
 
 endif #CONFIG_USE_SFUD
 
@@ -200,7 +183,7 @@ endif #CONFIG_USE_SDMMC_CMD
 
 ifdef CONFIG_USE_CHERRY_USB
 
-include $(THIRD_PARTY_CUR_DIR)/cherryusb-0.6.0/makefile
+include $(THIRD_PARTY_CUR_DIR)/cherryusb-0.7.0/makefile
 
 endif #CONFIG_USE_CHERRY_USB
 

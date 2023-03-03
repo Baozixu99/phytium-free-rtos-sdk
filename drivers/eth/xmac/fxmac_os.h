@@ -40,8 +40,8 @@ extern "C" {
 #define FREERTOS_XMAC_PARAM_ERROR FT_CODE_ERR(ErrModPort, 0, 0x2)
 #define FREERTOS_XMAC_NO_VALID_SPACE FT_CODE_ERR(ErrModPort, 0, 0x3)
 
-#define FXMAX_RX_BDSPACE_LENGTH    0x20000 /* default set 64KB*/
-#define FXMAX_TX_BDSPACE_LENGTH    0x20000 /* default set 64KB*/
+#define FXMAX_RX_BDSPACE_LENGTH    0x20000 /* default set 128KB*/
+#define FXMAX_TX_BDSPACE_LENGTH    0x20000 /* default set 128KB*/
 
 #define FXMAX_RX_PBUFS_LENGTH       128
 #define FXMAX_TX_PBUFS_LENGTH       128
@@ -70,7 +70,11 @@ extern "C" {
 /*  frame queue */
 #define PQ_QUEUE_SIZE 4096
 
-typedef struct
+/*irq priority value*/
+#define XMAC_OS_IRQ_PRIORITY_VALUE (configMAX_API_CALL_INTERRUPT_PRIORITY+1)
+FASSERT_STATIC((XMAC_OS_IRQ_PRIORITY_VALUE <= IRQ_PRIORITY_VALUE_15)&&(XMAC_OS_IRQ_PRIORITY_VALUE >= configMAX_API_CALL_INTERRUPT_PRIORITY));
+
+typedef struct 
 {
     uintptr data[PQ_QUEUE_SIZE];
     int head, tail, len;

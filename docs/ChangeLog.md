@@ -1,3 +1,52 @@
+# Phytium FreeRTOS SDK 2023-3-2 ChangeLog
+
+Change Log sinc 2023-2-27
+
+## driver
+
+- eth/xmac delete conditional compilation statements about NO_SYS 
+
+## example
+
+- modify network/lwip_startup configs and sdkconfig 
+
+## third-party
+
+- lwip-2.1.2/ports/* delete conditional compilation statements about NO_SYS 
+- lwip-2.1.2/ports/fgmac ethernetif_init function name modified
+- update lwip-2.1.2/kconfig 
+
+# Phytium FreeRTOS SDK 2023-3-1 ChangeLog
+
+Change Log sinc 2023-2-23
+
+## example
+
+- add nested_interrupt example
+
+## third-party
+
+- modify freertos aarch32 and aarch64 port function
+
+# Phytium FreeRTOS SDK 2023-2-20 ChangeLog
+
+Change Log sinc 2023-2-16
+## example 
+- add spim_spiffs example
+## third-party
+- modify sfud and delete repetitive code
+
+# Phytium FreeRTOS SDK 2023-2-10 ChangeLog
+
+Change Log sinc 2023-2-8
+
+## example 
+- modify configs of cherryusb_host
+
+## third-party
+- update cherryusb from v0.6.0 to v0.7.0
+- modify Kconfig and makefile files
+  
 # Phytium FreeRTOS SDK 2023-2-9 0.4.0 ChangeLog
 
 Change Log sinc 2023-2-6

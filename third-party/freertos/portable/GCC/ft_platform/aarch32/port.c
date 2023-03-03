@@ -112,6 +112,8 @@ point is zero. */
 mode. */
 #define portAPSR_USER_MODE (0x10)
 
+static void vPortSetPriorityMask(uint32_t value);
+
 /* The critical section macros only mask interrupts up to an application
 determined priority level.  Sometimes it is necessary to turn interrupt off in
 the CPU itself before modifying certain hardware registers. */
@@ -131,7 +133,7 @@ the CPU itself before modifying certain hardware registers. */
 #define portCLEAR_INTERRUPT_MASK()         \
     {                                      \
         portCPU_IRQ_DISABLE();             \
-        sys_icc_pmr_set(portUNMASK_VALUE); \
+        vPortSetPriorityMask(portUNMASK_VALUE); \
         __asm volatile("DSB		\n"           \
                        "ISB		\n");      \
         portCPU_IRQ_ENABLE();              \
@@ -167,6 +169,8 @@ extern void vPortRestoreTaskContext(void);
  * Used to catch tasks that attempt to return from their implementing function.
  */
 static void prvTaskExitError(void);
+
+
 
 /*
  * If the application provides an implementation of vApplicationIRQHandler(),
@@ -431,21 +435,23 @@ void FreeRTOS_Tick_Handler(void)
     so there is no need to save and restore the current mask value.  It is
     necessary to turn off interrupts in the CPU itself while the ICCPMR is being
     updated. */
-    portCPU_IRQ_DISABLE();
-    sys_icc_pmr_set((uint32_t)(configMAX_API_CALL_INTERRUPT_PRIORITY << portPRIORITY_SHIFT));
-    // portICCPMR_PRIORITY_MASK_REGISTER = (uint32_t)(configMAX_API_CALL_INTERRUPT_PRIORITY << portPRIORITY_SHIFT);
+
+    vPortSetPriorityMask((uint32_t)(configMAX_API_CALL_INTERRUPT_PRIORITY << portPRIORITY_SHIFT));
+
     __asm volatile("dsb		\n"
                    "isb		\n" ::
                    : "memory");
-    portCPU_IRQ_ENABLE();
+
     /* Increment the RTOS tick. */
     if (xTaskIncrementTick() != pdFALSE)
     {
         ulPortYieldRequired = pdTRUE;
     }
 
-    /* Ensure all interrupt priorities are active again. */
-    portCLEAR_INTERRUPT_MASK();
+    /* unmask all interrupt priorities. */
+    vPortSetPriorityMask(portUNMASK_VALUE); 
+    
+    /* interrupt clear. */
     configCLEAR_TICK_INTERRUPT();
 }
 /*-----------------------------------------------------------*/
@@ -483,24 +489,23 @@ Set current interrupt priority mask and translate, ICC_PMR
 • The value is right-shifted by one bit.
 • Bit [7] of the value is set to 1.
 */
-void vPortSetPriorityMask(uint32_t value)
+static void vPortSetPriorityMask(uint32_t value)
 {
     uint32_t priority = PRIORITY_TRANSLATE_SET(value);
     sys_icc_pmr_set(priority);
 }
 
 /* Get current interrupt priority mask and translate, ICC_PMR, priority << portPRIORITY_SHIFT  */
-uint32_t vPortGetPriorityMask(void)
+static uint32_t vPortGetPriorityMask(void)
 {
     return PRIORITY_TRANSLATE_GET(sys_icc_pmr_get());
 }
 
 /* Get current interrupt priority and translate, ICC_RPR, priority << portPRIORITY_SHIFT */
-uint32_t vPortGetCurrentPriority(void)
+static uint32_t vPortGetCurrentPriority(void)
 {
     return PRIORITY_TRANSLATE_GET(sys_icc_rpr_get());
 }
-
 
 
 uint32_t ulPortSetInterruptMask(void)

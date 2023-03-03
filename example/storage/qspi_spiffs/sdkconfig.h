@@ -3,7 +3,7 @@
 
 /* Freertos Configuration */
 
-#define CONFIG_TARGET_NAME "e2000q_freertos_a64"
+#define CONFIG_TARGET_NAME "e2000d_freertos_a64"
 /* end of Freertos Configuration */
 
 /* Standalone Setting */
@@ -24,8 +24,8 @@
 
 /* CONFIG_TARGET_F2000_4 is not set */
 /* CONFIG_TARGET_D2000 is not set */
-#define CONFIG_TARGET_E2000Q
-/* CONFIG_TARGET_E2000D is not set */
+/* CONFIG_TARGET_E2000Q is not set */
+#define CONFIG_TARGET_E2000D
 /* CONFIG_TARGET_E2000S is not set */
 #define CONFIG_TARGET_E2000
 #define CONFIG_DEFAULT_DEBUG_PRINT_UART1
@@ -216,7 +216,7 @@
 /* CONFIG_DEFAULT_LETTER_SHELL_USE_UART0 is not set */
 /* CONFIG_DEFAULT_LETTER_SHELL_USE_UART2 is not set */
 /* end of Letter Shell Configuration */
-/* CONFIG_USE_TLSF is not set */
+#define CONFIG_USE_TLSF
 /* CONFIG_USE_SDMMC_CMD is not set */
 /* CONFIG_USE_CHERRY_USB is not set */
 /* end of Third-Party Configuration */

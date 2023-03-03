@@ -28,7 +28,7 @@
 
 #include "sdkconfig.h"
 #ifndef SDK_CONFIG_H__
-    #warning "Please include sdkconfig.h"
+#warning "Please include sdkconfig.h"
 #endif
 #include <sfud.h>
 #include <stdarg.h>
@@ -40,12 +40,11 @@
 #include "semphr.h"
 
 #ifdef CONFIG_SFUD_CTRL_FSPIM
-    #include "fspim_sfud_core.h"
+#include "fspim_sfud_core.h"
 #endif
 #ifdef CONFIG_SFUD_CTRL_FQSPI
-    #include "fqspi_sfud_core.h"
+#include "fqspi_sfud_core.h"
 #endif
-
 
 static char log_buf[256];
 
@@ -105,20 +104,25 @@ sfud_err sfud_spi_port_init(sfud_flash *flash)
      *    flash->retry.delay = null;
      *    flash->retry.times = 10000; //Required
      */
-#ifdef CONFIG_SFUD_CTRL_FSPIM
-    result = FSpimProbe(flash);
-    if (result == SFUD_SUCCESS)
-    {
-        SFUD_INFO("FSpimProbe success flash.index=%d.", flash->index);
-        goto ret;
-    }
-#endif
 #ifdef CONFIG_SFUD_CTRL_FQSPI
-    result = FQspiProbe(flash);
-    if (result == SFUD_SUCCESS)
+    if (!memcmp(FQSPI0_SFUD_NAME, flash->spi.name, strlen(FQSPI0_SFUD_NAME)))
     {
-        SFUD_INFO("FQspiProbe success flash.index=%d.", flash->index);
-        goto ret;
+        result = FQspiProbe(flash);
+        if (result == SFUD_SUCCESS)
+        {
+            SFUD_INFO("FQspiProbe success flash.index=%d.", flash->index);
+            goto ret;
+        }
+    } else
+#endif
+#ifdef CONFIG_SFUD_CTRL_FSPIM
+    {
+        result = FSpimProbe(flash);
+        if (result == SFUD_SUCCESS)
+        {
+            SFUD_INFO("FSpimProbe success flash.index=%d.", flash->index);
+            goto ret;
+        }
     }
 #endif
     return SFUD_ERR_NOT_FOUND;
