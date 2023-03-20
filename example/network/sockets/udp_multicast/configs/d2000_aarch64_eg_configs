@@ -36,6 +36,7 @@ CONFIG_USE_CACHE=y
 CONFIG_USE_MMU=y
 CONFIG_USE_SYS_TICK=y
 # CONFIG_MMU_DEBUG_PRINTS is not set
+# CONFIG_BOOT_WITH_FLUSH_CACHE is not set
 # end of Arch Configuration
 
 #
@@ -94,6 +95,7 @@ CONFIG_FGMAC_PHY_COMMON=y
 # CONFIG_USE_PWM is not set
 # CONFIG_USE_IPC is not set
 # CONFIG_USE_MEDIA is not set
+# CONFIG_USE_SCMI_MHU is not set
 # end of Components Configuration
 
 CONFIG_USE_NEW_LIBC=y
@@ -112,6 +114,7 @@ CONFIG_USE_DEFAULT_INTERRUPT_CONFIG=y
 CONFIG_INTERRUPT_ROLE_MASTER=y
 # CONFIG_INTERRUPT_ROLE_SLAVE is not set
 # CONFIG_LOG_EXTRA_INFO is not set
+# CONFIG_LOG_DISPALY_CORE_NUM is not set
 # CONFIG_BOOTUP_DEBUG_PRINTS is not set
 
 #
@@ -240,8 +243,6 @@ CONFIG_USE_LWIP=y
 #
 # LWIP Freertos Port Configuration
 #
-# CONFIG_LWIP_FXMAC is not set
-CONFIG_LWIP_FGMAC=y
 
 #
 # LWIP Configuration
@@ -250,7 +251,8 @@ CONFIG_LWIP_FGMAC=y
 #
 # LWIP Port Configuration
 #
-# CONFIG_LWIP_PORT_DEBUG_EN is not set
+# CONFIG_LWIP_FXMAC is not set
+CONFIG_LWIP_FGMAC=y
 # end of LWIP Port Configuration
 
 # CONFIG_LWIP_NO_SYS is not set
@@ -261,6 +263,7 @@ CONFIG_LWIP_LOCAL_HOSTNAME="phytium"
 #
 # CONFIG_LWIP_USE_MEM_POOL is not set
 CONFIG_LWIP_USE_MEM_HEAP=y
+# CONFIG_LWIP_USE_MEM_HEAP_DEBUG is not set
 CONFIG_MEM_SIZE=2
 CONFIG_MEM_ALIGNMENT=64
 # end of Memory configuration

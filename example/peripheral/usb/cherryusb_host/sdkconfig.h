@@ -3,7 +3,7 @@
 
 /* Freertos Configuration */
 
-#define CONFIG_TARGET_NAME "e2000d_freertos_a32"
+#define CONFIG_TARGET_NAME "e2000s_freertos_a64"
 /* end of Freertos Configuration */
 
 /* Standalone Setting */
@@ -12,12 +12,13 @@
 
 /* Arch Configuration */
 
-#define CONFIG_TARGET_ARMV8_AARCH32
-/* CONFIG_TARGET_ARMV8_AARCH64 is not set */
+/* CONFIG_TARGET_ARMV8_AARCH32 is not set */
+#define CONFIG_TARGET_ARMV8_AARCH64
 #define CONFIG_USE_CACHE
 #define CONFIG_USE_MMU
 #define CONFIG_USE_SYS_TICK
-#define CONFIG_USE_AARCH64_L1_TO_AARCH32
+/* CONFIG_MMU_DEBUG_PRINTS is not set */
+/* CONFIG_BOOT_WITH_FLUSH_CACHE is not set */
 /* end of Arch Configuration */
 
 /* Board Configuration */
@@ -25,8 +26,8 @@
 /* CONFIG_TARGET_F2000_4 is not set */
 /* CONFIG_TARGET_D2000 is not set */
 /* CONFIG_TARGET_E2000Q is not set */
-#define CONFIG_TARGET_E2000D
-/* CONFIG_TARGET_E2000S is not set */
+/* CONFIG_TARGET_E2000D is not set */
+#define CONFIG_TARGET_E2000S
 #define CONFIG_TARGET_E2000
 #define CONFIG_DEFAULT_DEBUG_PRINT_UART1
 /* CONFIG_DEFAULT_DEBUG_PRINT_UART0 is not set */
@@ -53,27 +54,18 @@
 /* CONFIG_USE_TIMER is not set */
 /* CONFIG_USE_MIO is not set */
 /* CONFIG_USE_SDMMC is not set */
-#define CONFIG_USE_PCIE
-
-/* Pcie Configuration */
-
-#define CONFIG_ENABLE_F_PCIE
-/* end of Pcie Configuration */
+/* CONFIG_USE_PCIE is not set */
 /* CONFIG_USE_WDT is not set */
 /* CONFIG_USE_DMA is not set */
 /* CONFIG_USE_NAND is not set */
 /* CONFIG_USE_RTC is not set */
-#define CONFIG_USE_SATA
-
-/* FSATA Configuration */
-
-#define CONFIG_ENABLE_FSATA
-/* end of FSATA Configuration */
+/* CONFIG_USE_SATA is not set */
 /* CONFIG_USE_USB is not set */
 /* CONFIG_USE_ADC is not set */
 /* CONFIG_USE_PWM is not set */
 /* CONFIG_USE_IPC is not set */
 /* CONFIG_USE_MEDIA is not set */
+/* CONFIG_USE_SCMI_MHU is not set */
 /* end of Components Configuration */
 #define CONFIG_USE_NEW_LIBC
 /* end of Standalone Setting */
@@ -81,21 +73,22 @@
 /* Building Option */
 
 /* CONFIG_LOG_VERBOS is not set */
-/* CONFIG_LOG_DEBUG is not set */
+#define CONFIG_LOG_DEBUG
 /* CONFIG_LOG_INFO is not set */
 /* CONFIG_LOG_WARN is not set */
-#define CONFIG_LOG_ERROR
+/* CONFIG_LOG_ERROR is not set */
 /* CONFIG_LOG_NONE is not set */
 #define CONFIG_USE_DEFAULT_INTERRUPT_CONFIG
 #define CONFIG_INTERRUPT_ROLE_MASTER
 /* CONFIG_INTERRUPT_ROLE_SLAVE is not set */
 #define CONFIG_LOG_EXTRA_INFO
+/* CONFIG_LOG_DISPALY_CORE_NUM is not set */
 /* CONFIG_BOOTUP_DEBUG_PRINTS is not set */
 
 /* Linker Options */
 
-#define CONFIG_AARCH32_RAM_LD
-/* CONFIG_AARCH64_RAM_LD is not set */
+/* CONFIG_AARCH32_RAM_LD is not set */
+#define CONFIG_AARCH64_RAM_LD
 /* CONFIG_USER_DEFINED_LD is not set */
 #define CONFIG_LINK_SCRIPT_ROM
 #define CONFIG_ROM_START_UP_ADDR 0x80100000
@@ -104,12 +97,8 @@
 #define CONFIG_RAM_START_UP_ADDR 0x81000000
 #define CONFIG_RAM_SIZE_MB 64
 #define CONFIG_HEAP_SIZE 1
-#define CONFIG_SVC_STACK_SIZE 0x1000
-#define CONFIG_SYS_STACK_SIZE 0x1000
-#define CONFIG_IRQ_STACK_SIZE 0x1000
-#define CONFIG_ABORT_STACK_SIZE 0x1000
-#define CONFIG_FIQ_STACK_SIZE 0x1000
-#define CONFIG_UNDEF_STACK_SIZE 0x1000
+#define CONFIG_STACK_SIZE 0x100000
+#define CONFIG_FPU_STACK_SIZE 0x1000
 /* end of Linker Options */
 
 /* Compiler Options */
@@ -198,40 +187,7 @@
 
 /* CONFIG_USE_LWIP is not set */
 #define CONFIG_USE_BACKTRACE
-#define CONFIG_USE_FATFS_0_1_4
-
-/* FATFS Configuration (0.1.4) */
-
-#define CONFIG_FATFS_RAM_DISK
-
-/* RAM Disk Configuration */
-
-#define CONFIG_FATFS_RAM_DISK_BASE 0xa0000000
-#define CONFIG_FATFS_RAM_DISK_SIZE_MB 500
-#define CONFIG_FATFS_RAM_DISK_SECTOR_SIZE_BYTE 512
-/* end of RAM Disk Configuration */
-/* CONFIG_FATFS_SDMMC_FSDIO_TF is not set */
-/* CONFIG_FATFS_SDMMC_FSDIO_EMMC is not set */
-/* CONFIG_FATFS_SDMMC_FSDMMC_TF is not set */
-#define CONFIG_FATFS_SATA_DISK
-
-/* SATA Disk Configuration */
-
-/* CONFIG_FATFS_FSATA is not set */
-#define CONFIG_FATFS_FSATA_PCIE
-/* end of SATA Disk Configuration */
-/* CONFIG_FATFS_USB is not set */
-#define CONFIG_FATFS_VOLUME_COUNT 6
-/* CONFIG_FATFS_LFN_NONE is not set */
-#define CONFIG_FATFS_LFN_HEAP
-/* CONFIG_FATFS_LFN_STACK is not set */
-#define CONFIG_FATFS_MAX_LFN 255
-#define CONFIG_FATFS_FS_LOCK 0
-#define CONFIG_FATFS_TIMEOUT_MS 10000
-#define CONFIG_FATFS_PER_FILE_CACHE
-#define CONFIG_FATFS_ALLOC_PREFER_MEMP
-#define CONFIG_FATFS_MEMP_SIZE 2
-/* end of FATFS Configuration (0.1.4) */
+/* CONFIG_USE_FATFS_0_1_4 is not set */
 /* CONFIG_USE_SFUD is not set */
 /* CONFIG_USE_SPIFFS is not set */
 /* CONFIG_USE_AMP is not set */

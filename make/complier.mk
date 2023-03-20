@@ -1,15 +1,3 @@
-# Copyright (C) ARM Limited, 2014-2016. All rights reserved.
-#
-# This example is intended to be built with Linaro bare-metal GCC
-#
-# Environment variables for build options that the user might wish to change
-#
-# Variable     Example Value
-# ----------   -------------
-# APP          myapp.axf
-# QUIET        @ for terse output, or leave blank for detailed output
-# OPT_LEVEL    0, 1, 2 or 3
-# DEFINES      -D MYDEFINE
 
 APP ?= $(CONFIG_TARGET_NAME)
 

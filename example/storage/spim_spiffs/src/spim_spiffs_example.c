@@ -64,7 +64,7 @@ enum
 #define FSPIFFS_DEBUG(format, ...)   FT_DEBUG_PRINT_D(FSPIFFS_DEBUG_TAG, format, ##__VA_ARGS__)
 
 /* spiffs start address and size */ 
-#define FSPIFFS_START_ADDR		(1 * SZ_1M)
+#define FSPIFFS_START_ADDR		(0 * SZ_1M)
 #define FSPIFFS_USE_SIZE		SZ_1M	
 
 #define FSPIFFS_RW_BUF_SIZE     64
@@ -518,13 +518,6 @@ BaseType_t FFreeRTOSSpimSpiffsCreate(u32 spim_id)/* 主要任务函数 */
                             (void* )(uintptr)spim_id,/* 任务入口函数参数 */
                             (UBaseType_t )1, /* 任务的优先级 */
                             NULL); /* 任务控制 */
-
-	xReturn = xTaskCreate((TaskFunction_t )FFreeRTOSSpimSpiffsReadTask, /* 任务入口函数 */
-                            (const char* )"FFreeRTOSSpimSpiffsReadTask",/* 任务名字 */
-                            (uint16_t )4096, /* 任务栈大小 */
-                            (void* )xString1,/* 任务入口函数参数 */
-                            (UBaseType_t )configMAX_PRIORITIES-1, /* 任务的优先级 */
-                            (TaskHandle_t* )&spim_read1_handle); /* 任务控制 */
 
     xReturn = xTaskCreate((TaskFunction_t )FFreeRTOSSpimSpiffsReadTask, /* 任务入口函数 */
                             (const char* )"FFreeRTOSSpimSpiffsReadTask",/* 任务名字 */

@@ -20,7 +20,6 @@
  *  Ver   Who       Date        Changes
  * ----- ------     --------    --------------------------------------
  * 1.0 wangxiaodong 2022/08/09  first commit
- * 1.1 wangxiaodong 2023/02/25  add nested interrupt test
  */
 #include "shell.h"
 #include <string.h>
@@ -32,7 +31,6 @@ typedef enum
     BINARY_SEM_TASK_INDEX = 0,
     COUNT_SEM_TASK_INDEX = 1,
     QUEUE_TASK_INDEX = 2,
-    NEST_TASK_INDEX = 3,
 
     INTR_FEATURE_LENGTH
 } FreeRtosIntrFeatureSelect;
@@ -52,10 +50,6 @@ static void CreateIntrCmdUsage(void)
     printf("    -- Create queue tasks now.\r\n");
     printf(" intr queue_del \r\n");
     printf("    -- Del queue tasks now.\r\n");
-    printf(" intr nest_cre \r\n");
-    printf("    -- Create nest tasks now.\r\n");
-    printf(" intr nest_del \r\n");
-    printf("    -- Del nest tasks now.\r\n");
 }
 
 int CreateIntrCmd(int argc, char *argv[])
@@ -138,30 +132,6 @@ int CreateIntrCmd(int argc, char *argv[])
         else
         {
             printf("Please use queue_cre cmd first. \r\n");
-        }
-    }
-    else if (!strcmp(argv[1], "nest_cre"))
-    {
-        if (create_flg[NEST_TASK_INDEX]  == 0)
-        {
-            CreateNestedTasks();
-            create_flg[NEST_TASK_INDEX] = 1;
-        }
-        else
-        {
-            printf("Please use nest_del cmd first. \r\n");
-        }
-    }
-    else if (!strcmp(argv[1], "nest_del"))
-    {
-        if (create_flg[NEST_TASK_INDEX]  == 1)
-        {
-            DeleteNestedTasks();
-            create_flg[NEST_TASK_INDEX]  = 0;
-        }
-        else
-        {
-            printf("Please use nest_cre cmd first. \r\n");
         }
     }
     else

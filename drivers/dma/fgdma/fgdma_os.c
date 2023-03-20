@@ -83,22 +83,23 @@ static void FGdmaOsSetupInterrupt(FGdma *const ctrl)
     FGdmaConfig *config = &ctrl->config;
     uintptr base_addr = config->base_addr;
     u32 cpu_id = 0;
-
+    int irq_id = (int)config->irq_num;
     GetCpuId(&cpu_id);
-    FGDMA_INFO("cpu_id is cpu_id %d", cpu_id);
-    FGDMA_INFO("interrupt_id is %d", config->irq_num);
-    InterruptSetTargetCpus(config->irq_num, cpu_id);
 
-    InterruptSetPriority(config->irq_num, config->irq_prority);
+    FGDMA_INFO("cpu_id is cpu_id %d", cpu_id);
+    FGDMA_INFO("interrupt_id is %d", irq_id);
+    InterruptSetTargetCpus(irq_id, cpu_id);
+
+    InterruptSetPriority(irq_id, config->irq_prority);
 
     /* register intr callback */
-    InterruptInstall(config->irq_num,
+    InterruptInstall(irq_id,
                      FGdmaIrqHandler,
                      ctrl,
                      NULL);
 
     /* enable gdma irq */
-    InterruptUmask(config->irq_num);
+    InterruptUmask(irq_id);
 
     FGDMA_INFO("gdma interrupt setup done!!!");
     return;

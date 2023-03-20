@@ -342,10 +342,8 @@ BaseType_t xPortStartScheduler(void)
         /* Only continue if the binary point value is set to its lowest possible
         setting.  See the comments in vPortValidateInterruptPriority() below for
         more information. */
-        // configASSERT((portICCBPR_BINARY_POINT_REGISTER & portBINARY_POINT_BITS) <= portMAX_BINARY_POINT_VALUE);
         configASSERT((FGicGetICC_BPR1() & portBINARY_POINT_BITS) <= portMAX_BINARY_POINT_VALUE);
 
-        // if ((portICCBPR_BINARY_POINT_REGISTER & portBINARY_POINT_BITS) <= portMAX_BINARY_POINT_VALUE)
         if ((FGicGetICC_BPR1() & portBINARY_POINT_BITS) <= portMAX_BINARY_POINT_VALUE)
         {
             /* Interrupts are turned off in the CPU itself to ensure a tick does
@@ -417,6 +415,7 @@ void vPortExitCritical(void)
 
 void FreeRTOS_Tick_Handler(void)
 {
+
     /* Interrupts should not be enabled before this point. */
 #if (configASSERT_DEFINED == 1)
     {
@@ -564,3 +563,10 @@ _WEAK void vApplicationTickHook(void)
 _WEAK void vApplicationIdleHook(void)
 {
 }
+
+void vTaskSwitchSPx(void)
+{
+    printf("Switch task in interrupt is error.");
+    configASSERT(0);
+}
+

@@ -1,20 +1,61 @@
+# Phytium FreeRTOS SDK 2023-3-16 ChangeLog
+
+Change Log sinc 2023-3-15
+
+## example
+
+- update sdkconfig about lwipstartup and udp_multicast
+
+## driver
+
+- convert data type of config->irqnum from u32 to int
+
+## third-party
+
+- delete redundant config in lwip-2.1.2/kconfig
+
+# Phytium FreeRTOS SDK 2023-3-15 ChangeLog
+
+Change Log sinc 2023-3-6
+
+## example
+
+- Add exception debug example
+- Move amp and nested intr example to system folder
+
+## make
+
+- Remove Copyright in complier.mk
+
+## third-party
+
+- Add aarch64 Serror exception vector and handler function
+
+# Phytium FreeRTOS SDK 2023-3-9 ChangeLog
+
+Change Log sinc 2023-3-2
+
+## example
+
+Adapt OpenAMP routines based on e2000D/Q
+
 # Phytium FreeRTOS SDK 2023-3-2 ChangeLog
 
 Change Log sinc 2023-2-27
 
 ## driver
 
-- eth/xmac delete conditional compilation statements about NO_SYS 
+- eth/xmac delete conditional compilation statements about NO_SYS
 
 ## example
 
-- modify network/lwip_startup configs and sdkconfig 
+- modify network/lwip_startup configs and sdkconfig
 
 ## third-party
 
-- lwip-2.1.2/ports/* delete conditional compilation statements about NO_SYS 
+- lwip-2.1.2/ports/* delete conditional compilation statements about NO_SYS
 - lwip-2.1.2/ports/fgmac ethernetif_init function name modified
-- update lwip-2.1.2/kconfig 
+- update lwip-2.1.2/kconfig
 
 # Phytium FreeRTOS SDK 2023-3-1 ChangeLog
 
@@ -31,27 +72,34 @@ Change Log sinc 2023-2-23
 # Phytium FreeRTOS SDK 2023-2-20 ChangeLog
 
 Change Log sinc 2023-2-16
-## example 
+
+## example
+
 - add spim_spiffs example
+
 ## third-party
+
 - modify sfud and delete repetitive code
 
 # Phytium FreeRTOS SDK 2023-2-10 ChangeLog
 
 Change Log sinc 2023-2-8
 
-## example 
+## example
+
 - modify configs of cherryusb_host
 
 ## third-party
+
 - update cherryusb from v0.6.0 to v0.7.0
 - modify Kconfig and makefile files
-  
+
 # Phytium FreeRTOS SDK 2023-2-9 0.4.0 ChangeLog
 
 Change Log sinc 2023-2-6
 
-## example 
+## example
+
 - freertos_feature/queue readme update
 - peripheral/spi readme update
 - peripheral/spi e2000d_aarch32_eg_configs update(CONFIG_SFUD_CTRL_FSPIM=y)
@@ -60,11 +108,13 @@ Change Log sinc 2023-2-6
 
 Change Log sinc 2023-2-5
 
-## example 
+## example
+
 - modify qspi_spiffs example
 - modify qspi example
 
 ## driver
+
 - modify can example
 
 # Phytium FreeRTOS SDK 2023-2-6 ChangeLog
@@ -72,29 +122,37 @@ Change Log sinc 2023-2-5
 Change Log sinc 2023-1-30
 
 ## driver
+
 - add developer information in file header
 - add file description in file header
 - all .c .h file format update
-- print interface check 
+- print interface check
 - print statement syntax checking and punctuation supplementation
-## example 
+
+## example
+
 - all example xxxx_eg_configs update
 - all example sdkconfig sdkconfig.h update
 - add developer information in file header
 - add file description in file header
 - all .c .h file format update
-- print interface check 
+- print interface check
 - print statement syntax checking and punctuation supplementation
+
 ## third-party
+
 - add developer information in file header
 - add file description in file header
 - all .c .h file format update
 - third-party/lwip-2.1.2/ports/arch/cc.h modified
-- print interface check 
+- print interface check
 - print statement syntax checking and punctuation supplementation
+
 ## install.py
+
 - modefiy the standalone_sdk_v、standalone_branche、standalone_remote value
 - add script statements which can delete standalone/third-party/lwip-2.1.2/ports/arch dir
+
 # Phytium FreeRTOS SDK 2023-1-6 ChangeLog
 
 Change Log sinc 2023-1-5
@@ -103,7 +161,8 @@ Change Log sinc 2023-1-5
 
 add lvgl and modify the third-party.mk and the Kconfig
 
-## example 
+## example
+
 ## driver
 
 add the media example and driver,modify the corresponding config
@@ -113,17 +172,20 @@ add the media example and driver,modify the corresponding config
 Change Log sinc 2023-1-3
 
 ## example
+
 - network part adjust. add new example lwip_startup
 - delete xmac_lwip_test.
 - delete gmac_lwip_test.
 
 ## third-party
+
 - lwip-2.1.2 ports part adjust.
 - delete lwip-2.1.2/api.
 - delete lwip-2.1.2/apps.
 - delete lwip-2.1.2/core.
 
 ## drivers
+
 - add fgmac_os.
 - add fxmac_os.
 
@@ -154,9 +216,10 @@ Change Log sinc 2022-12-6
 Change Log sinc 2022-12-6
 
 ## example
+
 ## driver
 
-- Adapt fparameters.h in standalone sdk 
+- Adapt fparameters.h in standalone sdk
 
 # Phytium FreeRTOS SDK 2022-11-28 ChangeLog
 
@@ -212,12 +275,11 @@ Change Log sinc 2022-11-11
 - remove e2000q adc support
 - modify some README.md description
 
-
 # Phytium FreeRTOS SDK 2022-11-01 ChangeLog
 
 Change Log sinc 2022-11-1
 
-## driver 
+## driver
 
 - add USE_SPI slection in Kconfig
 
@@ -227,7 +289,7 @@ Change Log sinc 2022-11-1
 
 ## third-party
 
-- sfud debug 
+- sfud debug
 - add spiffs port for spim
 
 # Phytium Standalone SDK 2022-10-31 ChangeLog
@@ -243,6 +305,7 @@ Change Log sinc 2022-10-15
 ## example
 
 - add e2000q example
+
 ## third-party
 
 - Adapt fatfs to e2000 demo board for sata
@@ -265,7 +328,7 @@ Change Log sinc 2022-09-23
 
 Change Log sinc 2022-09-15
 
-## driver 
+## driver
 
 - add can os driver
 
@@ -277,7 +340,7 @@ Change Log sinc 2022-09-15
 
 Change Log sinc 2022-08-30
 
-## driver 
+## driver
 
 - optimize qspi os driver adapt to sfud and spiffs
 
@@ -294,7 +357,7 @@ Change Log sinc 2022-08-30
 
 Change Log sinc 2022-08-24
 
-## driver 
+## driver
 
 - add adc driver
 
@@ -304,7 +367,7 @@ Change Log sinc 2022-08-24
 
 # Phytium FreeRTOS SDK 2022-08-10 0.2.2 ChangeLog
 
-Change Log sinc 0.2.1 
+Change Log sinc 0.2.1
 
 ## driver
 
@@ -329,7 +392,7 @@ Change Log sinc 0.2.1
 
 Change Log sinc 2022-08-16
 
-## driver 
+## driver
 
 - add pwm driver
 
@@ -339,7 +402,7 @@ Change Log sinc 2022-08-16
 
 # Phytium FreeRTOS SDK 2022-08-10 0.2.1 ChangeLog
 
-Change Log sinc 0.2.0 
+Change Log sinc 0.2.0
 
 ## README
 
@@ -349,7 +412,7 @@ Change Log sinc 0.2.0
 
 Change Log sinc 2022-07-29
 
-## driver 
+## driver
 
 - modify wdt driver
 
@@ -367,7 +430,7 @@ Change Log sinc 2022-07-29
 
 Change Log sinc 2022-07-14
 
-# driver 
+# driver
 
 - add fxmac driver
 
@@ -383,25 +446,24 @@ Change Log sinc 2022-07-14
 
 Change Log sinc 2022-07-18
 
-# driver 
+# driver
 
 - modify wdt freertos driver
 
 ## third-party
 
-- support qspi spiffs 
-- support sata fatfs 
+- support qspi spiffs
+- support sata fatfs
 
 ## example
 
 - add usage example for qspi spiffs and sata fatfs
 
-
 # Phytium FreeRTOS SDK 2022-07-14 ChangeLog
 
 Change Log sinc 2022-07-06
 
-# driver 
+# driver
 
 - add qspi read and write freertos driver
 - add wdt freertos driver
@@ -409,7 +471,6 @@ Change Log sinc 2022-07-06
 ## example
 
 - add usage example for qspi and wdt freertos driver
-
 
 # Phytium FreeRTOS SDK 2022-07-05 ChangeLog
 
@@ -426,7 +487,6 @@ Change Log sinc 2022-05-30
 ## example
 
 - adapt to the new standalone sdk v0.2.0
-
 - Restruct lwip_test example
 
 ## third-party
@@ -440,13 +500,11 @@ Change Log sinc 2022-03-21,2022-04-20
 ## example
 
 - adapt to the new standalone sdk v0.1.17
-
 - add Linux OpenAMP example for freertos
 
 ## make
 
 - Modified some variable positions and added some configuration related variables
-
 
 # Phytium FreeRTOS SDK 2022-03-21 ChangeLog
 
@@ -455,7 +513,6 @@ Change Log sinc 0.0.6, 2022.03.21
 ## example
 
 - adapt to the new standalone sdk v0.1.16
-
 - add OpenAMP for FreeRTOS
 
 ## third-party
@@ -467,8 +524,6 @@ Change Log sinc 0.0.6, 2022.03.21
 
 - replace LICENSE with Phytium Public License 1.0 (PPL-1.0)
 - update file COPYRIGHT declaration with PPL-1.0
-
-
 
 # Phytium FreeRTOS SDK v0.0.6 ChangeLog
 
@@ -496,7 +551,7 @@ Change Log sinc 0.0.3, 2021.9.24
 
 - add aarch32 example
 - add aarch64 example
-- add lwip_test example 
+- add lwip_test example
 
 ## third-party
 
@@ -516,15 +571,15 @@ Change Log sinc init
 
 - add aarch32 example
 - add aarch64 example
-- add qemu-aarch32 example 
+- add qemu-aarch32 example
 
 ## make
 
 - import makefile scripts
+
 ## scripts
 
 - add arm-linux cc install script for qemu
-
 
 ## third-party
 

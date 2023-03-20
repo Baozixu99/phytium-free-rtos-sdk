@@ -211,17 +211,6 @@ header file. */
         vClearTickInterrupt(); \
     }while (0)
 
-
-#ifdef CONFIG_TARGET_ARMV8_AARCH32
-    #define FreeRTOS_IRQ_Handler IRQHandler
-    #define FreeRTOS_SWI_Handler SWIHandler
-#endif
-
-#ifdef CONFIG_TARGET_ARMV8_AARCH64
-    #define FreeRTOS_IRQ_Handler IRQInterruptHandler
-    #define FreeRTOS_SWI_Handler SynchronousInterruptHandler
-#endif
-
 /* The following constant describe the hardware, and are correct for the
 QEMU-Virt. */
 #define configINTERRUPT_CONTROLLER_BASE_ADDRESS (GICV3_DISTRIBUTOR_BASE_ADDR)

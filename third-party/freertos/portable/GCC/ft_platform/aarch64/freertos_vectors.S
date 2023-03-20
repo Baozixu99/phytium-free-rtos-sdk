@@ -1,5 +1,8 @@
-.globl _freertos_vector_table
-.globl SErrorInterruptHandler
+.global _freertos_vector_table
+.global vSynchronousInterruptHandler
+.global vSynchronousInterruptHandlerSPx
+.global vSErrorInterruptHandler
+.global FreeRTOS_IRQ_Handler
 
 
 .section .freertos_vectors, "a"
@@ -10,7 +13,7 @@ _freertos_vector_table:
 .align 11 /* VBAR_EL1 Vector Base Address is [55:48]  */
 .org(FREERTOS_VBAR)
 
-	b	FreeRTOS_SWI_Handler
+	b	vSynchronousInterruptHandler
 
 .org (FREERTOS_VBAR + 0x80)
 	b	FreeRTOS_IRQ_Handler
@@ -19,10 +22,10 @@ _freertos_vector_table:
 	b	.
 
 .org (FREERTOS_VBAR + 0x180)
-	b	.
+	b	vSErrorInterruptHandler
 
 .org (FREERTOS_VBAR + 0x200)
-	b	FreeRTOS_SWI_Handler
+	b	vSynchronousInterruptHandlerSPx
 
 .org (FREERTOS_VBAR + 0x280)
 	b	FreeRTOS_IRQ_Handler
@@ -31,7 +34,7 @@ _freertos_vector_table:
 	b	.
 
 .org (FREERTOS_VBAR + 0x380)
-	b	SErrorInterruptHandler		/* SError/vSError */
+	b	vSErrorInterruptHandler		/* SError/vSError */
 
 .org (FREERTOS_VBAR + 0x400)
 	b	.
@@ -58,8 +61,3 @@ _freertos_vector_table:
 	b	.
 
 .org (FREERTOS_VBAR + 0x800)
-
-
-
-
-.end

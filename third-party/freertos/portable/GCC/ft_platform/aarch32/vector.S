@@ -5,6 +5,7 @@
 .globl DataAbortInterruptHandler
 .globl PrefetchAbortInterruptHandler
 .globl UndefineInterruptHandler
+.globl FIQHandler
 
 
 .set EXCEPTION_FRAME_SIZE, (17*4)
@@ -15,14 +16,12 @@
 _vector_table:
     B	_boot
 	B	Undefined
-	B	SWIHandler
+	B	FreeRTOS_SWI_Handler
 	B	PrefetchAbortHandler
 	B	DataAbortHandler
 	NOP	/* Placeholder for address exception vector*/
-	B	IRQHandler
-	B	FiqHandler
-
-
+	B	FreeRTOS_IRQ_Handler
+	B	FIQHandler
 
 
 .macro PushExceptionReg
@@ -37,26 +36,6 @@ _vector_table:
     str     lr, [r0, #14*4]         /* Save calling PC                 */
 .endm
 
-
-
-.align 4
-.arm
-.weak IRQHandler
-.type IRQHandler, %function
-@.global IRQHandler
-IRQHandler: /* 0x18 IRQ */
-    bl IRQHandler
-    bl .
-
-
-.align 4
-.arm
-.weak SWIHandler
-.type SWIHandler, %function
-@.global SWIHandler
-SWIHandler: /* 0x18 IRQ */
-    bl SWIHandler
-    bl .
 
 Undefined:  /* Undefined handler */
     PushExceptionReg
@@ -74,7 +53,7 @@ DataAbortHandler:
     bl DataAbortInterruptHandler
     bl .
 
-FiqHandler:					/* FIQ vector handler */
+FIQHandler:					/* FIQ vector handler */
     PushExceptionReg
     bl FiqInterruptHandler
     bl .

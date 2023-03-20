@@ -42,13 +42,42 @@
 	.extern ullPortYieldRequired
 	.extern ullICCEOIR
 	.extern ullICCIAR
-	.extern _vector_table
 
 	.global FreeRTOS_IRQ_Handler
-	.global FreeRTOS_SWI_Handler
+	.global vSynchronousInterruptHandler
+	.global vSynchronousInterruptHandlerSPx
+	.global vSErrorInterruptHandler
 	.global vPortRestoreTaskContext
 
 
+.macro SaveRegister
+	stp	X0,X1, [sp,#-0x10]!
+	stp	X2,X3, [sp,#-0x10]!
+	stp	X4,X5, [sp,#-0x10]!
+	stp	X6,X7, [sp,#-0x10]!
+	stp	X8,X9, [sp,#-0x10]!
+	stp	X10,X11, [sp,#-0x10]!
+	stp	X12,X13, [sp,#-0x10]!
+	stp	X14,X15, [sp,#-0x10]!
+	stp	X16,X17, [sp,#-0x10]!
+	stp X18,X19, [sp,#-0x10]!
+	stp X29,X30, [sp,#-0x10]!
+.endm
+
+
+.macro RestoreRegister
+	ldp X29,X30, [sp], #0x10
+	ldp X18,X19, [sp], #0x10
+	ldp	X16,X17, [sp], #0x10
+	ldp	X14,X15, [sp], #0x10
+	ldp	X12,X13, [sp], #0x10
+	ldp	X10,X11, [sp], #0x10
+	ldp	X8,X9, [sp], #0x10
+	ldp	X6,X7, [sp], #0x10
+	ldp	X4,X5, [sp], #0x10
+	ldp	X2,X3, [sp], #0x10
+	ldp	X0,X1, [sp], #0x10
+.endm
 
 
 .macro portSAVE_CONTEXT
@@ -128,8 +157,6 @@
 	.endm
 
 ; /**********************************************************************/
-
-
 
 
 .macro portRESTORE_CONTEXT
@@ -225,13 +252,18 @@
 
 
 /******************************************************************************
- * FreeRTOS_SWI_Handler handler is used to perform a context switch.
+ * vSynchronousInterruptHandler is used to perform a context switch or synchronous exception handler.
  *****************************************************************************/
 .align 8
-.type FreeRTOS_SWI_Handler, %function
-FreeRTOS_SWI_Handler:
+.type vSynchronousInterruptHandler, %function
+vSynchronousInterruptHandler:
+
+	/* store value */
+	STP		X0, X1, [SP, #-0x10]!
+	
 	/* Save the context of the current task and select a new task to run. */
 	portSAVE_CONTEXT
+
 #if defined( GUEST )
 	MRS		X0, ESR_EL1
 #else
@@ -245,14 +277,95 @@ FreeRTOS_SWI_Handler:
 #else
 	CMP		X1, #0x17 	/* 0x17 = SMC instruction. */
 #endif
-	B.NE	FreeRTOS_Abort
+
+	B.NE	vSynchronousHandler
+
+	LDP		X0, X1, [SP], #0x10
+
 	BL 		vTaskSwitchContext
 
 	portRESTORE_CONTEXT
 
-FreeRTOS_Abort:
+vSynchronousHandler:
+
+	/* Restore the value. */
+	LDP		X0, X1, [SP], #0x10
+
+	SaveRegister
+	
+	mrs 	x0, CPACR_EL1
+	mrs 	x1, ELR_EL1
+	mrs		x2, SPSR_EL1
+	stp	    x0, x1, [sp,#-0x10]!
+	mov		x21, sp 	
+	add		x21, x21, #208
+	stp		x2,x21, [sp,#-0x10]!
+	mov 	x0, sp
+	
 	/* Full ESR is in X0, exception class code is in X1. */
-	B		.
+	BL	SynchronousInterrupt
+
+.align 8
+.type vSynchronousInterruptHandlerSPx, %function
+vSynchronousInterruptHandlerSPx:
+	/* Save register. */
+	SaveRegister
+#if defined( GUEST )
+	MRS		X0, ESR_EL1
+#else
+	MRS		X0, ESR_EL3
+#endif
+
+	LSR		X1, X0, #26
+
+#if defined( GUEST )
+	CMP		X1, #0x15 	/* 0x15 = SVC instruction. */
+#else
+	CMP		X1, #0x17 	/* 0x17 = SMC instruction. */
+#endif
+	B.NE	vSynchronousHandlerSPx
+	BL 		vTaskSwitchSPx
+
+	RestoreRegister
+
+vSynchronousHandlerSPx:
+
+	mrs 	x0, CPACR_EL1
+	mrs 	x1, ELR_EL1
+	mrs		x2, SPSR_EL1
+	stp	    x0, x1, [sp,#-0x10]!
+	mov		x21, sp 	
+	add		x21, x21, #208
+	stp		x2,x21, [sp,#-0x10]!
+	mov 	x0, sp
+	
+	/* Full ESR is in X0, exception class code is in X1. */
+	BL	SynchronousInterrupt
+
+
+vSErrorInterruptHandler:
+
+	SaveRegister
+
+	/* Save the status of SPSR, ELR and CPTR to stack */
+	mrs 	x0, CPACR_EL1
+	mrs 	x1, ELR_EL1
+	mrs		x2, SPSR_EL1
+	stp	    x0, x1, [sp,#-0x10]!
+	mov		x21, sp 	
+	add		x21, x21, #208
+	stp		x21,x21, [sp,#-0x10]!
+	mov 	x0, sp
+
+	mov 	x0, sp
+
+    bl  SErrorInterrupt
+
+	RestoreRegister
+
+	ERET
+
+
 
 /******************************************************************************
  * vPortRestoreTaskContext is used to start the scheduler.
@@ -274,7 +387,6 @@ vPortRestoreTaskContext:
 
 	/* Start the first task. */
 	portRESTORE_CONTEXT
-
 
 /******************************************************************************
  * FreeRTOS_IRQ_Handler handles IRQ entry and exit.

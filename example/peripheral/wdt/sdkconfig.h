@@ -18,6 +18,7 @@
 #define CONFIG_USE_MMU
 #define CONFIG_USE_SYS_TICK
 /* CONFIG_MMU_DEBUG_PRINTS is not set */
+/* CONFIG_BOOT_WITH_FLUSH_CACHE is not set */
 /* end of Arch Configuration */
 
 /* Board Configuration */
@@ -68,6 +69,7 @@
 /* CONFIG_USE_PWM is not set */
 /* CONFIG_USE_IPC is not set */
 /* CONFIG_USE_MEDIA is not set */
+/* CONFIG_USE_SCMI_MHU is not set */
 /* end of Components Configuration */
 #define CONFIG_USE_NEW_LIBC
 /* end of Standalone Setting */
@@ -84,6 +86,7 @@
 #define CONFIG_INTERRUPT_ROLE_MASTER
 /* CONFIG_INTERRUPT_ROLE_SLAVE is not set */
 /* CONFIG_LOG_EXTRA_INFO is not set */
+/* CONFIG_LOG_DISPALY_CORE_NUM is not set */
 /* CONFIG_BOOTUP_DEBUG_PRINTS is not set */
 
 /* Linker Options */

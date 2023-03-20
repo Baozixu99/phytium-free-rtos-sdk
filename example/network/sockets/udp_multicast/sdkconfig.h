@@ -41,6 +41,7 @@
 #define CONFIG_USE_MMU
 #define CONFIG_USE_SYS_TICK
 /* CONFIG_MMU_DEBUG_PRINTS is not set */
+/* CONFIG_BOOT_WITH_FLUSH_CACHE is not set */
 /* end of Arch Configuration */
 
 /* Board Configuration */
@@ -94,6 +95,7 @@
 /* CONFIG_USE_PWM is not set */
 /* CONFIG_USE_IPC is not set */
 /* CONFIG_USE_MEDIA is not set */
+/* CONFIG_USE_SCMI_MHU is not set */
 /* end of Components Configuration */
 #define CONFIG_USE_NEW_LIBC
 /* end of Standalone Setting */
@@ -110,6 +112,7 @@
 #define CONFIG_INTERRUPT_ROLE_MASTER
 /* CONFIG_INTERRUPT_ROLE_SLAVE is not set */
 /* CONFIG_LOG_EXTRA_INFO is not set */
+/* CONFIG_LOG_DISPALY_CORE_NUM is not set */
 /* CONFIG_BOOTUP_DEBUG_PRINTS is not set */
 
 /* Linker Options */
@@ -216,14 +219,12 @@
 
 /* LWIP Freertos Port Configuration */
 
-#define CONFIG_LWIP_FXMAC
-/* CONFIG_LWIP_FGMAC is not set */
-
 /* LWIP Configuration */
 
 /* LWIP Port Configuration */
 
-/* CONFIG_LWIP_PORT_DEBUG_EN is not set */
+#define CONFIG_LWIP_FXMAC
+/* CONFIG_LWIP_FGMAC is not set */
 /* end of LWIP Port Configuration */
 /* CONFIG_LWIP_NO_SYS is not set */
 #define CONFIG_LWIP_LOCAL_HOSTNAME "phytium"
@@ -232,6 +233,7 @@
 
 /* CONFIG_LWIP_USE_MEM_POOL is not set */
 #define CONFIG_LWIP_USE_MEM_HEAP
+/* CONFIG_LWIP_USE_MEM_HEAP_DEBUG is not set */
 #define CONFIG_MEM_SIZE 1
 #define CONFIG_MEM_ALIGNMENT 64
 /* end of Memory configuration */

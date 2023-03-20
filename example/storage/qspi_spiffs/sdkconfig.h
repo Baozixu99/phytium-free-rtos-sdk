@@ -3,7 +3,7 @@
 
 /* Freertos Configuration */
 
-#define CONFIG_TARGET_NAME "e2000d_freertos_a64"
+#define CONFIG_TARGET_NAME "e2000q_freertos_a64"
 /* end of Freertos Configuration */
 
 /* Standalone Setting */
@@ -18,14 +18,15 @@
 #define CONFIG_USE_MMU
 #define CONFIG_USE_SYS_TICK
 /* CONFIG_MMU_DEBUG_PRINTS is not set */
+/* CONFIG_BOOT_WITH_FLUSH_CACHE is not set */
 /* end of Arch Configuration */
 
 /* Board Configuration */
 
 /* CONFIG_TARGET_F2000_4 is not set */
 /* CONFIG_TARGET_D2000 is not set */
-/* CONFIG_TARGET_E2000Q is not set */
-#define CONFIG_TARGET_E2000D
+#define CONFIG_TARGET_E2000Q
+/* CONFIG_TARGET_E2000D is not set */
 /* CONFIG_TARGET_E2000S is not set */
 #define CONFIG_TARGET_E2000
 #define CONFIG_DEFAULT_DEBUG_PRINT_UART1
@@ -68,6 +69,7 @@
 /* CONFIG_USE_PWM is not set */
 /* CONFIG_USE_IPC is not set */
 /* CONFIG_USE_MEDIA is not set */
+/* CONFIG_USE_SCMI_MHU is not set */
 /* end of Components Configuration */
 #define CONFIG_USE_NEW_LIBC
 /* end of Standalone Setting */
@@ -84,6 +86,7 @@
 #define CONFIG_INTERRUPT_ROLE_MASTER
 /* CONFIG_INTERRUPT_ROLE_SLAVE is not set */
 /* CONFIG_LOG_EXTRA_INFO is not set */
+/* CONFIG_LOG_DISPALY_CORE_NUM is not set */
 /* CONFIG_BOOTUP_DEBUG_PRINTS is not set */
 
 /* Linker Options */
@@ -216,7 +219,7 @@
 /* CONFIG_DEFAULT_LETTER_SHELL_USE_UART0 is not set */
 /* CONFIG_DEFAULT_LETTER_SHELL_USE_UART2 is not set */
 /* end of Letter Shell Configuration */
-#define CONFIG_USE_TLSF
+/* CONFIG_USE_TLSF is not set */
 /* CONFIG_USE_SDMMC_CMD is not set */
 /* CONFIG_USE_CHERRY_USB is not set */
 /* end of Third-Party Configuration */

@@ -161,7 +161,7 @@ static void PhytiumProcRemove(struct remoteproc *rproc)
     dev = prproc->kick_dev;
     if (dev)
     {
-        PHYTIUM_RPROC_MAIN_DEBUG_E("Start to remove \r\n") ;
+        PHYTIUM_RPROC_MAIN_DEBUG_I("Start to remove \r\n") ;
         InterruptMask((uintptr_t)dev->irq_info);
     }
 #else /* RPMSG_NO_IPI */

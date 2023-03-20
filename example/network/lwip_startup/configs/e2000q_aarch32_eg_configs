@@ -242,8 +242,6 @@ CONFIG_USE_LWIP=y
 #
 # LWIP Freertos Port Configuration
 #
-CONFIG_LWIP_FXMAC=y
-# CONFIG_LWIP_FGMAC is not set
 
 #
 # LWIP Configuration
@@ -252,7 +250,8 @@ CONFIG_LWIP_FXMAC=y
 #
 # LWIP Port Configuration
 #
-# CONFIG_LWIP_PORT_DEBUG_EN is not set
+CONFIG_LWIP_FXMAC=y
+# CONFIG_LWIP_FGMAC is not set
 # end of LWIP Port Configuration
 
 # CONFIG_LWIP_NO_SYS is not set
@@ -263,6 +262,7 @@ CONFIG_LWIP_LOCAL_HOSTNAME="phytium"
 #
 # CONFIG_LWIP_USE_MEM_POOL is not set
 CONFIG_LWIP_USE_MEM_HEAP=y
+# CONFIG_LWIP_USE_MEM_HEAP_DEBUG is not set
 CONFIG_MEM_SIZE=2
 CONFIG_MEM_ALIGNMENT=64
 # end of Memory configuration

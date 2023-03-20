@@ -131,7 +131,7 @@
 
 /* Freertos Qspi Drivers */
 
-#define CONFIG_FREERTOS_USE_QSPI
+/* CONFIG_FREERTOS_USE_QSPI is not set */
 /* end of Freertos Qspi Drivers */
 
 /* Freertos Wdt Drivers */
@@ -199,10 +199,7 @@
 #define CONFIG_SFUD_CTRL_FSPIM
 #define CONFIG_SFUD_TRANS_MODE_POLL_FIFO
 /* CONFIG_SFUD_TRANS_MODE_INTRRUPT is not set */
-#define CONFIG_SFUD_CTRL_FQSPI
-/* CONFIG_SFUD_QSPI_READ_MODE_READ is not set */
-/* CONFIG_SFUD_QSPI_READ_MODE_DUAL_READ is not set */
-#define CONFIG_SFUD_QSPI_READ_MODE_QUAD_READ
+/* CONFIG_SFUD_CTRL_FQSPI is not set */
 /* end of SFUD Configuration */
 #define CONFIG_USE_SPIFFS
 

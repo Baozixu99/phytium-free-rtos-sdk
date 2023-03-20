@@ -206,14 +206,12 @@
 
 /* LWIP Freertos Port Configuration */
 
-#define CONFIG_LWIP_FXMAC
-/* CONFIG_LWIP_FGMAC is not set */
-
 /* LWIP Configuration */
 
 /* LWIP Port Configuration */
 
-/* CONFIG_LWIP_PORT_DEBUG_EN is not set */
+#define CONFIG_LWIP_FXMAC
+/* CONFIG_LWIP_FGMAC is not set */
 /* end of LWIP Port Configuration */
 /* CONFIG_LWIP_NO_SYS is not set */
 #define CONFIG_LWIP_LOCAL_HOSTNAME "phytium"
@@ -222,6 +220,7 @@
 
 /* CONFIG_LWIP_USE_MEM_POOL is not set */
 #define CONFIG_LWIP_USE_MEM_HEAP
+/* CONFIG_LWIP_USE_MEM_HEAP_DEBUG is not set */
 #define CONFIG_MEM_SIZE 2
 #define CONFIG_MEM_ALIGNMENT 64
 /* end of Memory configuration */

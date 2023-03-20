@@ -1,21 +1,5 @@
 menu "LWIP Freertos Port Configuration"
 
-    choice LWIP_GMAC_CTRL_TYPE
-        prompt "Gmac Drivers"
-        default LWIP_FGMAC
-        help
-            Select Gmac Driver for Lwip
-
-        config LWIP_FXMAC
-            select FREERTOS_USE_XMAC
-            bool "FXMAC"
-        
-        config LWIP_FGMAC
-            select FREERTOS_USE_GMAC
-            bool "FGMAC"
-
-
-    endchoice # LWIP_GMAC_CTRL_TYPE
     source "$(STANDALONE_DIR)/third-party/lwip-2.1.2/Kconfig"
     
     menu "Tcp/ip task resource configuration"
