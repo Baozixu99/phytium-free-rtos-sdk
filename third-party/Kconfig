@@ -2,7 +2,6 @@
 config USE_LWIP
     bool
     prompt "Use LWIP"
-    select USE_SYS_TICK
     help
         Include LWIP for Network Protocol
 
@@ -101,11 +100,22 @@ config USE_SDMMC_CMD
 config USE_CHERRY_USB
     bool
     default n
-    prompt "Use CherryUSB(0.7.0)"
+    prompt "Use CherryUSB(0.8.0)"
     help
         Include CherryUSB for XHCI controller
 
     if USE_CHERRY_USB
-        source "$(FREERTOS_SDK_ROOT)/third-party/cherryusb-0.7.0/Kconfig"
+        source "$(FREERTOS_SDK_ROOT)/third-party/cherryusb/Kconfig"
+    endif
+
+config USE_LVGL
+    bool
+    default n
+    prompt "Use LVGL"
+    help
+        Include LVGL
+
+    if USE_LVGL
+        source "$(FREERTOS_SDK_ROOT)/third-party/lvgl-8.3/Kconfig"
     endif
 

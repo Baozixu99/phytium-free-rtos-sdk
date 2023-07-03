@@ -145,8 +145,10 @@
 
 /************************** Variable Definitions *****************************/
 static u8 const keycode2ascii[128][2] =  { HID_KEYCODE_TO_ASCII };
-static struct usbh_urb hid_intin_urb;
-static uint8_t hid_buffer[128] __attribute__((aligned(sizeof(unsigned long)))) = {0};
+static struct usbh_urb kbd_intin_urb;
+static struct usbh_urb mouse_intin_urb;
+static uint8_t kbd_buffer[128] __attribute__((aligned(sizeof(unsigned long)))) = {0};
+static uint8_t mouse_buffer[128] __attribute__((aligned(sizeof(unsigned long)))) = {0};
 
 /***************** Macros (Inline Functions) Definitions *********************/
 #define FUSB_DEBUG_TAG "USB-INPUT"
@@ -161,17 +163,17 @@ static uint8_t hid_buffer[128] __attribute__((aligned(sizeof(unsigned long)))) =
 /*****************************************************************************/
 static inline void UsbMouseLeftButtonCB(void)
 {
-    printf("[Left Button] ");
+    printf("<-\r\n");
 }
 
 static inline void UsbMouseRightButtonCB(void)
 {
-    printf("[Right Button] ");
+    printf("->\r\n");
 }
 
 static inline void UsbMouseMiddleButtonCB(void)
 {
-    printf("[Middle Button] ");
+    printf("C\r\n");
 }
 
 static void UsbMouseHandleInput(struct usb_hid_mouse_report *input)
@@ -193,7 +195,7 @@ static void UsbMouseHandleInput(struct usb_hid_mouse_report *input)
     }
 
     /*------------- cursor movement -------------*/
-    printf("[Cursor@ x:%d y:%d]\r\n", input->xdisp, input->ydisp);
+    printf("[x:%d y:%d w:%d]\r\n", input->xdisp, input->ydisp, input->wdisp);
 }
 
 /* look up new key in previous keys */
@@ -251,12 +253,12 @@ static u8 UsbInputGetInterfaceProtocol(struct usbh_hid *hid_class)
     return intf_desc->bInterfaceProtocol;
 }
 
-static void UsbHidCallback(void *arg, int nbytes)
+static void UsbKeyboardCallback(void *arg, int nbytes)
 {
     u8 intf_protocol;
-    struct usbh_hid *hid_class = (struct usbh_hid *)arg;
+    struct usbh_hid *kbd_class = (struct usbh_hid *)arg;
+    intf_protocol = UsbInputGetInterfaceProtocol(kbd_class);
 
-    intf_protocol = UsbInputGetInterfaceProtocol(hid_class);
     if (HID_PROTOCOL_KEYBOARD == intf_protocol) /* handle input from keyboard */
     {
         if (nbytes < (int)sizeof(struct usb_hid_kbd_report))
@@ -265,10 +267,25 @@ static void UsbHidCallback(void *arg, int nbytes)
         }
         else
         {
-            UsbKeyBoardHandleInput((struct usb_hid_kbd_report *)hid_buffer);
+            UsbKeyBoardHandleInput((struct usb_hid_kbd_report *)kbd_buffer);
         }
     }
-    else if (HID_PROTOCOL_MOUSE == intf_protocol) /* handle input from mouse */
+    else
+    {
+        FUSB_ERROR("mismatch callback for protocol-%d", intf_protocol);
+        return;
+    }
+
+    usbh_submit_urb(&kbd_intin_urb); /* ask for next inputs */
+}
+
+static void UsbMouseCallback(void *arg, int nbytes)
+{
+    u8 intf_protocol;
+    struct usbh_hid *mouse_class = (struct usbh_hid *)arg;
+    intf_protocol = UsbInputGetInterfaceProtocol(mouse_class);
+
+    if (HID_PROTOCOL_MOUSE == intf_protocol) /* handle input from mouse */
     {
         if (nbytes < (int)sizeof(struct usb_hid_mouse_report))
         {
@@ -276,34 +293,36 @@ static void UsbHidCallback(void *arg, int nbytes)
         }
         else
         {
-            UsbMouseHandleInput((struct usb_hid_mouse_report *)hid_buffer);
-        }
+            UsbMouseHandleInput((struct usb_hid_mouse_report *)mouse_buffer);
+        }        
     }
     else
     {
-        FUSB_ERROR("Unsupported hid interface %d", intf_protocol);
+        FUSB_ERROR("mismatch callback for protocol-%d", intf_protocol);
+        return;        
     }
 
-    usbh_submit_urb(&hid_intin_urb); /* ask for next inputs */
+   usbh_submit_urb(&mouse_intin_urb); /* ask for next inputs */
 }
 
-static void UsbInputTask(void *args)
+static void UsbKeyboardTask(void *args)
 {
     int ret;
-    struct usbh_hid *hid_class;
+    struct usbh_hid *kbd_class;
     u8 intf_protocol;
+    const char *dev_name = (const char *)args;
+    
+    kbd_class = (struct usbh_hid *)usbh_find_class_instance(dev_name);
+    if (kbd_class == NULL)
+    {
+        FUSB_ERROR("Do not find %s.", dev_name);
+        goto err_exit;
+    }
 
     while (TRUE)
     {
-        hid_class = (struct usbh_hid *)usbh_find_class_instance("/dev/input0");
-        if (hid_class == NULL)
-        {
-            FUSB_ERROR("Do not find /dev/input0.");
-            goto err_exit;
-        }
-
-        usbh_int_urb_fill(&hid_intin_urb, hid_class->intin, hid_buffer, 8, 0, UsbHidCallback, hid_class);
-        ret = usbh_submit_urb(&hid_intin_urb);
+        usbh_int_urb_fill(&kbd_intin_urb, kbd_class->intin, kbd_buffer, 8, 0, UsbKeyboardCallback, kbd_class);
+        ret = usbh_submit_urb(&kbd_intin_urb);
 
         vTaskDelay(1);
     }
@@ -312,16 +331,61 @@ err_exit:
     vTaskDelete(NULL);
 }
 
-BaseType_t FFreeRTOSRunUsbInput(void)
+static void UsbMouseTask(void *args)
+{
+    int ret;
+    struct usbh_hid *mouse_class;
+    u8 intf_protocol;
+    const char *dev_name = (const char *)args;
+    
+    mouse_class = (struct usbh_hid *)usbh_find_class_instance(dev_name);
+    if (mouse_class == NULL)
+    {
+        FUSB_ERROR("Do not find %s.", dev_name);
+        goto err_exit;
+    }
+
+    while (TRUE)
+    {
+        usbh_int_urb_fill(&mouse_intin_urb, mouse_class->intin, mouse_buffer, 8, 0, UsbMouseCallback, mouse_class);
+        ret = usbh_submit_urb(&mouse_intin_urb);
+
+        vTaskDelay(1);
+    }
+
+err_exit:
+    vTaskDelete(NULL);
+}
+
+BaseType_t FFreeRTOSRunUsbKeyboard(const char *devname)
 {
     BaseType_t ret = pdPASS;
 
     taskENTER_CRITICAL(); /* no schedule when create task */
 
-    ret = xTaskCreate((TaskFunction_t)UsbInputTask,
-                      (const char *)"UsbInputTask",
+    ret = xTaskCreate((TaskFunction_t)UsbKeyboardTask,
+                      (const char *)"UsbKeyboardTask",
                       (uint16_t)2048,
-                      NULL,
+                      (void *)devname,
+                      (UBaseType_t)configMAX_PRIORITIES - 1,
+                      NULL);
+    FASSERT_MSG(pdPASS == ret, "create task failed");
+
+    taskEXIT_CRITICAL(); /* allow schedule since task created */
+
+    return ret;
+}
+
+BaseType_t FFreeRTOSRunUsbMouse(const char *devname)
+{
+    BaseType_t ret = pdPASS;
+
+    taskENTER_CRITICAL(); /* no schedule when create task */
+
+    ret = xTaskCreate((TaskFunction_t)UsbMouseTask,
+                      (const char *)"UsbMouseTask",
+                      (uint16_t)2048,
+                      (void *)devname,
                       (UBaseType_t)configMAX_PRIORITIES - 1,
                       NULL);
     FASSERT_MSG(pdPASS == ret, "create task failed");

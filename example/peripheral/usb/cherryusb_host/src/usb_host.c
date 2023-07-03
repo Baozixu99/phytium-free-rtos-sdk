@@ -44,6 +44,7 @@
 /************************** Variable Definitions *****************************/
 static FMemp memp;
 static u8 memp_buf[FUSB_MEMP_TOTAL_SIZE];
+static struct usbh_bus usb[FUSB3_NUM];
 
 /***************** Macros (Inline Functions) Definitions *********************/
 #define FUSB_DEBUG_TAG "USB-HC"
@@ -53,18 +54,18 @@ static u8 memp_buf[FUSB_MEMP_TOTAL_SIZE];
 #define FUSB_DEBUG(format, ...) FT_DEBUG_PRINT_D(FUSB_DEBUG_TAG, format, ##__VA_ARGS__)
 
 /************************** Function Prototypes ******************************/
-extern void USBH_IRQHandler(void);
+extern void USBH_IRQHandler(void *);
 
 /*****************************************************************************/
 static void UsbHcInterrruptHandler(s32 vector, void *param)
 {
-    USBH_IRQHandler();
+    USBH_IRQHandler(param);
 }
 
-static void UsbHcSetupInterrupt(void)
+static void UsbHcSetupInterrupt(u32 id)
 {
     u32 cpu_id;
-    u32 irq_num = FUSB3_0_IRQ_NUM;
+    u32 irq_num = (id == FUSB3_ID_0) ? FUSB3_0_IRQ_NUM : FUSB3_1_IRQ_NUM;
     u32 irq_priority = 13U;
 
     GetCpuId(&cpu_id);
@@ -75,7 +76,7 @@ static void UsbHcSetupInterrupt(void)
     /* register intr callback */
     InterruptInstall(irq_num,
                      UsbHcInterrruptHandler,
-                     NULL,
+                     &usb[id],
                      NULL);
 
     /* enable irq */
@@ -91,15 +92,18 @@ void UsbHcSetupMemp(void)
 }
 
 /* implement cherryusb weak functions */
-void usb_hc_low_level_init(void)
+void usb_hc_low_level_init(uint32_t id)
 {
     UsbHcSetupMemp();
-    UsbHcSetupInterrupt();
+    UsbHcSetupInterrupt(id);
 }
 
-unsigned long usb_hc_get_register_base(void)
+unsigned long usb_hc_get_register_base(uint32_t id)
 {
-    return FUSB3_0_BASE_ADDR + FUSB3_XHCI_OFFSET;
+    if (FUSB3_ID_0 == id)
+        return FUSB3_0_BASE_ADDR + FUSB3_XHCI_OFFSET;
+    else
+        return FUSB3_1_BASE_ADDR + FUSB3_XHCI_OFFSET;
 }
 
 void *usb_hc_malloc(size_t size)
@@ -140,7 +144,10 @@ void usb_hc_dcache_invalidate(void *addr, unsigned long len)
 
 static void UsbInitTask(void *args)
 {
-    if (0 == usbh_initialize())
+    u32 id = (u32)(uintptr)args;
+    memset(&usb[id], 0 , sizeof(usb[id]));
+
+    if (0 == usbh_initialize(id, &usb[id]))
     {
         printf("Init cherryusb host successfully.put 'usb lsusb -t' to see devices.\r\n");
     }
@@ -152,7 +159,7 @@ static void UsbInitTask(void *args)
     vTaskDelete(NULL);
 }
 
-BaseType_t FFreeRTOSInitUsb(void)
+BaseType_t FFreeRTOSInitUsb(u32 id)
 {
     BaseType_t ret = pdPASS;
 
@@ -161,7 +168,7 @@ BaseType_t FFreeRTOSInitUsb(void)
     ret = xTaskCreate((TaskFunction_t)UsbInitTask,
                       (const char *)"UsbInitTask",
                       (uint16_t)2048,
-                      NULL,
+                      (void *)(uintptr)id,
                       (UBaseType_t)configMAX_PRIORITIES - 1,
                       NULL);
     FASSERT_MSG(pdPASS == ret, "create task failed");

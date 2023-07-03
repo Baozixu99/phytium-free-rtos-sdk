@@ -18,7 +18,6 @@ CONFIG_TARGET_ARMV8_AARCH64=y
 CONFIG_USE_CACHE=y
 CONFIG_USE_L3CACHE=y
 CONFIG_USE_MMU=y
-CONFIG_USE_SYS_TICK=y
 # CONFIG_MMU_DEBUG_PRINTS is not set
 # CONFIG_BOOT_WITH_FLUSH_CACHE is not set
 # end of Arch Configuration
@@ -85,18 +84,29 @@ CONFIG_USE_NEW_LIBC=y
 #
 # Building Option
 #
+
+#
+# Sdk common configuration
+#
 # CONFIG_LOG_VERBOS is not set
 # CONFIG_LOG_DEBUG is not set
 CONFIG_LOG_INFO=y
 # CONFIG_LOG_WARN is not set
 # CONFIG_LOG_ERROR is not set
 # CONFIG_LOG_NONE is not set
-CONFIG_USE_DEFAULT_INTERRUPT_CONFIG=y
-CONFIG_INTERRUPT_ROLE_MASTER=y
-# CONFIG_INTERRUPT_ROLE_SLAVE is not set
 # CONFIG_LOG_EXTRA_INFO is not set
 # CONFIG_LOG_DISPALY_CORE_NUM is not set
 # CONFIG_BOOTUP_DEBUG_PRINTS is not set
+CONFIG_USE_DEFAULT_INTERRUPT_CONFIG=y
+CONFIG_INTERRUPT_ROLE_MASTER=y
+# CONFIG_INTERRUPT_ROLE_SLAVE is not set
+# end of Sdk common configuration
+
+#
+# Image information configuration
+#
+# CONFIG_IMAGE_INFO is not set
+# end of Image information configuration
 
 #
 # Linker Options
@@ -214,6 +224,12 @@ CONFIG_FREERTOS_USE_QSPI=y
 #
 # CONFIG_FREERTOS_USE_TIMER is not set
 # end of Freertos Timer Drivers
+
+#
+# Freertos Media Drivers
+#
+# CONFIG_FREERTOS_USE_MEDIA is not set
+# end of Freertos Media Drivers
 # end of Component Configuration
 
 #
@@ -225,14 +241,14 @@ CONFIG_USE_BACKTRACE=y
 CONFIG_USE_SFUD=y
 
 #
-# SFUD Configuration
+# Sfud configuration
 #
 # CONFIG_SFUD_CTRL_FSPIM is not set
 CONFIG_SFUD_CTRL_FQSPI=y
 # CONFIG_SFUD_QSPI_READ_MODE_READ is not set
 # CONFIG_SFUD_QSPI_READ_MODE_DUAL_READ is not set
 CONFIG_SFUD_QSPI_READ_MODE_QUAD_READ=y
-# end of SFUD Configuration
+# end of Sfud configuration
 
 CONFIG_USE_SPIFFS=y
 
@@ -258,6 +274,7 @@ CONFIG_DEFAULT_LETTER_SHELL_USE_UART1=y
 CONFIG_USE_TLSF=y
 # CONFIG_USE_SDMMC_CMD is not set
 # CONFIG_USE_CHERRY_USB is not set
+# CONFIG_USE_LVGL is not set
 # end of Third-Party Configuration
 
 #

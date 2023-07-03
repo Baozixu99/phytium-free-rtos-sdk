@@ -164,7 +164,7 @@ void LwipTestCreate(void *args)
                      (UserConfig *)args, 0))
     {
         printf("Error adding N/W interface.\n\r");
-        return ;
+        goto failed;
     }
     printf("LwipPortAdd is over.\n\r");
 
@@ -217,46 +217,59 @@ void LwipTest(void *args)
 
 static int LwipDeviceSet(int argc, char *argv[])
 {
-    u32 id = 0, type = 0;
-    const char *ipaddr = NULL;
-    const char *gateway = NULL;
-    const char *netmask = NULL;
+    u32 id = 0, interface_type = 0, driver_type = 0;
     memset(&input_config, 0, sizeof(input_config));
     LWIP_PORT_CONFIG_DEFAULT_INIT(input_config.lwip_mac_config);
 
     if (!strcmp(argv[1], "probe"))
     {
-        switch (argc)
+        if (argc < 6)
         {
-            case 8:
-                netmask = argv[7];
-            case 7:
-                gateway = argv[6];
-            case 6:
-                ipaddr = argv[5];
-                input_config.input_address.ipaddr = ipaddr;
-                input_config.input_address.gateway = gateway;
-                input_config.input_address.netmask = netmask;
-            case 5:
-                input_config.dhcp_en = (u32)simple_strtoul(argv[4], NULL, 10);
-            case 4:
-                type = (u32)simple_strtoul(argv[3], NULL, 10);
-            case 3:
-                id = (u32)simple_strtoul(argv[2], NULL, 10);
-                break;
-            default:
-                break;
+            printf("Input error: Too few parameters!\n");
+            printf("All parameters will be set to 0!\n");
         }
-        printf("types   %d.\r\n", type);
-        printf("id   %d.\r\n", id);
+        else
+        {
+            driver_type = (u32)simple_strtoul(argv[2], NULL, 10);
+            id = (u32)simple_strtoul(argv[3], NULL, 10);
+            interface_type = (u32)simple_strtoul(argv[4], NULL, 10);
+            input_config.dhcp_en = (u32)simple_strtoul(argv[5], NULL, 10);
+            if (input_config.dhcp_en == 0)
+            {
+                if (argc == 9)
+                {
+                    input_config.input_address.ipaddr  = argv[6];
+                    input_config.input_address.gateway = argv[7];
+                    input_config.input_address.netmask = argv[8];
+                }
+                else
+                {
+                    printf("Input error: Missing parameters!\n");
+                    printf("All Ip address will be set to 0!\n");
+                }
+
+            }
+            else
+            {
+                 if (argc == 9)
+                {
+                    input_config.input_address.ipaddr  = argv[6];
+                    input_config.input_address.gateway = argv[7];
+                    input_config.input_address.netmask = argv[8];
+                }
+               
+                printf("Dhcp Open: All IP addresses will be determined by the dhcp server!\n");
+            }
+        }
 
 #if defined(CONFIG_TARGET_E2000)
-        FXmacPhyGpioInit(id, type);
+        FXmacPhyGpioInit(id, interface_type);
 #endif
+
         input_config.lwip_mac_config.mac_instance = id;
         input_config.lwip_mac_config.name[0] = 'e';
         itoa(id, &input_config.lwip_mac_config.name[1], 10);
-        if (type == 0)
+        if (interface_type == 0)
         {
             input_config.lwip_mac_config.mii_interface = LWIP_PORT_INTERFACE_RGMII;
         }
@@ -264,7 +277,15 @@ static int LwipDeviceSet(int argc, char *argv[])
         {
             input_config.lwip_mac_config.mii_interface = LWIP_PORT_INTERFACE_SGMII;
         }
-
+        if (driver_type == 0)
+        {
+            input_config.lwip_mac_config.driver_type = LWIP_PORT_TYPE_XMAC;
+        }
+        else
+        {
+            input_config.lwip_mac_config.driver_type = LWIP_PORT_TYPE_GMAC;
+        }
+        
         LwipTest(&input_config);
     }
     else if (!strcmp(argv[1], "deinit"))
@@ -292,7 +313,8 @@ static int LwipDeviceSet(int argc, char *argv[])
     }
     else
     {
-        printf("Please enter lwip probe <device id> <interface id> <dhcp_en> <ipaddr> <gateway> <netmask> \r\n") ;
+        printf("Please enter lwip probe <dirver id> <device id> <interface id> <dhcp_en> <ipaddr> <gateway> <netmask> \r\n") ;
+        printf("        -- driver id is driver type set, 0 is xmac ,1 is gmac \r\n");
         printf("        -- device id is mac instance number \r\n");
         printf("        -- interface id is media independent interface  , 0 is rgmii ,1 is sgmii \r\n");
         printf("        -- dhcp_en is dhcp function set ,1 is enable ,0 is disable .But this depends on whether the protocol stack supports it ");

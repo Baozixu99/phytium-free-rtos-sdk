@@ -83,6 +83,24 @@ static void ethernetif_start(struct netif *netif)
     FXmacOsStart(instance_p);
 }
 
+static void ethernetif_poll(struct netif *netif)
+{
+    struct LwipPort *lwip_port = (struct LwipPort *)(netif->state);
+    
+    if(lwip_port == NULL)
+    {
+        FXMAC_LWIP_NET_PRINT_E("%s,lwip_port is NULL\n", __FUNCTION__);
+        return;
+    }
+    FXmacOs *instance_p = (FXmacOs *)(lwip_port->state);
+    
+    if(instance_p == NULL)
+    {
+        FXMAC_LWIP_NET_PRINT_E("%s,Fxmac instance_p is NULL\n", __FUNCTION__);
+        return;
+    }
+    FXmacOsRecvHandler(instance_p);
+}
 static void ethernetif_deinit(struct netif *netif)
 {
     struct LwipPort *xmac_netif_p = (struct LwipPort *)(netif->state);
@@ -149,7 +167,7 @@ static struct pbuf *low_level_input(struct netif *netif)
     FASSERT(netif->state != NULL);
     struct LwipPort *xmac_netif_p = (struct LwipPort *)(netif->state);
     FASSERT(xmac_netif_p != NULL);
-    instance_p = (FXmacOs *)(xmac_netif_p->state) ;
+    instance_p = (FXmacOs *)(xmac_netif_p->state);
 
     return FXmacOsRx(instance_p);
 }
@@ -173,9 +191,7 @@ static void ethernetif_input(struct netif *netif)
     struct pbuf *p;
     SYS_ARCH_DECL_PROTECT(lev);
 
-
-    while (1)
-    
+    while (1)    
     {
         /* move received packet into a new pbuf */
         SYS_ARCH_PROTECT(lev);
@@ -311,7 +327,7 @@ static err_t low_level_init(struct netif *netif)
     }
     else
     {
-        netif->mtu = FXMAC_MTU - FXMAC_HDR_SIZE;
+        netif->mtu = FXMAC_MTU ;
     }
 
     netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP |
@@ -329,7 +345,7 @@ static err_t low_level_init(struct netif *netif)
     xmac_netif_p->ops.eth_input = ethernetif_input;
     xmac_netif_p->ops.eth_deinit = ethernetif_deinit;
     xmac_netif_p->ops.eth_start = ethernetif_start;
-
+    xmac_netif_p->ops.eth_poll= ethernetif_poll; 
     FXMAC_LWIP_NET_PRINT_I("Ready to leave netif \r\n");
     return ERR_OK;
 }

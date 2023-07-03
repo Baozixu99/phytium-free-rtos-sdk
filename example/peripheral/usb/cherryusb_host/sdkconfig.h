@@ -16,7 +16,6 @@
 #define CONFIG_TARGET_ARMV8_AARCH64
 #define CONFIG_USE_CACHE
 #define CONFIG_USE_MMU
-#define CONFIG_USE_SYS_TICK
 /* CONFIG_MMU_DEBUG_PRINTS is not set */
 /* CONFIG_BOOT_WITH_FLUSH_CACHE is not set */
 /* end of Arch Configuration */
@@ -60,7 +59,8 @@
 /* CONFIG_USE_NAND is not set */
 /* CONFIG_USE_RTC is not set */
 /* CONFIG_USE_SATA is not set */
-/* CONFIG_USE_USB is not set */
+#define CONFIG_USE_USB
+#define CONFIG_ENABLE_USB_FXHCI
 /* CONFIG_USE_ADC is not set */
 /* CONFIG_USE_PWM is not set */
 /* CONFIG_USE_IPC is not set */
@@ -72,18 +72,26 @@
 
 /* Building Option */
 
+/* Sdk common configuration */
+
 /* CONFIG_LOG_VERBOS is not set */
 #define CONFIG_LOG_DEBUG
 /* CONFIG_LOG_INFO is not set */
 /* CONFIG_LOG_WARN is not set */
 /* CONFIG_LOG_ERROR is not set */
 /* CONFIG_LOG_NONE is not set */
-#define CONFIG_USE_DEFAULT_INTERRUPT_CONFIG
-#define CONFIG_INTERRUPT_ROLE_MASTER
-/* CONFIG_INTERRUPT_ROLE_SLAVE is not set */
 #define CONFIG_LOG_EXTRA_INFO
 /* CONFIG_LOG_DISPALY_CORE_NUM is not set */
 /* CONFIG_BOOTUP_DEBUG_PRINTS is not set */
+#define CONFIG_USE_DEFAULT_INTERRUPT_CONFIG
+#define CONFIG_INTERRUPT_ROLE_MASTER
+/* CONFIG_INTERRUPT_ROLE_SLAVE is not set */
+/* end of Sdk common configuration */
+
+/* Image information configuration */
+
+/* CONFIG_IMAGE_INFO is not set */
+/* end of Image information configuration */
 
 /* Linker Options */
 
@@ -181,6 +189,11 @@
 
 /* CONFIG_FREERTOS_USE_TIMER is not set */
 /* end of Freertos Timer Drivers */
+
+/* Freertos Media Drivers */
+
+/* CONFIG_FREERTOS_USE_MEDIA is not set */
+/* end of Freertos Media Drivers */
 /* end of Component Configuration */
 
 /* Third-Party Configuration */
@@ -217,6 +230,7 @@
 #define CONFIG_CHERRY_USB_HOST_CDC
 #define CONFIG_CHERRY_USB_HOST_RNDIS_WIRELESS
 /* end of CherryUSB Configuration */
+/* CONFIG_USE_LVGL is not set */
 /* end of Third-Party Configuration */
 
 /* Kernel Configuration */

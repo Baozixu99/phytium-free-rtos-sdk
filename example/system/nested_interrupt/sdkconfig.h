@@ -16,8 +16,8 @@
 #define CONFIG_TARGET_ARMV8_AARCH64
 #define CONFIG_USE_CACHE
 #define CONFIG_USE_MMU
-#define CONFIG_USE_SYS_TICK
 /* CONFIG_MMU_DEBUG_PRINTS is not set */
+/* CONFIG_BOOT_WITH_FLUSH_CACHE is not set */
 /* end of Arch Configuration */
 
 /* Board Configuration */
@@ -63,11 +63,14 @@
 /* CONFIG_USE_PWM is not set */
 /* CONFIG_USE_IPC is not set */
 /* CONFIG_USE_MEDIA is not set */
+/* CONFIG_USE_SCMI_MHU is not set */
 /* end of Components Configuration */
 #define CONFIG_USE_NEW_LIBC
 /* end of Standalone Setting */
 
 /* Building Option */
+
+/* SDK common configuration */
 
 /* CONFIG_LOG_VERBOS is not set */
 /* CONFIG_LOG_DEBUG is not set */
@@ -75,11 +78,13 @@
 /* CONFIG_LOG_WARN is not set */
 /* CONFIG_LOG_ERROR is not set */
 /* CONFIG_LOG_NONE is not set */
+/* CONFIG_LOG_EXTRA_INFO is not set */
+/* CONFIG_LOG_DISPALY_CORE_NUM is not set */
+/* CONFIG_BOOTUP_DEBUG_PRINTS is not set */
 #define CONFIG_USE_DEFAULT_INTERRUPT_CONFIG
 #define CONFIG_INTERRUPT_ROLE_MASTER
 /* CONFIG_INTERRUPT_ROLE_SLAVE is not set */
-/* CONFIG_LOG_EXTRA_INFO is not set */
-/* CONFIG_BOOTUP_DEBUG_PRINTS is not set */
+/* end of SDK common configuration */
 
 /* Linker Options */
 
@@ -177,6 +182,11 @@
 
 /* CONFIG_FREERTOS_USE_TIMER is not set */
 /* end of Freertos Timer Drivers */
+
+/* Freertos Media Drivers */
+
+/* CONFIG_FREERTOS_USE_MEDIA is not set */
+/* end of Freertos Media Drivers */
 /* end of Component Configuration */
 
 /* Third-Party Configuration */
@@ -199,6 +209,7 @@
 /* CONFIG_USE_TLSF is not set */
 /* CONFIG_USE_SDMMC_CMD is not set */
 /* CONFIG_USE_CHERRY_USB is not set */
+/* CONFIG_USE_LVGL is not set */
 /* end of Third-Party Configuration */
 
 /* Kernel Configuration */

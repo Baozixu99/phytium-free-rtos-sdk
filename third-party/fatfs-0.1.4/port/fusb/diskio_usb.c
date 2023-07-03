@@ -57,27 +57,29 @@ typedef struct
     boolean init_ok;
     BYTE pdrv;
     const TCHAR *disk_name;
+    struct usbh_bus usb;
 } ff_usb_disk;
 
 static ff_usb_disk usb_disk =
 {
+    .id = FUSB_FATFS_ID,
     .pdrv = FF_DRV_NOT_USED,
     .init_ok = FALSE,
-    .disk_name = "/dev/sda"
+    .disk_name = "/usb0/sda" 
 };
 
 /*****************************************************************************/
-extern void USBH_IRQHandler(void);
+extern void USBH_IRQHandler(void *);
 
 static void UsbHcInterrruptHandler(s32 vector, void *param)
 {
-    USBH_IRQHandler();
+    USBH_IRQHandler(param);
 }
 
-static void UsbHcSetupInterrupt(void)
+static void UsbHcSetupInterrupt(u32 id)
 {
     u32 cpu_id;
-    u32 irq_num = usb_irq_num[FUSB_FATFS_ID];
+    u32 irq_num = usb_irq_num[id];
     u32 irq_priority = 13U;
 
     GetCpuId(&cpu_id);
@@ -88,7 +90,7 @@ static void UsbHcSetupInterrupt(void)
     /* register intr callback */
     InterruptInstall(irq_num,
                      UsbHcInterrruptHandler,
-                     NULL,
+                     &(usb_disk.usb),
                      NULL);
 
     /* enable irq */
@@ -104,15 +106,15 @@ void UsbHcSetupMemp(void)
 }
 
 /* implement cherryusb weak functions */
-void usb_hc_low_level_init(void)
+void usb_hc_low_level_init(uint32_t id)
 {
     UsbHcSetupMemp();
-    UsbHcSetupInterrupt();
+    UsbHcSetupInterrupt(id);
 }
 
-unsigned long usb_hc_get_register_base(void)
+unsigned long usb_hc_get_register_base(uint32_t id)
 {
-    return xhci_base_addr[FUSB_FATFS_ID];
+    return xhci_base_addr[id];
 }
 
 void *usb_hc_malloc(size_t size)
@@ -189,7 +191,8 @@ static DSTATUS usb_disk_initialize(
 
     if (FALSE == disk->init_ok)
     {
-        (void)usbh_initialize(); /* start a task to emurate usb hub and attached usb disk */
+        memset(&disk->usb, 0, sizeof(disk->usb));
+        (void)usbh_initialize(disk->id, &disk->usb); /* start a task to emurate usb hub and attached usb disk */
         while (TRUE)
         {
             if (NULL != usbh_find_class_instance(disk->disk_name))

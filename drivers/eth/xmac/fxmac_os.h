@@ -53,7 +53,7 @@ extern "C" {
 #define FXMAC_OS_CONFIG_MULTICAST_ADDRESS_FILITER  BIT(1) /* Allow multicast address filtering  */
 #define FXMAC_OS_CONFIG_COPY_ALL_FRAMES BIT(2) /* enable copy all frames */
 #define FXMAC_OS_CONFIG_CLOSE_FCS_CHECK BIT(3) /* close fcs check */
-
+#define FXMAC_OS_CONFIG_RX_POLL_RECV BIT(4)  /* select poll mode */
 /* Phy */
 #define FXMAC_PHY_SPEED_10M    10
 #define FXMAC_PHY_SPEED_100M    100
@@ -133,6 +133,7 @@ void *FXmacOsRx(FXmacOs *instance_p);
 FError FXmacOsTx(FXmacOs *instance_p, void *tx_buf);
 void FXmacOsStop(FXmacOs *instance_p);
 void FXmacOsStart(FXmacOs *instance_p);
+void FXmacOsRecvHandler(FXmacOs *instance_p);
 enum lwip_port_link_status FXmacPhyReconnect(struct LwipPort *xmac_netif_p);
 
 #ifdef __cplusplus

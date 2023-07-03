@@ -107,7 +107,7 @@ void *usb_hc_malloc_align(size_t align, size_t size);
 
 /* ================ USB HOST Stack Configuration ================== */
 
-#define CONFIG_USBHOST_MAX_RHPORTS          1
+#define CONFIG_USBHOST_MAX_RHPORTS          2
 #define CONFIG_USBHOST_MAX_EXTHUBS          2
 #define CONFIG_USBHOST_MAX_EHPORTS          4
 #define CONFIG_USBHOST_MAX_INTERFACES       6
@@ -120,7 +120,7 @@ void *usb_hc_malloc_align(size_t align, size_t size);
     #define CONFIG_USBHOST_PSC_PRIO 4
 #endif
 #ifndef CONFIG_USBHOST_PSC_STACKSIZE
-    #define CONFIG_USBHOST_PSC_STACKSIZE 2048
+    #define CONFIG_USBHOST_PSC_STACKSIZE 4096
 #endif
 
 /* Ep0 max transfer buffer */
@@ -134,6 +134,11 @@ void *usb_hc_malloc_align(size_t align, size_t size);
     #define CONFIG_USBHOST_MSC_TIMEOUT 5000
 #endif
 
+/* do not try to enumrate one interface */
+#ifndef CONFIG_USBHOST_ENUM_FIRST_INTERFACE_ONLY
+    #define CONFIG_USBHOST_ENUM_FIRST_INTERFACE_ONLY
+#endif
+
 /* ================ USB Device Port Configuration ================*/
 
 #define CONFIG_XHCI_PAGE_SIZE   4096U
@@ -145,6 +150,7 @@ void *usb_hc_malloc_align(size_t align, size_t size);
 
 /* ================ XHCI Configuration ================ */
 #define CONFIG_USBHOST_XHCI
+#define CONFIG_USBHOST_XHCI_NUM 2
 
 #ifdef __cplusplus
 }

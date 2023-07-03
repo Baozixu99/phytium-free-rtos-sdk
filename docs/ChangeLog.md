@@ -1,3 +1,124 @@
+# Phytium FreeRTOS SDK 2023-07-03 ChangeLog
+
+Change Log sinc 2023-07-02
+
+## third-party
+
+- letter-shell adapt to new psci api 
+
+# Phytium FreeRTOS SDK 2023-06-28 ChangeLog
+
+Change Log sinc 2023-6-27
+
+## example
+
+- add atomic test example
+
+# Phytium FreeRTOS SDK 2023-06-26 ChangeLog
+
+Change Log sinc 2023-6-24
+
+## third-party
+
+- remove freertos boot.s, use fboot.s in standalone folder
+
+# Phytium FreeRTOS SDK 2023-06-19 ChangeLog
+
+Change Log sinc 2023-6-7
+
+## driver
+
+- eth/xmac: add new function FXmacRecvSemaphoreHandler,which can notify the receiving thread of incoming packets.
+- eth/xmac: add new macro definition FXMAC_OS_CONFIG_RX_POLL_RECV,which can select poll mode.
+- add new code logic,which can disable the RXCOMPL interrupt.
+- modify interrupt registration function:FXmacRecvHandler->FXmacRecvSemaphoreHandler,which means using interrupt mode to notify the rx thread of the receipt of the packet.
+- the value of max_fr_size have been modified:FXMAC_MAX_FRAME_SIZE-18->FXMAC_MAX_FRAME_SIZE.
+## example
+
+- update network/lwip_startup sdkconfig: CONFIG_LWIP_TCPIP_TASK_PRIO 6->5.
+- the above changes will ensure a more stable and higher bandwidth when we run our iperf tests.
+- all sdkconfigs and *_aarch*_eg_configs have been updated while using tools: build_all.
+
+## third-party
+
+- add new callback function ethernetif_poll,which can poll network packets.
+- modified the initial value of the member variable mtu of netif,which are more in line with the theoretical definition of mtu.
+
+# Phytium FreeRTOS SDK 2023-06-06 ChangeLog
+
+Change Log sinc 2023-6-5
+
+## example
+
+-fix generic timer operation in wdt example
+
+## make
+
+- modify aarch32/gcc/fvectors.S filename in standalone_dependence.mk
+
+## third-party
+
+-fix generic timer operation in freertos_configs.c
+
+# Phytium FreeRTOS SDK 2023-05-09 ChangeLog
+
+Change Log sinc 2023-4-18
+
+## example
+
+-add lvgl indev driver and modify the format the whole media example
+
+# Phytium FreeRTOS SDK 2023-4-18 ChangeLog
+
+Change Log sinc 2023-4-10
+
+## third-party
+
+- freertos/portable modify config for the priority icc_pmr set and icc_rpr get
+
+# Phytium FreeRTOS SDK 2023-4-10 ChangeLog
+
+Change Log since 2023-03-30
+
+## example
+
+- lwip instructions has been updated by which we can choose driver type manually.
+- update README.md : add new description about lwip probe instructions.
+
+# Phytium FreeRTOS SDK 2023-4-7 ChangeLog
+
+Change Log sinc 2023-3-16
+
+## third-party
+
+- update cherryusb to 0.8.0
+- modify cherryusb (ready to merge to cherryusb baseline)
+    -  reconstruct xhci driver
+    -  modify usbh_bus usage to support use multiple usb controller
+    -  modify enumration proccedure to support enumrate usb 3.0 device (e.g mass storage)  
+    -  implment for usb 3.0 hub
+
+## example
+
+- modify cherryusb host example
+- modify fatfs usb mass storage part
+
+# Phytium FreeRTOS SDK 2023-4-3 ChangeLog
+
+Change Log sinc 2023-3-15
+
+## driver
+
+- driver/media add the multi-display driver
+
+## example 
+
+- media add  config and example for the multi-display
+
+## third-party
+
+- lvgl-8.3/port modify config for the multi-display
+
 # Phytium FreeRTOS SDK 2023-3-16 ChangeLog
 
 Change Log sinc 2023-3-15
@@ -154,6 +275,7 @@ Change Log sinc 2023-1-30
 - add script statements which can delete standalone/third-party/lwip-2.1.2/ports/arch dir
 
 # Phytium FreeRTOS SDK 2023-1-6 ChangeLog
+
 
 Change Log sinc 2023-1-5
 

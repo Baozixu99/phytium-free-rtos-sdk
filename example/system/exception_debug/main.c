@@ -14,7 +14,7 @@
  * FilePath: main.c
  * Date: 2022-02-24 13:42:19
  * LastEditTime: 2022-03-21 17:02:53
- * Description:  This file is for providing a template main.c file when creating new freertos examples.
+ * Description:  This file is for exception debug example main entry.
  *
  * Modify History:
  *  Ver   Who            Date         Changes

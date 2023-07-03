@@ -51,12 +51,6 @@
     #error "Please include sdkconfig.h first"
 #endif
 
-#ifndef CONFIG_USE_SYS_TICK
-    #error "Please enable system tick by CONFIG_USE_SYS_TICK first"
-#endif
-
-
-
 /* The time to block waiting for input. */
 #define TIME_WAITING_FOR_INPUT (portMAX_DELAY)
 

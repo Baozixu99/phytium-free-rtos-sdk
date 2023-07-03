@@ -34,22 +34,48 @@
 static int USBCmdEntry(int argc, char *argv[])
 {
     int ret = 0;
+    u32 usb_id = 0;
+    const char *devname;
 
     if (!strcmp(argv[1], "init"))
     {
-        ret = FFreeRTOSInitUsb();
-    }
-    else if (!strcmp(argv[1], "disk"))
-    {
-        ret = FFreeRTOSRunUsbDisk();
-    }
-    else if (!strcmp(argv[1], "input"))
-    {
-        ret = FFreeRTOSRunUsbInput();
+        if (argc < 3) {
+            return -2;
+        }
+
+        usb_id = (uint8_t)simple_strtoul(argv[2], NULL, 10);
+        ret = FFreeRTOSInitUsb(usb_id);
     }
     else if (!strcmp(argv[1], "lsusb"))
     {
         ret = FFreeRTOSListUsbDev(argc - 1, &argv[1]);
+    }
+    else if (!strcmp(argv[1], "disk"))
+    {
+        if (argc < 3) {
+            return -2;
+        }
+
+        devname = argv[2];
+        ret = FFreeRTOSRunUsbDisk(devname);
+    }
+    else if (!strcmp(argv[1], "kbd"))
+    {
+        if (argc < 3) {
+            return -2;
+        }
+
+        devname = argv[2];
+        ret = FFreeRTOSRunUsbKeyboard(devname);
+    }
+    else if (!strcmp(argv[1], "mouse"))
+    {
+        if (argc < 3) {
+            return -2;
+        }
+
+        devname = argv[2];
+        ret = FFreeRTOSRunUsbMouse(devname);
     }
 
     return ret;

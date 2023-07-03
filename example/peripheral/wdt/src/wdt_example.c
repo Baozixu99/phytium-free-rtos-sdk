@@ -27,6 +27,7 @@
 #include "task.h"
 #include "queue.h"
 #include "timers.h"
+#include "fparameters.h"
 #include "fgeneric_timer.h"
 #include "fwdt.h"
 #include "fwdt_os.h"
@@ -139,7 +140,7 @@ static void FFreeRTOSWdtQueueReceiveTask(void)
     for (;;)
     {
         xQueueReceive(xQueue, &xReceiveStructure, portMAX_DELAY);
-        u32 seconds = GenericTimerRead() / GenericTimerFrequecy();
+        u32 seconds = GenericTimerRead(GENERIC_TIMER_ID0) / GenericTimerFrequecy();
         vPrintf("FFreeRTOSWdtQueueReceiveTask run, count = %d, time seconds: %d\r\n", xReceiveStructure.count, seconds);
     }
 }
@@ -152,7 +153,7 @@ static void FFreeRTOSWdtFeedTask(void *pvParameters)
     for (;;)
     {
         FFreeRTOSWdtControl(os_wdt_ctrl_p, FREERTOS_WDT_CTRL_KEEPALIVE, NULL);
-        u32 seconds = GenericTimerRead() / GenericTimerFrequecy();
+        u32 seconds = GenericTimerRead(GENERIC_TIMER_ID0) / GenericTimerFrequecy();
         vPrintf("FFreeRTOSWdtFeedTask run, time seconds: %d\r\n", seconds);
         vTaskDelay(WDT_FEED_PERIOD);
     }

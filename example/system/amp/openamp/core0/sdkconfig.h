@@ -31,7 +31,6 @@
 #define CONFIG_USE_CACHE
 #define CONFIG_USE_L3CACHE
 #define CONFIG_USE_MMU
-/* CONFIG_USE_SYS_TICK is not set */
 #define CONFIG_USE_AARCH64_L1_TO_AARCH32
 /* CONFIG_BOOT_WITH_FLUSH_CACHE is not set */
 /* end of Arch Configuration */
@@ -85,18 +84,26 @@
 
 /* Building Option */
 
+/* Sdk common configuration */
+
 /* CONFIG_LOG_VERBOS is not set */
 /* CONFIG_LOG_DEBUG is not set */
 /* CONFIG_LOG_INFO is not set */
 /* CONFIG_LOG_WARN is not set */
 #define CONFIG_LOG_ERROR
 /* CONFIG_LOG_NONE is not set */
-#define CONFIG_USE_DEFAULT_INTERRUPT_CONFIG
-#define CONFIG_INTERRUPT_ROLE_MASTER
-/* CONFIG_INTERRUPT_ROLE_SLAVE is not set */
 /* CONFIG_LOG_EXTRA_INFO is not set */
 /* CONFIG_LOG_DISPALY_CORE_NUM is not set */
 /* CONFIG_BOOTUP_DEBUG_PRINTS is not set */
+#define CONFIG_USE_DEFAULT_INTERRUPT_CONFIG
+#define CONFIG_INTERRUPT_ROLE_MASTER
+/* CONFIG_INTERRUPT_ROLE_SLAVE is not set */
+/* end of Sdk common configuration */
+
+/* Image information configuration */
+
+/* CONFIG_IMAGE_INFO is not set */
+/* end of Image information configuration */
 
 /* Linker Options */
 
@@ -198,6 +205,11 @@
 
 /* CONFIG_FREERTOS_USE_TIMER is not set */
 /* end of Freertos Timer Drivers */
+
+/* Freertos Media Drivers */
+
+/* CONFIG_FREERTOS_USE_MEDIA is not set */
+/* end of Freertos Media Drivers */
 /* end of Component Configuration */
 
 /* Third-Party Configuration */
@@ -241,6 +253,7 @@
 /* CONFIG_USE_TLSF is not set */
 /* CONFIG_USE_SDMMC_CMD is not set */
 /* CONFIG_USE_CHERRY_USB is not set */
+/* CONFIG_USE_LVGL is not set */
 /* end of Third-Party Configuration */
 
 /* Kernel Configuration */

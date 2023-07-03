@@ -44,6 +44,7 @@
 	.extern vApplicationIRQHandler
 	.extern ulPortInterruptNesting
 	.extern ulPortTaskHasFPUContext
+	.extern ulPortUnmask
 
 	.global FreeRTOS_IRQ_Handler
 	.global FreeRTOS_SWI_Handler
@@ -118,9 +119,9 @@
 	
 
 	/* Ensure the priority mask is correct for the critical nesting depth. */
-
 	CMP		R1, #0
-	MOVEQ	R4, #255
+	LDREQ	R4, ulPortUnmaskConst
+	LDREQ	R4, [R4]
 	LDRNE	R4, ulMaxAPIPriorityMaskConst
 	LDRNE	R4, [R4]
 	MCR P15, 0, R4, C4, C6, 0
@@ -322,6 +323,7 @@ vTaskSwitchContextConst: .word vTaskSwitchContext
 vApplicationIRQHandlerConst: .word vApplicationIRQHandler
 ulPortInterruptNestingConst: .word ulPortInterruptNesting
 vApplicationFPUSafeIRQHandlerConst: .word vApplicationInterruptHandler
+ulPortUnmaskConst: .word ulPortUnmask
 
 .end
 

@@ -29,10 +29,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "faarch32.h"
+
 /* Scheduler includes. */
 #include "FreeRTOS.h"
 #include "task.h"
+#include "finterrupt.h"
+#include "fgic_cpu_interface.h"
 
 #ifndef configINTERRUPT_CONTROLLER_BASE_ADDRESS
     #error configINTERRUPT_CONTROLLER_BASE_ADDRESS must be defined.  See https://www.FreeRTOS.org/Using-FreeRTOS-on-Cortex-A-Embedded-Processors.html
@@ -112,7 +114,6 @@ point is zero. */
 mode. */
 #define portAPSR_USER_MODE (0x10)
 
-static void vPortSetPriorityMask(uint32_t value);
 
 /* The critical section macros only mask interrupts up to an application
 determined priority level.  Sometimes it is necessary to turn interrupt off in
@@ -133,7 +134,7 @@ the CPU itself before modifying certain hardware registers. */
 #define portCLEAR_INTERRUPT_MASK()         \
     {                                      \
         portCPU_IRQ_DISABLE();             \
-        vPortSetPriorityMask(portUNMASK_VALUE); \
+        InterruptSetPriorityMask(portUNMASK_VALUE); \
         __asm volatile("DSB		\n"           \
                        "ISB		\n");      \
         portCPU_IRQ_ENABLE();              \
@@ -169,7 +170,6 @@ extern void vPortRestoreTaskContext(void);
  * Used to catch tasks that attempt to return from their implementing function.
  */
 static void prvTaskExitError(void);
-
 
 
 /*
@@ -213,13 +213,14 @@ volatile uint32_t ulPortYieldRequired = pdFALSE;
 if the nesting depth is 0. */
 volatile uint32_t ulPortInterruptNesting = 0UL;
 
-
-#define PRIORITY_TRANSLATE_SET(x) ((((x)>> 1) | 0x80) & 0xff)
-
-#define PRIORITY_TRANSLATE_GET(x) (((x)<< 1) & 0xff)
-
 /* Used in the asm file. */
-__attribute__((used)) const uint32_t ulMaxAPIPriorityMask = PRIORITY_TRANSLATE_SET(configMAX_API_CALL_INTERRUPT_PRIORITY << portPRIORITY_SHIFT);
+volatile uint32_t ulMaxAPIPriorityMask = (configMAX_API_CALL_INTERRUPT_PRIORITY << portPRIORITY_SHIFT);
+
+volatile uint32_t ulPortUnmask = portUNMASK_VALUE;
+
+volatile uint8_t ucPriorityConfig = 0;
+
+static void vPortPriorityConfigCheck(void);
 
 /*-----------------------------------------------------------*/
 
@@ -335,6 +336,9 @@ BaseType_t xPortStartScheduler(void)
 {
     uint32_t ulAPSR;
 
+    /* check gic configuration */
+    vPortPriorityConfigCheck();
+
     /* Only continue if the CPU is not in User mode.  The CPU must be in a
     Privileged mode for the scheduler to start. */
     __asm volatile("MRS %0, APSR"
@@ -350,9 +354,9 @@ BaseType_t xPortStartScheduler(void)
         setting.  See the comments in vPortValidateInterruptPriority() below for
         more information. */
 
-        configASSERT((sys_icc_bpr_get() & portBINARY_POINT_BITS) <= portMAX_BINARY_POINT_VALUE);
+        configASSERT((FGicGetICC_BPR1() & portBINARY_POINT_BITS) <= portMAX_BINARY_POINT_VALUE);
 
-        if ((sys_icc_bpr_get() & portBINARY_POINT_BITS) <= portMAX_BINARY_POINT_VALUE)
+        if ((FGicGetICC_BPR1() & portBINARY_POINT_BITS) <= portMAX_BINARY_POINT_VALUE)
         {
             /* Interrupts are turned off in the CPU itself to ensure tick does
             not execute while the scheduler is being started.  Interrupts are
@@ -436,7 +440,7 @@ void FreeRTOS_Tick_Handler(void)
     necessary to turn off interrupts in the CPU itself while the ICCPMR is being
     updated. */
 
-    vPortSetPriorityMask((uint32_t)(configMAX_API_CALL_INTERRUPT_PRIORITY << portPRIORITY_SHIFT));
+    InterruptSetPriorityMask((uint32_t)(configMAX_API_CALL_INTERRUPT_PRIORITY << portPRIORITY_SHIFT));
 
     __asm volatile("dsb		\n"
                    "isb		\n" ::
@@ -449,7 +453,7 @@ void FreeRTOS_Tick_Handler(void)
     }
 
     /* unmask all interrupt priorities. */
-    vPortSetPriorityMask(portUNMASK_VALUE); 
+    InterruptSetPriorityMask(portUNMASK_VALUE); 
     
     /* interrupt clear. */
     configCLEAR_TICK_INTERRUPT();
@@ -483,31 +487,6 @@ void vPortClearInterruptMask(uint32_t ulNewMaskValue)
 }
 /*-----------------------------------------------------------*/
 
-/*-----------------------------------------------------------*/
-/*
-Set current interrupt priority mask and translate, ICC_PMR
-• The value is right-shifted by one bit.
-• Bit [7] of the value is set to 1.
-*/
-static void vPortSetPriorityMask(uint32_t value)
-{
-    uint32_t priority = PRIORITY_TRANSLATE_SET(value);
-    sys_icc_pmr_set(priority);
-}
-
-/* Get current interrupt priority mask and translate, ICC_PMR, priority << portPRIORITY_SHIFT  */
-static uint32_t vPortGetPriorityMask(void)
-{
-    return PRIORITY_TRANSLATE_GET(sys_icc_pmr_get());
-}
-
-/* Get current interrupt priority and translate, ICC_RPR, priority << portPRIORITY_SHIFT */
-static uint32_t vPortGetCurrentPriority(void)
-{
-    return PRIORITY_TRANSLATE_GET(sys_icc_rpr_get());
-}
-
-
 uint32_t ulPortSetInterruptMask(void)
 {
     uint32_t ulReturn;
@@ -515,7 +494,7 @@ uint32_t ulPortSetInterruptMask(void)
     /* Interrupt in the CPU must be turned off while the ICCPMR is being
     updated. */
     portCPU_IRQ_DISABLE();
-    if (vPortGetPriorityMask() == (uint32_t)(configMAX_API_CALL_INTERRUPT_PRIORITY << portPRIORITY_SHIFT))
+    if (InterruptGetPriorityMask() == (uint32_t)(configMAX_API_CALL_INTERRUPT_PRIORITY << portPRIORITY_SHIFT))
     {
         /* Interrupts were already masked. */
         ulReturn = pdTRUE;
@@ -523,7 +502,7 @@ uint32_t ulPortSetInterruptMask(void)
     else
     {
         ulReturn = pdFALSE;
-        vPortSetPriorityMask((uint32_t)(configMAX_API_CALL_INTERRUPT_PRIORITY << portPRIORITY_SHIFT));
+        InterruptSetPriorityMask((uint32_t)(configMAX_API_CALL_INTERRUPT_PRIORITY << portPRIORITY_SHIFT));
         __asm volatile("dsb		\n"
                        "isb		\n" ::
                        : "memory");
@@ -551,7 +530,7 @@ void vPortValidateInterruptPriority(void)
 
         FreeRTOS maintains separate thread and ISR API functions to ensure
         interrupt entry is as fast and simple as possible. */
-    configASSERT(vPortGetCurrentPriority() >= (uint32_t)(configMAX_API_CALL_INTERRUPT_PRIORITY << portPRIORITY_SHIFT));
+    configASSERT(InterruptGetCurrentPriority() >= (uint32_t)(configMAX_API_CALL_INTERRUPT_PRIORITY << portPRIORITY_SHIFT));
 
     /* Priority grouping:  The interrupt controller (GIC) allows the bits
         that define each interrupt's priority to be split between bits that
@@ -563,7 +542,7 @@ void vPortValidateInterruptPriority(void)
         The priority grouping is configured by the GIC's binary point register
         (ICCBPR).  Writting 0 to ICCBPR will ensure it is set to its lowest
         possible value (which may be above 0). */
-    configASSERT((sys_icc_bpr_get() & portBINARY_POINT_BITS) <= portMAX_BINARY_POINT_VALUE);
+    configASSERT((FGicGetICC_BPR1() & portBINARY_POINT_BITS) <= portMAX_BINARY_POINT_VALUE);
 }
 
 #endif /* configASSERT_DEFINED */
@@ -575,4 +554,16 @@ _WEAK void vApplicationTickHook(void)
 
 _WEAK void vApplicationIdleHook(void)
 {
+}
+
+
+static void vPortPriorityConfigCheck(void)
+{
+    ucPriorityConfig = InterruptGetPriorityConfig();
+
+    if(ucPriorityConfig)
+    {
+        ulMaxAPIPriorityMask = PRIORITY_TRANSLATE_SET(ulMaxAPIPriorityMask);
+        ulPortUnmask = PRIORITY_TRANSLATE_SET(ulPortUnmask);
+    }
 }

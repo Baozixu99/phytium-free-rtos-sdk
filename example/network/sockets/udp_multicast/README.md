@@ -40,11 +40,13 @@
 本例程支持的硬件平台包括
 
 - E2000D/E2000Q
+- D2000
 
 对应的配置项是
 
 - CONFIG_TARGET_E2000D
 - CONFIG_TARGET_E2000Q
+- CONFIG_TARGET_D2000
 
 ### 2.2 SDK配置方法
 
@@ -129,16 +131,20 @@ bootelf -p 0x90100000
 - 以E2000D/Q demo 板为例,开发者输入以下命令则可以初始化网卡：
 
 ```
-lwip probe 0 1 1 192.168.4.10 192.168.4.1 255.255.255.0
+lwip probe 0 0 1 0 192.168.4.10 192.168.4.1 255.255.255.0
 ```
 
-- 命令定义为:"lwip probe <device id> <interface id> <dhcp_en> <ipaddr> <gateway> <netmask> "
-- <device id> 为mac控制器
-- <interface id> 为gmii 控制器类型，0 is rgmii ,1 is sgmii
-- <dhcp_en> 1为使能dhcp 功能，0为关闭dhcp 功能
-- <ipaddr> 为ipv4 地址，示例为: 192.168.4.10
-- <gateway> 为网关 ，示例为: 192.168.4.1
-- <netmask> 为子网掩码，示例为255.255.255.0
+命令定义为:
+```
+lwip probe <device id> <interface id> <dhcp_en> <ipaddr> <gateway> <netmask> 
+```
+- driver id 为驱动类型 ， 0为xmac ，1为gmac
+- device id 为mac控制器
+- interface id 为gmii 控制器类型，0 is rgmii ,1 is sgmii
+- dhcp_en 1为使能dhcp 功能，0为关闭dhcp 功能
+- ipaddr 为ipv4 地址，示例为: 192.168.4.10
+- gateway 为网关 ，示例为: 192.168.4.
+- netmask 为子网掩码，示例为255.255.255.0
 
 - 效果图如下
 

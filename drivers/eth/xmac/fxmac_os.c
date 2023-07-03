@@ -35,7 +35,7 @@
 #ifdef __aarch64__
     #include "faarch64.h"
 #else
-    #include "fcp15.h"
+    #include "faarch32.h"
 #endif
 
 #include "FreeRTOS.h"
@@ -263,11 +263,11 @@ FError FXmacSgsend(FXmacOs *instance_p, struct pbuf *p)
 
         if (instance_p->config & FXMAC_OS_CONFIG_JUMBO)
         {
-            max_fr_size = FXMAC_MAX_FRAME_SIZE_JUMBO - 18;
+            max_fr_size = FXMAC_MAX_FRAME_SIZE_JUMBO;
         }
         else
         {
-            max_fr_size = FXMAC_MAX_FRAME_SIZE - 18;
+            max_fr_size = FXMAC_MAX_FRAME_SIZE;
         }
 
         if (q->len > max_fr_size)
@@ -406,7 +406,16 @@ void SetupRxBds(FXmacOs *instance_p, FXmacBdRing *rxring)
         instance_p->buffer.rx_pbufs_storage[bdindex] = (uintptr)p;
     }
 }
-
+void FXmacRecvSemaphoreHandler(void *arg)
+{
+    struct LwipPort *xmac_netif_p;
+    FXmacOs *instance_p;
+    
+    instance_p = (FXmacOs *)arg;
+    xmac_netif_p = (struct LwipPort *)instance_p->stack_pointer;
+    sys_sem_signal(&(xmac_netif_p->sem_rx_data_available));
+    
+}
 void FXmacRecvHandler(void *arg)
 {
     struct pbuf *p;
@@ -449,7 +458,7 @@ void FXmacRecvHandler(void *arg)
              */
             if (instance_p->config & FXMAC_OS_CONFIG_JUMBO)
             {
-                rx_bytes = FXMAC_GET_RX_FRAME_SIZE(&(instance_p->instance), curbdptr);
+                rx_bytes = FXMAC_GET_RX_FRAME_SIZE(curbdptr);
             }
             else
             {
@@ -480,12 +489,14 @@ void FXmacRecvHandler(void *arg)
         /* free up the BD's */
         FXmacBdRingFree(rxring, bd_processed, rxbdset);
         SetupRxBds(instance_p, rxring);
-
-        sys_sem_signal(&xmac_netif_p->sem_rx_data_available);
-
     }
 
     return;
+}
+
+void FXmacOsRecvHandler(FXmacOs *instance_p)
+{
+    FXmacRecvHandler(instance_p);
 }
 
 void CleanDmaTxdescs(FXmacOs *instance_p)
@@ -1093,7 +1104,7 @@ static void FXmacSetupIsr(FXmacOs *instance_p)
     InterruptSetTargetCpus(instance_p->instance.config.queue_irq_num[0], cpu_id);
     /* Setup callbacks */
     FXmacSetHandler(&instance_p->instance, FXMAC_HANDLER_DMASEND, FXmacSendHandler, instance_p);
-    FXmacSetHandler(&instance_p->instance, FXMAC_HANDLER_DMARECV, FXmacRecvHandler, instance_p);
+    FXmacSetHandler(&instance_p->instance, FXMAC_HANDLER_DMARECV, FXmacRecvSemaphoreHandler, instance_p);
     FXmacSetHandler(&instance_p->instance, FXMAC_HANDLER_ERROR, FXmacErrorHandler, instance_p);
     FXmacSetHandler(&instance_p->instance, FXMAC_HANDLER_LINKCHANGE, FXmacLinkChange, instance_p);
     InterruptSetPriority(instance_p->instance.config.queue_irq_num[0], XMAC_OS_IRQ_PRIORITY_VALUE);
@@ -1210,6 +1221,11 @@ FError FXmacOsInit(FXmacOs *instance_p)
     if (instance_p->config & FXMAC_OS_CONFIG_JUMBO)
     {
         FXmacSetOptions(xmac_p, FXMAC_JUMBO_ENABLE_OPTION, 0);
+    }
+
+    if (instance_p->config & FXMAC_OS_CONFIG_RX_POLL_RECV)
+    {
+        xmac_p->mask &= (~FXMAC_IXR_RXCOMPL_MASK);
     }
 
     if (instance_p->config & FXMAC_OS_CONFIG_MULTICAST_ADDRESS_FILITER)

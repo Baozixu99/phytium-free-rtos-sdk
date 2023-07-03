@@ -10,7 +10,7 @@
 
     config FREERTOS_HZ
         int "Tick rate (Hz)"
-        range 1 10000
+        range 1 1000
         default 1000
         help
             Select the tick rate at which FreeRTOS does pre-emptive context switching.

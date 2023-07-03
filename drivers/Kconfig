@@ -113,3 +113,9 @@ menu "Freertos Timer Drivers"
         default n
 endmenu
 
+menu "Freertos Media Drivers"
+    config FREERTOS_USE_MEDIA
+        bool
+        prompt "Use Freertos media driver"
+        default n
+endmenu

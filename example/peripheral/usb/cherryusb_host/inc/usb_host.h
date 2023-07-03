@@ -40,9 +40,10 @@ extern "C"
 /************************** Function Prototypes ******************************/
 
 /*****************************************************************************/
-BaseType_t FFreeRTOSInitUsb(void);
-BaseType_t FFreeRTOSRunUsbDisk(void);
-BaseType_t FFreeRTOSRunUsbInput(void);
+BaseType_t FFreeRTOSInitUsb(u32 id);
+BaseType_t FFreeRTOSRunUsbDisk(const char *devname);
+BaseType_t FFreeRTOSRunUsbKeyboard(const char *devname);
+BaseType_t FFreeRTOSRunUsbMouse(const char *devname);
 BaseType_t FFreeRTOSListUsbDev(int argc, char *argv[]);
 
 #ifdef __cplusplus

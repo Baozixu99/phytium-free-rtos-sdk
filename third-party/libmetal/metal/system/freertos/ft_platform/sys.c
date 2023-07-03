@@ -27,7 +27,7 @@
 #include <metal/sys.h>
 #include <stdint.h>
 #ifndef __aarch64__
-#include "fcp15.h"
+#include "faarch32.h"
 #endif
 #include "fmmu.h"
 #include "fcache.h"

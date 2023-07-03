@@ -83,7 +83,7 @@ static void FGdmaOsSetupInterrupt(FGdma *const ctrl)
     FGdmaConfig *config = &ctrl->config;
     uintptr base_addr = config->base_addr;
     u32 cpu_id = 0;
-    int irq_id = (int)config->irq_num;
+    u32 irq_id = config->irq_num[0];
     GetCpuId(&cpu_id);
 
     FGDMA_INFO("cpu_id is cpu_id %d", cpu_id);

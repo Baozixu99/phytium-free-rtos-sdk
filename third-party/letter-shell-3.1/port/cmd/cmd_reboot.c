@@ -28,7 +28,7 @@
 
 int RebootCmdEntry()
 {
-    PsciCpuReset();
+    FPsciSystemReset(FPSCI_SYSTEM_RESET_TYPE_COLD);
     return 0;
 }
 SHELL_EXPORT_CMD(SHELL_CMD_TYPE(SHELL_TYPE_CMD_MAIN), reboot,

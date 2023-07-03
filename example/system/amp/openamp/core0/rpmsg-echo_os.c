@@ -161,7 +161,7 @@ int rpmsg_echo(int argc, char *argv[])
 	} else {
 		#ifdef CONFIG_DEBUG_CODE
 		LPERROR("CONFIG_TARGET_CPU_ID is %x \r\n",CONFIG_TARGET_CPU_ID);
-		PsciCpuOn(1<<CONFIG_TARGET_CPU_ID,(uintptr_t)OPENAMP_MASTER_ADDRESS) ;
+		FPsciCpuMaskOn(1<<CONFIG_TARGET_CPU_ID,(uintptr_t)OPENAMP_MASTER_ADDRESS) ;
 		#endif
 		OPENAMP_SLAVE_INFO("step3: start to init virtio device ");
 		rpdev = platform_create_rpmsg_vdev(platform, 0, VIRTIO_DEV_SLAVE, NULL, NULL);

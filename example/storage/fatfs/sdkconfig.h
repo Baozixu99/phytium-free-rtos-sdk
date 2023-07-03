@@ -19,7 +19,6 @@
 #define CONFIG_TARGET_ARMV8_AARCH64
 #define CONFIG_USE_CACHE
 #define CONFIG_USE_MMU
-/* CONFIG_USE_SYS_TICK is not set */
 /* CONFIG_MMU_DEBUG_PRINTS is not set */
 /* CONFIG_BOOT_WITH_FLUSH_CACHE is not set */
 /* end of Arch Configuration */
@@ -76,18 +75,26 @@
 
 /* Building Option */
 
+/* Sdk common configuration */
+
 /* CONFIG_LOG_VERBOS is not set */
 /* CONFIG_LOG_DEBUG is not set */
 /* CONFIG_LOG_INFO is not set */
 /* CONFIG_LOG_WARN is not set */
 #define CONFIG_LOG_ERROR
 /* CONFIG_LOG_NONE is not set */
-#define CONFIG_USE_DEFAULT_INTERRUPT_CONFIG
-#define CONFIG_INTERRUPT_ROLE_MASTER
-/* CONFIG_INTERRUPT_ROLE_SLAVE is not set */
 #define CONFIG_LOG_EXTRA_INFO
 /* CONFIG_LOG_DISPALY_CORE_NUM is not set */
 /* CONFIG_BOOTUP_DEBUG_PRINTS is not set */
+#define CONFIG_USE_DEFAULT_INTERRUPT_CONFIG
+#define CONFIG_INTERRUPT_ROLE_MASTER
+/* CONFIG_INTERRUPT_ROLE_SLAVE is not set */
+/* end of Sdk common configuration */
+
+/* Image information configuration */
+
+/* CONFIG_IMAGE_INFO is not set */
+/* end of Image information configuration */
 
 /* Linker Options */
 
@@ -185,6 +192,11 @@
 
 /* CONFIG_FREERTOS_USE_TIMER is not set */
 /* end of Freertos Timer Drivers */
+
+/* Freertos Media Drivers */
+
+/* CONFIG_FREERTOS_USE_MEDIA is not set */
+/* end of Freertos Media Drivers */
 /* end of Component Configuration */
 
 /* Third-Party Configuration */
@@ -193,7 +205,7 @@
 #define CONFIG_USE_BACKTRACE
 #define CONFIG_USE_FATFS_0_1_4
 
-/* FATFS Configuration (0.1.4) */
+/* Fatfs configuration (0.1.4) */
 
 #define CONFIG_FATFS_RAM_DISK
 
@@ -225,7 +237,7 @@
 #define CONFIG_FATFS_PER_FILE_CACHE
 #define CONFIG_FATFS_ALLOC_PREFER_MEMP
 #define CONFIG_FATFS_MEMP_SIZE 2
-/* end of FATFS Configuration (0.1.4) */
+/* end of Fatfs configuration (0.1.4) */
 /* CONFIG_USE_SFUD is not set */
 /* CONFIG_USE_SPIFFS is not set */
 /* CONFIG_USE_AMP is not set */
@@ -241,11 +253,11 @@
 #define CONFIG_USE_TLSF
 #define CONFIG_USE_SDMMC_CMD
 
-/* SDMMC Configuration */
+/* Sdmmc configuration */
 
 /* CONFIG_SDMMC_USE_FSDMMC is not set */
 #define CONFIG_SDMMC_USE_FSDIO
-/* end of SDMMC Configuration */
+/* end of Sdmmc configuration */
 #define CONFIG_USE_CHERRY_USB
 
 /* CherryUSB Configuration */
@@ -261,6 +273,7 @@
 /* CONFIG_CHERRY_USB_HOST_CDC is not set */
 /* CONFIG_CHERRY_USB_HOST_RNDIS_WIRELESS is not set */
 /* end of CherryUSB Configuration */
+/* CONFIG_USE_LVGL is not set */
 /* end of Third-Party Configuration */
 
 /* Kernel Configuration */

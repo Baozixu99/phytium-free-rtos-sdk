@@ -42,6 +42,7 @@
 	.extern ullPortYieldRequired
 	.extern ullICCEOIR
 	.extern ullICCIAR
+	.extern ullPortUnmask
 
 	.global FreeRTOS_IRQ_Handler
 	.global vSynchronousInterruptHandler
@@ -175,7 +176,8 @@
 	/* Set the PMR register to be correct for the current critical nesting
 	depth. */
 	LDR		X0, ullCriticalNestingConst /* X0 holds the address of ullCriticalNesting. */
-	MOV		X1, #255					/* X1 holds the unmask value. */
+	LDR		X1, ullPortUnmaskConst		/* X1 holds the unmask value. */
+	LDR		X1, [X1]		
 	CMP		X3, #0
 	B.EQ	1f
 	LDR		X6, ullMaxAPIPriorityMaskConst
@@ -533,9 +535,7 @@ ullMaxAPIPriorityMaskConst: .dword ullMaxAPIPriorityMask
 vApplicationIRQHandlerConst: .dword vApplicationInterruptHandler
 ullPortInterruptNestingConst: .dword ullPortInterruptNesting
 ullPortYieldRequiredConst: .dword ullPortYieldRequired
-
-
-
+ullPortUnmaskConst: .dword ullPortUnmask
 
 .end
 

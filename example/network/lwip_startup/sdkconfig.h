@@ -26,7 +26,6 @@
 #define CONFIG_TARGET_ARMV8_AARCH64
 #define CONFIG_USE_CACHE
 #define CONFIG_USE_MMU
-#define CONFIG_USE_SYS_TICK
 /* CONFIG_MMU_DEBUG_PRINTS is not set */
 /* CONFIG_BOOT_WITH_FLUSH_CACHE is not set */
 /* end of Arch Configuration */
@@ -89,18 +88,26 @@
 
 /* Building Option */
 
+/* Sdk common configuration */
+
 /* CONFIG_LOG_VERBOS is not set */
 #define CONFIG_LOG_DEBUG
 /* CONFIG_LOG_INFO is not set */
 /* CONFIG_LOG_WARN is not set */
 /* CONFIG_LOG_ERROR is not set */
 /* CONFIG_LOG_NONE is not set */
-#define CONFIG_USE_DEFAULT_INTERRUPT_CONFIG
-#define CONFIG_INTERRUPT_ROLE_MASTER
-/* CONFIG_INTERRUPT_ROLE_SLAVE is not set */
 /* CONFIG_LOG_EXTRA_INFO is not set */
 /* CONFIG_LOG_DISPALY_CORE_NUM is not set */
 /* CONFIG_BOOTUP_DEBUG_PRINTS is not set */
+#define CONFIG_USE_DEFAULT_INTERRUPT_CONFIG
+#define CONFIG_INTERRUPT_ROLE_MASTER
+/* CONFIG_INTERRUPT_ROLE_SLAVE is not set */
+/* end of Sdk common configuration */
+
+/* Image information configuration */
+
+/* CONFIG_IMAGE_INFO is not set */
+/* end of Image information configuration */
 
 /* Linker Options */
 
@@ -198,6 +205,11 @@
 
 /* CONFIG_FREERTOS_USE_TIMER is not set */
 /* end of Freertos Timer Drivers */
+
+/* Freertos Media Drivers */
+
+/* CONFIG_FREERTOS_USE_MEDIA is not set */
+/* end of Freertos Media Drivers */
 /* end of Component Configuration */
 
 /* Third-Party Configuration */
@@ -206,15 +218,23 @@
 
 /* LWIP Freertos Port Configuration */
 
-/* LWIP Configuration */
+/* Lwip configuration */
 
 /* LWIP Port Configuration */
 
 #define CONFIG_LWIP_FXMAC
 /* CONFIG_LWIP_FGMAC is not set */
+/* CONFIG_LWIP_RX_POLL is not set */
 /* end of LWIP Port Configuration */
 /* CONFIG_LWIP_NO_SYS is not set */
 #define CONFIG_LWIP_LOCAL_HOSTNAME "phytium"
+
+/* Lwip_app */
+
+/* CONFIG_USE_LWIP_APP_LWIPERF is not set */
+/* CONFIG_USE_LWIP_APP_PING is not set */
+/* CONFIG_USE_LWIP_APP_TFTP is not set */
+/* end of Lwip_app */
 
 /* Memory configuration */
 
@@ -231,61 +251,61 @@
 #define CONFIG_PBUF_POOL_SIZE 1
 /* end of Pbuf options */
 
-/* ARP */
+/* Arp */
 
 #define CONFIG_ARP_QUEUEING_EN
-/* end of ARP */
+/* end of Arp */
 
-/* IPV4 */
+/* Ipv4 */
 
 /* CONFIG_USE_IPV4_ONLY is not set */
 #define CONFIG_LWIP_IP4_REASSEMBLY
 #define CONFIG_LWIP_IP4_FRAG
 /* CONFIG_LWIP_IP_FORWARD is not set */
 #define CONFIG_IP_REASS_MAX_PBUFS 16
-/* end of IPV4 */
+/* end of Ipv4 */
 
-/* ICMP */
+/* Icmp */
 
 #define CONFIG_LWIP_ICMP
 #define CONFIG_LWIP_MULTICAST_PING
 #define CONFIG_LWIP_BROADCAST_PING
-/* end of ICMP */
+/* end of Icmp */
 
-/* LWIP RAW API */
+/* Lwip raw api */
 
 #define CONFIG_LWIP_RAW_API_EN
 #define CONFIG_LWIP_MAX_RAW_PCBS 16
-/* end of LWIP RAW API */
+/* end of Lwip raw api */
 
-/* DHCP */
+/* Dhcp */
 
 /* CONFIG_LWIP_DHCP_ENABLE is not set */
-/* end of DHCP */
+/* end of Dhcp */
 
-/* AUTOIP */
+/* Autoip */
 
 /* CONFIG_LWIP_AUTOIP is not set */
-/* end of AUTOIP */
+/* end of Autoip */
 
-/* IGMP */
+/* Igmp */
 
 #define CONFIG_LWIP_IGMP_EN
-/* end of IGMP */
+/* end of Igmp */
 
-/* DNS */
+/* Dns */
 
 #define CONFIG_LWIP_DNS_SUPPORT_MDNS_QUERIES
-/* end of DNS */
+/* end of Dns */
 
-/* UDP */
+/* Udp */
 
 #define CONFIG_LWIP_MAX_UDP_PCBS 16
 #define CONFIG_LWIP_UDP_RECVMBOX_SIZE 6
 /* CONFIG_LWIP_NETBUF_RECVINFO is not set */
-/* end of UDP */
+/* end of Udp */
 
-/* TCP */
+/* Tcp */
 
 #define CONFIG_LWIP_TCP_WND_DEFAULT 5744
 #define CONFIG_LWIP_TCP_MAXRTX 12
@@ -299,29 +319,30 @@
 /* CONFIG_LWIP_TCP_OVERSIZE_DISABLE is not set */
 #define CONFIG_LWIP_TCP_TMR_INTERVAL 250
 #define CONFIG_LWIP_TCP_MSL 60000
+/* CONFIG_LWIP_WND_SCALE is not set */
 #define CONFIG_LWIP_TCP_RTO_TIME 1500
 #define CONFIG_LWIP_MAX_ACTIVE_TCP 16
 #define CONFIG_LWIP_MAX_LISTENING_TCP 16
 #define CONFIG_LWIP_TCP_HIGH_SPEED_RETRANSMISSION
 #define CONFIG_LWIP_TCP_RECVMBOX_SIZE 6
-/* end of TCP */
+/* end of Tcp */
 
-/* Network_Interface */
+/* Network_interface */
 
 /* CONFIG_LWIP_NETIF_API is not set */
 /* CONFIG_LWIP_NETIF_STATUS_CALLBACK is not set */
-/* end of Network_Interface */
+/* end of Network_interface */
 
-/* LOOPIF */
+/* Loopif */
 
 #define CONFIG_LWIP_NETIF_LOOPBACK
 #define CONFIG_LWIP_LOOPBACK_MAX_PBUFS 8
-/* end of LOOPIF */
+/* end of Loopif */
 
-/* SLIPIF */
+/* Slipif */
 
 /* CONFIG_LWIP_SLIP_SUPPORT is not set */
-/* end of SLIPIF */
+/* end of Slipif */
 #define CONFIG_LWIP_TCPIP_CORE_LOCKING
 
 /* Socket */
@@ -333,10 +354,10 @@
 /* end of Socket */
 /* CONFIG_LWIP_STATS is not set */
 
-/* PPP */
+/* Ppp */
 
 /* CONFIG_LWIP_PPP_SUPPORT is not set */
-/* end of PPP */
+/* end of Ppp */
 
 /* Checksums */
 
@@ -345,12 +366,11 @@
 #define CONFIG_LWIP_CHECKSUM_CHECK_ICMP
 /* end of Checksums */
 
-/* IPV6 */
+/* Ipv6 */
 
 /* CONFIG_LWIP_IPV6 is not set */
-/* end of IPV6 */
+/* end of Ipv6 */
 #define CONFIG_LWIP_DEBUG
-/* CONFIG_LWIP_DEBUG_ESP_LOG is not set */
 #define CONFIG_LWIP_NETIF_DEBUG
 /* CONFIG_LWIP_PBUF_DEBUG is not set */
 /* CONFIG_LWIP_ETHARP_DEBUG is not set */
@@ -366,12 +386,12 @@
 /* CONFIG_LWIP_UDP_DEBUG is not set */
 /* CONFIG_LWIP_SNTP_DEBUG is not set */
 /* CONFIG_LWIP_DNS_DEBUG is not set */
-/* end of LWIP Configuration */
+/* end of Lwip configuration */
 
 /* Tcp/ip task resource configuration */
 
 #define CONFIG_LWIP_TCPIP_TASK_STACK_SIZE 3072
-#define CONFIG_LWIP_TCPIP_TASK_PRIO 6
+#define CONFIG_LWIP_TCPIP_TASK_PRIO 5
 #define CONFIG_LWIP_TCPIP_RECVMBOX_SIZE 32
 /* end of Tcp/ip task resource configuration */
 
@@ -405,6 +425,7 @@
 #define CONFIG_USE_TLSF
 /* CONFIG_USE_SDMMC_CMD is not set */
 /* CONFIG_USE_CHERRY_USB is not set */
+/* CONFIG_USE_LVGL is not set */
 /* end of Third-Party Configuration */
 
 /* Kernel Configuration */

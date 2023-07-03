@@ -34,6 +34,7 @@
 #include "fsleep.h"
 #include "fkernel.h"
 #include "fcache.h"
+#include "fio.h"
 
 #include "sdmmc_host_os.h"
 /************************** Constant Definitions *****************************/
@@ -240,6 +241,8 @@ BaseType_t FFreeRTOSSdWriteRead(u32 slot_id, boolean is_emmc, u32 start_blk, u32
     test_info.start_blk = start_blk;
     test_info.block_num = blk_num;
     taskENTER_CRITICAL(); /* no schedule when create task */
+
+    FtOut32((uintptr)0x32b31178, 0x1f); /* set delay of SDIO-1 on E2000 Demo otherwise detect may fail */
 
     ret = xTaskCreate((TaskFunction_t)SDInitTask,
                       (const char *)"SDInitTask",

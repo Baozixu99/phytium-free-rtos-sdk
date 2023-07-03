@@ -84,9 +84,9 @@
 
 /**
  * @brief shell命令参数最大数量
- *        包含命令名在内，超过8个参数并且使用了参数自动转换的情况下，需要修改源码
+ *        包含命令名在内，超过10个参数并且使用了参数自动转换的情况下，需要修改源码
  */
-#define     SHELL_PARAMETER_MAX_NUMBER  8
+#define     SHELL_PARAMETER_MAX_NUMBER  10
 
 /**
  * @brief 历史命令记录数量

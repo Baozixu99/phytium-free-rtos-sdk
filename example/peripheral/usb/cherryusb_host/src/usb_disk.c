@@ -59,16 +59,17 @@ static void UsbMscTask(void *args)
     static uint8_t rd_table[512] = {0};
     static uint8_t wr_table[512] = {0};
     u32 loop = 0;
+    const char *devname = (const char *)args;
+
+    msc_class = (struct usbh_msc *)usbh_find_class_instance(devname);
+    if (msc_class == NULL)
+    {
+        USB_LOG_RAW("Do not find %s. \r\n", devname);
+        goto err_exit;
+    }
 
     while (TRUE)
     {
-        msc_class = (struct usbh_msc *)usbh_find_class_instance("/dev/sda");
-        if (msc_class == NULL)
-        {
-            USB_LOG_RAW("Do not find /dev/sda. \r\n");
-            goto err_exit;
-        }
-
         /* write partition table */
         memcpy(wr_table, rd_table, sizeof(rd_table));
         for (uint32_t i = 0; i < 512; i++)
@@ -99,17 +100,23 @@ static void UsbMscTask(void *args)
         }
         else
         {
-            printf("[%d] disk read and write successfully.\r\n", loop++);
+            printf("[%d] disk read and write successfully.\r\n", loop);
         }
 
-        vTaskDelay(10);
+        loop++;
+        if (loop > 10)
+        {
+            break;
+        }
+
+        vTaskDelay(100);
     }
 
 err_exit:
     vTaskDelete(NULL);
 }
 
-BaseType_t FFreeRTOSRunUsbDisk(void)
+BaseType_t FFreeRTOSRunUsbDisk(const char *devname)
 {
     BaseType_t ret = pdPASS;
 
@@ -118,7 +125,7 @@ BaseType_t FFreeRTOSRunUsbDisk(void)
     ret = xTaskCreate((TaskFunction_t)UsbMscTask,
                       (const char *)"UsbMscTask",
                       (uint16_t)2048,
-                      NULL,
+                      (void *)devname,
                       (UBaseType_t)configMAX_PRIORITIES - 1,
                       NULL);
     FASSERT_MSG(pdPASS == ret, "create task failed");

@@ -183,7 +183,14 @@ endif #CONFIG_USE_SDMMC_CMD
 
 ifdef CONFIG_USE_CHERRY_USB
 
-include $(THIRD_PARTY_CUR_DIR)/cherryusb-0.7.0/makefile
+include $(THIRD_PARTY_CUR_DIR)/cherryusb/makefile
 
 endif #CONFIG_USE_CHERRY_USB
+
+ifdef CONFIG_USE_LVGL
+
+include $(THIRD_PARTY_CUR_DIR)/lvgl-8.3/lvgl.mk
+
+endif
+
 

@@ -3,7 +3,7 @@
 
 /* Freertos Configuration */
 
-#define CONFIG_TARGET_NAME "e2000d_freertos_a64"
+#define CONFIG_TARGET_NAME "e2000q_freertos_a64"
 /* end of Freertos Configuration */
 
 /* Standalone Setting */
@@ -16,7 +16,6 @@
 #define CONFIG_TARGET_ARMV8_AARCH64
 #define CONFIG_USE_CACHE
 #define CONFIG_USE_MMU
-#define CONFIG_USE_SYS_TICK
 /* CONFIG_MMU_DEBUG_PRINTS is not set */
 /* CONFIG_BOOT_WITH_FLUSH_CACHE is not set */
 /* end of Arch Configuration */
@@ -25,8 +24,8 @@
 
 /* CONFIG_TARGET_F2000_4 is not set */
 /* CONFIG_TARGET_D2000 is not set */
-/* CONFIG_TARGET_E2000Q is not set */
-#define CONFIG_TARGET_E2000D
+#define CONFIG_TARGET_E2000Q
+/* CONFIG_TARGET_E2000D is not set */
 /* CONFIG_TARGET_E2000S is not set */
 #define CONFIG_TARGET_E2000
 #define CONFIG_DEFAULT_DEBUG_PRINT_UART1
@@ -77,17 +76,21 @@
 
 /* Building Option */
 
+/* SDK common configuration */
+
 /* CONFIG_LOG_VERBOS is not set */
 /* CONFIG_LOG_DEBUG is not set */
 /* CONFIG_LOG_INFO is not set */
 /* CONFIG_LOG_WARN is not set */
 #define CONFIG_LOG_ERROR
 /* CONFIG_LOG_NONE is not set */
+/* CONFIG_LOG_EXTRA_INFO is not set */
+/* CONFIG_LOG_DISPALY_CORE_NUM is not set */
+/* CONFIG_BOOTUP_DEBUG_PRINTS is not set */
 #define CONFIG_USE_DEFAULT_INTERRUPT_CONFIG
 #define CONFIG_INTERRUPT_ROLE_MASTER
 /* CONFIG_INTERRUPT_ROLE_SLAVE is not set */
-/* CONFIG_LOG_EXTRA_INFO is not set */
-/* CONFIG_BOOTUP_DEBUG_PRINTS is not set */
+/* end of SDK common configuration */
 
 /* Linker Options */
 
@@ -185,6 +188,11 @@
 
 /* CONFIG_FREERTOS_USE_TIMER is not set */
 /* end of Freertos Timer Drivers */
+
+/* Freertos Media Drivers */
+
+/* CONFIG_FREERTOS_USE_MEDIA is not set */
+/* end of Freertos Media Drivers */
 /* end of Component Configuration */
 
 /* Third-Party Configuration */
@@ -218,9 +226,10 @@
 /* CONFIG_DEFAULT_LETTER_SHELL_USE_UART0 is not set */
 /* CONFIG_DEFAULT_LETTER_SHELL_USE_UART2 is not set */
 /* end of Letter Shell Configuration */
-#define CONFIG_USE_TLSF
+/* CONFIG_USE_TLSF is not set */
 /* CONFIG_USE_SDMMC_CMD is not set */
 /* CONFIG_USE_CHERRY_USB is not set */
+/* CONFIG_USE_LVGL is not set */
 /* end of Third-Party Configuration */
 
 /* Kernel Configuration */

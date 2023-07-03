@@ -142,44 +142,36 @@ bootelf -p 0x90100000
 - 以E2000D/Q demo 板为例,开发者输入以下命令则可以初始化网卡：
 
 ```
-lwip probe 0 1 1 192.168.4.10 192.168.4.1 255.255.255.0
+lwip probe 0 0 1 0 192.168.4.10 192.168.4.1 255.255.255.0
 ```
 
-- 命令定义为:"lwip probe <device id> <interface id> <dhcp_en> <ipaddr> <gateway> <netmask> "
-- <device id> 为mac控制器
-- <interface id> 为gmii 控制器类型，0 is rgmii ,1 is sgmii
-- <dhcp_en> 1为使能dhcp 功能，0为关闭dhcp 功能
-- <ipaddr> 为ipv4 地址，示例为: 192.168.4.10
-- <gateway> 为网关 ，示例为: 192.168.4.1
-- <netmask> 为子网掩码，示例为255.255.255.0
+命令定义为:
+```
+lwip probe <device id> <interface id> <dhcp_en> <ipaddr> <gateway> <netmask> 
+```
+- driver id 为驱动类型 ， 0为xmac ，1为gmac
+- device id 为mac控制器
+- interface id 为gmii 控制器类型，0 is rgmii ,1 is sgmii
+- dhcp_en 1为使能dhcp 功能，0为关闭dhcp 功能
+- ipaddr 为ipv4 地址，示例为: 192.168.4.10
+- gateway 为网关 ，示例为: 192.168.4.
+- netmask 为子网掩码，示例为255.255.255.0
 
 
 - 效果图如下
 
 ![](./pic/lwip_probe.png)
+![](./pic/ping.png)
+![](./pic/ping_ipv6.png)
 
-
-### 2.4.3 ipv4 实验效果
-
-- 在ipv4 工作模式下，可以使用ping 的方式测试当前程序是否正常工作,如下图所示：
-  
-![](./pic/ipv4_test.png)
-
-### 2.4.4 ipv6 实验效果
-
-- 在ipv6 工作模式下，可以使用ping 的方式测试当前程序是否正常工作,如下图所示：
-  
-![](./pic/ipv6_test.png)
-
-
-### 2.4.4 dhcp 实验效果
-
-- 打开dhcp功能之后，如下图所示：
-  
+- 使能dhcp模式后，输入以下指令,开启dhcp网卡测试
+```
+lwip probe 0 0 1 1
+```
 ![](./pic/dhcp_test.png)
+![](./pic/dhcp_ping.png)
 
 
-#### 2.4.2 提供
 
 ## 3. 如何解决问题
 

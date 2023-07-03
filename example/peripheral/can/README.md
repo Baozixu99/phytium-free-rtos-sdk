@@ -35,7 +35,7 @@
 ## 2. 如何使用例程
 
 本例程需要用到
-- Phytium开发板（E2000D/E2000Q）
+- Phytium开发板（E2000D/E2000Q/D2000/FT2000-4）
 - [Phytium freeRTOS SDK](https://gitee.com/phytium_embedded/phytium-free-rtos-sdk)
 - [Phytium standalone SDK](https://gitee.com/phytium_embedded/phytium-standalone-sdk)
 ### 2.1 硬件配置方法

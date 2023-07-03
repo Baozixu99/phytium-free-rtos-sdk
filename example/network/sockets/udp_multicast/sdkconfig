@@ -42,7 +42,6 @@ CONFIG_USE_FREERTOS=y
 CONFIG_TARGET_ARMV8_AARCH64=y
 CONFIG_USE_CACHE=y
 CONFIG_USE_MMU=y
-CONFIG_USE_SYS_TICK=y
 # CONFIG_MMU_DEBUG_PRINTS is not set
 # CONFIG_BOOT_WITH_FLUSH_CACHE is not set
 # end of Arch Configuration
@@ -113,18 +112,29 @@ CONFIG_USE_NEW_LIBC=y
 #
 # Building Option
 #
+
+#
+# Sdk common configuration
+#
 CONFIG_LOG_VERBOS=y
 # CONFIG_LOG_DEBUG is not set
 # CONFIG_LOG_INFO is not set
 # CONFIG_LOG_WARN is not set
 # CONFIG_LOG_ERROR is not set
 # CONFIG_LOG_NONE is not set
-CONFIG_USE_DEFAULT_INTERRUPT_CONFIG=y
-CONFIG_INTERRUPT_ROLE_MASTER=y
-# CONFIG_INTERRUPT_ROLE_SLAVE is not set
 # CONFIG_LOG_EXTRA_INFO is not set
 # CONFIG_LOG_DISPALY_CORE_NUM is not set
 # CONFIG_BOOTUP_DEBUG_PRINTS is not set
+CONFIG_USE_DEFAULT_INTERRUPT_CONFIG=y
+CONFIG_INTERRUPT_ROLE_MASTER=y
+# CONFIG_INTERRUPT_ROLE_SLAVE is not set
+# end of Sdk common configuration
+
+#
+# Image information configuration
+#
+# CONFIG_IMAGE_INFO is not set
+# end of Image information configuration
 
 #
 # Linker Options
@@ -242,6 +252,12 @@ CONFIG_FREERTOS_USE_XMAC=y
 #
 # CONFIG_FREERTOS_USE_TIMER is not set
 # end of Freertos Timer Drivers
+
+#
+# Freertos Media Drivers
+#
+# CONFIG_FREERTOS_USE_MEDIA is not set
+# end of Freertos Media Drivers
 # end of Component Configuration
 
 #
@@ -254,7 +270,7 @@ CONFIG_USE_LWIP=y
 #
 
 #
-# LWIP Configuration
+# Lwip configuration
 #
 
 #
@@ -262,10 +278,19 @@ CONFIG_USE_LWIP=y
 #
 CONFIG_LWIP_FXMAC=y
 # CONFIG_LWIP_FGMAC is not set
+# CONFIG_LWIP_RX_POLL is not set
 # end of LWIP Port Configuration
 
 # CONFIG_LWIP_NO_SYS is not set
 CONFIG_LWIP_LOCAL_HOSTNAME="phytium"
+
+#
+# Lwip_app
+#
+# CONFIG_USE_LWIP_APP_LWIPERF is not set
+# CONFIG_USE_LWIP_APP_PING is not set
+# CONFIG_USE_LWIP_APP_TFTP is not set
+# end of Lwip_app
 
 #
 # Memory configuration
@@ -285,38 +310,38 @@ CONFIG_PBUF_POOL_SIZE=1
 # end of Pbuf options
 
 #
-# ARP
+# Arp
 #
 CONFIG_ARP_QUEUEING_EN=y
-# end of ARP
+# end of Arp
 
 #
-# IPV4
+# Ipv4
 #
 # CONFIG_USE_IPV4_ONLY is not set
 CONFIG_LWIP_IP4_REASSEMBLY=y
 CONFIG_LWIP_IP4_FRAG=y
 # CONFIG_LWIP_IP_FORWARD is not set
 CONFIG_IP_REASS_MAX_PBUFS=45
-# end of IPV4
+# end of Ipv4
 
 #
-# ICMP
+# Icmp
 #
 CONFIG_LWIP_ICMP=y
 CONFIG_LWIP_MULTICAST_PING=y
 # CONFIG_LWIP_BROADCAST_PING is not set
-# end of ICMP
+# end of Icmp
 
 #
-# LWIP RAW API
+# Lwip raw api
 #
 CONFIG_LWIP_RAW_API_EN=y
 CONFIG_LWIP_MAX_RAW_PCBS=16
-# end of LWIP RAW API
+# end of Lwip raw api
 
 #
-# DHCP
+# Dhcp
 #
 CONFIG_LWIP_DHCP_ENABLE=y
 # CONFIG_LWIP_DHCP_DOES_ARP_CHECK is not set
@@ -325,36 +350,36 @@ CONFIG_LWIP_DHCP_ENABLE=y
 # CONFIG_LWIP_DHCP_RESTORE_LAST_IP is not set
 CONFIG_LWIP_DHCP_OPTIONS_LEN=68
 CONFIG_LWIP_DHCP_DISABLE_VENDOR_CLASS_ID=y
-# end of DHCP
+# end of Dhcp
 
 #
-# AUTOIP
+# Autoip
 #
 # CONFIG_LWIP_AUTOIP is not set
-# end of AUTOIP
+# end of Autoip
 
 #
-# IGMP
+# Igmp
 #
 CONFIG_LWIP_IGMP_EN=y
-# end of IGMP
+# end of Igmp
 
 #
-# DNS
+# Dns
 #
 CONFIG_LWIP_DNS_SUPPORT_MDNS_QUERIES=y
-# end of DNS
+# end of Dns
 
 #
-# UDP
+# Udp
 #
 CONFIG_LWIP_MAX_UDP_PCBS=16
 CONFIG_LWIP_UDP_RECVMBOX_SIZE=6
 # CONFIG_LWIP_NETBUF_RECVINFO is not set
-# end of UDP
+# end of Udp
 
 #
-# TCP
+# Tcp
 #
 CONFIG_LWIP_TCP_WND_DEFAULT=5744
 CONFIG_LWIP_TCP_MAXRTX=12
@@ -368,32 +393,33 @@ CONFIG_LWIP_TCP_OVERSIZE_MSS=y
 # CONFIG_LWIP_TCP_OVERSIZE_DISABLE is not set
 CONFIG_LWIP_TCP_TMR_INTERVAL=250
 CONFIG_LWIP_TCP_MSL=60000
+# CONFIG_LWIP_WND_SCALE is not set
 CONFIG_LWIP_TCP_RTO_TIME=1500
 CONFIG_LWIP_MAX_ACTIVE_TCP=16
 CONFIG_LWIP_MAX_LISTENING_TCP=16
 CONFIG_LWIP_TCP_HIGH_SPEED_RETRANSMISSION=y
 CONFIG_LWIP_TCP_RECVMBOX_SIZE=6
-# end of TCP
+# end of Tcp
 
 #
-# Network_Interface
+# Network_interface
 #
 # CONFIG_LWIP_NETIF_API is not set
 # CONFIG_LWIP_NETIF_STATUS_CALLBACK is not set
-# end of Network_Interface
+# end of Network_interface
 
 #
-# LOOPIF
+# Loopif
 #
 CONFIG_LWIP_NETIF_LOOPBACK=y
 CONFIG_LWIP_LOOPBACK_MAX_PBUFS=8
-# end of LOOPIF
+# end of Loopif
 
 #
-# SLIPIF
+# Slipif
 #
 # CONFIG_LWIP_SLIP_SUPPORT is not set
-# end of SLIPIF
+# end of Slipif
 
 CONFIG_LWIP_TCPIP_CORE_LOCKING=y
 
@@ -409,12 +435,12 @@ CONFIG_LWIP_SO_REUSE_RXTOALL=y
 # CONFIG_LWIP_STATS is not set
 
 #
-# PPP
+# Ppp
 #
 # CONFIG_LWIP_PPP_SUPPORT is not set
 CONFIG_LWIP_IPV6_MEMP_NUM_ND6_QUEUE=3
 CONFIG_LWIP_IPV6_ND6_NUM_NEIGHBORS=5
-# end of PPP
+# end of Ppp
 
 #
 # Checksums
@@ -425,7 +451,7 @@ CONFIG_LWIP_CHECKSUM_CHECK_ICMP=y
 # end of Checksums
 
 #
-# IPV6
+# Ipv6
 #
 CONFIG_LWIP_IPV6=y
 # CONFIG_LWIP_IPV6_AUTOCONFIG is not set
@@ -433,10 +459,9 @@ CONFIG_LWIP_IPV6_NUM_ADDRESSES=3
 # CONFIG_LWIP_IPV6_FORWARD is not set
 CONFIG_LWIP_IP6_FRAG=y
 CONFIG_LWIP_IP6_REASSEMBLY=y
-# end of IPV6
+# end of Ipv6
 
 CONFIG_LWIP_DEBUG=y
-# CONFIG_LWIP_DEBUG_ESP_LOG is not set
 CONFIG_LWIP_NETIF_DEBUG=y
 # CONFIG_LWIP_PBUF_DEBUG is not set
 # CONFIG_LWIP_ETHARP_DEBUG is not set
@@ -452,13 +477,13 @@ CONFIG_LWIP_NETIF_DEBUG=y
 # CONFIG_LWIP_UDP_DEBUG is not set
 # CONFIG_LWIP_SNTP_DEBUG is not set
 # CONFIG_LWIP_DNS_DEBUG is not set
-# end of LWIP Configuration
+# end of Lwip configuration
 
 #
 # Tcp/ip task resource configuration
 #
 CONFIG_LWIP_TCPIP_TASK_STACK_SIZE=3072
-CONFIG_LWIP_TCPIP_TASK_PRIO=6
+CONFIG_LWIP_TCPIP_TASK_PRIO=5
 CONFIG_LWIP_TCPIP_RECVMBOX_SIZE=32
 # end of Tcp/ip task resource configuration
 
@@ -496,6 +521,7 @@ CONFIG_DEFAULT_LETTER_SHELL_USE_UART1=y
 CONFIG_USE_TLSF=y
 # CONFIG_USE_SDMMC_CMD is not set
 # CONFIG_USE_CHERRY_USB is not set
+# CONFIG_USE_LVGL is not set
 # end of Third-Party Configuration
 
 #

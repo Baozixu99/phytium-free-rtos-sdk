@@ -86,7 +86,7 @@ os.system("chmod +x ./make/*.mk --silent ")
 os.system("chmod +x ./lib/Kconfiglib/*.py --silent ")
 
 # Add standalone sdk
-standalone_sdk_v="a2dc5e2a6e8dd705f6667a9d58d3d78f25ca528e"
+standalone_sdk_v="af507ee949dfba64c5206b14f8aa39537480c7eb"
 standalone_path=freertos_sdk_path  + '/standalone'
 standalone_branche="master"
 standalone_remote="https://gitee.com/phytium_embedded/phytium-standalone-sdk.git"
@@ -109,6 +109,7 @@ if not os.path.exists(standalone_path):
     os.system("echo \"third-party/sdmmc/*\" >> {}".format(r'.git/info/sparse-checkout'))
     os.system("echo \"third-party/lwip-2.1.2/*\" >> {}".format(r'.git/info/sparse-checkout'))
     os.system("echo \"third-party/sfud-1.1.0/*\" >> {}".format(r'.git/info/sparse-checkout'))
+    os.system("echo \"third-party/lvgl-8.3/*\" >> {}".format(r'.git/info/sparse-checkout'))
 
     os.system("git checkout {}".format(standalone_sdk_v))
     print('[1]: Standalone sdk download is succeed')

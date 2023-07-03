@@ -19,7 +19,7 @@
  * Modify History: 
  *  Ver     Who           Date                  Changes
  * -----   ------       --------     --------------------------------------
- *  1.0    liuzhihong  2022/5/26  first release
+ *  1.0    liuzhihong  2022/5/26                first release
  */
 
 /* lwIP includes. */
@@ -32,7 +32,7 @@
 #ifdef __aarch64__
     #include "faarch64.h"
 #else
-    #include "fcp15.h"
+    #include "faarch32.h"
 #endif
 
 #include "fdebug.h"

@@ -25,15 +25,14 @@
  * 2.0  wangxiaodong  2022/8/9   adapt E2000D
  * 2.1  liuzhihong    2023/1/12  improve lwip functions
  */
-
+#include <stdio.h>
+#include <stdarg.h>
 #include "FreeRTOS.h"
 #include "task.h"
 #include "ftypes.h"
 #include "fparameters.h"
 #include "fgeneric_timer.h"
 #include "finterrupt.h"
-#include <stdio.h>
-#include <stdarg.h>
 #include "fcpu_info.h"
 #include "fassert.h"
 #include "fexception.h"
@@ -59,7 +58,7 @@ void vApplicationMallocFailedHook(void)
 
 void vApplicationTickHook(void)
 {
-
+      
 }
 
 /*
@@ -79,24 +78,24 @@ static u32 cntfrq; /* System frequency */
 void vConfigureTickInterrupt(void)
 {
     /* Disable the timer */
-    GenericTimerStop();
+    GenericTimerStop(GENERIC_TIMER_ID0);
     /* Get system frequency */
     cntfrq = GenericTimerFrequecy();
 
     /* Set tick rate */
-    GenericTimerCompare(cntfrq / configTICK_RATE_HZ);
-    GenericTimerInterruptEnable();
+    GenericTimerSetTimerValue(GENERIC_TIMER_ID0, cntfrq / configTICK_RATE_HZ);
+    GenericTimerInterruptEnable(GENERIC_TIMER_ID0);
 
     /* Set as the lowest priority */
     InterruptSetPriority(GENERIC_TIMER_NS_IRQ_NUM, configKERNEL_INTERRUPT_PRIORITY);
     InterruptUmask(GENERIC_TIMER_NS_IRQ_NUM);
 
-    GenericTimerStart();
+    GenericTimerStart(GENERIC_TIMER_ID0);
 }
 
 void vClearTickInterrupt(void)
 {
-    GenericTimerCompare(cntfrq / configTICK_RATE_HZ);
+    GenericTimerSetTimerValue(GENERIC_TIMER_ID0, cntfrq / configTICK_RATE_HZ);
 }
 
 volatile unsigned int gCpuRuntime;
