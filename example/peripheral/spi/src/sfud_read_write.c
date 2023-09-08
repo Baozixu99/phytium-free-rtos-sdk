@@ -36,7 +36,11 @@
 
 /************************** Constant Definitions *****************************/
 #define SFUD_WR_BUF_LEN   64
+#if defined(CONFIG_TARGET_E2000D)||defined(CONFIG_TARGET_E2000Q)
 #define SFUD_FLASH_INDEX  SFUD_FSPIM2_INDEX
+#elif defined(CONFIG_TARGET_PHYTIUMPI)
+#define SFUD_FLASH_INDEX  SFUD_FSPIM0_INDEX
+#endif
 
 /************************** Variable Definitions *****************************/
 static u32 flash_addr = 0x0;

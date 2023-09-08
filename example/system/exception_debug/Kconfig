@@ -4,7 +4,7 @@ menu "Project Configuration"
 	
 	config TARGET_NAME
 		string "Build Target Name"
-		default "template"
+		default "exception"
 		help
 			Build Target name for the demo
 
@@ -27,4 +27,4 @@ menu "Project Configuration"
 
 endmenu
 
-source "$(FREERTOS_SDK_ROOT)/Kconfig"
+source "$(SDK_DIR)/../freertos.kconfig"

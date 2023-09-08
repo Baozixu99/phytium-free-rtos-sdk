@@ -1,6 +1,8 @@
 /*
- * FreeRTOS Kernel V10.0.1
- * Copyright (C) 2017 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
+ * FreeRTOS Kernel V10.5.1
+ * Copyright (C) 2021 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
+ *
+ * SPDX-License-Identifier: MIT
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -19,10 +21,9 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
- * http://www.FreeRTOS.org
- * http://aws.amazon.com/freertos
+ * https://www.FreeRTOS.org
+ * https://github.com/FreeRTOS
  *
- * 1 tab == 4 spaces!
  */
 
 /* Standard includes. */
@@ -124,9 +125,9 @@ point is zero. */
     }
 
 /* Hardware specifics used when sanity checking the configuration. */
-#define portINTERRUPT_PRIORITY_REGISTER_OFFSET (0x400UL + 32UL) //
-#define portMAX_8_BIT_VALUE ((uint8_t)0xff)
-#define portBIT_0_SET ((uint8_t)0x01)
+#define portINTERRUPT_PRIORITY_REGISTER_OFFSET		0x400UL
+#define portMAX_8_BIT_VALUE							( ( uint8_t ) 0xff )
+#define portBIT_0_SET								( ( uint8_t ) 0x01 )
 
 /*-----------------------------------------------------------*/
 
@@ -154,7 +155,7 @@ uint64_t ullPortYieldRequired = pdFALSE;
 
 /* Counts the interrupt nesting depth.  A context switch is only performed if
 if the nesting depth is 0. */
-uint64_t ullPortInterruptNesting = pdFALSE;
+uint64_t ullPortInterruptNesting = 0;
 
 /* The space on the stack required to hold the FPU registers.  This is 32 128-bit
  * registers, that means (64 * 8) 64 double words */

@@ -26,7 +26,7 @@
 #ifndef FSDIO_PORT_H
 #define FSDIO_PORT_H
 
-#include "sdmmc_host.h"
+#include "sdmmc_host_os.h"
 
 #ifdef __cplusplus
 extern "C"

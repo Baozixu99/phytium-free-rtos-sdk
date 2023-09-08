@@ -32,7 +32,7 @@
 #include "fcache.h"
 #include "fassert.h"
 #include "fdebug.h"
-#include "fpinctrl.h"
+#include "fio_mux.h"
 
 #include "fspim_os.h"
 #include "fddma_os.h"

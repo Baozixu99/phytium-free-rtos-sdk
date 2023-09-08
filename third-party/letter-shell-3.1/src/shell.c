@@ -84,7 +84,7 @@ enum
 #endif
 };
 
-#if defined(CONFIG_TARGET_F2000_4)
+#if defined(CONFIG_TARGET_FT2004)
 #define SHELL_PLATFORM      "FT2000/4  "
 #elif defined(CONFIG_TARGET_D2000)
 #define SHELL_PLATFORM      "D2000  "
@@ -94,6 +94,8 @@ enum
 #define SHELL_PLATFORM      "E2000D  "
 #elif defined(CONFIG_TARGET_E2000S)
 #define SHELL_PLATFORM      "E2000S  "
+#elif defined(CONFIG_TARGET_PHYTIUMPI) 
+#define SHELL_PLATFORM      "PHYTIUMPI  "
 #else
 #define SHELL_PLATFORM      "Unkonwn  "
 #endif

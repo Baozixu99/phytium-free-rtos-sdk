@@ -68,13 +68,13 @@ FFreeRTOSMedia *FFreeRTOSMediaHwInit(u32 channel, u32 width, u32 height, u32 mul
         FMEDIA_ERROR("Get default failed");
         goto err_exit;
     }
-    ret = FDcDpSetBasicParam(&instance_p->dcdp_ctrl,mode_id,color_depth,refresh_rate);
+    ret = FDcDpSetBasicParam(&instance_p->dcdp_ctrl, width, height, color_depth, refresh_rate);
     if (ret != FMEDIA_DP_SUCCESS)
     {
         FMEDIA_ERROR("Set basic parameters failed");
         goto err_exit;
     }
-    ret = FDcDpInitial(&instance_p->dcdp_ctrl, channel, mode_id, multi_mode);
+    ret = FDcDpInitial(&instance_p->dcdp_ctrl, channel,width, height , mode_id, multi_mode);
     if (ret != FMEDIA_DP_SUCCESS)
     {
         FMEDIA_ERROR("DcDp initial failed");
@@ -101,7 +101,6 @@ FError FFreeRTOSMediaHpdReInit(u32 channel,u32 width, u32 height,u32 multi_mode,
 {
     FError ret = FT_SUCCESS;
     FFreeRTOSMedia *instance_p = &os_media;
-    u32 mode_id = FDcResToModeNum(width, height);
 
     if (FDpChannelRegRead(instance_p->dcdp_ctrl.dp_instance_p[channel].config.dp_channe_base_addr, FDPTX_LINK_BW_SET) != 0)
     {
@@ -117,12 +116,12 @@ FError FFreeRTOSMediaHpdReInit(u32 channel,u32 width, u32 height,u32 multi_mode,
         {
             FMEDIA_ERROR("Get default failed");
         }
-        ret = FDcDpSetBasicParam(&instance_p->dcdp_ctrl, mode_id,color_depth,refresh_rate);
+        ret = FDcDpSetBasicParam(&instance_p->dcdp_ctrl, width, height, color_depth, refresh_rate);
         if (ret != FMEDIA_DP_SUCCESS)
         {
             FMEDIA_ERROR("Set basic parameters failed");
         }
-        ret = FDcDpInitial(&instance_p->dcdp_ctrl, channel, mode_id,multi_mode);
+        ret = FDcDpInitial(&instance_p->dcdp_ctrl, channel, width, height, color_depth, multi_mode);
         instance_p->dcdp_ctrl.connect_flg[channel] = 0;
     }
 

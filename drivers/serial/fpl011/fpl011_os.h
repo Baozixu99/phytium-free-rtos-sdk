@@ -25,9 +25,9 @@
 #ifndef FPL011_OS_H
 #define FPL011_OS_H
 
-#include <FreeRTOS.h>
-#include <event_groups.h>
-#include <semphr.h>
+#include "FreeRTOS.h"
+#include "event_groups.h"
+#include "semphr.h"
 #include "fpl011.h"
 #include "fpl011_hw.h"
 #include "ftypes.h"

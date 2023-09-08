@@ -29,7 +29,7 @@
 #include "fpwm.h"
 #include "fpwm_os.h"
 #include "fcpu_info.h"
-#include "fpinctrl.h"
+#include "fio_mux.h"
 #include "pwm_example.h"
 
 /* The periods assigned to the one-shot timers. */
@@ -68,7 +68,7 @@ static void FFreeRTOSPwmInitTask(void *pvParameters)
     FError ret = FPWM_SUCCESS;
 
     /* set channel 0 and 1 iopad*/
-#if defined(CONFIG_TARGET_E2000)
+#if defined(CONFIG_TARGET_E2000) || defined(CONFIG_TARGET_PHYTIUMPI)
     FIOPadSetPwmMux(pwm_id, 0);
     FIOPadSetPwmMux(pwm_id, 1);
 #endif

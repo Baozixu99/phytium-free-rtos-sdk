@@ -31,6 +31,11 @@ extern "C"
 {
 #endif
 
+#if defined(CONFIG_TARGET_E2000D)||defined(CONFIG_TARGET_E2000Q)
+#define PWM_TEST_ID FPWM6_ID
+#elif defined(CONFIG_TARGET_PHYTIUMPI)
+#define PWM_TEST_ID FPWM2_ID
+#endif
 /* pwm test */
 BaseType_t FFreeRTOSPwmCreate(u32 id);
 

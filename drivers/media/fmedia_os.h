@@ -30,7 +30,7 @@
 #include "fdcdp.h"
 #include "ftypes.h"
 #include "fparameters.h"
-#include <event_groups.h>
+#include "event_groups.h"
 
 #ifdef __cplusplus
 extern "C"

@@ -1,50 +1,122 @@
 #ifndef SDK_CONFIG_H__
 #define SDK_CONFIG_H__
 
-/* Project Configuration */
-
-#define CONFIG_TARGET_NAME "e2000q_freertos_a64"
-
 /*  Lwip startup test configuration */
 
-/* CONFIG_LWIP_IPV6_TEST is not set */
-/* CONFIG_LWIP_DHCP_TEST is not set */
-/* CONFIG_BOARD_TYPE_B is not set */
-/* CONFIG_BOARD_TYPE_C is not set */
-/* CONFIG_BOARD_TYPE_A is not set */
-#define CONFIG_BOARD_TYPE_DEMO
+#define CONFIG_LWIP_IPV6_TEST
+#define CONFIG_LWIP_DHCP_TEST
 /* end of  Lwip startup test configuration */
-/* end of Project Configuration */
-
-/* Standalone Setting */
-
 #define CONFIG_USE_FREERTOS
 
-/* Arch Configuration */
+/* Arch configuration */
 
-/* CONFIG_TARGET_ARMV8_AARCH32 is not set */
+#define CONFIG_TARGET_ARMv8
+#define CONFIG_ARCH_NAME "armv8"
+
+/* Arm architecture configuration */
+
+#define CONFIG_ARCH_ARMV8_AARCH64
+/* CONFIG_ARCH_ARMV8_AARCH32 is not set */
+
+/* Compiler configuration */
+
+#define CONFIG_ARM_GCC_SELECT
+/* CONFIG_ARM_CLANG_SELECT is not set */
+#define CONFIG_TOOLCHAIN_NAME "gcc"
 #define CONFIG_TARGET_ARMV8_AARCH64
+#define CONFIG_ARCH_EXECUTION_STATE "aarch64"
+
+/* Fpu configuration */
+
+#define CONFIG_ARM_NEON
+/* end of Fpu configuration */
+#define CONFIG_ARM_CRC
+#define CONFIG_ARM_CRYPTO
+#define CONFIG_ARM_FLOAT_POINT
+/* CONFIG_GCC_CODE_MODEL_TINY is not set */
+#define CONFIG_GCC_CODE_MODEL_SMALL
+/* CONFIG_GCC_CODE_MODEL_LARGE is not set */
+/* end of Compiler configuration */
 #define CONFIG_USE_CACHE
 #define CONFIG_USE_MMU
-/* CONFIG_MMU_DEBUG_PRINTS is not set */
 /* CONFIG_BOOT_WITH_FLUSH_CACHE is not set */
-/* end of Arch Configuration */
+/* CONFIG_MMU_DEBUG_PRINTS is not set */
+/* end of Arm architecture configuration */
+/* end of Arch configuration */
 
-/* Board Configuration */
+/* Soc configuration */
 
-/* CONFIG_TARGET_F2000_4 is not set */
-/* CONFIG_TARGET_D2000 is not set */
+/* CONFIG_TARGET_PHYTIUMPI is not set */
 #define CONFIG_TARGET_E2000Q
 /* CONFIG_TARGET_E2000D is not set */
 /* CONFIG_TARGET_E2000S is not set */
+/* CONFIG_TARGET_FT2004 is not set */
+/* CONFIG_TARGET_D2000 is not set */
+#define CONFIG_SOC_NAME "e2000"
+#define CONFIG_TARGET_TYPE_NAME "q"
+#define CONFIG_SOC_CORE_NUM 4
+#define CONFIG_F32BIT_MEMORY_ADDRESS 0x80000000
+#define CONFIG_F32BIT_MEMORY_LENGTH 0x80000000
+#define CONFIG_F64BIT_MEMORY_ADDRESS 0x2000000000
+#define CONFIG_F64BIT_MEMORY_LENGTH 0x800000000
 #define CONFIG_TARGET_E2000
+/* CONFIG_USE_SPINLOCK is not set */
 #define CONFIG_DEFAULT_DEBUG_PRINT_UART1
 /* CONFIG_DEFAULT_DEBUG_PRINT_UART0 is not set */
 /* CONFIG_DEFAULT_DEBUG_PRINT_UART2 is not set */
+/* end of Soc configuration */
+
+/* Board Configuration */
+
+#define CONFIG_BOARD_NAME "demo"
+/* CONFIG_USE_SPI_IOPAD is not set */
+/* CONFIG_USE_GPIO_IOPAD is not set */
+/* CONFIG_USE_CAN_IOPAD is not set */
+/* CONFIG_USE_QSPI_IOPAD is not set */
+/* CONFIG_USE_PWM_IOPAD is not set */
+/* CONFIG_USE_MIO_IOPAD is not set */
+/* CONFIG_USE_TACHO_IOPAD is not set */
+/* CONFIG_USE_UART_IOPAD is not set */
+/* CONFIG_USE_THIRD_PARTY_IOPAD is not set */
+#define CONFIG_E2000Q_DEMO_BOARD
+
+/* IO mux configuration when board start up */
+
+/* end of IO mux configuration when board start up */
+/* CONFIG_CUS_DEMO_BOARD is not set */
+
+/* Build project name */
+
+#define CONFIG_TARGET_NAME "lwip_startup"
+/* end of Build project name */
 /* end of Board Configuration */
 
-/* Components Configuration */
+/* Sdk common configuration */
 
+/* CONFIG_LOG_VERBOS is not set */
+/* CONFIG_LOG_DEBUG is not set */
+#define CONFIG_LOG_INFO
+/* CONFIG_LOG_WARN is not set */
+/* CONFIG_LOG_ERROR is not set */
+/* CONFIG_LOG_NONE is not set */
+/* CONFIG_LOG_EXTRA_INFO is not set */
+/* CONFIG_LOG_DISPALY_CORE_NUM is not set */
+/* CONFIG_BOOTUP_DEBUG_PRINTS is not set */
+#define CONFIG_USE_DEFAULT_INTERRUPT_CONFIG
+#define CONFIG_INTERRUPT_ROLE_MASTER
+/* CONFIG_INTERRUPT_ROLE_SLAVE is not set */
+/* end of Sdk common configuration */
+
+/* Image information configuration */
+
+/* CONFIG_IMAGE_INFO is not set */
+/* end of Image information configuration */
+
+/* Drivers configuration */
+
+#define CONFIG_USE_IOMUX
+/* CONFIG_ENABLE_IOCTRL is not set */
+#define CONFIG_ENABLE_IOPAD
 /* CONFIG_USE_SPI is not set */
 /* CONFIG_USE_QSPI is not set */
 #define CONFIG_USE_GIC
@@ -82,60 +154,56 @@
 /* CONFIG_USE_IPC is not set */
 /* CONFIG_USE_MEDIA is not set */
 /* CONFIG_USE_SCMI_MHU is not set */
-/* end of Components Configuration */
-#define CONFIG_USE_NEW_LIBC
-/* end of Standalone Setting */
+/* end of Drivers configuration */
 
-/* Building Option */
+/* Build setup */
 
-/* Sdk common configuration */
+#define CONFIG_CHECK_DEPS
+#define CONFIG_OUTPUT_BINARY
 
-/* CONFIG_LOG_VERBOS is not set */
-#define CONFIG_LOG_DEBUG
-/* CONFIG_LOG_INFO is not set */
-/* CONFIG_LOG_WARN is not set */
-/* CONFIG_LOG_ERROR is not set */
-/* CONFIG_LOG_NONE is not set */
-/* CONFIG_LOG_EXTRA_INFO is not set */
-/* CONFIG_LOG_DISPALY_CORE_NUM is not set */
-/* CONFIG_BOOTUP_DEBUG_PRINTS is not set */
-#define CONFIG_USE_DEFAULT_INTERRUPT_CONFIG
-#define CONFIG_INTERRUPT_ROLE_MASTER
-/* CONFIG_INTERRUPT_ROLE_SLAVE is not set */
-/* end of Sdk common configuration */
+/* Optimization options */
 
-/* Image information configuration */
+/* CONFIG_DEBUG_NOOPT is not set */
+/* CONFIG_DEBUG_CUSTOMOPT is not set */
+#define CONFIG_DEBUG_FULLOPT
+/* CONFIG_DEBUG_ENABLE_ALL_WARNING is not set */
+#define CONFIG_DEBUG_OPT_UNUSED_SECTIONS
+#define CONFIG_DEBUG_LINK_MAP
+/* CONFIG_CCACHE is not set */
+/* CONFIG_ARCH_COVERAGE is not set */
+/* CONFIG_LTO_FULL is not set */
+/* end of Optimization options */
 
-/* CONFIG_IMAGE_INFO is not set */
-/* end of Image information configuration */
+/* Debug options */
+
+/* CONFIG_WALL_WARNING_ERROR is not set */
+/* CONFIG_STRICT_PROTOTYPES is not set */
+/* CONFIG_DEBUG_SYMBOLS is not set */
+/* CONFIG_FRAME_POINTER is not set */
+/* CONFIG_OUTPUT_ASM_DIS is not set */
+/* CONFIG_ENABLE_WSHADOW is not set */
+/* CONFIG_ENABLE_WUNDEF is not set */
+#define CONFIG_DOWNGRADE_DIAG_WARNING
+/* end of Debug options */
+
+/* Lib */
+
+#define CONFIG_USE_COMPILE_CHAIN
+/* CONFIG_USB_USER_DEFINED is not set */
+/* end of Lib */
+/* CONFIG_ENABLE_CXX is not set */
 
 /* Linker Options */
 
-/* CONFIG_AARCH32_RAM_LD is not set */
-#define CONFIG_AARCH64_RAM_LD
+#define CONFIG_DEFAULT_LINKER_SCRIPT
 /* CONFIG_USER_DEFINED_LD is not set */
-#define CONFIG_LINK_SCRIPT_ROM
-#define CONFIG_ROM_START_UP_ADDR 0x80100000
-#define CONFIG_ROM_SIZE_MB 1
-#define CONFIG_LINK_SCRIPT_RAM
-#define CONFIG_RAM_START_UP_ADDR 0x80500000
-#define CONFIG_RAM_SIZE_MB 64
+#define CONFIG_IMAGE_LOAD_ADDRESS 0x80100000
+#define CONFIG_IMAGE_MAX_LENGTH 0x1000000
 #define CONFIG_HEAP_SIZE 1
-#define CONFIG_STACK_SIZE 0x100000
+#define CONFIG_STACK_SIZE 0x400
 #define CONFIG_FPU_STACK_SIZE 0x1000
 /* end of Linker Options */
-
-/* Compiler Options */
-
-/* Cross-Compiler Setting */
-
-#define CONFIG_GCC_OPTIMIZE_LEVEL 0
-/* CONFIG_USE_EXT_COMPILER is not set */
-/* CONFIG_USE_KLIN_SYS is not set */
-/* end of Cross-Compiler Setting */
-#define CONFIG_OUTPUT_BINARY
-/* end of Compiler Options */
-/* end of Building Option */
+/* end of Build setup */
 
 /* Component Configuration */
 
@@ -212,13 +280,13 @@
 /* end of Freertos Media Drivers */
 /* end of Component Configuration */
 
-/* Third-Party Configuration */
+/* Third-party configuration */
 
 #define CONFIG_USE_LWIP
 
 /* LWIP Freertos Port Configuration */
 
-/* Lwip configuration */
+/* LWIP Configuration */
 
 /* LWIP Port Configuration */
 
@@ -229,12 +297,12 @@
 /* CONFIG_LWIP_NO_SYS is not set */
 #define CONFIG_LWIP_LOCAL_HOSTNAME "phytium"
 
-/* Lwip_app */
+/* LWIP_APP */
 
 /* CONFIG_USE_LWIP_APP_LWIPERF is not set */
 /* CONFIG_USE_LWIP_APP_PING is not set */
 /* CONFIG_USE_LWIP_APP_TFTP is not set */
-/* end of Lwip_app */
+/* end of LWIP_APP */
 
 /* Memory configuration */
 
@@ -251,61 +319,67 @@
 #define CONFIG_PBUF_POOL_SIZE 1
 /* end of Pbuf options */
 
-/* Arp */
+/* ARP */
 
 #define CONFIG_ARP_QUEUEING_EN
-/* end of Arp */
+/* end of ARP */
 
-/* Ipv4 */
+/* IPV4 */
 
 /* CONFIG_USE_IPV4_ONLY is not set */
 #define CONFIG_LWIP_IP4_REASSEMBLY
 #define CONFIG_LWIP_IP4_FRAG
 /* CONFIG_LWIP_IP_FORWARD is not set */
 #define CONFIG_IP_REASS_MAX_PBUFS 16
-/* end of Ipv4 */
+/* end of IPV4 */
 
-/* Icmp */
+/* ICMP */
 
 #define CONFIG_LWIP_ICMP
 #define CONFIG_LWIP_MULTICAST_PING
 #define CONFIG_LWIP_BROADCAST_PING
-/* end of Icmp */
+/* end of ICMP */
 
-/* Lwip raw api */
+/* LWIP RAW API */
 
 #define CONFIG_LWIP_RAW_API_EN
 #define CONFIG_LWIP_MAX_RAW_PCBS 16
-/* end of Lwip raw api */
+/* end of LWIP RAW API */
 
-/* Dhcp */
+/* DHCP */
 
-/* CONFIG_LWIP_DHCP_ENABLE is not set */
-/* end of Dhcp */
+#define CONFIG_LWIP_DHCP_ENABLE
+/* CONFIG_LWIP_DHCP_DOES_ARP_CHECK is not set */
+/* CONFIG_LWIP_DHCP_GET_NTP_SRV is not set */
+/* CONFIG_LWIP_DHCP_DISABLE_CLIENT_ID is not set */
+/* CONFIG_LWIP_DHCP_RESTORE_LAST_IP is not set */
+#define CONFIG_LWIP_DHCP_OPTIONS_LEN 68
+#define CONFIG_LWIP_DHCP_DISABLE_VENDOR_CLASS_ID
+/* end of DHCP */
 
-/* Autoip */
+/* AUTOIP */
 
 /* CONFIG_LWIP_AUTOIP is not set */
-/* end of Autoip */
+/* end of AUTOIP */
 
-/* Igmp */
+/* IGMP */
 
 #define CONFIG_LWIP_IGMP_EN
-/* end of Igmp */
+/* end of IGMP */
 
-/* Dns */
+/* DNS */
 
 #define CONFIG_LWIP_DNS_SUPPORT_MDNS_QUERIES
-/* end of Dns */
+/* end of DNS */
 
-/* Udp */
+/* UDP */
 
 #define CONFIG_LWIP_MAX_UDP_PCBS 16
 #define CONFIG_LWIP_UDP_RECVMBOX_SIZE 6
 /* CONFIG_LWIP_NETBUF_RECVINFO is not set */
-/* end of Udp */
+/* end of UDP */
 
-/* Tcp */
+/* TCP */
 
 #define CONFIG_LWIP_TCP_WND_DEFAULT 5744
 #define CONFIG_LWIP_TCP_MAXRTX 12
@@ -325,24 +399,24 @@
 #define CONFIG_LWIP_MAX_LISTENING_TCP 16
 #define CONFIG_LWIP_TCP_HIGH_SPEED_RETRANSMISSION
 #define CONFIG_LWIP_TCP_RECVMBOX_SIZE 6
-/* end of Tcp */
+/* end of TCP */
 
-/* Network_interface */
+/* Network_Interface */
 
 /* CONFIG_LWIP_NETIF_API is not set */
 /* CONFIG_LWIP_NETIF_STATUS_CALLBACK is not set */
-/* end of Network_interface */
+/* end of Network_Interface */
 
-/* Loopif */
+/* LOOPIF */
 
 #define CONFIG_LWIP_NETIF_LOOPBACK
 #define CONFIG_LWIP_LOOPBACK_MAX_PBUFS 8
-/* end of Loopif */
+/* end of LOOPIF */
 
-/* Slipif */
+/* SLIPIF */
 
 /* CONFIG_LWIP_SLIP_SUPPORT is not set */
-/* end of Slipif */
+/* end of SLIPIF */
 #define CONFIG_LWIP_TCPIP_CORE_LOCKING
 
 /* Socket */
@@ -354,10 +428,12 @@
 /* end of Socket */
 /* CONFIG_LWIP_STATS is not set */
 
-/* Ppp */
+/* PPP */
 
 /* CONFIG_LWIP_PPP_SUPPORT is not set */
-/* end of Ppp */
+#define CONFIG_LWIP_IPV6_MEMP_NUM_ND6_QUEUE 3
+#define CONFIG_LWIP_IPV6_ND6_NUM_NEIGHBORS 5
+/* end of PPP */
 
 /* Checksums */
 
@@ -366,11 +442,17 @@
 #define CONFIG_LWIP_CHECKSUM_CHECK_ICMP
 /* end of Checksums */
 
-/* Ipv6 */
+/* IPV6 */
 
-/* CONFIG_LWIP_IPV6 is not set */
-/* end of Ipv6 */
+#define CONFIG_LWIP_IPV6
+/* CONFIG_LWIP_IPV6_AUTOCONFIG is not set */
+#define CONFIG_LWIP_IPV6_NUM_ADDRESSES 3
+/* CONFIG_LWIP_IPV6_FORWARD is not set */
+#define CONFIG_LWIP_IP6_FRAG
+/* CONFIG_LWIP_IP6_REASSEMBLY is not set */
+/* end of IPV6 */
 #define CONFIG_LWIP_DEBUG
+/* CONFIG_LWIP_DEBUG_ESP_LOG is not set */
 #define CONFIG_LWIP_NETIF_DEBUG
 /* CONFIG_LWIP_PBUF_DEBUG is not set */
 /* CONFIG_LWIP_ETHARP_DEBUG is not set */
@@ -386,12 +468,12 @@
 /* CONFIG_LWIP_UDP_DEBUG is not set */
 /* CONFIG_LWIP_SNTP_DEBUG is not set */
 /* CONFIG_LWIP_DNS_DEBUG is not set */
-/* end of Lwip configuration */
+/* end of LWIP Configuration */
 
 /* Tcp/ip task resource configuration */
 
 #define CONFIG_LWIP_TCPIP_TASK_STACK_SIZE 3072
-#define CONFIG_LWIP_TCPIP_TASK_PRIO 5
+#define CONFIG_LWIP_TCPIP_TASK_PRIO 6
 #define CONFIG_LWIP_TCPIP_RECVMBOX_SIZE 32
 /* end of Tcp/ip task resource configuration */
 
@@ -408,11 +490,6 @@
 #define CONFIG_LWIP_PORT_DHCP_PRIORITY 5
 /* end of lwip port thread Configuration */
 /* end of LWIP Freertos Port Configuration */
-#define CONFIG_USE_BACKTRACE
-/* CONFIG_USE_FATFS_0_1_4 is not set */
-/* CONFIG_USE_SFUD is not set */
-/* CONFIG_USE_SPIFFS is not set */
-/* CONFIG_USE_AMP is not set */
 #define CONFIG_USE_LETTER_SHELL
 
 /* Letter Shell Configuration */
@@ -422,11 +499,19 @@
 /* CONFIG_DEFAULT_LETTER_SHELL_USE_UART0 is not set */
 /* CONFIG_DEFAULT_LETTER_SHELL_USE_UART2 is not set */
 /* end of Letter Shell Configuration */
-#define CONFIG_USE_TLSF
+/* CONFIG_USE_AMP is not set */
 /* CONFIG_USE_SDMMC_CMD is not set */
-/* CONFIG_USE_CHERRY_USB is not set */
+/* CONFIG_USE_YMODEM is not set */
+/* CONFIG_USE_SFUD is not set */
+#define CONFIG_USE_BACKTRACE
+/* CONFIG_USE_FATFS_0_1_4 is not set */
+#define CONFIG_USE_TLSF
+/* CONFIG_USE_SPIFFS is not set */
+/* CONFIG_USE_LITTLE_FS is not set */
 /* CONFIG_USE_LVGL is not set */
-/* end of Third-Party Configuration */
+/* CONFIG_USE_FREEMODBUS is not set */
+/* CONFIG_USE_CHERRY_USB is not set */
+/* end of Third-party configuration */
 
 /* Kernel Configuration */
 

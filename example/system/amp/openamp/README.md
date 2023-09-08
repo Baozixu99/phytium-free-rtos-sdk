@@ -24,38 +24,25 @@
 
 > `<font size="1">`哪些硬件平台是支持的，需要哪些外设，例程与开发板哪些IO口相关等（建议附录开发板照片，展示哪些IO口被引出）`</font><br />`
 
-1. 准备一块ft2000/4、d2000或者E2000/D/S开发板
+1. 准备一块d2000 E2000Q/D firefly开发板
 2. 将串口连接好电脑，波特率设为 115200-8-1-N
 
 ### 2.2 SDK配置方法
 
 > `<font size="1">`依赖哪些驱动、库和第三方组件，如何完成配置（列出需要使能的关键配置项）`</font><br />`
 
-- 本例子已经提供好具体的编译指令，以下进行介绍：
+本例子已经提供好具体的编译指令，以下进行介绍:
+- make 将目录下的工程进行编译
+- make clean  将目录下的工程进行清理
+- make image   将目录下的工程进行编译，并将生成的elf 复制到目标地址
+- make list_kconfig 当前工程支持哪些配置文件
+- make load_kconfig LOAD_CONFIG_NAME=<kconfig configuration files>  将预设配置加载至工程中
+- make menuconfig   配置目录下的参数变量
+- make backup_kconfig 将目录下的sdkconfig 备份到./configs下
 
-  1. make core0 将./core0 目录下的工程进行编译
-  2. make core1 将./core1 目录下的工程进行编译
-  3. make clean_core0  将./core0 目录下的工程进行清理
-  4. make clean_core1  将./core1 目录下的工程进行清理
-  5. make boot_core0   将./core0 目录下的编译后的elf 复制到目标地址
-  6. make boot_core1   将./core1 目录下的编译后的elf 复制到目标地址
-  7. make config_amp_d2000_aarch64 将预设64bit d2000 下的配置分别加载至 ./core0 ./core1
-  8. make config_amp_d2000_aarch32 将预设32bit d2000 下的配置分别加载至 ./core0 ./core1
-  9. make config_amp_ft2004_aarch64 将预设64bit ft2004 下的配置分别加载至 ./core0 ./core1
-  10. make config_amp_ft2004_aarch32 将预设32bit ft2004 下的配置分别加载至 ./core0 ./core1
-  11. make config_amp_e2000d_aarch64 将预设64bit e2000d 下的配置分别加载至 ./core0 ./core1
-  12. make config_amp_e2000d_aarch32 将预设32bit e2000d 下的配置分别加载至 ./core0 ./core1
-  13. make config_amp_e2000q_aarch64 将预设64bit e2000q 下的配置分别加载至 ./core0 ./core1
-  14. make config_amp_e2000q_aarch32 将预设32bit e2000q 下的配置分别加载至 ./core0 ./core1
-  15. make menuconfig_core0   配置./core0 目录下的配置变量
-  16. make menuconfig_core1   配置./core1 目录下的配置变量
-  17. make all                编译./core0 ./core1 下的项目工程
-  18. make clean              清理./core0 ./core1 下的编译结果
-  19. make boot               将 ./core0 ./core1 下的目标elf 复制到目标路径下
-- 具体使用方法为：
-
-  - 在 /example/amp/openamp  下
-  - 使用以上指令
+具体使用方法为:
+- 在当前目录下
+- 执行以上指令
 
 ### 2.3 构建和下载
 
@@ -91,10 +78,10 @@
 #### D2000/FT2004/E2000 aarch32 裸跑程序测试 （rtos间）
 
 1. 在编译环境下，切换至 example/amp/openamp 目录
-   1.1 输入 'make config_amp_d2000_aarch32' 加载默认D2000配置信息，或者输入 'make config_amp_ft2004_aarch32' 加载默认ft2004配置信息
+   1.1 输入 'make config_d2000_aarch32' 加载默认D2000配置信息，或者输入 'make config_ft2004_aarch32' 加载默认ft2004配置信息
    1.2 输入 'make all' 编译core0 / core1 代码，并且生成对应的elf 文件
    1.3 先将 ./core0/makefile 与 ./core1/makefile 中 的 USR_BOOT_DIR 修改为您的tftp 所覆盖的目录
-   1.4 输入 'make boot' 将生成的elf 拷贝至 tftp 的目录下
+   1.4 输入 'make image' 将生成的elf 拷贝至 tftp 的目录下
 2. 使用串口连接D2000/FT2004 开发板 ，并且打开串口终端工具
    2.1 复位开发板之后，将D2000/FT2004 开发板的网络与tftp 服务器在同一局域网中
    2.2  在中断工具下输入以下命令
@@ -121,10 +108,10 @@
 #### D2000/FT2004/E2000 aarch64 裸跑程序测试 （rtos间）
 
 1. 在编译环境下，切换至 example/amp/openamp 目录
-   1.1 输入 'make config_amp_d2000_aarch64' 加载默认配置信息,或输入 'make config_amp_ft2004_aarch64' 加载默认配置信息
+   1.1 输入 'make config_d2000_aarch64' 加载默认配置信息,或输入 'make config_ft2004_aarch64' 加载默认配置信息
    1.2 输入 'make all' 编译core0 / core1 代码，并且生成对应的elf 文件
    1.3 先将 ./core0/makefile 与 ./core1/makefile 中 的 USR_BOOT_DIR 修改为您的tftp 所覆盖的目录
-   1.4 输入 'make boot' 将生成的elf 拷贝至 tftp 的目录下
+   1.4 输入 'make image' 将生成的elf 拷贝至 tftp 的目录下
 2. 使用串口连接D2000/FT2004 开发板 ，并且打开串口终端工具
    2.1 复位开发板之后，将D2000/FT2004 开发板的网络与tftp 服务器在同一局域网中
    2.2  在中断工具下输入以下命令

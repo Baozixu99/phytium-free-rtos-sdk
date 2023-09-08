@@ -67,7 +67,8 @@ static int FExcOpsUndefInstr(void)
 #ifdef __aarch64__
     AARCH64_READ_SYSREG(SCTLR_EL3);
 #else
-    __MRC(15, 0, 3, 2, 1);
+    #define UNDEFINED_INS	15, 0, 3, 2, 1
+    AARCH32_READ_SYSREG_32(UNDEFINED_INS);
 #endif
 
     return 0;

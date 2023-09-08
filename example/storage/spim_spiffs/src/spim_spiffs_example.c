@@ -29,7 +29,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "semphr.h"
-#include "fpinctrl.h"
+#include "fio_mux.h"
 #include "timers.h"
 #include "spim_spiffs_example.h"
 #include "strto.h"
@@ -91,7 +91,7 @@ const char *file_name = "test.txt";
 #define TASK_DELAY_MS 	3000UL
 
 /* write and read task number */
-#define READ_WRITE_TASK_NUM 3
+#define READ_WRITE_TASK_NUM 2
 static xSemaphoreHandle xCountingSemaphore;
 
 static xTaskHandle spim_read1_handle;
@@ -217,7 +217,7 @@ int FSpiffsOpsCreateFile(const char *file_name)
     spiffs_file fd = SPIFFS_open(&instance.fs, file_name, SPIFFS_RDONLY, 0);
     if (0 > fd)
     {
-        FSPIFFS_ERROR("failed to open file %s errno %d", file_name, SPIFFS_errno(&instance.fs));
+        FSPIFFS_ERROR("failed to open file %s errno %d line %d", file_name, SPIFFS_errno(&instance.fs), __LINE__);
         return FSPIFFS_OPS_OPEN_FILE_FAILED;
     }
 
@@ -263,7 +263,7 @@ int FSpiffsOpsWriteFile(const char *file_name, const char *str)
     spiffs_file fd = SPIFFS_open(&instance.fs, file_name, SPIFFS_RDWR | SPIFFS_TRUNC, 0);
     if (0 > fd)
     {
-        FSPIFFS_ERROR("failed to open file %s errno %d", file_name, SPIFFS_errno(&instance.fs));
+        FSPIFFS_ERROR("failed to open file %s errno %d line %d", file_name, SPIFFS_errno(&instance.fs), __LINE__);
         return FSPIFFS_OPS_OPEN_FILE_FAILED;
     }
 
@@ -323,7 +323,8 @@ int FSpiffsOpsReadFile(const char *file_name)
     spiffs_file fd = SPIFFS_open(&instance.fs, file_name, open_flags, 0);
     if (0 > fd)
     {
-        FSPIFFS_ERROR("failed to open file %s errno %d", file_name, SPIFFS_errno(&instance.fs));
+        FSpiffsOpsListAll();
+        FSPIFFS_ERROR("failed to open file %s errno %d  LINE %d", file_name, SPIFFS_errno(&instance.fs), __LINE__);
         return FSPIFFS_OPS_OPEN_FILE_FAILED;
     }
 
@@ -404,7 +405,7 @@ static void FFreeRTOSSpimSpiffsInitTask(void *pvParameters)
     if (FSPIFFS_PORT_OK != result)
     {
         FSPIFFS_ERROR("initialize spiffs failed");
-        return;
+        goto err_exit;
     }
 
     FSpiffsOpsMount(FSPIFFS_IF_FORMAT);
@@ -422,6 +423,7 @@ static void FFreeRTOSSpimSpiffsInitTask(void *pvParameters)
         xSemaphoreGive(xCountingSemaphore);
     }
         
+err_exit:
     vTaskDelete(NULL);
 
 }
@@ -523,7 +525,7 @@ BaseType_t FFreeRTOSSpimSpiffsCreate(u32 spim_id)/* 主要任务函数 */
                             (const char* )"FFreeRTOSSpimSpiffsReadTask",/* 任务名字 */
                             (uint16_t )4096, /* 任务栈大小 */
                             (void* )xString2,/* 任务入口函数参数 */
-                            (UBaseType_t )configMAX_PRIORITIES-1, /* 任务的优先级 */
+                            (UBaseType_t )configMAX_PRIORITIES-2, /* 任务的优先级 */
                             (TaskHandle_t* )&spim_read2_handle); /* 任务控制 */
 
     xReturn = xTaskCreate((TaskFunction_t )FFreeRTOSSpimSpiffsWriteTask, /* 任务入口函数 */

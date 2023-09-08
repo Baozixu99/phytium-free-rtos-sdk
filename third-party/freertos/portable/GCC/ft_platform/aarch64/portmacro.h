@@ -1,6 +1,8 @@
 /*
- * FreeRTOS Kernel V10.0.1
- * Copyright (C) 2017 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
+ * FreeRTOS Kernel V10.5.1
+ * Copyright (C) 2021 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
+ *
+ * SPDX-License-Identifier: MIT
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -19,10 +21,9 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
- * http://www.FreeRTOS.org
- * http://aws.amazon.com/freertos
+ * https://www.FreeRTOS.org
+ * https://github.com/FreeRTOS
  *
- * 1 tab == 4 spaces!
  */
 
 #ifndef PORTMACRO_H
@@ -86,13 +87,11 @@ not need to be guarded with a critical section. */
         }                                      \
     }
 
-#define portYIELD_FROM_ISR(x) portEND_SWITCHING_ISR(x)
-#if defined(GUEST)
-#define portYIELD() __asm volatile("SVC 0" :: \
-                                       : "memory")
+#define portYIELD_FROM_ISR( x ) portEND_SWITCHING_ISR( x )
+#if defined( GUEST )
+	#define portYIELD() __asm volatile ( "SVC 0" ::: "memory" )
 #else
-#define portYIELD() __asm volatile("SMC 0" :: \
-                                       : "memory")
+	#define portYIELD() __asm volatile ( "SMC 0" ::: "memory" )
 #endif
 /*-----------------------------------------------------------
 * Critical section control
@@ -104,22 +103,22 @@ extern UBaseType_t uxPortSetInterruptMask(void);
 extern void vPortClearInterruptMask(UBaseType_t uxNewMaskValue);
 extern void vPortInstallFreeRTOSVectorTable(void);
 
-#define portDISABLE_INTERRUPTS()        \
-    __asm volatile("MSR DAIFSET, #2" :: \
-                       : "memory");     \
-    __asm volatile("DSB SY");           \
-    __asm volatile("ISB SY");
+#define portDISABLE_INTERRUPTS()									\
+	__asm volatile ( "MSR DAIFSET, #2" ::: "memory" );				\
+	__asm volatile ( "DSB SY" );									\
+	__asm volatile ( "ISB SY" );
 
-#define portENABLE_INTERRUPTS()         \
-    __asm volatile("MSR DAIFCLR, #2" :: \
-                       : "memory");     \
-    __asm volatile("DSB SY");           \
-    __asm volatile("ISB SY");
+#define portENABLE_INTERRUPTS()										\
+	__asm volatile ( "MSR DAIFCLR, #2" ::: "memory" );				\
+	__asm volatile ( "DSB SY" );									\
+	__asm volatile ( "ISB SY" );
 
 /* These macros do not globally disable/enable interrupts.  They do mask off
 interrupts that have a priority below configMAX_API_CALL_INTERRUPT_PRIORITY. */
-#define portENTER_CRITICAL() vPortEnterCritical();
-#define portEXIT_CRITICAL() vPortExitCritical();
+#define portENTER_CRITICAL()		vPortEnterCritical();
+#define portEXIT_CRITICAL()			vPortExitCritical();
+#define portSET_INTERRUPT_MASK_FROM_ISR()		uxPortSetInterruptMask()
+#define portCLEAR_INTERRUPT_MASK_FROM_ISR(x)	vPortClearInterruptMask(x)
 
 /*-----------------------------------------------------------*/
 

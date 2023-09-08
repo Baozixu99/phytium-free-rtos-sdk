@@ -27,12 +27,16 @@
 #include "shell_port.h"
 #include <stdio.h>
 #include "spim_spiffs_example.h"
-
+#if defined(CONFIG_TARGET_E2000D)||defined(CONFIG_TARGET_E2000Q)
+#define SPIM_TEST_ID  FSPI2_ID
+#elif defined(CONFIG_TARGET_PHYTIUMPI)
+#define SPIM_TEST_ID  FSPI0_ID
+#endif
 int main(void)
 {
     BaseType_t ret;
 
-    ret = FFreeRTOSSpimSpiffsCreate(0);
+    ret = FFreeRTOSSpimSpiffsCreate(SPIM_TEST_ID);
     if(ret != pdPASS)
         goto FAIL_EXIT;
 

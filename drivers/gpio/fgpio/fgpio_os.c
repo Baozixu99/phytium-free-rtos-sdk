@@ -30,7 +30,6 @@
 #include "fdebug.h"
 #include "fsleep.h"
 #include "fcpu_info.h"
-#include "fiopad.h"
 
 #include "fgpio_os.h"
 /************************** Constant Definitions *****************************/
@@ -239,9 +238,6 @@ FError FFreeRTOSSetupPin(FFreeRTOSFGpio *const instance, const FFreeRTOSGpioPinC
     {
         return err;
     }
-
-    /* set io pad */
-    FIOPadSetGpioMux(ctrl_id, pin_id.pin);
 
     /* de-init pin if setup */
     if (FT_COMPONENT_IS_READY == pin->is_ready)

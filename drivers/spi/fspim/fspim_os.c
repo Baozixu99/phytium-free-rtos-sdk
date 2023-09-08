@@ -32,7 +32,7 @@
 #include "fassert.h"
 #include "fsleep.h"
 #include "fcpu_info.h"
-#include "fiopad.h"
+#include "fio_mux.h"
 
 #include "fspim_os.h"
 #include "fspim_hw.h"

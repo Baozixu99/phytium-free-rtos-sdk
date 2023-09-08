@@ -1,27 +1,3 @@
-<!--
- * Copyright : (C) 2022 Phytium Information Technology, Inc. 
- * All Rights Reserved.
- *  
- * This program is OPEN SOURCE software: you can redistribute it and/or modify it  
- * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,  
- * either version 1.0 of the License, or (at your option) any later version. 
- *  
- * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;  
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the Phytium Public License for more details. 
- *  
- * 
- * FilePath: README.md
- * Date: 2022-08-26 16:17:36
- * LastEditTime: 2022-08-26 16:17:36
- * Description:  This file is for timer_tacho
- * 
- * Modify History: 
- *  Ver   Who        Date         Changes
- * ----- ------     --------    --------------------------------------
- * 0.1.0 liushengming 2022.08.26 init
--->
-
 # timer_tacho base on freertos
 
 ## 1. 例程介绍
@@ -41,6 +17,7 @@ E2000DQ上使用的demo板上的 PWM-IN12(tacho—in12) 进行测试。
 
 本例程支持的硬件平台包括
 - E2000DQ demo开发板
+- PhytiumPi 开发板
 
 对应的配置项是
 
@@ -63,11 +40,9 @@ E2000DQ上使用的demo板上的 PWM-IN12(tacho—in12) 进行测试。
 本例子已经提供好具体的编译指令，以下进行介绍:
 - make 将目录下的工程进行编译
 - make clean  将目录下的工程进行清理
-- make boot   将目录下的工程进行编译，并将生成的elf 复制到目标地址
-- make load_e2000d_aarch64  将预设64bit e2000d 下的配置加载至工程中
-- make load_e2000d_aarch32  将预设32bit e2000d 下的配置加载至工程中
-- make load_e2000q_aarch64  将预设64bit e2000q 下的配置加载至工程中
-- make load_e2000q_aarch32  将预设32bit e2000q 下的配置加载至工程中
+- make image   将目录下的工程进行编译，并将生成的elf 复制到目标地址
+- make list_kconfig 当前工程支持哪些配置文件
+- make load_kconfig LOAD_CONFIG_NAME=<kconfig configuration files>  将预设配置加载至工程中
 - make menuconfig   配置目录下的参数变量
 - make backup_kconfig 将目录下的sdkconfig 备份到./configs下
 
@@ -79,15 +54,17 @@ E2000DQ上使用的demo板上的 PWM-IN12(tacho—in12) 进行测试。
 
 #### 2.3.1 构建过程
 
-- 在host侧完成配置
->配置成E2000Q，对于其它平台，使用对应的默认配置，如E2000D `make load_e2000d_aarch32`
+本文档将以E2000Ddemo开发板为例，对于其它平台，使用对应的默认配置
 
+- 在host端完成配置
 - 选择目标平台
+
 ```
-make load_e2000q_aarch64
+make load_kconfig LOAD_CONFIG_NAME=e2000d_aarch64_demo_timer
 ```
 
 - 选择例程需要的配置
+
 ```
 make menuconfig
 ```
@@ -99,7 +76,7 @@ make
 
 - 将编译出的镜像放置到tftp目录下
 ```
-make boot
+make image
 ```
 
 #### 2.3.2 下载过程

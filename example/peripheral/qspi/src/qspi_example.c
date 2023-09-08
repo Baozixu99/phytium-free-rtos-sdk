@@ -25,13 +25,13 @@
 #include "FreeRTOSConfig.h"
 #include "FreeRTOS.h"
 #include "task.h"
-#include "fpinctrl.h"
 #include "fqspi.h"
 #include "fqspi_flash.h"
 #include "fqspi_os.h"
 #include "timers.h"
 #include "qspi_example.h"
 #include "sdkconfig.h"
+#include "fio_mux.h"
 
 /* The periods assigned to the one-shot timers. */
 #define ONE_SHOT_TIMER_PERIOD       ( pdMS_TO_TICKS( 50000UL ) )

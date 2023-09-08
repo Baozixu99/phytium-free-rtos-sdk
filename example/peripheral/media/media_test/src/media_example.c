@@ -13,13 +13,14 @@
  *
  * FilePath: media_example.c
  * Date: 2022-07-11 11:32:48
- * LastEditTime: 2022-12-20 10:25:48
+ * LastEditTime: 2022-07-07 10:25:48
  * Description:  This file is for testing light the screen
  *
  * Modify History:
  *  Ver   Who        Date         Changes
  * ----- ------     --------    --------------------------------------
  * 1.0  Wangzq     2022/12/20  Modify the format and establish the version
+ * 1.1  Wangzq     2023/07/07  change the third-party and driver relation 
  */
 #include <stdio.h>
 #include <string.h>
@@ -314,10 +315,10 @@ static void FFreeRTOSMediaHpdTask(void *pvParameters)
     u32 start_index;
     u32 end_index;//ensure the channel number
 
-    if (channel == FDCDP_PATH_NUM)
+    if (channel == FDCDP_INSTANCE_NUM)
     {
         start_index = 0;
-        end_index = FDCDP_PATH_NUM;
+        end_index = channel;
     }
     else
     {

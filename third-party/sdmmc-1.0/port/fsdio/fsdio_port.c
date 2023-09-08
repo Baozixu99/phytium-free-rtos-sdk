@@ -229,6 +229,7 @@ static void fsdio_convert_cmdinfo(sdmmc_command_t *cmdinfo, FSdioCmdData *const 
         }
 
         cmd_data->data_p->buf = cmdinfo->data;
+        cmd_data->data_p->buf_p = (uintptr)cmdinfo->data; /* physical address equals with virtual address */
         cmd_data->data_p->blksz = cmdinfo->blklen;
         cmd_data->data_p->datalen = cmdinfo->datalen;
         FSDIO_INFO("buf@%p, blksz: %d, datalen: %d",

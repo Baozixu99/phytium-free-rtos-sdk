@@ -13,13 +13,15 @@
  *
  * FilePath: lv_port_disp.h
  * Date: 2022-09-05 17:38:05
- * LastEditTime: 2023-03-20  12:11:05
+ * LastEditTime: 2023-07-07  12:11:05
  * Description:  This file is for providing the interface of lvgl test
  *
  * Modify History:
  *  Ver   Who        Date         Changes
  * ----- ------  -------- --------------------------------------
  *  1.0  Wangzq     2023/03/20  Modify the format and establish the version
+ *  1.1  Wangzq     2023/07/07  change the third-party and driver relation 
+ * 
  */
 /**
  * @file lv_port_disp.h
@@ -36,6 +38,7 @@
 
 #include "ftypes.h"
 #include "fparameters.h"
+#include "fdcdp_multi_display.h"
 #ifdef __cplusplus
 extern "C"
 {
@@ -50,15 +53,6 @@ extern "C"
 #include "lvgl-8.3/lvgl.h"
 #endif
 
-typedef struct
-{
-    u32 channel;
-    u32 width;
-    u32 height;
-    u32 multi_mode;
-    u32 color_depth;
-    u32 refresh_rate;
-} InputParm;
 
 /**********************
  * GLOBAL PROTOTYPES
@@ -71,17 +65,12 @@ void FFreeRTOSDispdEnableUpdate(void);
  */
 void FFreeRTOSDispdDisableUpdate(void);
 
+/* Framebuffer config*/
+void FMediaDispFramebuffer(disp_parm *disp_config);
+
 /*init the lv config and set the instance*/
-void FFreeRTOSPortInit(void);
+void FFreeRTOSPortInit(disp_parm *disp_config);
 
-/*deinit the media*/
-void FFreeRTOSMediaChannelDeinit(u32 id);
-
-/*handle the hpd event*/
-void FFreeRTOSMediaHpdHandle(u32 channel, u32 width, u32 height, u32 multi_mode, u32 color_depth, u32 refresh_rate);
-
-/*enable the Dc and Dp*/
-void FFreeRTOSMediaDeviceInit(u32 channel, u32 width, u32 height, u32 multi_mode, u32 color_depth, u32 refresh_rate);
 /**********************
  *      MACROS
  **********************/

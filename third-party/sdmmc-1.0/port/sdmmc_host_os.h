@@ -85,96 +85,96 @@ static inline sdmmc_err_t sdmmc_os_get_status(sdmmc_card_t *card)
     SDMMC_LOCKED_CALL_NON_ARG(sdmmc_get_status, card);
 }
 
-sdmmc_err_t sdmmc_os_write_sectors(sdmmc_card_t *card, const void *src,
+static inline sdmmc_err_t sdmmc_os_write_sectors(sdmmc_card_t *card, const void *src,
                                    size_t start_sector, size_t sector_count)
 {
     SDMMC_LOCKED_CALL(sdmmc_write_sectors, card, src, start_sector, sector_count);
 }
 
-sdmmc_err_t sdmmc_os_read_sectors(sdmmc_card_t *card, void *dst,
+static inline sdmmc_err_t sdmmc_os_read_sectors(sdmmc_card_t *card, void *dst,
                                   size_t start_sector, size_t sector_count)
 {
     SDMMC_LOCKED_CALL(sdmmc_read_sectors, card, dst, start_sector, sector_count);
 }
 
-sdmmc_err_t sdmmc_os_erase_sectors(sdmmc_card_t *card, size_t start_sector,
+static inline sdmmc_err_t sdmmc_os_erase_sectors(sdmmc_card_t *card, size_t start_sector,
                                    size_t sector_count, sdmmc_erase_arg_t arg)
 {
     SDMMC_LOCKED_CALL(sdmmc_erase_sectors, card, start_sector, sector_count, arg);
 }
 
-sdmmc_err_t sdmmc_os_can_discard(sdmmc_card_t *card)
+static inline sdmmc_err_t sdmmc_os_can_discard(sdmmc_card_t *card)
 {
     SDMMC_LOCKED_CALL_NON_ARG(sdmmc_can_discard, card);
 }
 
-sdmmc_err_t sdmmc_os_can_trim(sdmmc_card_t *card)
+static inline sdmmc_err_t sdmmc_os_can_trim(sdmmc_card_t *card)
 {
     SDMMC_LOCKED_CALL_NON_ARG(sdmmc_can_trim, card);
 }
 
-sdmmc_err_t sdmmc_os_mmc_can_sanitize(sdmmc_card_t *card)
+static inline sdmmc_err_t sdmmc_os_mmc_can_sanitize(sdmmc_card_t *card)
 {
     SDMMC_LOCKED_CALL_NON_ARG(sdmmc_mmc_can_sanitize, card);
 }
 
-sdmmc_err_t sdmmc_os_mmc_sanitize(sdmmc_card_t *card, uint32_t timeout_ms)
+static inline sdmmc_err_t sdmmc_os_mmc_sanitize(sdmmc_card_t *card, uint32_t timeout_ms)
 {
     SDMMC_LOCKED_CALL(sdmmc_mmc_sanitize, card, timeout_ms);
 }
 
-sdmmc_err_t sdmmc_os_full_erase(sdmmc_card_t *card)
+static inline sdmmc_err_t sdmmc_os_full_erase(sdmmc_card_t *card)
 {
     SDMMC_LOCKED_CALL_NON_ARG(sdmmc_full_erase, card);
 }
 
-sdmmc_err_t sdmmc_os_io_read_byte(sdmmc_card_t *card, uint32_t function,
+static inline sdmmc_err_t sdmmc_os_io_read_byte(sdmmc_card_t *card, uint32_t function,
                                   uint32_t reg, uint8_t *out_byte)
 {
     SDMMC_LOCKED_CALL(sdmmc_io_read_byte, card, function, reg, out_byte);
 }
 
-sdmmc_err_t sdmmc_os_io_write_byte(sdmmc_card_t *card, uint32_t function,
+static inline sdmmc_err_t sdmmc_os_io_write_byte(sdmmc_card_t *card, uint32_t function,
                                    uint32_t reg, uint8_t in_byte, uint8_t *out_byte)
 {
     SDMMC_LOCKED_CALL(sdmmc_io_write_byte, card, function, reg, in_byte, out_byte);
 }
 
-sdmmc_err_t sdmmc_os_io_read_bytes(sdmmc_card_t *card, uint32_t function,
+static inline sdmmc_err_t sdmmc_os_io_read_bytes(sdmmc_card_t *card, uint32_t function,
                                    uint32_t addr, void *dst, size_t size)
 {
     SDMMC_LOCKED_CALL(sdmmc_io_read_bytes, card, function, addr, dst, size);
 }
 
-sdmmc_err_t sdmmc_os_io_write_bytes(sdmmc_card_t *card, uint32_t function,
+static inline sdmmc_err_t sdmmc_os_io_write_bytes(sdmmc_card_t *card, uint32_t function,
                                     uint32_t addr, const void *src, size_t size)
 {
     SDMMC_LOCKED_CALL(sdmmc_io_write_bytes, card, function, addr, src, size);
 }
 
-sdmmc_err_t sdmmc_os_io_read_blocks(sdmmc_card_t *card, uint32_t function,
+static inline sdmmc_err_t sdmmc_os_io_read_blocks(sdmmc_card_t *card, uint32_t function,
                                     uint32_t addr, void *dst, size_t size)
 {
     SDMMC_LOCKED_CALL(sdmmc_io_read_blocks, card, function, addr, dst, size);
 }
 
-sdmmc_err_t sdmmc_os_io_write_blocks(sdmmc_card_t *card, uint32_t function,
+static inline sdmmc_err_t sdmmc_os_io_write_blocks(sdmmc_card_t *card, uint32_t function,
                                      uint32_t addr, const void *src, size_t size)
 {
     SDMMC_LOCKED_CALL(sdmmc_io_write_blocks, card, function, addr, src, size);
 }
 
-sdmmc_err_t sdmmc_os_io_enable_int(sdmmc_card_t *card)
+static inline sdmmc_err_t sdmmc_os_io_enable_int(sdmmc_card_t *card)
 {
     SDMMC_LOCKED_CALL_NON_ARG(sdmmc_io_enable_int, card);
 }
 
-sdmmc_err_t sdmmc_os_io_wait_int(sdmmc_card_t *card, tick_type_t timeout_ticks)
+static inline sdmmc_err_t sdmmc_os_io_wait_int(sdmmc_card_t *card, tick_type_t timeout_ticks)
 {
     SDMMC_LOCKED_CALL(sdmmc_io_wait_int, card, timeout_ticks);
 }
 
-sdmmc_err_t sdmmc_os_io_get_cis_data(sdmmc_card_t *card, uint8_t *out_buffer, size_t buffer_size, size_t *inout_cis_size)
+static inline sdmmc_err_t sdmmc_os_io_get_cis_data(sdmmc_card_t *card, uint8_t *out_buffer, size_t buffer_size, size_t *inout_cis_size)
 {
     SDMMC_LOCKED_CALL(sdmmc_io_get_cis_data, card, out_buffer, buffer_size, inout_cis_size);
 }

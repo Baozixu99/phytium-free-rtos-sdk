@@ -12,17 +12,19 @@
  *
  * FilePath: lv_demo_creat.c
  * Date: 2023-02-05 18:27:47
- * LastEditTime: 2023-03-20 11:02:47
+ * LastEditTime: 2023-07-06 11:02:47
  * Description:  This file is for providing the port of creating lvgl demo
  *
  * Modify History:
  *  Ver   Who        Date         Changes
  * ----- ------  -------- --------------------------------------
  *  1.0  Wangzq     2023/03/20  Modify the format and establish the version
+ *  1.1  Wangzq     2023/07/06   adapt the sdk and change the lvgl config
  */
 
+#include <string.h>
 #include <stdio.h>
-#include <stdbool.h>
+#include "strto.h"
 #include "FreeRTOSConfig.h"
 #include "FreeRTOS.h"
 #include "task.h"
@@ -30,10 +32,10 @@
 #include "fassert.h"
 #include "fkernel.h"
 
-#include "../lvgl.h"
-#include "lv_conf.h"
 #include "lv_demo_creat.h"
+#include "lv_demo_test.h"
 #include "lv_port_disp.h"
+#include "fdcdp_multi_display.h"
 
 
 #if LV_USE_DEMO_BENCHMARK
@@ -54,8 +56,11 @@
 /************************** Variable Definitions *****************************/
 static TimerHandle_t xLvglHeartTimer;
 static TaskHandle_t demo_task;
+static TaskHandle_t lvgl_init_task;
 static TaskHandle_t init_task;
 static TaskHandle_t hpd_task ;
+
+static disp_parm *disp_config;
 static InputParm *input_config;
 
 extern void FFreeRTOSDispdEnableUpdate(void);
@@ -76,9 +81,7 @@ static void on_benchmark_finished(void)
 
 void benchmark(void)
 {
-    lv_init();
-    FFreeRTOSPortInit();
-
+    printf("benchmark is running\r\n");
     FFreeRTOSDispdDisableUpdate();
     lv_demo_benchmark_set_finished_cb(&on_benchmark_finished);
     lv_demo_benchmark_set_max_speed(true);
@@ -105,9 +108,7 @@ void benchmark(void)
 #if LV_USE_DEMO_STRESS
 void stress(void)
 {
-    lv_init();
-    FFreeRTOSPortInit();
-
+    printf("stress is runnint\r\n");
     lv_demo_stress();
     /* loop once to allow objects to be created */
     while (1)
@@ -131,9 +132,7 @@ void stress(void)
 #if LV_USE_DEMO_WIDGETS
 void widgets(void)
 {
-    lv_init();
-    FFreeRTOSPortInit();
-
+    printf("widgets is runnint\r\n");
     lv_demo_widgets();
     while (1)
     {
@@ -202,6 +201,22 @@ static void FFreeRTOSMediaHpdTask(void *pvParameters)
 }
 
 /**
+ * @name: FFreeRTOSLVGLConfigTask
+ * @msg:  config the lvgl
+ * @param  {void *} pvParameters is the parameters of demo
+ * @return Null
+ */
+static void FFreeRTOSLVGLConfigTask(void *pvParameters)
+{
+    FASSERT(NULL != pvParameters);
+    InputParm *input_config = (InputParm *)pvParameters ;
+    lv_init();
+    disp_config = FDcDpMultiDisplayFrameBufferSet(input_config->channel, input_config->width, input_config->height, input_config->color_depth, input_config->multi_mode);
+    FFreeRTOSPortInit(disp_config);
+    vTaskDelete(NULL);
+}
+
+/**
  * @name: FFreeRTOSMediaInitCreate
  * @msg: creat the media init task
  * @param  {void *} args is the parameters of init function
@@ -226,6 +241,33 @@ BaseType_t FFreeRTOSMediaInitCreate(void *args)
                           (void *)args,                   /* 任务入口函数参数 */
                           (UBaseType_t)configMAX_PRIORITIES - 1,                      /* 任务的优先级 */
                           (TaskHandle_t *)&hpd_task);
+    /* exit critical region */
+    taskEXIT_CRITICAL();
+    return xReturn;
+}
+
+
+/**
+ * @name: FFreeRTOSlVGLConfigCreate
+ * @msg:  set the lvgl init task
+ * @return xReturn,pdPASS:success,others:creat failed
+ */
+BaseType_t FFreeRTOSlVGLConfigCreate(void *args)
+{
+    BaseType_t xReturn = pdPASS; /* 定义一个创建信息返回值，默认为 pdPASS */
+    BaseType_t timer_started = pdPASS;
+    taskENTER_CRITICAL();
+    /* lvgl demo task */
+    xReturn = xTaskCreate((TaskFunction_t)FFreeRTOSLVGLConfigTask,  /* 任务入口函数 */
+                          (const char *)"FFreeRTOSLVGLConfigTask",  /* 任务名字 */
+                          (uint16_t)1024,                         /* 任务栈大小 */
+                          (void *)args,                                 /* 任务入口函数参数 */
+                          (UBaseType_t)configMAX_PRIORITIES - 3,                         /* 任务的优先级 */
+                          (TaskHandle_t *)&lvgl_init_task); /* 任务控制 */
+
+    /* exit critical region */
+    taskEXIT_CRITICAL();
+
     return xReturn;
 }
 
@@ -244,7 +286,7 @@ BaseType_t FFreeRTOSlVGLDemoCreate(void)
                           (const char *)"FFreeRTOSLVGLDemoTask",  /* 任务名字 */
                           (uint16_t)1024,                         /* 任务栈大小 */
                           NULL,                                   /* 任务入口函数参数 */
-                          (UBaseType_t)configMAX_PRIORITIES - 3,                         /* 任务的优先级 */
+                          (UBaseType_t)configMAX_PRIORITIES - 4,                         /* 任务的优先级 */
                           (TaskHandle_t *)&demo_task); /* 任务控制 */
     xLvglHeartTimer = xTimerCreate("LVGL Heart Software Timer",        /* Text name for the software timer - not used by FreeRTOS. */
                                    LVGL_HEART_TIMER_PERIOD,           /* The software timer's period in ticks. */
@@ -268,5 +310,8 @@ BaseType_t FFreeRTOSlVGLDemoCreate(void)
 
     return xReturn;
 }
+
+
+
 
 

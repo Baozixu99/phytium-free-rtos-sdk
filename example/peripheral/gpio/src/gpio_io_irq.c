@@ -30,12 +30,22 @@
 
 #include "fdebug.h"
 #include "fsleep.h"
+#include "fio_mux.h"
 
 #include "fgpio_os.h"
 #include "gpio_io_irq.h"
 /************************** Constant Definitions *****************************/
 #define PIN_IRQ_OCCURED     (0x1 << 0)
 #define GPIO_WORK_TASK_NUM  2U
+#if defined(CONFIG_TARGET_E2000D) || defined(CONFIG_TARGET_E2000Q)
+#define IN_PIN_INDEX FFREERTOS_GPIO_PIN_INDEX(3, 0, 5)  /* GPIO 3-A-5 */
+#define OUT_PIN_INDEX FFREERTOS_GPIO_PIN_INDEX(3, 0, 4)
+#endif
+
+#ifdef CONFIG_TARGET_PHYTIUMPI
+#define IN_PIN_INDEX FFREERTOS_GPIO_PIN_INDEX(3, 0, 2)
+#define OUT_PIN_INDEX FFREERTOS_GPIO_PIN_INDEX(3, 0, 1)
+#endif
 /**************************** Type Definitions *******************************/
 
 /************************** Variable Definitions *****************************/
@@ -44,11 +54,11 @@ static FFreeRTOSGpioConfig in_gpio_cfg;
 static FFreeRTOSFGpio *out_gpio = NULL;
 static FFreeRTOSGpioConfig out_gpio_cfg;
 static xSemaphoreHandle init_locker = NULL;
-static u32 in_pin = FFREERTOS_GPIO_PIN_INDEX(3, 0, 5);  /* GPIO 3-A-5 */
-static u32 out_pin = FFREERTOS_GPIO_PIN_INDEX(3, 0, 4); /* GPIO 3-A-4 */
+static u32 in_pin = IN_PIN_INDEX; 
+static u32 out_pin = OUT_PIN_INDEX;
 static FFreeRTOSGpioPinConfig in_pin_config =
 {
-    .pin_idx = FFREERTOS_GPIO_PIN_INDEX(3, 0, 5), /* GPIO 3-A-5 */
+    .pin_idx = IN_PIN_INDEX,
     .mode = FGPIO_DIR_INPUT,
     .en_irq = TRUE,
     .irq_type = FGPIO_IRQ_TYPE_EDGE_RISING,
@@ -57,7 +67,7 @@ static FFreeRTOSGpioPinConfig in_pin_config =
 };
 static FFreeRTOSGpioPinConfig out_pin_config =
 {
-    .pin_idx = FFREERTOS_GPIO_PIN_INDEX(3, 0, 4), /* GPIO 3-A-4 */
+    .pin_idx = OUT_PIN_INDEX,
     .mode = FGPIO_DIR_OUTPUT,
     .en_irq = FALSE
 };
@@ -145,6 +155,7 @@ static void GpioIOAckPinIrq(s32 vector, void *param)
 static void GdmaInitTask(void *args)
 {
     FError err = FT_SUCCESS;
+    FGpioPinId pin_id;
     static const char *irq_type_str[] = {"failling-edge", "rising-edge", "low-level", "high-level"};
 
     FGPIO_INFO("out_pin: 0x%x, in_pin: 0x%x", out_pin, in_pin);
@@ -160,6 +171,9 @@ static void GdmaInitTask(void *args)
     }
 
     /* init output/input pin */
+    FIOPadSetGpioMux(FFREERTOS_GPIO_PIN_CTRL_ID(out_pin), FFREERTOS_GPIO_PIN_ID(out_pin)); /* set io pad */
+    FIOPadSetGpioMux(FFREERTOS_GPIO_PIN_CTRL_ID(in_pin), FFREERTOS_GPIO_PIN_ID(in_pin)); /* set io pad */
+
     out_pin_config.pin_idx = out_pin;
     err = FFreeRTOSSetupPin(out_gpio, &out_pin_config);
     FASSERT_MSG(FT_SUCCESS == err, "Init output gpio pin failed.");

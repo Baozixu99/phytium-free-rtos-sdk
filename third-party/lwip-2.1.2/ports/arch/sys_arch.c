@@ -23,6 +23,9 @@
  */
 
 /* lwIP includes. */
+#include "FreeRTOS.h"
+#include "task.h"
+#include "queue.h"
 #include "lwip/debug.h"
 #include "lwip/def.h"
 #include "lwip/sys.h"
@@ -42,11 +45,6 @@
 #define SYSTEM_ARCH_PRINT_I(format, ...) FT_DEBUG_PRINT_I(SYSTEM_ARCH_DEBUG_TAG, format, ##__VA_ARGS__)
 #define SYSTEM_ARCH_PRINT_D(format, ...) FT_DEBUG_PRINT_D(SYSTEM_ARCH_DEBUG_TAG, format, ##__VA_ARGS__)
 #define SYSTEM_ARCH_PRINT_W(format, ...) FT_DEBUG_PRINT_W(SYSTEM_ARCH_DEBUG_TAG, format, ##__VA_ARGS__)
-
-
-
-#include "FreeRTOS.h"
-#include "task.h"
 
 #if defined(LWIP_PROVIDE_ERRNO)
     int errno;

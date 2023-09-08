@@ -30,7 +30,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "semphr.h"
-#include "fpinctrl.h"
+#include "fio_mux.h"
 #include "timers.h"
 #include "qspi_spiffs_example.h"
 #include "strto.h"
@@ -72,7 +72,7 @@ enum
 /* spiffs start address and size */
 #if defined(CONFIG_TARGET_E2000)
 #define FSPIFFS_START_ADDR      (3 * SZ_1M)
-#elif defined(CONFIG_TARGET_F2000_4) || defined(CONFIG_TARGET_D2000)
+#elif defined(CONFIG_TARGET_FT2004) || defined(CONFIG_TARGET_D2000)
 #define FSPIFFS_START_ADDR      (7 * SZ_1M)
 #endif
 
@@ -503,8 +503,6 @@ BaseType_t FFreeRTOSQspiSpiffsCreate(u32 qspi_id)
         printf("FFreeRTOSQspiSpiffsCreate xCountingSemaphore create failed.\r\n");
         return pdFAIL;
     }
-
-    
 
     taskENTER_CRITICAL(); /*进入临界区*/
 

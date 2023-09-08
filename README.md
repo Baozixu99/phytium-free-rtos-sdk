@@ -1,26 +1,3 @@
-<!--
- * Copyright : (C) 2022 Phytium Information Technology, Inc. 
- * All Rights Reserved.
- *  
- * This program is OPEN SOURCE software: you can redistribute it and/or modify it  
- * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,  
- * either version 1.0 of the License, or (at your option) any later version. 
- *  
- * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;  
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the Phytium Public License for more details. 
- *  
- * 
- * FilePath: README.md
- * Date: 2022-02-24 13:42:19
- * LastEditTime: 2022-03-21 17:00:23
- * Description:  This file is for 
- * 
- * Modify History: 
- *  Ver   Who        Date         Changes
- * ----- ------     --------    --------------------------------------
--->
-
 # Phytium-FreeRTOS-SDK
 
 ## 1. 介绍
@@ -49,7 +26,7 @@
 
 
 - 参考[使用说明](./docs/reference/usr/usage.md), 新建Phytium FreeRTOS SDK的应用工程，与开发板建立连接
-
+- 参考[例程](./example/template/), 新建Phytium FreeRTOS SDK的例程，在开发板上运行
 
 ---
 
@@ -133,41 +110,78 @@ D2000 是一款面向桌面应用的高性能通用 8 核处理器。每 2 个�
 - 2路 DisplayPort1.4 接口
 - 集成常用低速接口：WDT、DMAC、PWM、QSPI、SD/SDIO/eMMC、SPI Master、UART、I2C、MIO、I3C、PMBUS、GPIO、SGPIO、One-Wire、Timer、One-Wire
 
+### 3.6 PHYTIUMPI
+
+- PHYTIUMPI 集成2个FTC664核和2个FTC310核。主要技术特征如下：
+- FTC664 核主频可达 1.8GHz，FTC310 核主频可达 1.5GHz
+- 兼容ARM v8 64 位指令系统，兼容32 位指令
+- 集成 1 路 16 通道 General DMA 和 1 路 8 通道 Device DMA
+- 支持单精度、双精度浮点运算指令
+- 集成1个DDR4 通道
+- 集成1路 Mini-PCIe，支持 AI、5G\4G 等模组
+- 集成2个1000M以太网控制器，支持2路SGMII接口和2路SGMII/RGMII接口
+- 集成3路USB2.0(OTG)和2路USB3.0(兼容 2.0)
+- 1路 HDMI 接口
+- 集成常用低速接口：WDT、QSPI、PWM、SD/SDIO/eMMC 、SPI_M、UART、I2C、I2S、MIO、CAN-FD、GPIO、LocalBus、Timer
+
 ---
 
-## 4. 外设驱动支持情况
+## 4. 例程支持情况
 
-| Hardware Interface             | Platform Supported         | Platform Developing         | Component                 |
-| ------------------------------ | -------------------------- | --------------------------- | ------------------------- |
-| UART (PrimeCell PL011)         | FT2000/4<br>E2000<br>D2000 |                             | serial/fpl011             |
-| 10/100/1000MB-ETHERNET         | E2000                      |                             | eth/fxmac                 |
-| QSPI (Nor Flash)               | FT2000/4<br>E2000<br>D2000 |                             | qspi                      |
-| PWM                            | E2000                      |                             | pwm                       |
-| WDT                            | FT2000/4<br>D2000<br>E2000 |                             | wdt                       |
-| DDMA                           | E2000                      |                             | dma/fddma                 |
-| GDMA                           | E2000                      |                             | dma/fgdma                 |
-| GPIO                           | E2000                      |                             | gpio                      |
-| SDIO                           | E2000                      |                             | mmc/fsdio                 |
-| SPI                            | E2000                      |                             | spi/fspim                 |
-| ADC                            | E2000                      |                             | adc                       |
-| CAN                            | FT2000/4<br>D2000<br>E2000 |                             | can                       |
+| Feature            | Platform Supported                        | Platform Developing                  | Component              |
+| -------------------| ------------------------------------------| ------------------------------------ | ---------------------- |
+| EVENTGROUP         | FT2000/4 <br>D2000 <br>E2000 <br>PHYTIUMPI|                                      | eventgroup           |
+| INTERRUPT          | FT2000/4 <br>E2000 <br>D2000 <br>PHYTIUMPI|                                      | interrupt                |
+| QUEUE              | FT2000/4 <br>D2000 <br>E2000 <br>PHYTIUMPI|                                      | queue           |
+| RESOURCE           | FT2000/4 <br>E2000 <br>D2000 <br>PHYTIUMPI|                                      | resource                |
+| SOFTWARE_TIMER     | FT2000/4 <br>D2000 <br>E2000 <br>PHYTIUMPI|                                      | software_timer           |
+| TASK               | FT2000/4 <br>E2000 <br>D2000 <br>PHYTIUMPI|                                      | task                |
+| TASK_NOTIFY        | FT2000/4 <br>D2000 <br>E2000 <br>PHYTIUMPI|                                      | task_notify           |
 
-| Third-Party                    | Platform Supported         | Platform Developing         | Component                 |
-| ------------------------------ | -------------------------- | --------------------------- | ------------------------- |
-| LWIP 2.1.2                     | FT2000/4<br>D2000<br>E2000 |                             | lwip-2.1.2                |
-| Letter shell 3.1               | FT2000/4<br>D2000<br>E2000 |                             | letter-shell-3.1          |
-| Sfud 1.1.0                     | FT2000/4<br>D2000<br>E2000 |                             | sfud-1.1.0                |
-| Fatfs (RAMSATA)                | FT2000/4<br>D2000<br>E2000 |                             | fatfs-0.1.4               |
-| OpenAMP                        | FT2000/4<br>D2000<br>E2000 |                             | openamp                   |
-| SPIFFS-0.3.7                   | FT2000/4<br>D2000<br>E2000 |                             | spiffs-0.3.7              |
-| TLSF-3.1.0                     | FT2000/4<br>D2000<br>E2000 |                             | tlsf-3.1.0                |
-| Sdmmc-1.0                      | E2000                      |                             | sdmmc-1.0                 |
-| CherryUSB-0.6.0                | E2000                      |                             | cherryusb-0.6.0           |
+| Network            | Platform Supported                        | Platform Developing                  | Component              |
+| -------------------| ------------------------------------------| ------------------------------------ | ---------------------- |
+| LWIP               | FT2000/4 <br>D2000 <br>E2000 <br>PHYTIUMPI|                                      | lwip_startup           |
+| UDP                | FT2000/4 <br>E2000 <br>D2000 <br>PHYTIUMPI|                                      | sockets/udp_multicast  |
+
+| Peripherals                    | Platform Supported                        | Platform Developing                  | Component            |
+| ------------------------------ | ------------------------------------------| ------------------------------------ | -------------------- |
+| ADC                            |                                           | E2000                                | adc                  |
+| CAN                            | FT2000/4 <br>E2000 <br>D2000              |                                      | can/can              |
+| DDMA                           | E2000 <br>PHYTIUMPI                       |                                      | dma/ddma             |
+| GDMA                           | E2000 <br>PHYTIUMPI                       |                                      | dma/gdma             |
+| GPIO                           | E2000 <br>PHYTIUMPI                       |                                      | gpio                 |
+| I2C                            | E2000 <br>PHYTIUMPI                       | FT2004/D2000                         | i2c                  |
+| MEDIA                          | E2000 <br>PHYTIUMPI                       |                                      | media                |
+| QSPI (Nor Flash)               | E2000 <br>D2000 <br>FT2000/4              |                                      | qspi                 |
+| SPI                            | E2000 <br>PHYTIUMPI                       |                                      | spi                  |
+| TIMER & TACHO                  | E2000 <br>PHYTIUMPI                       |                                      | timer&tacho          |
+| SDIO                           | E2000 <br>PHYTIUMPI                       |                                      | sd                   |
+| PWM                            | E2000 <br>PHYTIUMPI                       |                                      | pwm                  |
+| USB                            | E2000 <br>PHYTIUMPI                       |                                      | usb                  |
+| WDT                            | FT2000/4 <br>D2000 <br>E2000 <br>PHYTIUMPI|                                      | wdt                  |
+
+| Storage            | Platform Supported                        | Platform Developing                  | Component              |
+| -------------------| ------------------------------------------| ------------------------------------ | ---------------------- |
+| FATFS              | E2000                                     |                                      | fatfs           |
+| QSPI_SPIFFS        | FT2000/4 <br>E2000 <br>D2000              |                                      | qspi_spiffs                |
+| SPIM_SPIFFS        | E2000 <br>PHYTIUMPI                       |                                      | spim_spiffs           |
+
+| System             | Platform Supported                        | Platform Developing                  | Component              |
+| -------------------| ------------------------------------------| ------------------------------------ | ---------------------- |
+| AMP                | E2000 <br>PHYTIUMPI                       | D2000 <br>FT2000/4                   | amp/openamp            |
+| ATOMIC             | FT2000/4 <br>D2000 <br>E2000 <br>PHYTIUMPI|                                      | atomic            |
+| EXCEPTION_DEBUG    | FT2000/4 <br>D2000 <br>E2000 <br>PHYTIUMPI|                                      | exception_debug        |
+| NESTED_INTERRUPT   | FT2000/4 <br>D2000 <br>E2000 <br>PHYTIUMPI|                                      | nested_interrupt       |
+
 ---
 ## 5. 参考资料
 
 - The FreeRTOS Reference Manual API Functions and Configuration Options
 - Mastering the FreeRTOS Real Time Kernel A Hands-On Tutorial Guide
+- FT-2000／4 软件编程手册-V1.4
+- D2000 软件编程手册-V1.0
+- 飞腾腾珑E2000系列处理器软件编程手册V0.8.1 
+- 飞腾派软件开发手册-V1.0
 
 ---
 ## 6. 贡献方法
@@ -181,14 +195,6 @@ zhugengyu@phytium.com.cn
 wangxiaodong1030@phytium.com.cn
 
 liushengming1118@phytium.com.cn
-
-wangzongqiang1322@phytium.com.cn
-
-liqiaozhong1404@phytium.com.cn
-
-liuzhihong1235@phytium.com.cn
-
-zhangyan1491@phytium.com.cn
 
 ---
 

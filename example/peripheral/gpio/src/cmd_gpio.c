@@ -37,7 +37,15 @@
 /************************** Variable Definitions *****************************/
 
 /***************** Macros (Inline Functions) Definitions *********************/
+#if defined(CONFIG_TARGET_E2000D) || defined(CONFIG_TARGET_E2000Q)
+#define IN_PIN_STR "3-a-5" /* GPIO 3-A-5 */
+#define OUT_PIN_STR "3-a-4"
+#endif
 
+#ifdef CONFIG_TARGET_PHYTIUMPI
+#define IN_PIN_STR "3-a-2"
+#define OUT_PIN_STR "3-a-1"
+#endif
 /************************** Function Prototypes ******************************/
 
 /*****************************************************************************/
@@ -73,8 +81,8 @@ static boolean GpioParseIndex(const char *str, u32 *pin)
 static int GpioCmdEntry(int argc, char *argv[])
 {
     int ret = 0;
-    const char *in_pin_str = "3-a-4";
-    const char *out_pin_str = "3-a-5";
+    const char *in_pin_str = IN_PIN_STR;
+    const char *out_pin_str = OUT_PIN_STR;
     u32 in_pin, out_pin;
 
     if (!strcmp(argv[1], "io-irq"))

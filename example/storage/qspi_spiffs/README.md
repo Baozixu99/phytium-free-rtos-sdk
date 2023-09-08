@@ -30,12 +30,13 @@ E2000D上使用的Nor Flash介质型号是GD25LQ128E，容量为16MB;
 ><font size="1">哪些硬件平台是支持的，需要哪些外设，例程与开发板哪些IO口相关等（建议附录开发板照片，展示哪些IO口被引出）</font><br />
 
 本例程支持的硬件平台包括
-- FT2000/4、D2000、E2000D开发板
+- FT2000/4、D2000、E2000D、E2000Q开发板
 
 对应的配置项是
-- CONFIG_TARGET_F2000_4
+- CONFIG_TARGET_FT2004
 - CONFIG_TARGET_D2000
 - CONFIG_TARGET_E2000D
+- CONFIG_TARGET_E2000Q
 
 - 本例程适配了GD25Q256、GD25Q128、GD25Q64、S25FS256的Nor-Flash芯片，如使用其他型号，需自行参考适配
 
@@ -60,46 +61,23 @@ E2000D上使用的Nor Flash介质型号是GD25LQ128E，容量为16MB;
 本例子已经提供好具体的编译指令，以下进行介绍:
 - make 将目录下的工程进行编译
 - make clean  将目录下的工程进行清理
-- make boot   将目录下的工程进行编译，并将生成的elf 复制到目标地址
-- make load_d2000_aarch64  将预设64bit d2000 下的配置加载至工程中
-- make load_d2000_aarch32  将预设32bit d2000 下的配置加载至工程中
-- make load_ft2004_aarch64  将预设64bit ft2004 下的配置加载至工程中
-- make load_ft2004_aarch32  将预设32bit ft2004 下的配置加载至工程中
-- make load_e2000d_aarch64  将预设64bit e2000d 下的配置加载至工程中
-- make load_e2000d_aarch32  将预设32bit e2000d 下的配置加载至工程中
+- make image   将目录下的工程进行编译，并将生成的elf 复制到目标地址
+- make list_kconfig 当前工程支持哪些配置文件
+- make load_kconfig LOAD_CONFIG_NAME=<kconfig configuration files>  将预设配置加载至工程中
 - make menuconfig   配置目录下的参数变量
 - make backup_kconfig 将目录下的sdkconfig 备份到./configs下
+
+具体使用方法为:
+- 在当前目录下
+- 执行以上指令
 
 ### 2.3 构建和下载
 
 ><font size="1">描述构建、烧录下载镜像的过程，列出相关的命令</font><br />
 
-#### 2.3.1 构建过程
+[参考 freertos 使用说明](../../../docs/reference/usr/usage.md)
 
-- 在host侧完成配置
-配置成d2000，对于其它平台，使用对于的默认配置，如ft2004 `make load_ft2004_aarch32`
-
-- 选择目标平台
-```
-make load_d2000_aarch32
-```
-
-- 选择例程需要的配置
-```
-make menuconfig
-```
-
-- 进行编译
-```
-make
-```
-
-- 将编译出的镜像放置到tftp目录下
-```
-make boot
-```
-
-#### 2.3.2 下载过程
+#### 2.3.1 下载过程
 
 - host侧设置重启host侧tftp服务器
 ```

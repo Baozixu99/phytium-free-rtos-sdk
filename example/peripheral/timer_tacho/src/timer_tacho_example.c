@@ -26,16 +26,16 @@
 #include "FreeRTOSConfig.h"
 #include "FreeRTOS.h"
 #include "task.h"
-#include "fpinctrl.h"
 #include "fassert.h"
 #include "timers.h"
 #include "ftimer_tacho_os.h"
 #include "timer_tacho_example.h"
 #include "fparameters.h"
-#include "fpinctrl.h"
+#include "fio_mux.h"
 #include "fcpu_info.h"
 #include "sdkconfig.h"
 #include "fdebug.h"
+#include "fio_mux.h"
 
 /* The periods assigned to the one-shot timers. */
 #define ONE_SHOT_TIMER_PERIOD       ( pdMS_TO_TICKS( 50000UL ) )
@@ -43,7 +43,12 @@
 #define TIMER_IRQ_PRIORITY 0xb
 #define TACHO_IRQ_PRIORITY 0xc
 #define TIMER_INSTANCE_NUM 0U
+
+#ifdef CONFIG_TARGET_PHYTIUMPI
+#define TACHO_INSTANCE_NUM 3U
+#else
 #define TACHO_INSTANCE_NUM 12U
+#endif
 
 /* write and read task delay in milliseconds */
 #define TASK_DELAY_MS   2000UL
@@ -338,6 +343,9 @@ static void InitTask(void *pvParameters)
         printf("*Tacho init error.\r\n");
         goto timer_init_exit;
     }
+    /* set iopad mux */
+    FIOPadSetTachoMux(TACHO_INSTANCE_NUM);
+
     FTimerRegisterEvtCallback(&os_tacho_ctrl->ctrl, FTACHO_EVENT_OVER, TachOverIntrHandler);
     FTimerRegisterEvtCallback(&os_tacho_ctrl->ctrl, FTACHO_EVENT_UNDER, TachUnderIntrHandler);
     FTimerRegisterEvtCallback(&os_tacho_ctrl->ctrl, FTACHO_EVENT_CAPTURE, CapIntrHandler);

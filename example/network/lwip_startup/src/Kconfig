@@ -10,22 +10,5 @@ menu " Lwip startup test configuration"
         bool "Enable DHCP"
         select LWIP_DHCP_ENABLE
         default n
-
-if TARGET_E2000
-    choice EVALUATION_BOARD_TYPE
-        prompt "Select evaluation board"
-        default BOARD_TYPE_B
-        help
-            Select board type for build
-        config BOARD_TYPE_B
-            bool "evaluation board b"
-        config BOARD_TYPE_C
-            bool "evaluation board c"
-        config BOARD_TYPE_A
-            bool "evaluation board a"
-        config BOARD_TYPE_DEMO
-            bool "evaluation board demo"
-        endchoice # BUILD_TARGET_ARCH_TYPE
-endif
-
+        
 endmenu

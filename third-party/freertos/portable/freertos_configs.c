@@ -56,10 +56,7 @@ void vApplicationMallocFailedHook(void)
         ;
 }
 
-void vApplicationTickHook(void)
-{
-      
-}
+
 
 /*
 void vApplicationIdleHook(void)

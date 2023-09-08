@@ -29,7 +29,7 @@
 #include "fadc.h"
 #include "fadc_os.h"
 #include "fcpu_info.h"
-#include "fpinctrl.h"
+#include "fio_mux.h"
 #include "fassert.h"
 
 /* The periods assigned to the one-shot timers. */

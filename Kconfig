@@ -11,7 +11,7 @@ menu "Standalone Setting"
             Building FreeRTOS Application
 
     source "$(STANDALONE_DIR)/arch/Kconfig"
-    source "$(STANDALONE_DIR)/board/Kconfig"
+    source "$(STANDALONE_DIR)/soc/Kconfig"
     source "$(STANDALONE_DIR)/drivers/Kconfig"
     source "$(STANDALONE_DIR)/lib/Kconfig"
 endmenu

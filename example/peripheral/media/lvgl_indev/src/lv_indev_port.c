@@ -12,13 +12,14 @@
  *
  * FilePath: lv_indev_port.c
  * Date: 2023-02-05 18:27:47
- * LastEditTime: 2023-04-20 11:02:47
+ * LastEditTime: 2023-07-07 11:02:47
  * Description:  This file is for providing the lvgl indev config
  *
  * Modify History:
  *  Ver   Who        Date         Changes
  * ----- ------  -------- --------------------------------------
  *  1.0  Wangzq     2023/04/20  Modify the format and establish the version
+ *  1.1  Wangzq     2023/07/07  change the third-party and driver relation 
  */
 /*********************
  *      INCLUDES
@@ -444,12 +445,10 @@ void lv_port_ms_init(u32 id)
     indev_drv_mouse.type = LV_INDEV_TYPE_POINTER;
     indev_drv_mouse.read_cb = mouse_read;
     indev_mouse = lv_indev_drv_register(&indev_drv_mouse);
-
     /*Set cursor. For simplicity set a HOME symbol now.*/
     lv_obj_t *mouse_cursor = lv_img_create(lv_scr_act());
     lv_img_set_src(mouse_cursor, &lv_shubiao);
     lv_img_set_angle(mouse_cursor, 0);
-
     lv_img_set_zoom(mouse_cursor, 128);
     lv_indev_set_cursor(indev_mouse, mouse_cursor);
 }

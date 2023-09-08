@@ -47,9 +47,8 @@ GPIO (General-purpose input/output)，即通用型输入输出，其引脚可以
 本例子已经提供好具体的编译指令，以下进行介绍:
 - make 将目录下的工程进行编译
 - make clean  将目录下的工程进行清理
-- make boot   将目录下的工程进行编译，并将生成的elf 复制到目标地址
-- make load_e2000q_aarch64  将预设64bit e2000q 下的配置加载至工程中
-- make load_e2000q_aarch32  将预设32bit e2000q 下的配置加载至工程中
+- make image   将目录下的工程进行编译，并将生成的elf 复制到目标地址
+- make list_kconfig 当前工程支持哪些配置文件
 - make menuconfig   配置目录下的参数变量
 - make backup_kconfig 将目录下的sdkconfig 备份到./configs下
 
@@ -66,7 +65,7 @@ GPIO (General-purpose input/output)，即通用型输入输出，其引脚可以
 
 - 选择目标平台
 ```
-make load_e2000q_aarch64
+make load_kconfig LOAD_CONFIG_NAME=e2000q_aarch64_demo_gpio
 ```
 
 - 选择例程需要的配置
@@ -74,14 +73,9 @@ make load_e2000q_aarch64
 make menuconfig
 ```
 
-- 进行编译
+- 编译并将编译出的镜像放置到tftp目录下
 ```
-make
-```
-
-- 将编译出的镜像放置到tftp目录下
-```
-make boot
+make image
 ```
 
 #### 2.3.2 下载过程

@@ -48,10 +48,6 @@
 #include "../src/shell.h"
 
 
-#if defined(CONFIG_TARGET_E2000)
-    extern int FXmacPhyGpioInit(u32 instance_id, u32 interface_type);
-#endif
-
 #if LWIP_IPV6
     #include "lwip/ip.h"
     #include "lwip/ip6_addr.h"
@@ -261,10 +257,6 @@ static int LwipDeviceSet(int argc, char *argv[])
                 printf("Dhcp Open: All IP addresses will be determined by the dhcp server!\n");
             }
         }
-
-#if defined(CONFIG_TARGET_E2000)
-        FXmacPhyGpioInit(id, interface_type);
-#endif
 
         input_config.lwip_mac_config.mac_instance = id;
         input_config.lwip_mac_config.name[0] = 'e';

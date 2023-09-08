@@ -36,7 +36,11 @@
 /************************** Variable Definitions *****************************/
 
 /***************** Macros (Inline Functions) Definitions *********************/
-
+#if defined(CONFIG_TARGET_E2000D) || defined(CONFIG_TARGET_E2000Q)
+#define USED_SPI_ID FSPI2_ID
+#else
+#define USED_SPI_ID FSPI0_ID
+#endif
 /************************** Function Prototypes ******************************/
 
 /*****************************************************************************/
@@ -44,7 +48,7 @@ static int DdmaCmdEntry(int argc, char *argv[])
 {
     int ret = 0;
     u32 bytes = 32;
-    u32 spi_id = FSPI2_ID;
+    u32 spi_id = USED_SPI_ID;
 
     if (!strcmp(argv[1], "spi-loopback"))
     {

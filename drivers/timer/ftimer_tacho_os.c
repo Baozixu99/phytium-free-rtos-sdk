@@ -30,8 +30,8 @@
 #include "finterrupt.h"
 #include "fsleep.h"
 #include "fassert.h"
-#include "fpinctrl.h"
-#include "fpinctrl.h"
+
+
 
 #define FTACHO_OS_DEBUG_TAG "FFreeRTOSTacho"
 #define FTACHO_OS_ERROR(format, ...) FT_DEBUG_PRINT_E(FTACHO_OS_DEBUG_TAG, format, ##__VA_ARGS__)
@@ -409,8 +409,6 @@ FFreeRTOSTimerTacho *FFreeRTOSTachoInit(u32 id, boolean tacho_mode)
     {
         tachocfg.work_mode = FTIMER_WORK_MODE_CAPTURE;
     }
-
-    FIOPadSetTachoMux(tachocfg.id);
 
     ret = FTachoCfgInit(&tachocfg, tacho);
     if (ret != FREERTOS_TIMER_TACHO_SUCCESS)

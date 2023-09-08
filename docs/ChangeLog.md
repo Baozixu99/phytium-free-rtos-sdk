@@ -1,3 +1,160 @@
+# Phytium FreeRTOS SDK 2023-09-08 ChangeLog
+
+Change Log sinc 2023-09-07
+
+# example
+
+- change all configs of default
+- rebuild template example
+
+# README.md
+
+- modify example of support
+- add PHYTIUMPI declaration
+
+# Phytium FreeRTOS SDK 2023-09-07 ChangeLog
+
+Change Log sinc 2023-09-06
+
+# example
+
+- change the i2s example to adapt the phytiumpi, modify some bugs 
+
+# driver
+
+- modify the i2s driver
+# Phytium FreeRTOS SDK 2023-09-06 ChangeLog
+
+Change Log sinc 2023-09-01
+
+# example
+
+- change the i2s example to adapt the phytiumpi, modify some bugs 
+
+# driver
+
+- modify the i2s driver
+# Phytium FreeRTOS SDK 2023-09-06 ChangeLog
+
+Change Log sinc 2023-09-01
+
+# example
+
+- the new compilation framework adaptation in can, pwm, qspi, spi, fatfs, spi_spiffs, qspi_spiffs, atomic
+
+# Phytium FreeRTOS SDK 2023-09-06 ChangeLog
+
+Change Log sinc 2023-09-06
+
+# example
+
+- the new compilation framework adaptation in gdma, ddma, sdio, amp, atomic, exception_debug, nested_interrupt
+
+# Phytium FreeRTOS SDK 2023-09-06 ChangeLog
+
+Change Log sinc 2023-09-01
+
+# example
+
+- update configs list for the new compilation framework and add configs for phytiumpi about usb and media .
+
+# Phytium FreeRTOS SDK 2023-09-01 ChangeLog
+
+Change Log sinc 2023-09-01
+
+# example
+- update configs list for the new compilation framework and add configs for phytiumpi about network.
+- delete the source code about the test board,and only support e2000 demo board now.
+- update readme.md of network example and timer_tacho example.
+- add phytiumpi configs about timer_tacho,and add iomux support for phytiumpi board.
+
+# Phytium FreeRTOS SDK 2023-09-01 ChangeLog
+
+Change Log sinc 2023-08-31
+
+# example
+
+- add new default configs
+
+# Phytium FreeRTOS SDK 2023-08-31 ChangeLog
+
+Change Log sinc 2023-08-30
+## example
+
+- Change the storage examples makefile and default configs
+
+## third-party
+
+- Change the fatfs src.mk and include.mk 
+
+# Phytium FreeRTOS SDK 2023-08-31 ChangeLog
+
+Change Log sinc 2023-08-29
+## drivers
+
+- Change the makefile , and *.mk to use the relative addr
+
+## example
+
+- Change the peripheral makefile and Kconfig , compile the all example 
+
+## third-party
+
+- Change the lvgl , cherryusb and sdmmc makefile and Kconfig 
+- Change the third-party/include.mk , thirdparty.mk
+
+# Phytium FreeRTOS SDK 2023-08-29 ChangeLog
+
+Change Log sinc 2023-08-28
+
+## drivers
+
+- add *.mk
+
+## example
+
+- update network/lwip_startup
+
+# Phytium FreeRTOS SDK 2023-08-28 ChangeLog
+
+Change Log sinc 2023-08-20
+
+## example 
+
+- adapt to new frameworks
+- adapt feature, qspi, atomic 
+
+# Phytium FreeRTOS SDK 2023-07-14 ChangeLog
+
+Change Log sinc 2023-07-10
+
+## example 
+
+- add template_new example to show new complier use
+## third-party
+
+- adapt standalone sdk new complier
+# Phytium FreeRTOS SDK 2023-07-18 ChangeLog
+
+Change Log sinc 2023-07-06
+
+## third-party
+
+- adapt the sdk and change the lvgl config
+
+## example
+
+- change the test example, the whole work process may be set as: cmd->task creat-> driver and third-party config-> demo
+
+# Phytium FreeRTOS SDK 2023-07-06 ChangeLog
+
+Change Log sinc 2023-07-04
+
+## third-party
+
+- update freertos kernel version to v10.5.1
+
+
 # Phytium FreeRTOS SDK 2023-07-03 ChangeLog
 
 Change Log sinc 2023-07-02

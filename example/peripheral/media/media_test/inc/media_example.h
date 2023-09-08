@@ -13,13 +13,14 @@
  *
  * FilePath: media_example.h
  * Date: 2022-08-25 16:22:40
- * LastEditTime: 2022-12-20 15:40:40
+ * LastEditTime: 2022-07-07 15:40:40
  * Description:  This file is for defining the config and  functions
  *
  * Modify History:
  *  Ver   Who        Date         Changes
  * ----- ------  -------- --------------------------------------
  * 1.0  Wangzq     2022/12/20  Modify the format and establish the version
+ * 1.1  Wangzq     2023/07/07  change the third-party and driver relation 
  */
 
 #ifndef MEDIA_EXAMPLE_H
@@ -52,6 +53,8 @@ typedef struct
 
 /* return the input config */
 InputParm *InputParaReturn(void);
+
+FError FMediaDisplayDemo(void);
 
 /*create the media init task*/
 BaseType_t FFreeRTOSMediaCreate(void *args);

@@ -1,27 +1,3 @@
-<!--
- * Copyright : (C) 2022 Phytium Information Technology, Inc. 
- * All Rights Reserved.
- *  
- * This program is OPEN SOURCE software: you can redistribute it and/or modify it  
- * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,  
- * either version 1.0 of the License, or (at your option) any later version. 
- *  
- * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;  
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the Phytium Public License for more details. 
- *  
- * 
- * FilePath: README.md
- * Date: 2022-08-06 15:52:17
- * LastEditTime: 2022-08-06 15:52:17
- * Description:  This file is for 
- * 
- * Modify History: 
- *  Ver   Who  Date   Changes
- * ----- ------  -------- --------------------------------------
--->
-
-
 # lwip udp multicast test on freertos
 
 ## 1. 例程介绍
@@ -41,6 +17,7 @@
 
 - E2000D/E2000Q
 - D2000
+- PhytiumPi 
 
 对应的配置项是
 
@@ -63,12 +40,9 @@
 本例子已经提供好具体的编译指令，以下进行介绍:
 - make 将目录下的工程进行编译
 - make clean  将目录下的工程进行清理
-- make boot   将目录下的工程进行编译，并将生成的elf 复制到目标地址
-- make load_e2000d_aarch64  将预设64bit e2000d 下的配置加载至工程中
-- make load_e2000d_aarch32  将预设32bit e2000d 下的配置加载至工程中
-- make load_e2000q_aarch64  将预设64bit e2000q 下的配置加载至工程中
-- make load_e2000q_aarch32  将预设32bit e2000q 下的配置加载至工程中 
-- make test_code 编译./test 目录下的测试代码
+- make image   将目录下的工程进行编译，并将生成的elf 复制到目标地址
+- make list_kconfig 当前工程支持哪些配置文件
+- make load_kconfig LOAD_CONFIG_NAME=<kconfig configuration files>  将预设配置加载至工程中
 - make menuconfig   配置目录下的参数变量
 - make backup_kconfig 将目录下的sdkconfig 备份到./configs下
 
@@ -80,28 +54,31 @@
 
 #### 2.3.1 构建过程
 
-- 在host侧完成配置
->对于其它平台，使用对于的默认配置，如E2000D `make load_e2000d_aarch32`
+本文档将以E2000Ddemo开发板为例，对于其它平台，使用对应的默认配置
 
+- 在host端完成配置
 - 选择目标平台
+
 ```
-make load_e2000d_aarch32
+make load_kconfig LOAD_CONFIG_NAME=e2000d_aarch64_demo_udp_multicast
 ```
 
 - 选择例程需要的配置
+
 ```
 make menuconfig
 ```
 
+- 进行编译
+
+```
+make
+```
+
 - 将编译出的镜像放置到tftp目录下
-```
-make boot
-```
-
-- 以下命令用于编译测试用的例程 ,注意此时需要使用到编译环境中的gcc编译器，请确认您的环境能够进行此操作。
 
 ```
-make test_code
+make image
 ```
 
 
@@ -205,27 +182,10 @@ multicast
 ![](./pic/测试终端打印.png)
 
 
-#### 2.4.2 提供
-
 ## 3. 如何解决问题
 
-1. 如何选择demo板的配置
-
-- 开发者在编译终端下使用以下命令
-```shell
-    make menuconfig
-```
-
-![](./pic/demo_board_menuconfig.png)
 
 
-2. 如果开发者使用E2000 demo板应该如何进行实验：
-![](./pic/e2000demo板全貌.jpg)
-
-- 开发者在串口终端上请输入以下命令对控制器进行初始化
-```shell
-    lwip probe 0 1 1 192.168.4.10 192.168.4.1 255.255.255.0
-```
 
 ## 4. 修改历史记录
 

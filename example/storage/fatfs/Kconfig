@@ -1,12 +1,6 @@
-mainmenu "Phytium Baremetal Configuration"
+mainmenu "Phytium freertos Configuration"
 
 menu "Project Configuration"
-	
-	config TARGET_NAME
-		string "Build Target Name"
-		default "template"
-		help
-			Build Target name for the demo
 
 	config FATFS_BASIC_TEST
 		bool "Basic Test"
@@ -22,4 +16,4 @@ menu "Project Configuration"
 
 endmenu
 
-source "$(FREERTOS_SDK_ROOT)/Kconfig"
+source "$(SDK_DIR)/../freertos.kconfig"

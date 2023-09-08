@@ -21,7 +21,7 @@
  * ----- ------     --------    --------------------------------------
  * 1.0   huanghe   2022/04/21   first commit
  */
-
+#include <stdio.h>
 #include "fpl011_os.h"
 #include "fpl011.h"
 #include "fpl011_hw.h"
@@ -31,7 +31,6 @@
 #include "fdebug.h"
 #include "sdkconfig.h"
 #include "fcpu_info.h"
-#include <stdio.h>
 
 #define FPL011_DEBUG_TAG "FFreeRTOSPl001"
 #define FPL011_ERROR(format, ...)   FT_DEBUG_PRINT_E(FPL011_DEBUG_TAG, format, ##__VA_ARGS__)

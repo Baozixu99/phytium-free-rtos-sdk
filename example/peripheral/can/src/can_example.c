@@ -30,7 +30,7 @@
 #include "fcan.h"
 #include "fcan_os.h"
 #include "fcpu_info.h"
-#include "fpinctrl.h"
+#include "fio_mux.h"
 #include "fassert.h"
 #include "fdebug.h"
 
@@ -202,30 +202,8 @@ static void FFreeRTOSCanInitTask(void *pvParameters)
 
     for (can_id = FCAN0_ID; can_id < FCAN_NUM; can_id++)
     {
-#if defined(CONFIG_TARGET_F2000_4) || defined(CONFIG_TARGET_D2000)
-        if (can_id == FCAN0_ID)
-        {
-            FPinSetFunc(FIOCTRL_TJTAG_TDI_PAD, FPIN_FUNC1); /* can0-tx: func 1 */
-            FPinSetFunc(FIOCTRL_SWDITMS_SWJ_PAD, FPIN_FUNC1); /* can0-rx: func 1 */
-        }
-        else if (can_id == FCAN1_ID)
-        {
-            FPinSetFunc(FIOCTRL_NTRST_SWJ_PAD, FPIN_FUNC1); /* can1-tx: func 1 */
-            FPinSetFunc(FIOCTRL_SWDO_SWJ_PAD, FPIN_FUNC1); /* can1-rx: func 1 */
-        }
-        else if (can_id == FCAN2_ID)
-        {
-
-        }
-        else
-        {
-            FCAN_TEST_ERROR("can id is error");
-            goto can_init_exit;
-        }
-#elif defined(CONFIG_TARGET_E2000)
         FIOPadSetCanMux(can_id);
-#endif
-
+        
         /* init can controller */
         os_can_ctrl_p[can_id] = FFreeRTOSCanInit(can_id);
         if (os_can_ctrl_p[can_id] == NULL)

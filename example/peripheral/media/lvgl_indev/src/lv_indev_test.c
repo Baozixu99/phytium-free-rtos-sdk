@@ -1,5 +1,5 @@
 /*
- * Copyright : (C) 2022 Phytium Information Technology, Inc.
+ * Copyright : (C) 2023 Phytium Information Technology, Inc.
  * All Rights Reserved.
  *
  * This program is OPEN SOURCE software: you can redistribute it and/or modify it
@@ -10,15 +10,16 @@
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See the Phytium Public License for more details.
  *
- * FilePath: lv_indev_test.c
- * Date: 2023-02-05 18:27:47
- * LastEditTime: 2023-03-20 11:02:47
- * Description:  This file is for providing the lvgl test config and commond
  *
- * Modify History:
- *  Ver   Who        Date         Changes
- * ----- ------  -------- --------------------------------------
- *  1.0  Wangzq     2023/04/20  Modify the format and establish the version
+ * FilePath: lv_indev_test.c
+ * Created Date: 2023-07-06 14:36:43
+ * Last Modified: 2023-07-07 18:38:45
+ * Description:  This file is for config the test
+ *
+ * Modify History:
+ *   Ver      Who        Date               Changes
+ * -----  ----------  --------  ---------------------------------
+ *  1.0  Wangzq     2023/07/06  Modify the format and establish the version
  */
 
 #include <stdio.h>
@@ -28,906 +29,260 @@
 #include "task.h"
 #include "timers.h"
 #include "fassert.h"
+#include "fcpu_info.h"
 
-#include "../lvgl.h"
-#include "lv_indev_test.h"
+#include "fdcdp.h"
+#include "fdc.h"
+#include "fdp.h"
+#include "fdp_hw.h"
+#include "fdc_hw.h"
+#include "fdcdp_multi_display.h"
+#include "fmedia_os.h"
+#include "fdcdp_multi_display.h"
+
 #include "lv_indev_port.h"
 #include "lv_port_disp.h"
-#include "lv_spinbox.h"
-#include "lv_btn.h"
 
-#include "usbh_core.h"
+/************************** Variable Definitions *****************************/
+#define FMEDIA_EVT_INTR(index)             BIT(index)
+#define FMEDIA_CHANNEL_0                    0
+#define FMEDIA_CHANNEL_1                    1
 
-typedef enum
+static FFreeRTOSMedia *os_media;
+
+static EventGroupHandle_t media_event = NULL;
+
+static void FFreeRTOSMediaSendEvent(u32 evt_bits)
 {
-    DISP_SMALL,
-    DISP_MEDIUM,
-    DISP_LARGE,
-} disp_size_t;
+    FASSERT(media_event);
 
-#define LVGL_HEART_TIMER_PERIOD        (pdMS_TO_TICKS(1UL))
-#define LVGL_CONTINUE_TIMER             10000000
+    BaseType_t x_result = pdFALSE;
+    BaseType_t xhigher_priority_task_woken = pdFALSE;
+    /*set the irq event for the task*/
+    x_result = xEventGroupSetBitsFromISR(media_event, evt_bits, &xhigher_priority_task_woken);
 
-extern lv_indev_t *indev_keypad;
-
-static TimerHandle_t xLvglHeartTimer;
-static TaskHandle_t demo_task;
-
-static TaskHandle_t init_kb_task;
-static TaskHandle_t init_ms_task;
-static TaskHandle_t init_task;
-static InputParm *input_config;
-
-static void profile_create(lv_obj_t *parent);
-static void color_changer_create(lv_obj_t *parent);
-
-static void color_changer_event_cb(lv_event_t *e);
-static void color_event_cb(lv_event_t *e);
-static void ta_event_cb(lv_event_t *e);
-static void birthday_event_cb(lv_event_t *e);
-static void calendar_event_cb(lv_event_t *e);
-static void slider_event_cb(lv_event_t *e);
-
-static disp_size_t disp_size;
-static lv_obj_t *tv;
-static lv_obj_t *calendar;
-static lv_style_t style_text_muted;
-static lv_style_t style_title;
-static lv_style_t style_icon;
-static lv_style_t style_bullet;
-
-static const lv_font_t *font_large;
-static const lv_font_t *font_normal;
-
-static void LvglHeartTimerCallback(TimerHandle_t xTimer)
-{
-    lv_tick_inc(1);
 }
 
-static void keyboardinit(void *pvParameters)
+static boolean FFreeRTOSMediaWaitEvent(u32 evt_bits, TickType_t wait_delay)
 {
-    u32 keyboard_id = (u32)(uintptr)pvParameters;
-    lv_port_kb_init(keyboard_id);
-    vTaskDelete(NULL);
-}
+    FASSERT(media_event);
 
-static void mouseinit(void *pvParameters)
-{
-    u32 mouse_id = (u32)(uintptr)pvParameters;
-    lv_port_ms_init(mouse_id);
-    vTaskDelete(NULL);
-}
-
-static void FFreeRTOSLVGLDemoTask(void *args)
-{
-    lv_demo_indev();
-
-    while (1)
+    EventBits_t event;
+    event = xEventGroupWaitBits(media_event, evt_bits,
+                                pdTRUE, pdFALSE, wait_delay);/*wait the irq event for the task*/
+    if (event & evt_bits)
     {
-        if (lv_disp_get_inactive_time(NULL) < LVGL_CONTINUE_TIMER)
-        {
-            lv_timer_handler(); //! run lv task
-        }
-        else
-        {
-            printf("task is over \n");
-            break;
-        }
-        vTaskDelay(1);
+        return TRUE;
     }
-    vTaskDelete(NULL);
+    return FALSE;
 }
 
-static void FFreeRTOSMediaInitTask(void *pvParameters)
+static boolean FFreeRTOSMediaClearEvent(EventGroupHandle_t pvEventGroup, const uint32_t ulBitsToClear)
 {
-    FASSERT(NULL != pvParameters);
-    InputParm *input_config = (InputParm *)pvParameters ;
-    FFreeRTOSMediaDeviceInit(input_config->channel, input_config->width, input_config->height, input_config->multi_mode, input_config->color_depth, input_config->refresh_rate);
-    lv_init();
-    FFreeRTOSPortInit();
-    vTaskDelete(NULL);
+    FASSERT(media_event);
+
+    EventBits_t event;
+    event = xEventGroupClearBits(pvEventGroup, ulBitsToClear);/*clear the intr bits*/
+    return TRUE;
 }
 
-BaseType_t FFreeRTOSListUsbDev(int argc, char *argv[])
+
+/**
+ * @name: FFreeRTOSMediaHpdConnectCallback
+ * @msg:  the hpd connect event
+ * @param  {void} *args is the instance of dcdp
+ * @param  {u32} index is the channel
+ * @return Null
+ */
+static void FFreeRTOSMediaHpdConnectCallback(void *args, u32 index)
 {
-    return lsusb(argc, argv);
+    FASSERT(args != NULL);
+    FDcDp *instance_p = (FDcDp *)args;
+    FDpChannelRegRead(instance_p->dp_instance_p[index].config.dp_channe_base_addr, FDP_TX_INTERRUPT); /*clear interrupt*/
+    FFreeRTOSMediaSendEvent(FMEDIA_EVT_INTR(index));
+    instance_p->connect_flg[index] = 1;
+    printf("Dp:%d connect\r\n", index);
+
 }
 
-BaseType_t FFreeRTOSInitKbCreate(u32 id)
+
+/**
+ * @name: FFreeRTOSMediaHpdBreakCallback
+ * @msg:  the hpd disconnect event
+ * @param  {void} *args is the instance of dcdp
+ * @param  {u32} index is the channel
+ * @return Null
+ */
+static void FFreeRTOSMediaHpdBreakCallback(void *args, u32 index)
 {
-    BaseType_t xReturn = pdPASS; /* 定义一个创建信息返回值，默认为 pdPASS */
-    BaseType_t timer_started = pdPASS;
+    FASSERT(args != NULL);
+    FDcDp *instance_p = (FDcDp *)args;
+    FDpChannelRegRead(instance_p->dp_instance_p[index].config.dp_channe_base_addr, FDP_TX_INTERRUPT); /*clear interrupt*/
+    instance_p->connect_flg[index] = 0;
+    FFreeRTOSMediaSendEvent(FMEDIA_EVT_INTR(index));
+    printf("Dp:%d disconnect\r\n", index);
+}
+
+/**
+ * @name: FFreeRTOSMediaAuxTimeoutCallback
+ * @msg:  the aux timeout  event
+ * @param  {void} *args is the instance of dcdp
+ * @param  {u32} index is the channel
+ * @return Null
+ */
+static void FFreeRTOSMediaAuxTimeoutCallback(void *args, u32 index)
+{
+    FASSERT(args != NULL);
+    FDcDp *instance_p = (FDcDp *)args;
+    FDpChannelRegRead(instance_p->dp_instance_p[index].config.dp_channe_base_addr, FDP_TX_INTERRUPT); /*clear interrupt*/
+    printf("Dp:%d aux connect timeout\r\n", index);
+}
+
+/**
+ * @name: FFreeRTOSMediaAuxErrorCallback
+ * @msg:  the aux error  event
+ * @param  {void} *args is the instance of dcdp
+ * @param  {u32} index is the channel
+ * @return Null
+ */
+static void FFreeRTOSMediaAuxErrorCallback(void *args, u32 index)
+{
+    FASSERT(args != NULL);
+    FDcDp *instance_p = (FDcDp *)args;
+    FDpChannelRegRead(instance_p->dp_instance_p[index].config.dp_channe_base_addr, FDP_TX_INTERRUPT); /*clear interrupt*/
+    printf("Dp:%d aux connect error\r\n", index);
+}
+
+/**
+ * @name: FFreeRTOSMediaIrqSet
+ * @msg:  set the irq event and instance
+ * @param {FDcDp} *instance_p is the instance of dcdp
+ * @return Null
+ */
+static void FFreeRTOSMediaIrqSet(FDcDp *instance_p)
+{
+    FASSERT(instance_p != NULL);
+    u32 cpu_id;
+    u32 index;
+    FMediaIntrConfig intr_config;
+    memset(&intr_config, 0, sizeof(intr_config));
+
+    GetCpuId(&cpu_id);
+    InterruptSetTargetCpus(instance_p->dp_instance_p[0].config.irq_num, cpu_id);/*the dc0 and dc1 have the same num of irq_num*/
+
+    FDcDpRegisterHandler(instance_p, FDCDP_HPD_IRQ_CONNECTED, FFreeRTOSMediaHpdConnectCallback, (void *)instance_p);
+    FDcDpRegisterHandler(instance_p, FDCDP_HPD_IRQ_DISCONNECTED, FFreeRTOSMediaHpdBreakCallback, (void *)instance_p);
+    FDcDpRegisterHandler(instance_p, FDCDP_AUX_REPLY_TIMEOUT, FFreeRTOSMediaAuxTimeoutCallback, (void *)instance_p);
+    FDcDpRegisterHandler(instance_p, FDCDP_AUX_REPLY_ERROR, FFreeRTOSMediaAuxErrorCallback, (void *)instance_p);
+
+    InterruptSetPriority(instance_p->dp_instance_p[0].config.irq_num, FREERTOS_MEDIA_IRQ_PRIORITY);/*dp0 and dp1 have the same irq_num*/
+    InterruptInstall(instance_p->dp_instance_p[0].config.irq_num, FDcDpInterruptHandler, instance_p, "media");
+    InterruptUmask(instance_p->dp_instance_p[0].config.irq_num);
+}
+
+/**
+ * @name: FFreeRTOSMediaIrqAllEnable
+ * @msg:  enable the irq
+ * @param  {FDcDp} *instance_p is the instance of dcdp
+ * @return Null
+ */
+static void FFreeRTOSMediaIrqAllEnable(FDcDp *instance_p)
+{
+    int index = 0;
+    FDcDpIntrEventType event_type = FDCDP_HPD_IRQ_CONNECTED;
+    for (index = 0; index < FDCDP_INSTANCE_NUM; index++)
+    {
+        for (event_type = 0; event_type < FDCDP_INSTANCE_NUM; event_type++)
+        {
+            FDcDpIrqEnable(instance_p, index, event_type);
+        }
+    }
+}
+
+/**
+ * @name: FFreeRTOSMediaDeviceInit
+ * @msg:  enable the Dc and Dp
+ * @param  {u32} channel is the dc channel
+ * @param  {u32} width is the width
+ * @param  {u32} height is the height
+ * @param  {u32} multi_mode is multi display mode,0:clone,1:hor,2:ver
+ * @param  {u32} color_depth is the color depth
+ * @param  {u32} refresh_rate is the refresh rate of screen
+ * @return Null
+ */
+void FFreeRTOSMediaDeviceInit(u32 channel, u32 width, u32 height, u32 multi_mode, u32 color_depth, u32 refresh_rate)
+{
+    os_media = FFreeRTOSMediaHwInit(channel, width, height, multi_mode, color_depth, refresh_rate);
+    FASSERT_MSG(NULL == media_event, "Event group exists.");
+    FASSERT_MSG((media_event = xEventGroupCreate()) != NULL, "Create event group failed.");
+    FFreeRTOSMediaIrqSet(&os_media->dcdp_ctrl);
+    FFreeRTOSMediaIrqAllEnable(&os_media->dcdp_ctrl);
+}
+
+/**
+ * @name: FFreeRTOSMediaChannelDeinit
+ * @msg:  deinit the media
+ * @param  {u32} id is the channel of dcdp
+ * @return Null
+ */
+void FFreeRTOSMediaChannelDeinit(u32 id)
+{
     taskENTER_CRITICAL();
-    /* init keyborad task */
-    xReturn = xTaskCreate((TaskFunction_t)keyboardinit,  /* 任务入口函数 */
-                          (const char *)"keyboardinit",  /* 任务名字 */
-                          (uint16_t)1024,                         /* 任务栈大小 */
-                          (void *)(uintptr)id,                                /* 任务入口函数参数 */
-                          (UBaseType_t)configMAX_PRIORITIES - 3,                         /* 任务的优先级 */
-                          (TaskHandle_t *)&init_kb_task); /* 任务控制 */
-    /* exit critical region */
-    taskEXIT_CRITICAL();
-
-    return xReturn;
+    vEventGroupDelete(media_event);
+    media_event = NULL;
+    FDcDpDeInitialize(&os_media->dcdp_ctrl, id);
+    taskEXIT_CRITICAL(); /* allow schedule after deinit */
+    return ;
 }
 
-BaseType_t FFreeRTOSInitMsCreate(u32 id)
+/**
+ * @name: FFreeRTOSMediaHpdHandle
+ * @msg:  handle the hpd event
+ * @param  {u32} channel is the dc channel
+ * @param  {u32} width is the width
+ * @param  {u32} height is the height
+ * @param  {u32} multi_mode is multi display mode,0:clone,1:hor,2:ver
+ * @param  {u32} color_depth is the color depth
+ * @param  {u32} refresh_rate is the refresh rate of screen
+ * @return Null
+ */
+void FFreeRTOSMediaHpdHandle(u32 channel, u32 width, u32 height, u32 multi_mode, u32 color_depth, u32 refresh_rate)
 {
-    BaseType_t xReturn = pdPASS; /* 定义一个创建信息返回值，默认为 pdPASS */
-    BaseType_t timer_started = pdPASS;
-    taskENTER_CRITICAL();
-    /* init mouse task */
-    xReturn = xTaskCreate((TaskFunction_t)mouseinit,  /* 任务入口函数 */
-                          (const char *)"mouseinit",  /* 任务名字 */
-                          (uint16_t)1024,                         /* 任务栈大小 */
-                          (void *)(uintptr)id,                                /* 任务入口函数参数 */
-                          (UBaseType_t)configMAX_PRIORITIES - 3,                         /* 任务的优先级 */
-                          (TaskHandle_t *)&init_ms_task); /* 任务控制 */
+    u32 index;
+    u32 ret = FMEDIA_DP_SUCCESS;
+    u32 start_index;
+    u32 end_index;//ensure the channel number
 
-    /* exit critical region */
-    taskEXIT_CRITICAL();
-
-    return xReturn;
-}
-
-BaseType_t FFreeRTOSMediaInitCreate(void *args)
-{
-    BaseType_t xReturn = pdPASS; /* 定义一个创建信息返回值，默认为 pdPASS */
-    /* enter critical region */
-    taskENTER_CRITICAL();
-    /* Media init task */
-    xReturn = xTaskCreate((TaskFunction_t)FFreeRTOSMediaInitTask,  /* 任务入口函数 */
-                          (const char *)"FFreeRTOSMediaInitTask",  /* 任务名字 */
-                          (uint16_t)1024,                         /* 任务栈大小 */
-                          (void *)args,                   /* 任务入口函数参数 */
-                          (UBaseType_t)configMAX_PRIORITIES - 2,                       /* 任务的优先级 */
-                          (TaskHandle_t *)&init_task); /* 任务控制 */
-    return xReturn;
-}
-
-BaseType_t FFreeRTOSDemoCreate(void)
-{
-    BaseType_t xReturn = pdPASS; /* 定义一个创建信息返回值，默认为 pdPASS */
-    BaseType_t timer_started = pdPASS;
-    taskENTER_CRITICAL();
-    /* lvgl demo task */
-    xReturn = xTaskCreate((TaskFunction_t)FFreeRTOSLVGLDemoTask,  /* 任务入口函数 */
-                          (const char *)"FFreeRTOSLVGLDemoTask",  /* 任务名字 */
-                          (uint16_t)1024,                         /* 任务栈大小 */
-                          NULL,                                /* 任务入口函数参数 */
-                          (UBaseType_t)configMAX_PRIORITIES - 2,                         /* 任务的优先级 */
-                          (TaskHandle_t *)&demo_task); /* 任务控制 */
-    xLvglHeartTimer = xTimerCreate("LVGL Heart Software Timer",        /* Text name for the software timer - not used by FreeRTOS. */
-                                   LVGL_HEART_TIMER_PERIOD,           /* The software timer's period in ticks. */
-                                   pdTRUE,                          /* Setting uxAutoRealod to pdFALSE creates a one-shot software timer. */
-                                   NULL,                               /* This example use the timer id. */
-                                   LvglHeartTimerCallback);        /* The callback function to be used by the software timer being created. */
-    if (xLvglHeartTimer != NULL)
+    if (channel == FDCDP_INSTANCE_NUM)
     {
-        timer_started = xTimerStart(xLvglHeartTimer, 0);
-        if (timer_started != pdPASS)
-        {
-            vPrintf("CreateSoftwareTimerTasks xTimerStart failed \r\n");
-        }
+        start_index = 0;
+        end_index = channel;
     }
     else
     {
-        vPrintf("CreateSoftwareTimerTasks xTimerCreate failed \r\n");
+        start_index = channel;
+        end_index = channel + 1;
     }
-    /* exit critical region */
-    taskEXIT_CRITICAL();
+    FFreeRTOSMediaWaitEvent(FMEDIA_EVT_INTR(FMEDIA_CHANNEL_0) | FMEDIA_EVT_INTR(FMEDIA_CHANNEL_1), portMAX_DELAY);
 
-    return xReturn;
-}
-
-void lv_demo_indev(void)
-{
-    if (LV_HOR_RES <= 320)
+    for (;;)
     {
-        disp_size = DISP_SMALL;
-    }
-    else if (LV_HOR_RES < 720)
-    {
-        disp_size = DISP_MEDIUM;
-    }
-    else
-    {
-        disp_size = DISP_LARGE;
-    }
-
-    font_large = LV_FONT_DEFAULT;
-    font_normal = LV_FONT_DEFAULT;
-
-    lv_coord_t tab_h;
-    if (disp_size == DISP_LARGE)
-    {
-        tab_h = 70;
-#if LV_FONT_MONTSERRAT_24
-        font_large     = &lv_font_montserrat_24;
-#else
-        LV_LOG_WARN("LV_FONT_MONTSERRAT_24 is not enabled for the widgets demo. Using LV_FONT_DEFAULT instead.");
-#endif
-#if LV_FONT_MONTSERRAT_16
-        font_normal    = &lv_font_montserrat_16;
-#else
-        LV_LOG_WARN("LV_FONT_MONTSERRAT_16 is not enabled for the widgets demo. Using LV_FONT_DEFAULT instead.");
-#endif
-    }
-    else if (disp_size == DISP_MEDIUM)
-    {
-        tab_h = 45;
-#if LV_FONT_MONTSERRAT_20
-        font_large     = &lv_font_montserrat_20;
-#else
-        LV_LOG_WARN("LV_FONT_MONTSERRAT_20 is not enabled for the widgets demo. Using LV_FONT_DEFAULT instead.");
-#endif
-#if LV_FONT_MONTSERRAT_14
-        font_normal    = &lv_font_montserrat_14;
-#else
-        LV_LOG_WARN("LV_FONT_MONTSERRAT_14 is not enabled for the widgets demo. Using LV_FONT_DEFAULT instead.");
-#endif
-    }
-    else     /* disp_size == DISP_SMALL */
-    {
-        tab_h = 45;
-#if LV_FONT_MONTSERRAT_18
-        font_large     = &lv_font_montserrat_18;
-#else
-        LV_LOG_WARN("LV_FONT_MONTSERRAT_18 is not enabled for the widgets demo. Using LV_FONT_DEFAULT instead.");
-#endif
-#if LV_FONT_MONTSERRAT_12
-        font_normal    = &lv_font_montserrat_12;
-#else
-        LV_LOG_WARN("LV_FONT_MONTSERRAT_12 is not enabled for the widgets demo. Using LV_FONT_DEFAULT instead.");
-#endif
-    }
-
-#if LV_USE_THEME_DEFAULT
-    lv_theme_default_init(NULL, lv_palette_main(LV_PALETTE_BLUE), lv_palette_main(LV_PALETTE_RED), LV_THEME_DEFAULT_DARK,
-                          font_normal);
-#endif
-
-    lv_style_init(&style_text_muted);
-    lv_style_set_text_opa(&style_text_muted, LV_OPA_50);
-
-    lv_style_init(&style_title);
-    lv_style_set_text_font(&style_title, font_large);
-
-    lv_style_init(&style_icon);
-    lv_style_set_text_color(&style_icon, lv_theme_get_color_primary(NULL));
-    lv_style_set_text_font(&style_icon, font_large);
-
-    lv_style_init(&style_bullet);
-    lv_style_set_border_width(&style_bullet, 0);
-    lv_style_set_radius(&style_bullet, LV_RADIUS_CIRCLE);
-
-    tv = lv_tabview_create(lv_scr_act(), LV_DIR_TOP, tab_h);
-
-    lv_obj_set_style_text_font(lv_scr_act(), font_normal, 0);
-
-    if (disp_size == DISP_LARGE)
-    {
-        lv_obj_t *tab_btns = lv_tabview_get_tab_btns(tv);
-        lv_obj_set_style_pad_left(tab_btns, LV_HOR_RES / 2, 0);
-        lv_obj_t *logo = lv_img_create(tab_btns);
-        LV_IMG_DECLARE(img_lvgl_logo);
-        lv_img_set_src(logo, &img_lvgl_logo);
-        lv_obj_align(logo, LV_ALIGN_LEFT_MID, -LV_HOR_RES / 2 + 25, 0);
-
-        lv_obj_t *label = lv_label_create(tab_btns);
-        lv_obj_add_style(label, &style_title, 0);
-        lv_label_set_text(label, "LVGL v8");
-        lv_obj_align_to(label, logo, LV_ALIGN_OUT_RIGHT_TOP, 10, 0);
-
-        label = lv_label_create(tab_btns);
-        lv_label_set_text(label, "Widgets demo");
-        lv_obj_add_style(label, &style_text_muted, 0);
-        lv_obj_align_to(label, logo, LV_ALIGN_OUT_RIGHT_BOTTOM, 10, 0);
-    }
-
-    lv_obj_t *t1 = lv_tabview_add_tab(tv, "Profile");
-    profile_create(t1);
-    color_changer_create(tv);
-}
-
-static void profile_create(lv_obj_t *parent)
-{
-    lv_group_t *group = lv_group_create();
-    lv_indev_set_group(indev_keypad, group);
-
-    lv_obj_t *panel1 = lv_obj_create(parent);
-    lv_obj_set_height(panel1, LV_SIZE_CONTENT);
-
-    LV_IMG_DECLARE(img_demo_widgets_avatar);
-    lv_obj_t *avatar = lv_img_create(panel1);
-    lv_img_set_src(avatar, &img_demo_widgets_avatar);
-
-    lv_obj_t *name = lv_label_create(panel1);
-    lv_label_set_text(name, "Elena Smith");
-    lv_obj_add_style(name, &style_title, 0);
-
-    lv_obj_t *dsc = lv_label_create(panel1);
-    lv_obj_add_style(dsc, &style_text_muted, 0);
-    lv_label_set_text(dsc, "This is a short description of me. Take a look at my profile!");
-    lv_label_set_long_mode(dsc, LV_LABEL_LONG_WRAP);
-
-    lv_obj_t *email_icn = lv_label_create(panel1);
-    lv_obj_add_style(email_icn, &style_icon, 0);
-    lv_label_set_text(email_icn, LV_SYMBOL_ENVELOPE);
-
-    lv_obj_t *email_label = lv_label_create(panel1);
-    lv_label_set_text(email_label, "elena@smith.com");
-
-    lv_obj_t *call_icn = lv_label_create(panel1);
-    lv_obj_add_style(call_icn, &style_icon, 0);
-    lv_label_set_text(call_icn, LV_SYMBOL_CALL);
-
-    lv_obj_t *call_label = lv_label_create(panel1);
-    lv_label_set_text(call_label, "+79 246 123 4567");
-
-    lv_obj_t *log_out_btn = lv_btn_create(panel1);
-    lv_obj_set_height(log_out_btn, LV_SIZE_CONTENT);
-
-    lv_obj_t *label = lv_label_create(log_out_btn);
-    lv_label_set_text(label, "Log out");
-    lv_obj_center(label);
-
-    lv_obj_t *invite_btn = lv_btn_create(panel1);
-    lv_obj_add_state(invite_btn, LV_STATE_DISABLED);
-    lv_obj_set_height(invite_btn, LV_SIZE_CONTENT);
-
-    label = lv_label_create(invite_btn);
-    lv_label_set_text(label, "Invite");
-    lv_obj_center(label);
-
-    /*Create the second panel*/
-    lv_obj_t *panel2 = lv_obj_create(parent);
-    lv_obj_set_height(panel2, LV_SIZE_CONTENT);
-
-    lv_obj_t *panel2_title = lv_label_create(panel2);
-    lv_label_set_text(panel2_title, "Your profile");
-    lv_obj_add_style(panel2_title, &style_title, 0);
-
-    lv_obj_t *user_name_label = lv_label_create(panel2);
-    lv_label_set_text(user_name_label, "User name");
-    lv_obj_add_style(user_name_label, &style_text_muted, 0);
-
-    lv_obj_t *user_name = lv_textarea_create(panel2);
-    lv_textarea_set_one_line(user_name, true);
-    lv_textarea_set_placeholder_text(user_name, "Your name");
-    lv_obj_add_event_cb(user_name, ta_event_cb, LV_EVENT_ALL, NULL);
-    lv_group_add_obj(group, user_name);
-
-    lv_obj_t *gender_label = lv_label_create(panel2);
-    lv_label_set_text(gender_label, "Gender");
-    lv_obj_add_style(gender_label, &style_text_muted, 0);
-
-    lv_obj_t *gender = lv_dropdown_create(panel2);
-    lv_dropdown_set_options_static(gender, "Male\nFemale\nOther");
-
-    lv_obj_t *birthday_label = lv_label_create(panel2);
-    lv_label_set_text(birthday_label, "Birthday");
-    lv_obj_add_style(birthday_label, &style_text_muted, 0);
-
-    lv_obj_t *birthdate = lv_textarea_create(panel2);
-    lv_textarea_set_one_line(birthdate, true);
-    lv_obj_add_event_cb(birthdate, birthday_event_cb, LV_EVENT_ALL, NULL);
-
-    /*Create the third panel*/
-    lv_obj_t *panel3 = lv_obj_create(parent);
-    lv_obj_t *panel3_title = lv_label_create(panel3);
-    lv_label_set_text(panel3_title, "Your skills");
-    lv_obj_add_style(panel3_title, &style_title, 0);
-
-    lv_obj_t *experience_label = lv_label_create(panel3);
-    lv_label_set_text(experience_label, "Experience");
-    lv_obj_add_style(experience_label, &style_text_muted, 0);
-
-    lv_obj_t *slider1 = lv_slider_create(panel3);
-    lv_obj_set_width(slider1, LV_PCT(95));
-    lv_obj_add_event_cb(slider1, slider_event_cb, LV_EVENT_ALL, NULL);
-    lv_obj_refresh_ext_draw_size(slider1);
-
-    lv_obj_t *team_player_label = lv_label_create(panel3);
-    lv_label_set_text(team_player_label, "Team player");
-    lv_obj_add_style(team_player_label, &style_text_muted, 0);
-
-    lv_obj_t *sw1 = lv_switch_create(panel3);
-
-    lv_obj_t *hard_working_label = lv_label_create(panel3);
-    lv_label_set_text(hard_working_label, "Hard-working");
-    lv_obj_add_style(hard_working_label, &style_text_muted, 0);
-
-    lv_obj_t *sw2 = lv_switch_create(panel3);
-
-    if (disp_size == DISP_LARGE)
-    {
-        static lv_coord_t grid_main_col_dsc[] = {LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST};
-        static lv_coord_t grid_main_row_dsc[] = {LV_GRID_CONTENT, LV_GRID_CONTENT, LV_GRID_TEMPLATE_LAST};
-
-        /*Create the top panel*/
-        static lv_coord_t grid_1_col_dsc[] = {LV_GRID_CONTENT, 5, LV_GRID_CONTENT, LV_GRID_FR(2), LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST};
-        static lv_coord_t grid_1_row_dsc[] = {LV_GRID_CONTENT, LV_GRID_CONTENT, 10, LV_GRID_CONTENT, LV_GRID_CONTENT, LV_GRID_TEMPLATE_LAST};
-
-        static lv_coord_t grid_2_col_dsc[] = {LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST};
-        static lv_coord_t grid_2_row_dsc[] =
+        for (index = start_index; index < end_index; index++)
         {
-            LV_GRID_CONTENT,  /*Title*/
-            5,                /*Separator*/
-            LV_GRID_CONTENT,  /*Box title*/
-            30,               /*Boxes*/
-            5,                /*Separator*/
-            LV_GRID_CONTENT,  /*Box title*/
-            30,               /*Boxes*/
-            LV_GRID_TEMPLATE_LAST
-        };
-
-        lv_obj_set_grid_dsc_array(parent, grid_main_col_dsc, grid_main_row_dsc);
-        lv_obj_set_grid_cell(panel1, LV_GRID_ALIGN_STRETCH, 0, 2, LV_GRID_ALIGN_CENTER, 0, 1);
-        lv_obj_set_grid_dsc_array(panel1, grid_1_col_dsc, grid_1_row_dsc);
-        lv_obj_set_grid_cell(avatar, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 0, 5);
-        lv_obj_set_grid_cell(name, LV_GRID_ALIGN_START, 2, 2, LV_GRID_ALIGN_CENTER, 0, 1);
-        lv_obj_set_grid_cell(dsc, LV_GRID_ALIGN_STRETCH, 2, 4, LV_GRID_ALIGN_START, 1, 1);
-        lv_obj_set_grid_cell(email_icn, LV_GRID_ALIGN_CENTER, 2, 1, LV_GRID_ALIGN_CENTER, 3, 1);
-        lv_obj_set_grid_cell(email_label, LV_GRID_ALIGN_START, 3, 1, LV_GRID_ALIGN_CENTER, 3, 1);
-        lv_obj_set_grid_cell(call_icn, LV_GRID_ALIGN_CENTER, 2, 1, LV_GRID_ALIGN_CENTER, 4, 1);
-        lv_obj_set_grid_cell(call_label, LV_GRID_ALIGN_START, 3, 1, LV_GRID_ALIGN_CENTER, 4, 1);
-        lv_obj_set_grid_cell(log_out_btn, LV_GRID_ALIGN_STRETCH, 4, 1, LV_GRID_ALIGN_CENTER, 3, 2);
-        lv_obj_set_grid_cell(invite_btn, LV_GRID_ALIGN_STRETCH, 5, 1, LV_GRID_ALIGN_CENTER, 3, 2);
-
-        lv_obj_set_grid_cell(panel2, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_START, 1, 1);
-        lv_obj_set_grid_dsc_array(panel2, grid_2_col_dsc, grid_2_row_dsc);
-        lv_obj_set_grid_cell(panel2_title, LV_GRID_ALIGN_START, 0, 2, LV_GRID_ALIGN_CENTER, 0, 1);
-        lv_obj_set_grid_cell(user_name, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_CENTER, 3, 1);
-        lv_obj_set_grid_cell(user_name_label, LV_GRID_ALIGN_START, 0, 1, LV_GRID_ALIGN_START, 2, 1);
-        lv_obj_set_grid_cell(birthdate, LV_GRID_ALIGN_STRETCH, 1, 1, LV_GRID_ALIGN_CENTER, 6, 1);
-        lv_obj_set_grid_cell(birthday_label, LV_GRID_ALIGN_START, 1, 1, LV_GRID_ALIGN_START, 5, 1);
-        lv_obj_set_grid_cell(gender, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_CENTER, 6, 1);
-        lv_obj_set_grid_cell(gender_label, LV_GRID_ALIGN_START, 0, 1, LV_GRID_ALIGN_START, 5, 1);
-
-        lv_obj_set_grid_cell(panel3, LV_GRID_ALIGN_STRETCH, 1, 1, LV_GRID_ALIGN_STRETCH, 1, 1);
-        lv_obj_set_grid_dsc_array(panel3, grid_2_col_dsc, grid_2_row_dsc);
-        lv_obj_set_grid_cell(panel3_title, LV_GRID_ALIGN_START, 0, 2, LV_GRID_ALIGN_CENTER, 0, 1);
-        lv_obj_set_grid_cell(slider1, LV_GRID_ALIGN_CENTER, 0, 2, LV_GRID_ALIGN_CENTER, 3, 1);
-        lv_obj_set_grid_cell(experience_label, LV_GRID_ALIGN_START, 0, 1, LV_GRID_ALIGN_START, 2, 1);
-        lv_obj_set_grid_cell(sw2, LV_GRID_ALIGN_START, 1, 1, LV_GRID_ALIGN_CENTER, 6, 1);
-        lv_obj_set_grid_cell(hard_working_label, LV_GRID_ALIGN_START, 0, 1, LV_GRID_ALIGN_START, 5, 1);
-        lv_obj_set_grid_cell(sw1, LV_GRID_ALIGN_START, 0, 1, LV_GRID_ALIGN_CENTER, 6, 1);
-        lv_obj_set_grid_cell(team_player_label, LV_GRID_ALIGN_START, 1, 1, LV_GRID_ALIGN_START, 5, 1);
-    }
-    else if (disp_size == DISP_MEDIUM)
-    {
-        static lv_coord_t grid_main_col_dsc[] = {LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST};
-        static lv_coord_t grid_main_row_dsc[] = {LV_GRID_CONTENT, LV_GRID_CONTENT, LV_GRID_TEMPLATE_LAST};
-
-        /*Create the top panel*/
-        static lv_coord_t grid_1_col_dsc[] = {LV_GRID_CONTENT, 1, LV_GRID_CONTENT, LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST};
-        static lv_coord_t grid_1_row_dsc[] =
-        {
-            LV_GRID_CONTENT, /*Name*/
-            LV_GRID_CONTENT, /*Description*/
-            LV_GRID_CONTENT, /*Email*/
-            -20,
-            LV_GRID_CONTENT, /*Phone*/
-            LV_GRID_CONTENT, /*Buttons*/
-            LV_GRID_TEMPLATE_LAST
-        };
-
-        static lv_coord_t grid_2_col_dsc[] = {LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST};
-        static lv_coord_t grid_2_row_dsc[] =
-        {
-            LV_GRID_CONTENT,  /*Title*/
-            5,                /*Separator*/
-            LV_GRID_CONTENT,  /*Box title*/
-            40,               /*Box*/
-            LV_GRID_CONTENT,  /*Box title*/
-            40,               /*Box*/
-            LV_GRID_CONTENT,  /*Box title*/
-            40,               /*Box*/
-            LV_GRID_CONTENT,  /*Box title*/
-            40,               /*Box*/
-            LV_GRID_TEMPLATE_LAST
-        };
-
-        lv_obj_set_grid_dsc_array(parent, grid_main_col_dsc, grid_main_row_dsc);
-        lv_obj_set_grid_cell(panel1, LV_GRID_ALIGN_STRETCH, 0, 2, LV_GRID_ALIGN_CENTER, 0, 1);
-
-        lv_obj_set_width(log_out_btn, 120);
-        lv_obj_set_width(invite_btn, 120);
-
-        lv_obj_set_grid_dsc_array(panel1, grid_1_col_dsc, grid_1_row_dsc);
-        lv_obj_set_grid_cell(avatar, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_START, 0, 4);
-        lv_obj_set_grid_cell(name, LV_GRID_ALIGN_START, 2, 2, LV_GRID_ALIGN_CENTER, 0, 1);
-        lv_obj_set_grid_cell(dsc, LV_GRID_ALIGN_STRETCH, 2, 2, LV_GRID_ALIGN_START, 1, 1);
-        lv_obj_set_grid_cell(email_label, LV_GRID_ALIGN_START, 3, 1, LV_GRID_ALIGN_CENTER, 2, 1);
-        lv_obj_set_grid_cell(email_icn, LV_GRID_ALIGN_CENTER, 2, 1, LV_GRID_ALIGN_CENTER, 2, 1);
-        lv_obj_set_grid_cell(call_icn, LV_GRID_ALIGN_CENTER, 2, 1, LV_GRID_ALIGN_CENTER, 4, 1);
-        lv_obj_set_grid_cell(call_label, LV_GRID_ALIGN_START, 3, 1, LV_GRID_ALIGN_CENTER, 4, 1);
-        lv_obj_set_grid_cell(log_out_btn, LV_GRID_ALIGN_START, 1, 1, LV_GRID_ALIGN_CENTER, 5, 1);
-        lv_obj_set_grid_cell(invite_btn, LV_GRID_ALIGN_END, 3, 1, LV_GRID_ALIGN_CENTER, 5, 1);
-
-        lv_obj_set_grid_cell(panel2, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_START, 1, 1);
-        lv_obj_set_grid_dsc_array(panel2, grid_2_col_dsc, grid_2_row_dsc);
-        lv_obj_set_grid_cell(panel2_title, LV_GRID_ALIGN_START, 0, 2, LV_GRID_ALIGN_CENTER, 0, 1);
-        lv_obj_set_grid_cell(user_name_label, LV_GRID_ALIGN_START, 0, 2, LV_GRID_ALIGN_START, 2, 1);
-        lv_obj_set_grid_cell(user_name, LV_GRID_ALIGN_STRETCH, 0, 2, LV_GRID_ALIGN_START, 3, 1);
-        lv_obj_set_grid_cell(birthday_label, LV_GRID_ALIGN_START, 0, 2, LV_GRID_ALIGN_START, 6, 1);
-        lv_obj_set_grid_cell(birthdate, LV_GRID_ALIGN_STRETCH, 0, 2, LV_GRID_ALIGN_START, 7, 1);
-        lv_obj_set_grid_cell(gender_label, LV_GRID_ALIGN_START, 0, 2, LV_GRID_ALIGN_START, 8, 1);
-        lv_obj_set_grid_cell(gender, LV_GRID_ALIGN_STRETCH, 0, 2, LV_GRID_ALIGN_START, 9, 1);
-
-        lv_obj_set_grid_cell(panel3, LV_GRID_ALIGN_STRETCH, 1, 1, LV_GRID_ALIGN_STRETCH, 1, 1);
-        lv_obj_set_grid_dsc_array(panel3, grid_2_col_dsc, grid_2_row_dsc);
-        lv_obj_set_grid_cell(panel3_title, LV_GRID_ALIGN_START, 0, 2, LV_GRID_ALIGN_CENTER, 0, 1);
-        lv_obj_set_grid_cell(slider1, LV_GRID_ALIGN_CENTER, 0, 2, LV_GRID_ALIGN_CENTER, 3, 1);
-        lv_obj_set_grid_cell(experience_label, LV_GRID_ALIGN_START, 0, 1, LV_GRID_ALIGN_START, 2, 1);
-        lv_obj_set_grid_cell(hard_working_label, LV_GRID_ALIGN_START, 0, 1, LV_GRID_ALIGN_START, 4, 1);
-        lv_obj_set_grid_cell(sw2, LV_GRID_ALIGN_START, 0, 1, LV_GRID_ALIGN_START, 5, 1);
-        lv_obj_set_grid_cell(team_player_label, LV_GRID_ALIGN_START, 0, 1, LV_GRID_ALIGN_START, 6, 1);
-        lv_obj_set_grid_cell(sw1, LV_GRID_ALIGN_START, 0, 1, LV_GRID_ALIGN_START, 7, 1);
-    }
-
-    else if (disp_size == DISP_SMALL)
-    {
-        static lv_coord_t grid_main_col_dsc[] = {LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST};
-        static lv_coord_t grid_main_row_dsc[] = {LV_GRID_CONTENT, LV_GRID_CONTENT, LV_GRID_CONTENT, LV_GRID_TEMPLATE_LAST};
-        lv_obj_set_grid_dsc_array(parent, grid_main_col_dsc, grid_main_row_dsc);
-
-        /*Create the top panel*/
-        static lv_coord_t grid_1_col_dsc[] = {LV_GRID_CONTENT, LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST};
-        static lv_coord_t grid_1_row_dsc[] = {LV_GRID_CONTENT, /*Avatar*/
-                                              LV_GRID_CONTENT, /*Name*/
-                                              LV_GRID_CONTENT, /*Description*/
-                                              LV_GRID_CONTENT, /*Email*/
-                                              LV_GRID_CONTENT, /*Phone number*/
-                                              LV_GRID_CONTENT, /*Button1*/
-                                              LV_GRID_CONTENT, /*Button2*/
-                                              LV_GRID_TEMPLATE_LAST
-                                             };
-
-        lv_obj_set_grid_dsc_array(panel1, grid_1_col_dsc, grid_1_row_dsc);
-
-        static lv_coord_t grid_2_col_dsc[] = {LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST};
-        static lv_coord_t grid_2_row_dsc[] =
-        {
-            LV_GRID_CONTENT,  /*Title*/
-            5,                /*Separator*/
-            LV_GRID_CONTENT,  /*Box title*/
-            40,               /*Box*/
-            LV_GRID_CONTENT,  /*Box title*/
-            40,               /*Box*/
-            LV_GRID_CONTENT,  /*Box title*/
-            40,               /*Box*/
-            LV_GRID_CONTENT,  /*Box title*/
-            40, LV_GRID_TEMPLATE_LAST               /*Box*/
-        };
-
-        lv_obj_set_grid_dsc_array(panel2, grid_2_col_dsc, grid_2_row_dsc);
-        lv_obj_set_grid_dsc_array(panel3, grid_2_col_dsc, grid_2_row_dsc);
-
-        lv_obj_set_grid_cell(panel1, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_CENTER, 0, 1);
-
-        lv_obj_set_style_text_align(dsc, LV_TEXT_ALIGN_CENTER, 0);
-
-        lv_obj_set_grid_cell(avatar, LV_GRID_ALIGN_CENTER, 0, 2, LV_GRID_ALIGN_CENTER, 0, 1);
-        lv_obj_set_grid_cell(name, LV_GRID_ALIGN_CENTER, 0, 2, LV_GRID_ALIGN_CENTER, 1, 1);
-        lv_obj_set_grid_cell(dsc, LV_GRID_ALIGN_STRETCH, 0, 2, LV_GRID_ALIGN_START, 2, 1);
-        lv_obj_set_grid_cell(email_icn, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 3, 1);
-        lv_obj_set_grid_cell(email_label, LV_GRID_ALIGN_START, 1, 1, LV_GRID_ALIGN_CENTER, 3, 1);
-        lv_obj_set_grid_cell(call_icn, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 4, 1);
-        lv_obj_set_grid_cell(call_label, LV_GRID_ALIGN_START, 1, 1, LV_GRID_ALIGN_CENTER, 4, 1);
-        lv_obj_set_grid_cell(log_out_btn, LV_GRID_ALIGN_STRETCH, 0, 2, LV_GRID_ALIGN_CENTER, 5, 1);
-        lv_obj_set_grid_cell(invite_btn, LV_GRID_ALIGN_STRETCH, 0, 2, LV_GRID_ALIGN_CENTER, 6, 1);
-
-        lv_obj_set_grid_cell(panel2, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_START, 1, 1);
-        lv_obj_set_grid_cell(panel2_title, LV_GRID_ALIGN_START, 0, 2, LV_GRID_ALIGN_CENTER, 0, 1);
-        lv_obj_set_grid_cell(user_name_label, LV_GRID_ALIGN_START, 0, 2, LV_GRID_ALIGN_START, 2, 1);
-        lv_obj_set_grid_cell(user_name, LV_GRID_ALIGN_STRETCH, 0, 2, LV_GRID_ALIGN_START, 3, 1);
-        lv_obj_set_grid_cell(birthday_label, LV_GRID_ALIGN_START, 0, 2, LV_GRID_ALIGN_START, 6, 1);
-        lv_obj_set_grid_cell(birthdate, LV_GRID_ALIGN_STRETCH, 0, 2, LV_GRID_ALIGN_START, 7, 1);
-        lv_obj_set_grid_cell(gender_label, LV_GRID_ALIGN_START, 0, 2, LV_GRID_ALIGN_START, 8, 1);
-        lv_obj_set_grid_cell(gender, LV_GRID_ALIGN_STRETCH, 0, 2, LV_GRID_ALIGN_START, 9, 1);
-
-        lv_obj_set_height(panel3, LV_SIZE_CONTENT);
-        lv_obj_set_grid_cell(panel3, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_START, 2, 1);
-        lv_obj_set_grid_cell(panel3_title, LV_GRID_ALIGN_START, 0, 2, LV_GRID_ALIGN_CENTER, 0, 1);
-        lv_obj_set_grid_cell(experience_label, LV_GRID_ALIGN_START, 0, 1, LV_GRID_ALIGN_START, 2, 1);
-        lv_obj_set_grid_cell(slider1, LV_GRID_ALIGN_CENTER, 0, 2, LV_GRID_ALIGN_CENTER, 3, 1);
-        lv_obj_set_grid_cell(hard_working_label, LV_GRID_ALIGN_START, 0, 1, LV_GRID_ALIGN_START, 4, 1);
-        lv_obj_set_grid_cell(sw1, LV_GRID_ALIGN_START, 0, 1, LV_GRID_ALIGN_START, 5, 1);
-        lv_obj_set_grid_cell(team_player_label, LV_GRID_ALIGN_START, 1, 1, LV_GRID_ALIGN_START, 4, 1);
-        lv_obj_set_grid_cell(sw2, LV_GRID_ALIGN_START, 1, 1, LV_GRID_ALIGN_START, 5, 1);
-    }
-}
-
-static void color_changer_create(lv_obj_t *parent)
-{
-    static lv_palette_t palette[] =
-    {
-        LV_PALETTE_BLUE, LV_PALETTE_GREEN, LV_PALETTE_BLUE_GREY,  LV_PALETTE_ORANGE,
-        LV_PALETTE_RED, LV_PALETTE_PURPLE, LV_PALETTE_TEAL, _LV_PALETTE_LAST
-    };
-
-    lv_obj_t *color_cont = lv_obj_create(parent);
-    lv_obj_remove_style_all(color_cont);
-    lv_obj_set_flex_flow(color_cont, LV_FLEX_FLOW_ROW);
-    lv_obj_set_flex_align(color_cont, LV_FLEX_ALIGN_SPACE_EVENLY, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
-    lv_obj_add_flag(color_cont, LV_OBJ_FLAG_FLOATING);
-
-    lv_obj_set_style_bg_color(color_cont, lv_color_white(), 0);
-    lv_obj_set_style_pad_right(color_cont, disp_size == DISP_SMALL ? LV_DPX(47) : LV_DPX(55), 0);
-    lv_obj_set_style_bg_opa(color_cont, LV_OPA_COVER, 0);
-    lv_obj_set_style_radius(color_cont, LV_RADIUS_CIRCLE, 0);
-
-    if (disp_size == DISP_SMALL)
-    {
-        lv_obj_set_size(color_cont, LV_DPX(52), LV_DPX(52));
-    }
-    else
-    {
-        lv_obj_set_size(color_cont, LV_DPX(60), LV_DPX(60));
-    }
-
-    lv_obj_align(color_cont, LV_ALIGN_BOTTOM_RIGHT, - LV_DPX(10),  - LV_DPX(10));
-
-    uint32_t i;
-    for (i = 0; palette[i] != _LV_PALETTE_LAST; i++)
-    {
-        lv_obj_t *c = lv_btn_create(color_cont);
-        lv_obj_set_style_bg_color(c, lv_palette_main(palette[i]), 0);
-        lv_obj_set_style_radius(c, LV_RADIUS_CIRCLE, 0);
-        lv_obj_set_style_opa(c, LV_OPA_TRANSP, 0);
-        lv_obj_set_size(c, 20, 20);
-        lv_obj_add_event_cb(c, color_event_cb, LV_EVENT_ALL, &palette[i]);
-        lv_obj_clear_flag(c, LV_OBJ_FLAG_SCROLL_ON_FOCUS);
-    }
-
-    lv_obj_t *btn = lv_btn_create(parent);
-    lv_obj_add_flag(btn, LV_OBJ_FLAG_FLOATING | LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_set_style_bg_color(btn, lv_color_white(), LV_STATE_CHECKED);
-    lv_obj_set_style_pad_all(btn, 10, 0);
-    lv_obj_set_style_radius(btn, LV_RADIUS_CIRCLE, 0);
-    lv_obj_add_event_cb(btn, color_changer_event_cb, LV_EVENT_ALL, color_cont);
-    lv_obj_set_style_shadow_width(btn, 0, 0);
-    lv_obj_set_style_bg_img_src(btn, LV_SYMBOL_TINT, 0);
-
-    if (disp_size == DISP_SMALL)
-    {
-        lv_obj_set_size(btn, LV_DPX(42), LV_DPX(42));
-        lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -LV_DPX(15), -LV_DPX(15));
-    }
-    else
-    {
-        lv_obj_set_size(btn, LV_DPX(50), LV_DPX(50));
-        lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -LV_DPX(15), -LV_DPX(15));
-    }
-}
-
-static void color_changer_anim_cb(void *var, int32_t v)
-{
-    lv_obj_t *obj = var;
-    lv_coord_t max_w = lv_obj_get_width(lv_obj_get_parent(obj)) - LV_DPX(20);
-    lv_coord_t w;
-
-    if (disp_size == DISP_SMALL)
-    {
-        w = lv_map(v, 0, 256, LV_DPX(52), max_w);
-        lv_obj_set_width(obj, w);
-        lv_obj_align(obj, LV_ALIGN_BOTTOM_RIGHT, - LV_DPX(10),  - LV_DPX(10));
-    }
-    else
-    {
-        w = lv_map(v, 0, 256, LV_DPX(60), max_w);
-        lv_obj_set_width(obj, w);
-        lv_obj_align(obj, LV_ALIGN_BOTTOM_RIGHT, - LV_DPX(10),  - LV_DPX(10));
-    }
-
-    if (v > LV_OPA_COVER)
-    {
-        v = LV_OPA_COVER;
-    }
-
-    uint32_t i;
-    for (i = 0; i < lv_obj_get_child_cnt(obj); i++)
-    {
-        lv_obj_set_style_opa(lv_obj_get_child(obj, i), v, 0);
-    }
-
-}
-
-static void color_changer_event_cb(lv_event_t *e)
-{
-    if (lv_event_get_code(e) == LV_EVENT_CLICKED)
-    {
-        lv_obj_t *color_cont = lv_event_get_user_data(e);
-        if (lv_obj_get_width(color_cont) < LV_HOR_RES / 2)
-        {
-            lv_anim_t a;
-            lv_anim_init(&a);
-            lv_anim_set_var(&a, color_cont);
-            lv_anim_set_exec_cb(&a, color_changer_anim_cb);
-            lv_anim_set_values(&a, 0, 256);
-            lv_anim_set_time(&a, 200);
-            lv_anim_start(&a);
-        }
-        else
-        {
-            lv_anim_t a;
-            lv_anim_init(&a);
-            lv_anim_set_var(&a, color_cont);
-            lv_anim_set_exec_cb(&a, color_changer_anim_cb);
-            lv_anim_set_values(&a, 256, 0);
-            lv_anim_set_time(&a, 200);
-            lv_anim_start(&a);
-        }
-    }
-}
-
-static void color_event_cb(lv_event_t *e)
-{
-    lv_event_code_t code = lv_event_get_code(e);
-    lv_obj_t *obj = lv_event_get_target(e);
-
-    if (code == LV_EVENT_FOCUSED)
-    {
-        lv_obj_t *color_cont = lv_obj_get_parent(obj);
-        if (lv_obj_get_width(color_cont) < LV_HOR_RES / 2)
-        {
-            lv_anim_t a;
-            lv_anim_init(&a);
-            lv_anim_set_var(&a, color_cont);
-            lv_anim_set_exec_cb(&a, color_changer_anim_cb);
-            lv_anim_set_values(&a, 0, 256);
-            lv_anim_set_time(&a, 200);
-            lv_anim_start(&a);
-        }
-    }
-    else if (code == LV_EVENT_CLICKED)
-    {
-        lv_palette_t *palette_primary = lv_event_get_user_data(e);
-        lv_palette_t palette_secondary = (*palette_primary) + 3; /*Use another palette as secondary*/
-        if (palette_secondary >= _LV_PALETTE_LAST)
-        {
-            palette_secondary = 0;
-        }
-#if LV_USE_THEME_DEFAULT
-        lv_theme_default_init(NULL, lv_palette_main(*palette_primary), lv_palette_main(palette_secondary),
-                              LV_THEME_DEFAULT_DARK, font_normal);
-#endif
-        lv_color_t color = lv_palette_main(*palette_primary);
-        lv_style_set_text_color(&style_icon, color);
-    }
-}
-
-static void ta_event_cb(lv_event_t *e)
-{
-    lv_event_code_t code = lv_event_get_code(e);
-    lv_obj_t *ta = lv_event_get_target(e);
-    if (code == LV_EVENT_FOCUSED)
-    {
-        if (lv_indev_get_type(lv_indev_get_act()) != LV_INDEV_TYPE_KEYPAD)
-        {
-            lv_obj_update_layout(tv);   /*Be sure the sizes are recalculated*/
-            lv_obj_scroll_to_view_recursive(ta, LV_ANIM_OFF);
-        }
-    }
-    else if (code == LV_EVENT_DEFOCUSED)
-    {
-        lv_obj_set_height(tv, LV_VER_RES);
-        lv_indev_reset(NULL, ta);
-
-    }
-    else if (code == LV_EVENT_READY || code == LV_EVENT_CANCEL)
-    {
-        lv_obj_set_height(tv, LV_VER_RES);
-
-        lv_obj_clear_state(ta, LV_STATE_FOCUSED);
-        lv_indev_reset(NULL, ta);   /*To forget the last clicked object to make it focusable again*/
-    }
-}
-
-static void birthday_event_cb(lv_event_t *e)
-{
-    lv_event_code_t code = lv_event_get_code(e);
-    lv_obj_t *ta = lv_event_get_target(e);
-
-    if (code == LV_EVENT_FOCUSED)
-    {
-        if (lv_indev_get_type(lv_indev_get_act()) == LV_INDEV_TYPE_POINTER)
-        {
-            if (calendar == NULL)
+            if (os_media->dcdp_ctrl.connect_flg[index] == 1)
             {
-                lv_obj_add_flag(lv_layer_top(), LV_OBJ_FLAG_CLICKABLE);
-                calendar = lv_calendar_create(lv_layer_top());
-                lv_obj_set_style_bg_opa(lv_layer_top(), LV_OPA_50, 0);
-                lv_obj_set_style_bg_color(lv_layer_top(), lv_palette_main(LV_PALETTE_GREY), 0);
-                if (disp_size == DISP_SMALL)
+                ret = FFreeRTOSMediaHpdReInit(index, width, height, multi_mode, color_depth, refresh_rate);
+                FFreeRTOSMediaClearEvent(media_event, FMEDIA_EVT_INTR(index));
+                if (ret == FMEDIA_DP_SUCCESS)
                 {
-                    lv_obj_set_size(calendar, 180, 200);
+                    printf("Hpd task finish ,  reinit the dp success.\r\n");
                 }
-                else if (disp_size == DISP_MEDIUM)
-                {
-                    lv_obj_set_size(calendar, 200, 220);
-                }
-                else
-                {
-                    lv_obj_set_size(calendar, 300, 330);
-                }
-                lv_calendar_set_showed_date(calendar, 1990, 01);
-                lv_obj_align(calendar, LV_ALIGN_CENTER, 0, 30);
-                lv_obj_add_event_cb(calendar, calendar_event_cb, LV_EVENT_ALL, ta);
-
-                lv_calendar_header_dropdown_create(calendar);
+                os_media->dcdp_ctrl.connect_flg[index] == 0;
             }
         }
+        vTaskDelay(200);
     }
 }
 
-static void calendar_event_cb(lv_event_t *e)
-{
-    lv_event_code_t code = lv_event_get_code(e);
-    lv_obj_t *ta = lv_event_get_user_data(e);
-    lv_obj_t *obj = lv_event_get_current_target(e);
-    if (code == LV_EVENT_VALUE_CHANGED)
-    {
-        lv_calendar_date_t d;
-        lv_calendar_get_pressed_date(obj, &d);
-        char buf[32];
-        lv_snprintf(buf, sizeof(buf), "%02d.%02d.%d", d.day, d.month, d.year);
-        lv_textarea_set_text(ta, buf);
 
-        lv_obj_del(calendar);
-        calendar = NULL;
-        lv_obj_clear_flag(lv_layer_top(), LV_OBJ_FLAG_CLICKABLE);
-        lv_obj_set_style_bg_opa(lv_layer_top(), LV_OPA_TRANSP, 0);
-    }
-}
-
-static void slider_event_cb(lv_event_t *e)
-{
-    lv_event_code_t code = lv_event_get_code(e);
-    lv_obj_t *obj = lv_event_get_target(e);
-
-    if (code == LV_EVENT_REFR_EXT_DRAW_SIZE)
-    {
-        lv_coord_t *s = lv_event_get_param(e);
-        *s = LV_MAX(*s, 60);
-    }
-    else if (code == LV_EVENT_DRAW_PART_END)
-    {
-        lv_obj_draw_part_dsc_t *dsc = lv_event_get_param(e);
-        if (dsc->part == LV_PART_KNOB && lv_obj_has_state(obj, LV_STATE_PRESSED))
-        {
-            char buf[8];
-            lv_snprintf(buf, sizeof(buf), "%"LV_PRId32, lv_slider_get_value(obj));
-
-            lv_point_t text_size;
-            lv_txt_get_size(&text_size, buf, font_normal, 0, 0, LV_COORD_MAX, LV_TEXT_FLAG_NONE);
-
-            lv_area_t txt_area;
-            txt_area.x1 = dsc->draw_area->x1 + lv_area_get_width(dsc->draw_area) / 2 - text_size.x / 2;
-            txt_area.x2 = txt_area.x1 + text_size.x;
-            txt_area.y2 = dsc->draw_area->y1 - 10;
-            txt_area.y1 = txt_area.y2 - text_size.y;
-
-            lv_area_t bg_area;
-            bg_area.x1 = txt_area.x1 - LV_DPX(8);
-            bg_area.x2 = txt_area.x2 + LV_DPX(8);
-            bg_area.y1 = txt_area.y1 - LV_DPX(8);
-            bg_area.y2 = txt_area.y2 + LV_DPX(8);
-
-            lv_draw_rect_dsc_t rect_dsc;
-            lv_draw_rect_dsc_init(&rect_dsc);
-            rect_dsc.bg_color = lv_palette_darken(LV_PALETTE_GREY, 3);
-            rect_dsc.radius = LV_DPX(5);
-            lv_draw_rect(dsc->draw_ctx, &rect_dsc, &bg_area);
-
-            lv_draw_label_dsc_t label_dsc;
-            lv_draw_label_dsc_init(&label_dsc);
-            label_dsc.color = lv_color_white();
-            label_dsc.font = font_normal;
-            lv_draw_label(dsc->draw_ctx, &label_dsc, &txt_area, buf, NULL);
-        }
-    }
-}
 

@@ -40,7 +40,11 @@
 /************************** Variable Definitions *****************************/
 static boolean is_sfud_ready = FALSE;
 static const sfud_flash *flash_instance = NULL;
+#if defined(CONFIG_TARGET_E2000D)||defined(CONFIG_TARGET_E2000Q)
 static const fsize_t flash_id = SFUD_FSPIM2_INDEX;
+#elif defined(CONFIG_TARGET_PHYTIUMPI)
+static const fsize_t flash_id = SFUD_FSPIM0_INDEX;
+#endif
 
 /***************** Macros (Inline Functions) Definitions *********************/
 #define FSPIM_DEBUG_TAG "SPIM-SPIFFS"

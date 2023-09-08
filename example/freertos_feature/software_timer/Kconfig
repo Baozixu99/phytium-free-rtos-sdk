@@ -3,17 +3,7 @@
 # see tools/kconfiglib/kconfig-language.txt.
 #
 
-
 mainmenu "Phytium Freertos Configuration"
 
-	menu "Freertos Configuration"
-	config TARGET_NAME
-		string "Build Target Name"
-		default "freertos"
-		help
-			Build Target name for the demo
-	
-endmenu
-
-source "$(FREERTOS_SDK_ROOT)/Kconfig"
+source "$(SDK_DIR)/../freertos.kconfig"
 

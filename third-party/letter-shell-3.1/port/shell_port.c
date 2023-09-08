@@ -22,12 +22,13 @@
  * 1.0   huanghe    2022/3/25   first release
  */
 
-#include "shell.h"
+
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
 #include "fassert.h"
 #include "shell_port.h"
+#include "shell.h"
 #include "FreeRTOS.h"
 #include "task.h"
 

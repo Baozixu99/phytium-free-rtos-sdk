@@ -27,15 +27,13 @@ CherryUSB 是一个用于嵌入式系统 USB 协议栈，支持运行在Host模�
 - Letter Shell组件，依赖 USE_LETTER_SHELL
 
 本例子已经提供好具体的编译指令，以下进行介绍:
-- make 将目录下的工程进行编译
-- make clean  将目录下的工程进行清理
-- make boot   将目录下的工程进行编译，并将生成的elf 复制到目标地址
-- make load_e2000d_aarch64  将预设64bit e2000d 下的配置加载至工程中
-- make load_e2000d_aarch32  将预设32bit e2000d 下的配置加载至工程中
-- make load_e2000q_aarch64  将预设64bit e2000q 下的配置加载至工程中
-- make load_e2000q_aarch32  将预设32bit e2000q 下的配置加载至工程中
-- make menuconfig   配置目录下的参数变量
-- make backup_kconfig 将目录下的sdkconfig 备份到./configs下
+    1. make 将目录下的工程进行编译
+    2. make clean  将目录下的工程进行清理
+    3. make image   将目录下的工程进行编译，并将生成的elf 复制到目标地址
+    4. make list_kconfig 当前工程支持哪些配置文件
+    5. make load_kconfig LOAD_CONFIG_NAME=<kconfig configuration files>  将预设配置加载至工程中
+    6. make menuconfig   配置目录下的参数变量
+    7. make backup_kconfig 将目录下的sdkconfig 备份到./configs下
 
 - 具体使用方法为：
     - 在当前目录下
@@ -59,7 +57,7 @@ make
 
 - 将编译出的镜像放置到tftp目录下
 ```
-make boot
+make image
 ```
 
 - host侧设置重启host侧tftp服务器
@@ -131,6 +129,7 @@ usb mouse /usb1/mouse1
 
 - 目前 USB 外接 HUB 功能支持未完成，建议 USB 设备直连 Roothub 
 1. 通过USB HUB 连接键盘鼠标等低速设备可能会有问题
+2. 当前phytiumpi板卡仅有一个usb3.0接口,因此同一时刻仅支持一个外设，可将鼠标或者键盘接入usb3.0。
 
 ## 4. 修改历史记录
 

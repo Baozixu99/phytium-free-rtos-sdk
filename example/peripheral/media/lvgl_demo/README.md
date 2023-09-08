@@ -40,6 +40,7 @@ lvgl中widgets属于组件测试，将lvgl中库组件组合运行，此demo属�
 
 - E2000Q AARCH32/AARCH64
 - E2000D AARCH32/AARCH64
+- Phytiumpi AARCH32/AARCH64
 
 本例程所需的硬件设备包括
 
@@ -54,14 +55,11 @@ lvgl中widgets属于组件测试，将lvgl中库组件组合运行，此demo属�
 - 本例子已经提供好具体的编译指令，以下进行介绍：
     1. make 将目录下的工程进行编译
     2. make clean  将目录下的工程进行清理
-    3. make boot   将目录下的工程进行编译，并将生成的elf 复制到目标地址
-    4. make load_e2000q_aarch64  将预设64bit e2000q 下的配置加载至工程中
-    5. make load_e2000q_aarch32  将预设32bit e2000q 下的配置加载至工程中
-    6. make load_e2000d_aarch64  将预设64bit e2000d 下的配置加载至工程中
-    7. make load_e2000d_aarch32  将预设32bit e2000d 下的配置加载至工程中
-    8. make menuconfig   配置目录下的参数变量
-    9. make build_all    编译目录下的项目工程
-    10. make backup_kconfig 将目录下的sdkconfig 备份到./configs下
+    3. make image   将目录下的工程进行编译，并将生成的elf 复制到目标地址
+    4. make list_kconfig 当前工程支持哪些配置文件
+    5. make load_kconfig LOAD_CONFIG_NAME=<kconfig configuration files>  将预设配置加载至工程中
+    6. make menuconfig   配置目录下的参数变量
+    7. make backup_kconfig 将目录下的sdkconfig 备份到./configs下
 
 - 具体使用方法为：
   - 在当前目录下
@@ -88,9 +86,9 @@ $ make menuconfig
 
 选定demo例程后， 利用2.2 SDK配置方法进行编译下载，默认demo为benchmark，色深设置为32
 
-目前在menuconfig中支持配置demo选择以及色深设置，其余设置值为third-party/lvgl-8.3/lv_conf.c设置默认值
+目前在menuconfig中支持配置demo选择以及色深设置，其余设置值为third-party/lvgl-8.3/lv_conf.h设置默认值
 
-在使用过程中， 使用者可根据实际硬件情况以及需要，在third-party/lvgl-8.3/lv_conf.c中进行相应组件配置。
+在使用过程中， 使用者可根据实际硬件情况以及需要，在third-party/lvgl-8.3/lv_conf.h中进行相应组件配置。
 
 #### 2.3.2 下载过程
 
@@ -126,6 +124,10 @@ Media init 2 640 480 2 32 60
 2   ：模式(克隆，水平，垂直)
 32  ：色深
 60  ：刷新率
+
+初始化LVGL图形库：
+
+Media lvgl-init
 
 ![init](fig/media_init.png)
 

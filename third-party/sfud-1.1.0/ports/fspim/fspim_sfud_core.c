@@ -175,7 +175,7 @@ static sfud_err FSpimReadWrite(const sfud_spi *spi, const uint8_t *write_buf, si
 sfud_err FSpimProbe(sfud_flash *flash)
 {
     sfud_spi *spi_p = &flash->spi;
-    u32 spim_id = FSPI2_ID;
+    u32 spim_id;
     
     if (!memcmp(FSPIM0_SFUD_NAME, spi_p->name, strlen(FSPIM0_SFUD_NAME)))
     {

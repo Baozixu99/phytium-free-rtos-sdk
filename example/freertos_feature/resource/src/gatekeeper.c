@@ -53,7 +53,7 @@ static void prvPrintTask(void *pvParameters)
     }
 }
 
-static void vApplicationTickHook(void)
+void vApplicationTickHook(void)
 {
     static int iCount = 0;
     portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;

@@ -37,6 +37,7 @@
 #include "lv_obj.h"
 #include "lv_conf.h"
 #include "lv_demo_creat.h"
+#include "lv_demo_test.h"
 
 static InputParm input_config;
 
@@ -50,6 +51,8 @@ static void FFreeRTOSMediaCmdUsage(void)
     printf("        -- <multi_mode>  the sigle screen or multi-display \r\n");
     printf("        -- <color_depth> the color_depth of screen ,default color_depth is 32\r\n");
     printf("        -- <refresh_rate> the refresh_rate of screen ,default refresh_rate is 60\r\n");
+    printf("    Media lvgl-init \r\n");
+    printf("        -- init the lvgl and set the para for demo\r\n");
     printf("    Media demo \r\n");
     printf("        -- a test demo for user to comprehend the driver\r\n");
     printf("    Media deinit <channel>\r\n");
@@ -96,7 +99,20 @@ static int MediaCmdEntry(int argc, char *argv[])
         }
         inited = TRUE;
     }
+    if (!strcmp(argv[1], "lvgl-init"))
+    {
+        if (inited != TRUE)
+        {
+            printf("please ensure the media has been inited \r\n");
+            return -2;
+        }
+        BaseType_t task_ret = FFreeRTOSlVGLConfigCreate(&input_config);
 
+        if (pdPASS != task_ret)
+        {
+            return -2;
+        }
+    }
     if (!strcmp(argv[1], "demo"))
     {
         if (inited != TRUE)

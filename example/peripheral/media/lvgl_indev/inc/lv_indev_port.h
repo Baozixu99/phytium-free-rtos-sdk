@@ -11,15 +11,16 @@
  * See the Phytium Public License for more details.
  *
  *
- * FilePath: cmd.c
+ * FilePath: lv_indev_port.h
  * Date: 2022-04-20 14:22:40
- * LastEditTime: 2023-04-20 15:40:40
+ * LastEditTime: 2023-07-06 15:40:40
  * Description:  This file is for providing the indev config
  *
  * Modify History:
  *  Ver   Who        Date         Changes
  * ----- ------  -------- --------------------------------------
- *  1.0  Wangzq     2023/04/20  add the device 
+ *  1.0  Wangzq     2023/07/06  add the device
+ *  1.1  Wangzq     2023/07/07  change the third-party and driver relation 
  */
 
 #ifndef LV_INDEV_PORT_H

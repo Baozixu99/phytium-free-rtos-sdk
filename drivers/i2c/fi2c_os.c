@@ -33,90 +33,23 @@
 #include "fi2c.h"
 #include "fi2c_hw.h"
 #include "fdebug.h"
-#include "fpinctrl.h"
-#if defined(CONFIG_TARGET_E2000)
+#include "fio_mux.h"
+
+#if defined(CONFIG_TARGET_E2000D) || defined(CONFIG_TARGET_E2000Q)|| defined(CONFIG_TARGET_PHYTIUMPI)
     #include "fmio_hw.h"
     #include "fmio.h"
-    #include "fiopad.h"
 #endif
 
-#if defined(CONFIG_TARGET_E2000)
+#if defined(CONFIG_TARGET_E2000D) || defined(CONFIG_TARGET_E2000Q) || defined(CONFIG_TARGET_PHYTIUMPI)
 static FMioCtrl i2c_master;
 static FMioCtrl i2c_slave;
 static FFreeRTOSI2c os_i2c[FMIO_NUM] = {0};
 #endif
 
-#if defined(CONFIG_TARGET_D2000) || defined(CONFIG_TARGET_F2000_4)
+#if defined(CONFIG_TARGET_D2000) || defined(CONFIG_TARGET_FT2004)
 static FFreeRTOSI2c os_i2c[FI2C_NUM] = {0};
 #endif
 /* virtual eeprom memory */
-
-
-static void FI2cMasterSlaveSetIoMux(u32 instance_id)
-{
-    /* D2000 use */
-#if defined(CONFIG_TARGET_D2000)
-    switch (instance_id)
-    {
-        case FI2C0_ID:
-            FPinSetFunc(FIOCTRL_I2C0_SCL_PAD, FPIN_FUNC0);
-            FPinSetFunc(FIOCTRL_I2C0_SDA_PAD, FPIN_FUNC0);
-            break;
-        case FI2C1_ID:
-            FPinSetFunc(FIOCTRL_ALL_PLL_LOCK_PAD, FPIN_FUNC2);
-            FPinSetFunc(FIOCTRL_CRU_CLK_OBV_PAD, FPIN_FUNC2);
-            break;
-        case FI2C2_ID:
-            FPinSetFunc(FIOCTRL_SWDO_SWJ_PAD, FPIN_FUNC2);
-            FPinSetFunc(FIOCTRL_TDO_SWJ_IN_PAD, FPIN_FUNC2);
-            break;
-        case FI2C3_ID:
-            FPinSetFunc(FIOCTRL_HDT_MB_DONE_STATE_PAD, FPIN_FUNC2);
-            FPinSetFunc(FIOCTRL_HDT_MB_FAIL_STATE_PAD, FPIN_FUNC2);
-            break;
-        default:
-            FASSERT(0);
-            break;
-    }
-#endif
-#if defined(CONFIG_TARGET_F2000_4)
-    FPinIndex sclpad_off, sdapad_off;
-    FPinFunc scl_fun, sda_fun;
-    switch (instance_id)
-    {
-        case FI2C0_ID:
-            sclpad_off = FIOCTRL_I2C0_SCL_PAD; /* i2c0-scl: func 0 */
-            sdapad_off = FIOCTRL_I2C0_SDA_PAD; /* i2c0-sda: func 0 */
-            scl_fun = FPIN_FUNC0;
-            sda_fun = FPIN_FUNC0;
-            break;
-        case FI2C1_ID:
-            sclpad_off = FIOCTRL_ALL_PLL_LOCK_PAD; /* i2c1-scl: func 2 */
-            sdapad_off = FIOCTRL_CRU_CLK_OBV_PAD; /* i2c1-sda: func 2 */
-            scl_fun = FPIN_FUNC2;
-            sda_fun = FPIN_FUNC2;
-            break;
-        case FI2C2_ID:
-            sclpad_off = FIOCTRL_SWDO_SWJ_PAD; /* i2c2-scl: func 2 */
-            sdapad_off = FIOCTRL_TDO_SWJ_IN_PAD; /* i2c2-sda: func 2 */
-            scl_fun = FPIN_FUNC2;
-            sda_fun = FPIN_FUNC2;
-            break;
-        case FI2C3_ID:
-            sclpad_off = FIOCTRL_HDT_MB_DONE_STATE_PAD; /* i2c3-scl: func 2 */
-            sdapad_off = FIOCTRL_HDT_MB_FAIL_STATE_PAD; /* i2c3-sda: func 2 */
-            scl_fun = FPIN_FUNC2;
-            sda_fun = FPIN_FUNC2;
-            break;
-        default:
-            FASSERT(0);
-            break;
-    }
-    FPinSetFunc(sclpad_off, scl_fun);
-    FPinSetFunc(sdapad_off, sda_fun);
-#endif
-}
-
 
 /**
  * @name: FI2cOsSetupInterrupt
@@ -165,7 +98,7 @@ FFreeRTOSI2c *FFreeRTOSI2cInit(u32 instance_id, u32 work_mode, u32 slave_address
     FI2cConfig i2c_config;
 
     /* E2000 use MIO -> I2C */
-#if defined(CONFIG_TARGET_E2000)
+#if defined(CONFIG_TARGET_E2000D) || defined(CONFIG_TARGET_E2000Q) || defined(CONFIG_TARGET_PHYTIUMPI)
     FASSERT(instance_id < FMIO_NUM);
 
     if (FT_COMPONENT_IS_READY == os_i2c[instance_id].i2c_device.is_ready)
@@ -248,7 +181,7 @@ FFreeRTOSI2c *FFreeRTOSI2cInit(u32 instance_id, u32 work_mode, u32 slave_address
     i2c_config.slave_addr = slave_address;
     i2c_config.speed_rate = speed_rate;
     /* Setup iomux */
-    FI2cMasterSlaveSetIoMux(instance_id);
+   
 #endif
     err = FI2cCfgInitialize(&os_i2c[instance_id].i2c_device, &i2c_config);
     if (err != FREERTOS_I2C_SUCCESS)
@@ -274,7 +207,7 @@ void FFreeRTOSI2cDeinit(FFreeRTOSI2c *os_i2c_p)
 {
     FASSERT(os_i2c_p);
     FASSERT(os_i2c_p->wr_semaphore != NULL);
-#if defined(CONFIG_TARGET_E2000)
+#if defined(CONFIG_TARGET_E2000D) || defined(CONFIG_TARGET_E2000Q) 
     FMioCtrl *pctrl = &i2c_master;
     FMioFuncDeinit(pctrl);
 #endif

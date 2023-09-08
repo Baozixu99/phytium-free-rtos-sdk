@@ -36,6 +36,7 @@ DC 是一个显示控制器，主要完成将 CPU/GPU/VPU 处理后的图像数�
 
 - E2000Q AARCH32/AARCH64
 - E2000D AARCH32/AARCH64
+- Phytiumpi AARCH32/AARCH64
 
 本例程所需的硬件设备包括
 
@@ -50,14 +51,11 @@ DC 是一个显示控制器，主要完成将 CPU/GPU/VPU 处理后的图像数�
 - 本例子已经提供好具体的编译指令，以下进行介绍：
     1. make 将目录下的工程进行编译
     2. make clean  将目录下的工程进行清理
-    3. make boot   将目录下的工程进行编译，并将生成的elf 复制到目标地址
-    4. make load_e2000q_aarch64  将预设64bit e2000q 下的配置加载至工程中
-    5. make load_e2000q_aarch32  将预设32bit e2000q 下的配置加载至工程中
-    6. make load_e2000d_aarch64  将预设64bit e2000d 下的配置加载至工程中
-    7. make load_e2000d_aarch32  将预设32bit e2000d 下的配置加载至工程中
-    8. make menuconfig   配置目录下的参数变量
-    9. make build_all    编译目录下的项目工程
-    10. make backup_kconfig 将目录下的sdkconfig 备份到./configs下
+    3. make image   将目录下的工程进行编译，并将生成的elf 复制到目标地址
+    4. make list_kconfig 当前工程支持哪些配置文件
+    5. make load_kconfig LOAD_CONFIG_NAME=<kconfig configuration files>  将预设配置加载至工程中
+    6. make menuconfig   配置目录下的参数变量
+    7. make backup_kconfig 将目录下的sdkconfig 备份到./configs下
 
 - 具体使用方法为：
   - 在当前目录下

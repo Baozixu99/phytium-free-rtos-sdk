@@ -86,7 +86,7 @@ os.system("chmod +x ./make/*.mk --silent ")
 os.system("chmod +x ./lib/Kconfiglib/*.py --silent ")
 
 # Add standalone sdk
-standalone_sdk_v="af507ee949dfba64c5206b14f8aa39537480c7eb"
+standalone_sdk_v="6061198125dbbcf87ecb9ca56b82cf65ce2ccd8e"
 standalone_path=freertos_sdk_path  + '/standalone'
 standalone_branche="master"
 standalone_remote="https://gitee.com/phytium_embedded/phytium-standalone-sdk.git"
@@ -95,7 +95,7 @@ if not os.path.exists(standalone_path):
     current_path = os.getcwd()
 
     os.system("git clone -b {} {} {}".format(standalone_branche, standalone_remote,standalone_path))
-    os.chdir(standalone_path) # 切换工作路径至standalone 路径
+    os.chdir(standalone_path)# 切换工作路径至standalone 路径
     os.system("git config core.sparsecheckout true")
     os.system("git config advice.detachedHead false")
     os.system("echo \"arch/*\" >> {}".format(r'.git/info/sparse-checkout'))
@@ -105,11 +105,9 @@ if not os.path.exists(standalone_path):
     os.system("echo \"standalone.mk\" >> {}".format(r'.git/info/sparse-checkout'))
     os.system("echo \"lib/*\" >> {}".format(r'.git/info/sparse-checkout'))
     os.system("echo \"doc/*\" >> {}".format(r'.git/info/sparse-checkout'))
-    os.system("echo \"third-party/fatfs-0.1.4/*\" >> {}".format(r'.git/info/sparse-checkout'))    
-    os.system("echo \"third-party/sdmmc/*\" >> {}".format(r'.git/info/sparse-checkout'))
-    os.system("echo \"third-party/lwip-2.1.2/*\" >> {}".format(r'.git/info/sparse-checkout'))
-    os.system("echo \"third-party/sfud-1.1.0/*\" >> {}".format(r'.git/info/sparse-checkout'))
-    os.system("echo \"third-party/lvgl-8.3/*\" >> {}".format(r'.git/info/sparse-checkout'))
+    os.system("echo \"third-party/*\" >> {}".format(r'.git/info/sparse-checkout'))    
+    os.system("echo \"tools/*\" >> {}".format(r'.git/info/sparse-checkout'))
+    os.system("echo \"soc/*\" >> {}".format(r'.git/info/sparse-checkout'))
 
     os.system("git checkout {}".format(standalone_sdk_v))
     print('[1]: Standalone sdk download is succeed')

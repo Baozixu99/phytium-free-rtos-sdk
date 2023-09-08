@@ -51,7 +51,7 @@ SD卡的通信依赖三种数据格式：命令包，响应包，数据包，控
 - make load_e2000q_aarch32  将预设32bit e2000q 下的配置加载至工程中
 - make 将目录下的工程进行编译
 - make clean  将目录下的工程进行清理
-- make boot   将目录下的工程进行编译，并将生成的elf 复制到目标地址
+- make image   将目录下的工程进行编译，并将生成的elf 复制到目标地址
 - make menuconfig   配置目录下的参数变量
 - make backup_kconfig 将目录下的sdkconfig 备份到./configs下
 
@@ -83,7 +83,7 @@ make
 
 - 将编译出的镜像放置到tftp目录下
 ```
-make boot
+make image
 ```
 
 #### 2.3.2 下载过程

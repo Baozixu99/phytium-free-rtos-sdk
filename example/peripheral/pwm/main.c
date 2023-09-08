@@ -30,8 +30,8 @@
 int main(void)
 {
     BaseType_t ret;
-    /* test pwm module 7 */
-    ret = FFreeRTOSPwmCreate(7);
+    /* test pwm*/
+    ret = FFreeRTOSPwmCreate(PWM_TEST_ID);
     if (ret != pdPASS)
     {
         goto FAIL_EXIT;
