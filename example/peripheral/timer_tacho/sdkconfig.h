@@ -40,15 +40,14 @@
 
 /* Soc configuration */
 
-/* CONFIG_TARGET_PHYTIUMPI is not set */
+#define CONFIG_TARGET_PHYTIUMPI
 /* CONFIG_TARGET_E2000Q is not set */
-#define CONFIG_TARGET_E2000D
+/* CONFIG_TARGET_E2000D is not set */
 /* CONFIG_TARGET_E2000S is not set */
 /* CONFIG_TARGET_FT2004 is not set */
 /* CONFIG_TARGET_D2000 is not set */
-#define CONFIG_SOC_NAME "e2000"
-#define CONFIG_TARGET_TYPE_NAME "d"
-#define CONFIG_SOC_CORE_NUM 2
+#define CONFIG_SOC_NAME "phytiumpi"
+#define CONFIG_SOC_CORE_NUM 4
 #define CONFIG_F32BIT_MEMORY_ADDRESS 0x80000000
 #define CONFIG_F32BIT_MEMORY_LENGTH 0x80000000
 #define CONFIG_F64BIT_MEMORY_ADDRESS 0x2000000000
@@ -62,21 +61,20 @@
 
 /* Board Configuration */
 
-#define CONFIG_E2000D_DEMO_BOARD
-#define CONFIG_BOARD_NAME "demo"
-
-/* IO mux configuration when board start up */
-
+#define CONFIG_BOARD_NAME "firefly"
 /* CONFIG_USE_SPI_IOPAD is not set */
 /* CONFIG_USE_GPIO_IOPAD is not set */
 /* CONFIG_USE_CAN_IOPAD is not set */
 /* CONFIG_USE_QSPI_IOPAD is not set */
 /* CONFIG_USE_PWM_IOPAD is not set */
-/* CONFIG_USE_ADC_IOPAD is not set */
 /* CONFIG_USE_MIO_IOPAD is not set */
 /* CONFIG_USE_TACHO_IOPAD is not set */
 /* CONFIG_USE_UART_IOPAD is not set */
 /* CONFIG_USE_THIRD_PARTY_IOPAD is not set */
+#define CONFIG_FIREFLY_DEMO_BOARD
+
+/* IO mux configuration when board start up */
+
 /* end of IO mux configuration when board start up */
 /* CONFIG_CUS_DEMO_BOARD is not set */
 

@@ -13,7 +13,7 @@
 
 - 本例程基于开源openamp项目
   [OpenAMP](https://github.com/OpenAMP/open-amp.git)
-- 本例程主要提供了D2000/FT2004/E2000Q/D/S RTOS与RTOS之间的测试例程 ，D2000/E2000Q/D/S 芯片平台 与  linux kernel 的例程
+- 本例程主要提供了D2000/FT2004/E2000D/E2000Q/PHYTIUMPI RTOS与RTOS之间的测试例程 ，RTOS 与 linux kernel 的测试例程
 - 本例程演示rpmsg用法的示例演示应用程序。此应用core0 中的程序为从机程序，core1 中的程序为主机程序，其目标是从核程序工作在echo 模式下，主核主动发送数据之后，从机程序会将收到的数据重新回复回来
 
 ## 2. 如何使用例程

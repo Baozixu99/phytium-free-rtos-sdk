@@ -16,12 +16,10 @@ static xTaskHandle xtask1_handle;
 static xTaskHandle xtask2_handle;
 static xTaskHandle xtask3_handle;
 
-#define MAX_MSG_LEN 100
-
 static char *pcStringsToPrint[] =
 {
     "Gatekeeper Task 1 *********************************\n",
-    "Gatekeeper Task 2 =================================\n"
+    "Gatekeeper Task 2 =================================\n",
     "Gatekeep Message printed from the tick hook #####\n"
 };
 
@@ -30,13 +28,10 @@ xQueueHandle xPrintQueue;
 static void prvStdioGatekeeperTask(void *pvParameters)
 {
     char *pcMessageToPrint;
-    static char cBuffer[MAX_MSG_LEN];
-
     for (;;)
     {
         xQueueReceive(xPrintQueue, &pcMessageToPrint, portMAX_DELAY);
-        strncpy(cBuffer, pcMessageToPrint, MAX_MSG_LEN);
-        vPrintString(cBuffer);
+        printf( "%s", pcMessageToPrint );
     }
 }
 
@@ -48,7 +43,6 @@ static void prvPrintTask(void *pvParameters)
     for (;;)
     {
         xQueueSendToBack(xPrintQueue, &(pcStringsToPrint[iIndexToString]), 0);
-
         vTaskDelay(5000);
     }
 }
@@ -58,6 +52,9 @@ void vApplicationTickHook(void)
     static int iCount = 0;
     portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
 
+    /* Ensure the xPrintQueue has been created, otherwise the xQueueSendToFrontFromISR function will fail */
+    if (xPrintQueue == NULL)
+        return;
     iCount++;
     if (iCount >= 2000)
     {
@@ -71,8 +68,6 @@ void vApplicationTickHook(void)
 void CreateGatekeeperTasks(void)
 {
     xPrintQueue = xQueueCreate(5, sizeof(char *));
-
-    srand(0x42);
 
     if (xPrintQueue != NULL)
     {

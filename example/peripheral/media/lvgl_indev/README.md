@@ -125,15 +125,15 @@ Media lvgl-init
 
 初始化键盘：
 
-Media init_kb 0
+Media init-kb 0
 
-![init_keyboard](fig/media_init_keyboard.png)
+![init-keyboard](fig/media_init_keyboard.png)
 
 初始化鼠标：
 
-Media init_ms 1
+Media init-ms 1
 
-![init_mouse](fig/media_init_mouse.png)
+![init-mouse](fig/media_init_mouse.png)
 
 注：在测试过程中，请将键盘接到usb 0 口，鼠标接到usb 1口，同时先init 键盘,再 init 鼠标，因为
 usb 驱动中采用枚举方式查找设备。keyborad_name = "/usb0/kbd0"; mouse_name = "/usb1/mouse1";

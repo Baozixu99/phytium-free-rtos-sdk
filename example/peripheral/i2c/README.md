@@ -15,7 +15,7 @@
 ### 2.1 硬件配置方法
 
 本例程支持的硬件平台包括
-- E2000DQS demo、phytiumpi开发板
+- E2000DQ demo、phytiumpi开发板
 
 对应的配置项是
 - CONFIG_TARGET_E2000D、 CONFIG_TARGET_E2000Q

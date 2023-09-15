@@ -37,7 +37,6 @@
 /* CONFIG_GCC_CODE_MODEL_LARGE is not set */
 /* end of Compiler configuration */
 #define CONFIG_USE_CACHE
-/* CONFIG_USE_L3CACHE is not set */
 #define CONFIG_USE_MMU
 /* CONFIG_BOOT_WITH_FLUSH_CACHE is not set */
 /* CONFIG_MMU_DEBUG_PRINTS is not set */
@@ -46,18 +45,19 @@
 
 /* Soc configuration */
 
-/* CONFIG_TARGET_PHYTIUMPI is not set */
+#define CONFIG_TARGET_PHYTIUMPI
 /* CONFIG_TARGET_E2000Q is not set */
 /* CONFIG_TARGET_E2000D is not set */
 /* CONFIG_TARGET_E2000S is not set */
-#define CONFIG_TARGET_FT2004
+/* CONFIG_TARGET_FT2004 is not set */
 /* CONFIG_TARGET_D2000 is not set */
-#define CONFIG_SOC_NAME "ft2004"
+#define CONFIG_SOC_NAME "phytiumpi"
 #define CONFIG_SOC_CORE_NUM 4
 #define CONFIG_F32BIT_MEMORY_ADDRESS 0x80000000
 #define CONFIG_F32BIT_MEMORY_LENGTH 0x80000000
 #define CONFIG_F64BIT_MEMORY_ADDRESS 0x2000000000
 #define CONFIG_F64BIT_MEMORY_LENGTH 0x800000000
+#define CONFIG_TARGET_E2000
 /* CONFIG_USE_SPINLOCK is not set */
 #define CONFIG_DEFAULT_DEBUG_PRINT_UART1
 /* CONFIG_DEFAULT_DEBUG_PRINT_UART0 is not set */
@@ -66,11 +66,21 @@
 
 /* Board Configuration */
 
-#define CONFIG_BOARD_NAME "dsk"
-#define CONFIG_FT2004_DSK_BOARD
+#define CONFIG_BOARD_NAME "firefly"
+/* CONFIG_USE_SPI_IOPAD is not set */
+/* CONFIG_USE_GPIO_IOPAD is not set */
+/* CONFIG_USE_CAN_IOPAD is not set */
+/* CONFIG_USE_QSPI_IOPAD is not set */
+/* CONFIG_USE_PWM_IOPAD is not set */
+/* CONFIG_USE_MIO_IOPAD is not set */
+/* CONFIG_USE_TACHO_IOPAD is not set */
+/* CONFIG_USE_UART_IOPAD is not set */
+/* CONFIG_USE_THIRD_PARTY_IOPAD is not set */
+#define CONFIG_FIREFLY_DEMO_BOARD
 
 /* IO mux configuration when board start up */
 
+/* end of IO mux configuration when board start up */
 /* CONFIG_CUS_DEMO_BOARD is not set */
 
 /* Build project name */
@@ -102,8 +112,8 @@
 /* Drivers configuration */
 
 #define CONFIG_USE_IOMUX
-#define CONFIG_ENABLE_IOCTRL
-/* CONFIG_ENABLE_IOPAD is not set */
+/* CONFIG_ENABLE_IOCTRL is not set */
+#define CONFIG_ENABLE_IOPAD
 /* CONFIG_USE_SPI is not set */
 /* CONFIG_USE_QSPI is not set */
 #define CONFIG_USE_GIC

@@ -10,49 +10,51 @@
 
 /* Arm architecture configuration */
 
-/* CONFIG_ARCH_ARMV8_AARCH64 is not set */
-#define CONFIG_ARCH_ARMV8_AARCH32
+#define CONFIG_ARCH_ARMV8_AARCH64
+/* CONFIG_ARCH_ARMV8_AARCH32 is not set */
 
 /* Compiler configuration */
 
 #define CONFIG_ARM_GCC_SELECT
 /* CONFIG_ARM_CLANG_SELECT is not set */
 #define CONFIG_TOOLCHAIN_NAME "gcc"
-#define CONFIG_TARGET_ARMV8_AARCH32
-#define CONFIG_ARCH_EXECUTION_STATE "aarch32"
+#define CONFIG_TARGET_ARMV8_AARCH64
+#define CONFIG_ARCH_EXECUTION_STATE "aarch64"
 
 /* Fpu configuration */
 
-/* CONFIG_ARCH_FPU_VFP_V3 is not set */
-#define CONFIG_ARCH_FPU_VFP_V4
-#define CONFIG_ARM_DPFPU32
-/* CONFIG_ARM_FPU_ABI_SOFT is not set */
-#define CONFIG_ARM_FPU_SYMBOL "crypto-neon-fp-armv8"
 #define CONFIG_ARM_NEON
-#define CONFIG_ARCH_FPU
 /* end of Fpu configuration */
+#define CONFIG_ARM_CRC
+#define CONFIG_ARM_CRYPTO
+#define CONFIG_ARM_FLOAT_POINT
+/* CONFIG_GCC_CODE_MODEL_TINY is not set */
+#define CONFIG_GCC_CODE_MODEL_SMALL
+/* CONFIG_GCC_CODE_MODEL_LARGE is not set */
 /* end of Compiler configuration */
 #define CONFIG_USE_CACHE
-/* CONFIG_USE_L3CACHE is not set */
 #define CONFIG_USE_MMU
-#define CONFIG_USE_AARCH64_L1_TO_AARCH32
+/* CONFIG_BOOT_WITH_FLUSH_CACHE is not set */
+/* CONFIG_MMU_DEBUG_PRINTS is not set */
 /* end of Arm architecture configuration */
 /* end of Arch configuration */
 
 /* Soc configuration */
 
 /* CONFIG_TARGET_PHYTIUMPI is not set */
-/* CONFIG_TARGET_E2000Q is not set */
+#define CONFIG_TARGET_E2000Q
 /* CONFIG_TARGET_E2000D is not set */
 /* CONFIG_TARGET_E2000S is not set */
-#define CONFIG_TARGET_FT2004
+/* CONFIG_TARGET_FT2004 is not set */
 /* CONFIG_TARGET_D2000 is not set */
-#define CONFIG_SOC_NAME "ft2004"
+#define CONFIG_SOC_NAME "e2000"
+#define CONFIG_TARGET_TYPE_NAME "q"
 #define CONFIG_SOC_CORE_NUM 4
 #define CONFIG_F32BIT_MEMORY_ADDRESS 0x80000000
 #define CONFIG_F32BIT_MEMORY_LENGTH 0x80000000
 #define CONFIG_F64BIT_MEMORY_ADDRESS 0x2000000000
 #define CONFIG_F64BIT_MEMORY_LENGTH 0x800000000
+#define CONFIG_TARGET_E2000
 /* CONFIG_USE_SPINLOCK is not set */
 #define CONFIG_DEFAULT_DEBUG_PRINT_UART1
 /* CONFIG_DEFAULT_DEBUG_PRINT_UART0 is not set */
@@ -61,11 +63,21 @@
 
 /* Board Configuration */
 
-#define CONFIG_BOARD_NAME "dsk"
-#define CONFIG_FT2004_DSK_BOARD
+#define CONFIG_BOARD_NAME "demo"
+/* CONFIG_USE_SPI_IOPAD is not set */
+/* CONFIG_USE_GPIO_IOPAD is not set */
+/* CONFIG_USE_CAN_IOPAD is not set */
+/* CONFIG_USE_QSPI_IOPAD is not set */
+/* CONFIG_USE_PWM_IOPAD is not set */
+/* CONFIG_USE_MIO_IOPAD is not set */
+/* CONFIG_USE_TACHO_IOPAD is not set */
+/* CONFIG_USE_UART_IOPAD is not set */
+/* CONFIG_USE_THIRD_PARTY_IOPAD is not set */
+#define CONFIG_E2000Q_DEMO_BOARD
 
 /* IO mux configuration when board start up */
 
+/* end of IO mux configuration when board start up */
 /* CONFIG_CUS_DEMO_BOARD is not set */
 
 /* Build project name */
@@ -98,8 +110,8 @@
 /* Drivers configuration */
 
 #define CONFIG_USE_IOMUX
-#define CONFIG_ENABLE_IOCTRL
-/* CONFIG_ENABLE_IOPAD is not set */
+/* CONFIG_ENABLE_IOCTRL is not set */
+#define CONFIG_ENABLE_IOPAD
 /* CONFIG_USE_SPI is not set */
 /* CONFIG_USE_QSPI is not set */
 #define CONFIG_USE_GIC
@@ -175,12 +187,8 @@
 #define CONFIG_IMAGE_LOAD_ADDRESS 0x80100000
 #define CONFIG_IMAGE_MAX_LENGTH 0x1000000
 #define CONFIG_HEAP_SIZE 1
-#define CONFIG_SVC_STACK_SIZE 0x1000
-#define CONFIG_SYS_STACK_SIZE 0x1000
-#define CONFIG_IRQ_STACK_SIZE 0x1000
-#define CONFIG_ABORT_STACK_SIZE 0x1000
-#define CONFIG_FIQ_STACK_SIZE 0x1000
-#define CONFIG_UNDEF_STACK_SIZE 0x1000
+#define CONFIG_STACK_SIZE 0x400
+#define CONFIG_FPU_STACK_SIZE 0x1000
 /* end of Linker Options */
 /* end of Build setup */
 

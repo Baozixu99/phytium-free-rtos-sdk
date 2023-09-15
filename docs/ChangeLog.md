@@ -1,3 +1,19 @@
+# Phytium FreeRTOS SDK 2023-09-15 ChangeLog
+
+Change Log sinc 2023-09-15
+
+# example
+
+- Fix resource test example
+
+# Phytium FreeRTOS SDK 2023-09-15 ChangeLog
+
+Change Log sinc 2023-09-08
+
+# example
+
+- modify README.md of some examples
+
 # Phytium FreeRTOS SDK 2023-09-08 ChangeLog
 
 Change Log sinc 2023-09-07
