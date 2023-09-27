@@ -21,11 +21,15 @@ GDMA (Generic Direct Memory Access) 用于将数据从一个内存地址复制�
 
 本例程支持的硬件平台包括
 
-- E2000
+- E2000D
+- E2000Q
+- PHYTIUMPI
 
 对应的配置项是，
 
 - CONFIG_TARGET_E2000D
+- CONFIG_TARGET_E2000Q
+- CONFIG_TARGET_PHYTIUMPI
 
 ### 2.2 SDK配置方法
 

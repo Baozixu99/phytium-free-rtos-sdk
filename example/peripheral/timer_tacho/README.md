@@ -21,13 +21,18 @@ E2000DQ上使用的demo板上的 PWM-IN12(tacho—in12) 进行测试。
 
 对应的配置项是
 
-- CONFIG_TARGET_E2000D、 CONFIG_TARGET_E2000Q
+- CONFIG_TARGET_E2000D、 CONFIG_TARGET_E2000Q 
+- CONFIG_TARGET_PHYTIUMPI
 
 ### 2.1.1 硬件连线
 
 - E2000 pwm_in12使用1KHz的方波
 
 ![hardware_e2000](./figs/tacho_hdw.png)
+
+- PHYTIUMPI 硬件连线
+
+![hardware_phytiumpi](./figs/phytiumpi_tacho.png)
 
 ### 2.2 SDK配置方法
 
@@ -42,7 +47,7 @@ E2000DQ上使用的demo板上的 PWM-IN12(tacho—in12) 进行测试。
 - make clean  将目录下的工程进行清理
 - make image   将目录下的工程进行编译，并将生成的elf 复制到目标地址
 - make list_kconfig 当前工程支持哪些配置文件
-- make load_kconfig LOAD_CONFIG_NAME=<kconfig configuration files>  将预设配置加载至工程中
+- make load_kconfig LOAD_CONFIG_NAME=< kconfig configuration files >  将预设配置加载至工程中
 - make menuconfig   配置目录下的参数变量
 - make backup_kconfig 将目录下的sdkconfig 备份到./configs下
 

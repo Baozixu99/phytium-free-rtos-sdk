@@ -41,7 +41,8 @@ extern "C"
 
 /************************** Function Prototypes ******************************/
 /* i2c write and read test */
-BaseType_t FFreeRTOSI2cCreate(void);
+BaseType_t FFreeRTOSI2cRtcCreate(void);
+BaseType_t FFreeRTOSI2cLoopbackCreate(void);
 /* dump buffer of slave */
 void FFreeRTOSI2cSlaveDump(FFreeRTOSI2c *os_i2c_p);
 

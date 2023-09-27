@@ -59,6 +59,22 @@
 
 [参考 freertos 使用说明](../../../docs/reference/usr/usage.md)
 
+#### 2.3.1 下载过程
+
+- host侧设置重启host侧tftp服务器
+```
+sudo service tftpd-hpa restart
+```
+
+- 开发板侧使用bootelf命令跳转
+```
+setenv ipaddr 192.168.4.20  
+setenv serverip 192.168.4.50 
+setenv gatewayip 192.168.4.1 
+tftpboot 0x90100000 freertos.elf
+bootelf -p 0x90100000
+```
+
 ### 2.4 输出与实验现象
 
 - 系统进入后，输入```resource```查看指令说明

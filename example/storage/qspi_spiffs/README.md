@@ -30,13 +30,14 @@ E2000D上使用的Nor Flash介质型号是GD25LQ128E，容量为16MB;
 ><font size="1">哪些硬件平台是支持的，需要哪些外设，例程与开发板哪些IO口相关等（建议附录开发板照片，展示哪些IO口被引出）</font><br />
 
 本例程支持的硬件平台包括
-- FT2000/4、D2000、E2000D、E2000Q开发板
+- FT2000/4、D2000、E2000D、E2000Q、PhytiumPi(包含qspi—flash芯片座)开发板
 
 对应的配置项是
 - CONFIG_TARGET_FT2004
 - CONFIG_TARGET_D2000
 - CONFIG_TARGET_E2000D
 - CONFIG_TARGET_E2000Q
+- CONFIG_TARGET_PHYTIUMPI
 
 - 本例程适配了GD25Q256、GD25Q128、GD25Q64、S25FS256的Nor-Flash芯片，如使用其他型号，需自行参考适配
 
@@ -53,9 +54,9 @@ E2000D上使用的Nor Flash介质型号是GD25LQ128E，容量为16MB;
 - CONFIG_USE_IOMUX，使能IO复用驱动组件
 - CONFIG_ENABLE_FIOMUX，选择FIOMUX驱动
 - CONFIG_USE_GPIO，使能GPIO驱动组件
-- CONFIG_ENABLE_F_GPIO，选择FGPIO驱动
+- CONFIG_ENABLE_FGPIO，选择FGPIO驱动
 - CONFIG_USE_SFUD，选择SFUD协议框架
-- CONFIG_SFUD_CTRL_F_SPIM，关联SFUD框架和FSPIM驱动
+- CONFIG_SFUD_CTRL_FSPIM，关联SFUD框架和FSPIM驱动
 - CONFIG_USE_SPIFFS CONFIG_SPIFFS_ON_FSPIM_SFUD，使能SPIFFS
 
 本例子已经提供好具体的编译指令，以下进行介绍:
@@ -96,6 +97,7 @@ bootelf -p 0x90100000
 ### 2.4 输出与实验现象
 
 ><font size="1">描述输入输出情况，列出存在哪些输出，对应的输出是什么（建议附录相关现象图片）</font><br />
+
 程序启动后，依次创建Init、WriteRead任务，创建单次模式软件定时器用于删除任务，Init任务会首先初始化并挂载qspi flash的部分区域（可通过FSPIFFS_IF_FORMAT选择是否进行格式化操作），随后创建一个文件，然后释放信号量通知WriteRead任务开始执行;
 
 - init完成，挂载文件系统完成，创建测试文件

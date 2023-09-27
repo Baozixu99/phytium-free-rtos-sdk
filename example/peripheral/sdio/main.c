@@ -41,8 +41,6 @@ int main(void)
     /* board init */
     sdmmc_sys_init();
 
-    ret = FFreeRTOSSdWriteRead(1U, FALSE, 0, 4);
-
     vTaskStartScheduler();
     while (1);
 

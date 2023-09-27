@@ -30,6 +30,20 @@
 - CONFIG_TARGET_E2000Q
 - CONFIG_TARGET_PHYTIUMPI
 
+### 2.1.1 E2000
+- E2000 demo板需外接逻辑分析仪或示波器测试，方法如下
+
+![e2000_pwm](./figs/e2000_pwm.png)
+
+- 上图所示为E2000 J30组引脚，将pwm_out与GND与逻辑分析仪或示波器相连即可
+
+### 2.1.2 PhytiumPi
+- PhytiumPi需外接逻辑分析仪或示波器测试，方法如下
+
+![phytiumpi_pwm](./figs/phytiumpi_pwm.png)
+
+-上图为PhytiumPi J1组引脚，第33号引脚为pwm(红色标记处)输出引脚，39号引脚(蓝色标记处)为GND，将该引脚与逻辑分析仪或示波器相连即可
+
 ### 2.2 SDK配置方法
 
 本例程需要，
@@ -88,6 +102,9 @@ bootelf -p 0x90100000
 
 ![delete](./figs/delete.png)
 
+- 输出波形如下所示
+
+![pwm_out](./figs/pwm_out.png)
 ## 3. 如何解决问题
 
 - 若不想使能死区输出，可将FFreeRTOSPwmDbSet的部分去除，只需调用FFreeRTOSPwmSet即可。

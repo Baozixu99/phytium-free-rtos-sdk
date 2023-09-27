@@ -13,23 +13,25 @@ DDMA (Device Direct Memory Access) 用于配合外设，将数据从一个内存
 - [Phytium FreeRTOS SDK](https://gitee.com/phytium_embedded/phytium-free-rtos-sdk)
 - [Phytium Standalone SDK](https://gitee.com/phytium_embedded/phytium-standalone-sdk)
 
-- 本例程在 E2000 D Demo 板上完成测试，测试使用 SPI-2，测试前需要按照下图短接 SPI-2 的 RX 脚和 TX 脚
+本例程在 E2000 Demo 板 与飞腾派上完成测试，默认的内部回环模式下，无需额外接线
+
+如需要测试非内部回环模式，例如测试 E2000 D Demo 板的 SPI-2 ，测试前需要按照下图短接 SPI-2 的 RX 脚和 TX 脚，并合理修改代码
 > RX 脚是 CPU_IO (J30) 的 5 脚和 9 脚
 
-![](./figs/board.jpg)
-
 ![](./figs/spi2_pin.jpg)
-
 ### 2.1 硬件配置方法
 
 本例程支持的硬件平台包括
 
-- E2000
+- E2000D
+- E2000Q
+- PHYTIUMPI
 
 对应的配置项是，
 
 - CONFIG_TARGET_E2000D
-
+- CONFIG_TARGET_E2000Q
+- CONFIG_TARGET_PHYTIUMPI
 
 ### 2.2 SDK配置方法
 

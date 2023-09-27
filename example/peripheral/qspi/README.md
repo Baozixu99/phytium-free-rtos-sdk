@@ -11,7 +11,7 @@ E2000D上使用的Nor Flash介质型号是GD25Q128，容量为16MB;
 ## 2. 如何使用例程
 
 本例程需要用到
-- Phytium开发板（FT2000-4/D2000/E2000D/E2000Q/PhytiumPi）
+- Phytium开发板:FT2000-4/D2000/E2000D/E2000Q/PhytiumPi(包含QSPI-FLASH芯片座)
 - [Phytium freeRTOS SDK](https://gitee.com/phytium_embedded/phytium-free-rtos-sdk)
 - [Phytium standalone SDK](https://gitee.com/phytium_embedded/phytium-standalone-sdk)
 ### 2.1 硬件配置方法

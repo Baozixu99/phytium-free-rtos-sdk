@@ -4,8 +4,8 @@
 
 SD存储卡(Secure Digital Memory Card), 是一种基于半导体快闪记忆器的新一代记忆设备，由于它体积小、数据传输速度快、可热插拔等优良的特性，被广泛地于便携式装置上使用, 本例程提供了两类常见SD存储设备的读写支持，
 
-- TF（Transflash Card）卡，也称 MicroSD卡，体积为15mm x 11mm x 1mm，主要配合卡套，实现可扩展的存储器
-- eMMC (Embedded Multi Media Card）卡，主要实现的内嵌式存储器标准规格
+- TF(Transflash Card)卡，也称 MicroSD卡，体积为15mm x 11mm x 1mm，主要配合卡套，实现可扩展的存储器
+- eMMC (Embedded Multi Media Card)卡，主要实现的内嵌式存储器标准规格
 
 TF 卡和 eMMC 卡的常见容量包括 4G、8G、16G、32G、64G 和 128G
 
@@ -14,7 +14,7 @@ SD卡的通信依赖三种数据格式：命令包，响应包，数据包，控
 ## 2. 如何使用例程
 
 本例程需要用到
-- Phytium开发板（E2000）
+- Phytium开发板（E2000D/E2000Q/PhytiumPi）
 - [Phytium FreeRTOS SDK](https://gitee.com/phytium_embedded/phytium-free-rtos-sdk)
 - [Phytium Standalone SDK](https://gitee.com/phytium_embedded/phytium-standalone-sdk)
 
@@ -24,11 +24,15 @@ SD卡的通信依赖三种数据格式：命令包，响应包，数据包，控
 
 本例程支持的硬件平台包括
 
-- E2000
+- E2000D
+- E2000Q
+- PHYTIUMPI
 
 对应的配置项是，
 
-- CONFIG_TARGET_E2000
+- CONFIG_TARGET_E2000D
+- CONFIG_TARGET_E2000Q
+- CONFIG_TARGET_PHYTIUMPI
 
 本例程在 E2000-测试板B上完成测试，在测试板B上，SD-0控制器连接TF卡，SD-1控制器连接eMMC
 
@@ -68,7 +72,7 @@ SD卡的通信依赖三种数据格式：命令包，响应包，数据包，控
 
 - 选择目标平台
 ```
-make load_e2000q_aarch64
+make load_kconfig LOAD_CONFIG_NAME=e2000q_aarch64_demo_sdio
 ```
 
 - 选择例程需要的配置
@@ -105,6 +109,7 @@ bootelf -p 0xa0100000
 ### 2.4 输出与实验现象
 
 - 系统进入后，创建任务初始化tf卡，循环读写Tf卡中第3~6块的内容
+>注意：飞腾派上没有emmc，作为外插的sd口连接控制器0，且使用tf卡进行读写操作时需要避开固件存储的范围，请使用命令：sd wr 0 tf 10485760 3
 
 ```
 sd wr 1 tf 3 3 
@@ -113,6 +118,7 @@ sd wr 1 tf 3 3
 ![tf](./figs/tf_wr.png)
 
 - 系统进入后，创建任务初始化eMMC，循环读写eMMC中第7~9块的内容
+>注意：飞腾派上没有emmc，无法使用下面的命令
 
 ```
 sd wr 0 emmc 7 3 

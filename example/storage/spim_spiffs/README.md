@@ -18,8 +18,8 @@
 - 3. 支持的 Flash 容量不能超过 128 MB
 - 4. 不支持坏块检测和坏块处理
 
-本例程通过Freertos下的SPIFFS测试，验证了SPIM Nor-flash文件系统的基本功能，如文件系统格式化，文件的创建、读写、删除和枚举等。例程在E2000 test板上测试通过，使用的Nor Flash介质型号是GD25LQ128E，容量为16MB，如下：
-![hardware](./figs/hardware.jpg)
+本例程通过Freertos下的SPIFFS测试，验证了SPIM Nor-flash文件系统的基本功能，如文件系统格式化，文件的创建、读写、删除和枚举等。
+
 
 ## 2. 如何使用例程
 
@@ -39,6 +39,20 @@
 - CONFIG_TARGET_E2000Q
 - CONFIG_TARGET_PHYTIUMPI
 
+### 2.1.1 E2000
+- E2000 demo板需使用杜邦线外接Flash进行测试，方法如下
+
+![e2000_spi_flash](./figs/e2000_spi_flash.png)
+
+- 上图为E2000开发板J30与SPI引脚对应图，将flash芯片使用外接连接即可
+
+### 2.1.2 PhytiumPi
+- PhytiumPi需使用杜邦线外接Flash进行测试，方法如下
+
+![phytiumpi_spi_flash](./figs/phytiumpi_spi_flash.png)
+
+- 上图为PhytiumPi开发板J1与SPI引脚对应图，将flash芯片使用外接连接即可
+
 
 - 本例程适配了GD25Q256、GD25Q128、GD25Q64、S25FS256的Nor-Flash芯片，如使用其他型号，需自行参考适配
 ### 2.2 SDK配置方法
@@ -54,7 +68,7 @@
 - CONFIG_USE_GPIO，使能GPIO驱动组件
 - CONFIG_ENABLE_F_GPIO，选择FGPIO驱动
 - CONFIG_USE_SFUD，选择SFUD协议框架
-- CONFIG_SFUD_CTRL_F_SPIM，关联SFUD框架和FSPIM驱动
+- CONFIG_SFUD_CTRL_FSPIM，关联SFUD框架和FSPIM驱动
 - CONFIG_USE_SPIFFS CONFIG_SPIFFS_ON_FSPIM_SFUD，使能SPIFFS
 
 本例子已经提供好具体的编译指令，以下进行介绍:
@@ -90,7 +104,8 @@ bootelf -p 0x90100000
 
 ### 2.4 输出与实验现象
 
-><font size="1">描述输入输出情况，列出存在哪些输出，对应的输出是什么（建议附录相关现象图片）</font><br />
+><font size="1">描述输入输出情况，列出存在哪些输出，对应的输出是什么（建议附录相关现象图片）</font><br />  
+
 程序启动后，依次创建Init、Read、Write任务，创建单次模式软件定时器用于删除任务，Init任务会首先初始化并挂载spim flash的部分区域（可通过FSPIFFS_IF_FORMAT选择是否进行格式化操作），随后创建一个文件，然后释放信号量通知Read和Write任务开始执行;
 
 - init完成，挂载文件系统完成，创建测试文件

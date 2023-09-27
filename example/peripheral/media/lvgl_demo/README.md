@@ -53,13 +53,13 @@ lvgl中widgets属于组件测试，将lvgl中库组件组合运行，此demo属�
 
 
 - 本例子已经提供好具体的编译指令，以下进行介绍：
-    1. make 将目录下的工程进行编译
-    2. make clean  将目录下的工程进行清理
-    3. make image   将目录下的工程进行编译，并将生成的elf 复制到目标地址
-    4. make list_kconfig 当前工程支持哪些配置文件
-    5. make load_kconfig LOAD_CONFIG_NAME=<kconfig configuration files>  将预设配置加载至工程中
-    6. make menuconfig   配置目录下的参数变量
-    7. make backup_kconfig 将目录下的sdkconfig 备份到./configs下
+    - make 将目录下的工程进行编译
+    - make clean  将目录下的工程进行清理
+    - make image   将目录下的工程进行编译，并将生成的elf 复制到目标地址
+    - make list_kconfig 当前工程支持哪些配置文件
+    - make load_kconfig LOAD_CONFIG_NAME=<kconfig configuration files>  将预设配置加载至工程中
+    - make menuconfig   配置目录下的参数变量
+    - make backup_kconfig 将目录下的sdkconfig 备份到./configs下
 
 - 具体使用方法为：
   - 在当前目录下
@@ -75,11 +75,11 @@ lvgl中widgets属于组件测试，将lvgl中库组件组合运行，此demo属�
 
 >配置成E2000，对于其它平台，使用对应的默认配置
 ```
-$ make load_e2000q_aarch32 
-$ make menuconfig
-
-- 在host侧完成构建
+make load_kconfig LOAD_CONFIG_NAME=e2000q_aarch64_demo_media 
+make menuconfig
+make image
 ```
+- 在host侧完成构建
 - 选择即将要运行的例程
 
 ![demo_select](fig/demo_select.png)
@@ -101,7 +101,7 @@ sudo service tftpd-hpa restart
 setenv ipaddr 192.168.4.20  
 setenv serverip 192.168.4.50 
 setenv gatewayip 192.168.4.1 
-tftpboot 0x90100000 baremetal.elf
+tftpboot 0x90100000 freertos.elf
 bootelf -p 0x90100000
 ```
 ### 2.4  输出与实验现象
@@ -118,12 +118,12 @@ bootelf -p 0x90100000
 
 Media init 2 640 480 2 32 60
 
-2   :  通道号
-640 ： 宽
-480 ： 高
-2   ：模式(克隆，水平，垂直)
-32  ：色深
-60  ：刷新率
+- 2   :  通道号
+- 640 ： 宽
+- 480 ： 高
+- 2   ：模式(克隆，水平，垂直)
+- 32  ：色深
+- 60  ：刷新率
 
 初始化LVGL图形库：
 

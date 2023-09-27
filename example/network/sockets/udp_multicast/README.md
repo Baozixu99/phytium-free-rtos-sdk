@@ -16,6 +16,7 @@
 本例程支持的硬件平台包括
 
 - E2000D/E2000Q
+- FT2004
 - D2000
 - PhytiumPi 
 
@@ -23,7 +24,9 @@
 
 - CONFIG_TARGET_E2000D
 - CONFIG_TARGET_E2000Q
+- CONFIG_TARGET_FT2004
 - CONFIG_TARGET_D2000
+- CONFIG_TARGET_PHYTIUMPI
 
 ### 2.2 SDK配置方法
 
@@ -42,7 +45,7 @@
 - make clean  将目录下的工程进行清理
 - make image   将目录下的工程进行编译，并将生成的elf 复制到目标地址
 - make list_kconfig 当前工程支持哪些配置文件
-- make load_kconfig LOAD_CONFIG_NAME=<kconfig configuration files>  将预设配置加载至工程中
+- make load_kconfig LOAD_CONFIG_NAME=< kconfig configuration files >  将预设配置加载至工程中
 - make menuconfig   配置目录下的参数变量
 - make backup_kconfig 将目录下的sdkconfig 备份到./configs下
 
@@ -100,36 +103,8 @@ bootelf -p 0x90100000
 
 ### 2.4 输出与实验现象
 
-- 启动进入后，根据连接的xmac口，输入指令完成网口初始化
-
-### 2.4.1 如何进行实验
-
-- 当开发者配置好程序之后,通过2.3.1/2.3.2的方式将编译好的镜像文件拷贝至开发板中。
-- 以E2000D/Q demo 板为例,开发者输入以下命令则可以初始化网卡：
-
-```
-lwip probe 0 0 1 0 192.168.4.10 192.168.4.1 255.255.255.0
-```
-
-命令定义为:
-```
-lwip probe <device id> <interface id> <dhcp_en> <ipaddr> <gateway> <netmask> 
-```
-- driver id 为驱动类型 ， 0为xmac ，1为gmac
-- device id 为mac控制器
-- interface id 为gmii 控制器类型，0 is rgmii ,1 is sgmii
-- dhcp_en 1为使能dhcp 功能，0为关闭dhcp 功能
-- ipaddr 为ipv4 地址，示例为: 192.168.4.10
-- gateway 为网关 ，示例为: 192.168.4.
-- netmask 为子网掩码，示例为255.255.255.0
-
-- 效果图如下
-
-![](./pic/lwip_probe.png)
-
-
-
-#### 2.4.2 基于IPv4下初始化
+#### 2.4.1 如何配置程序
+##### 基于IPv4下初始化
 
 - 输入以下命令
   
@@ -143,7 +118,7 @@ make menuconfig
 
 
 
-#### 2.4.3 IPv4$IPv6 共存的模式
+##### IPv4 && IPv6 共存的模式
 
 - 输入以下命令
 
@@ -161,12 +136,44 @@ make menuconfig
 ![](./pic/DisableNotusingIPV4attheaSametime.png)
 
 
-#### 2.4.4 进行multicast 测试
 
-- 完成2.4.1 / 2.4.2 /2.4.3 之后 ，可以进行multcast 的相关实验 ，以下以ipv6 的实验为例
+#### 2.4.2 如何进行实验
+
+- 当开发者配置好程序之后,通过2.3.1/2.3.2的方式将编译好的镜像文件拷贝至开发板中。
+- 启动进入后，根据连接的xmac口，输入指令完成网口初始化
+- 以E2000D/Q demo 板为例,开发者输入以下命令则可以初始化网卡：
+
+```
+lwip probe 0 0 1 0 192.168.4.10 192.168.4.1 255.255.255.0
+```
+
+命令定义为:
+```
+lwip probe <driver id> <device id> <interface id> <dhcp_en> <ipaddr> <gateway> <netmask> 
+```
+- driver id 为驱动类型 ， 0为xmac ，1为gmac
+- device id 为mac控制器
+- interface id 为gmii 控制器类型，0 is rgmii ,1 is sgmii
+- dhcp_en 1为使能dhcp 功能，0为关闭dhcp 功能
+- ipaddr 为ipv4 地址，示例为: 192.168.4.10
+- gateway 为网关 ，示例为: 192.168.4.
+- netmask 为子网掩码，示例为255.255.255.0
+
+- 效果图如下
+
+![](./pic/lwip_probe.png)
+
+
+
+
+
+
+#### 2.4.3 进行multicast 测试
+
+- 完成2.4.1 / 2.4.2 之后 ，可以进行multcast 的相关实验 ，以下以ipv6 的实验为例
 - 在串口终端上输入以下指令
 ```
-multicast
+multicast e0
 ```
 - 在编译器环境下执行
 ```

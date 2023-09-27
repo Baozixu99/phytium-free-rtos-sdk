@@ -11,15 +11,15 @@
  * See the Phytium Public License for more details.
  *
  *
- * FilePath: i2c_example.c
+ * FilePath: i2c_ms_example.c
  * Date: 2022-11-10 11:35:23
  * LastEditTime: 2022-11-10 11:35:24
- * Description:  This file is for i2c test example functions.
+ * Description:  This file is for i2c master and slave test example functions.
  *
  * Modify History:
  *  Ver       Who            Date                 Changes
  * -----    ------         --------     --------------------------------------
- *  1.0    liushengming   2022/11/25             init commit
+ *  1.0    liushengming   2023/09/25             init commit
  */
 #include <string.h>
 #include "FreeRTOSConfig.h"
@@ -37,19 +37,13 @@
 #include "fdebug.h"
 #include "ftypes.h"
 #include "finterrupt.h"
-#if defined(CONFIG_TARGET_E2000D) || defined(CONFIG_TARGET_E2000Q) || defined(CONFIG_TARGET_PHYTIUMPI)
-    #define BCD_TO_BIN(bcd) (( ((((bcd)&0xf0)>>4)*10) + ((bcd)&0xf) ) & 0xff)
-    #define BIN_TO_BCD(bin) (( (((bin)/10)<<4) + ((bin)%10) ) & 0xff)
-#endif
 
 /* write and read task delay in milliseconds */
-#define TASK_DELAY_MS   5000UL
+#define TASK_DELAY_MS   1000UL
 
 /* slave address */
 /* Notice! Using addresses above 0x50 may cause the loopback test to fail  */
 #define MASTER_SLAVE_ADDR   0x01
-#define EEPROM_ADDR         0x57
-#define RTC_ADDR            0x68
 
 #define DAT_LENGTH  15
 static char data_w[DAT_LENGTH] = {0};
@@ -254,7 +248,6 @@ static void FI2cIntrTxAbrtcallback(void *instance, void *param)
     }
 }
 
-
 static void I2cSlaveTask(void *pvParameters)
 {
     const char *pcTaskName = "\r\n*****I2cSlaveTask is running...\r\n";
@@ -266,14 +259,12 @@ static void I2cSlaveTask(void *pvParameters)
     Cast this to a FFreeRTOSI2c pointer. */
     FFreeRTOSI2c *os_i2c_write_p = (FFreeRTOSI2c *) pvParameters;
 
-    while (1)
-    {
-        vTaskDelay(xDelay);
-        vPrintf(pcTaskName);
-        /* 获取到信号，打印内存块 */
-        FFreeRTOSI2cSlaveDump(os_i2c_write_p);
-    }
+    vPrintf(pcTaskName);
+    /* 获取到信号，打印内存块 */
+    FFreeRTOSI2cSlaveDump(os_i2c_write_p);
+    vTaskDelete(NULL);
 }
+
 
 static void I2cReadTask(void *pvParameters)
 {
@@ -291,7 +282,7 @@ static void I2cReadTask(void *pvParameters)
     FFreeRTOSI2c *os_i2c_read_p = (FFreeRTOSI2c *) pvParameters;
 
     message.slave_addr = os_i2c_read_p->i2c_device.config.slave_addr;
-#if defined(CONFIG_TARGET_D2000) || defined(CONFIG_TARGET_FT2004)
+
     /*8位地址*/
     message.mem_byte_len = 1;
     message.mem_addr = 0x1;/* 地址偏移0x1的位置poll方式读取数据 */
@@ -316,40 +307,7 @@ static void I2cReadTask(void *pvParameters)
     FtDumpHexByte(data_r0, DAT_LENGTH);
     vPrintf("data_r1:\r\n");
     FtDumpHexByte(data_r1, DAT_LENGTH);
-    vPrintf("\r\nI2cReadTask is over.\r\n");
-#endif
-#if defined(CONFIG_TARGET_E2000D) || defined(CONFIG_TARGET_E2000Q) || defined(CONFIG_TARGET_PHYTIUMPI)
-    message.mem_byte_len = 1;
-    message.mem_addr = 0x0;/* 地址偏移0x0的位置poll方式读取数据 */
-    message.buf_length = 7;
-    message.buf = data_r0;
-    message.mode = FI2C_READ_DATA_POLL;
 
-    ret = FFreeRTOSI2cTransfer(os_i2c_read_p, &message);
-    if (ret != FREERTOS_I2C_SUCCESS)
-    {
-        vPrintf("FFreeRTOSI2cTransfer read poll task error,i2c id:%d.\r\n", os_i2c_read_p->i2c_device.config.instance_id);
-    }
-    u16 year;
-    if (data_r0[5] & 0x80)
-    {
-        year = BCD_TO_BIN(data_r0[6]) + 2000;
-    }
-    else
-    {
-        year = BCD_TO_BIN(data_r0[6]) + 1900;
-    }
-    printf("Date_time: %d-%d-%d week:%d time:%d:%d:%d\r\n",
-           year,
-           BCD_TO_BIN(data_r0[5] & 0x1F),
-           BCD_TO_BIN(data_r0[4] & 0x3F),
-           BCD_TO_BIN((data_r0[3] - 1) & 0x7),
-           BCD_TO_BIN(data_r0[2] & 0x3F),
-           BCD_TO_BIN(data_r0[1] & 0x7F),
-           BCD_TO_BIN(data_r0[0] & 0x7F)
-          );
-    vTaskDelay(xDelay);
-#endif
     FFreeRTOSI2cDeinit(os_i2c_read_p);/*写入再读取完成后去初始化FFreeRTOSI2c主机设置*/
     printf("I2cReadTask is over.\r\n ");
     vTaskDelete(NULL);
@@ -357,8 +315,6 @@ static void I2cReadTask(void *pvParameters)
 
 static void I2cWriteTask(void *pvParameters)
 {
-    const TickType_t xDelay = pdMS_TO_TICKS(TASK_DELAY_MS);
-    vTaskDelay(xDelay);
     const char *pcWriteTaskName = "\r\n*****I2cWriteTask is running...\r\n";
     vPrintf(pcWriteTaskName);
     FError ret = FREERTOS_I2C_SUCCESS;
@@ -371,7 +327,6 @@ static void I2cWriteTask(void *pvParameters)
     FFreeRTOSI2c *os_i2c_write_p = (FFreeRTOSI2c *) pvParameters;
 
     message.slave_addr = os_i2c_write_p->i2c_device.config.slave_addr;
-#if defined(CONFIG_TARGET_D2000) || defined(CONFIG_TARGET_FT2004)
     for (i = 0; i < DAT_LENGTH; i++)
     {
         data_w[i] = i ;
@@ -394,43 +349,15 @@ static void I2cWriteTask(void *pvParameters)
     {
         vPrintf("FFreeRTOSI2cTransfer write poll task error,i2c id:%d.\r\n", os_i2c_write_p->i2c_device.config.instance_id);
     }
-#endif
-#if defined(CONFIG_TARGET_E2000D) || defined(CONFIG_TARGET_E2000Q) || defined(CONFIG_TARGET_PHYTIUMPI)
-    /*RTC*/
-    data_w[0] = BIN_TO_BCD(20) ;/*second*/
-    data_w[1] = BIN_TO_BCD(20) ;/*minute*/
-    data_w[2] = BIN_TO_BCD(20) ;/*hour*/
-    data_w[3] = BIN_TO_BCD(2 + 1)  ; /*weekday2 + 1*/
-    data_w[4] = BIN_TO_BCD(6) ;/*day_of_month*/
-
-    data_w[5] = (BIN_TO_BCD(9) | 0x80); /* 2000 -> (* | 0x80) , 1900 -> (* | 0x0) */
-    data_w[6] = BIN_TO_BCD(2023 % 100) ;
-    /*8位地址*/
-    message.mem_byte_len = 1;
-    message.buf = data_w;
-    message.buf_length = 7;
-    message.mem_addr = 0x0;/* 地址偏移0x0的位置poll方式写入数据 */
-    message.mode = FI2C_WRITE_DATA_POLL;
-    ret = FFreeRTOSI2cTransfer(os_i2c_write_p, &message);
-    if (ret != FREERTOS_I2C_SUCCESS)
-    {
-        vPrintf("FFreeRTOSI2cTransfer write poll task error,i2c id:%d.\r\n", os_i2c_write_p->i2c_device.config.instance_id);
-    }
-#endif
     printf("I2cWriteTask is over.\r\n ");
     vTaskDelete(NULL);
-}
-
-static void FI2cMasterSlaveSetIoMux(u32 instance_id)
-{
-    FIOPadSetMioMux(instance_id);
 }
 
 static FError FFreeRTOSI2cInitSet(uint32_t id, uint32_t work_mode, uint32_t slave_address)
 {
     FError err;
 
-     FI2cMasterSlaveSetIoMux(id);
+    FIOPadSetMioMux(id);
     /* init i2c controller */
     if (work_mode == FI2C_MASTER) /* 主机初始化默认使用poll模式 */
     {
@@ -472,32 +399,7 @@ static void I2cInitTask(void *pvParameters)
     BaseType_t xReturn = pdPASS;
 
     taskENTER_CRITICAL(); //进入临界区
-#if defined(CONFIG_TARGET_E2000Q) || defined(CONFIG_TARGET_E2000D) 
-    err = FFreeRTOSI2cInitSet(FMIO9_ID, FI2C_MASTER, RTC_ADDR);
-    if (err != FREERTOS_I2C_SUCCESS)
-    {
-        vPrintf("I2c FFreeRTOSI2cInitSet failed.\r\n");
-        return;
-    }
 
-    xReturn = xTaskCreate((TaskFunction_t)I2cReadTask,  /* 任务入口函数 */
-                          (const char *)"I2cReadTask",/* 任务名字 */
-                          (uint16_t)1024,  /* 任务栈大小 */
-                          (void *)os_i2c_master,/* 任务入口函数参数 */
-                          (UBaseType_t)configMAX_PRIORITIES - 2, /* 任务的优先级 */
-                          (TaskHandle_t *)&read_handle); /* 任务控制 */
-    FASSERT_MSG(xReturn == pdPASS, "I2cReadTask creation is failed.");
-
-    xReturn = xTaskCreate((TaskFunction_t)I2cWriteTask,  /* 任务入口函数 */
-                          (const char *)"I2cWriteTask",/* 任务名字 */
-                          (uint16_t)1024,  /* 任务栈大小 */
-                          (void *)os_i2c_master,/* 任务入口函数参数 */
-                          (UBaseType_t)configMAX_PRIORITIES - 1, /* 任务的优先级 */
-                          (TaskHandle_t *)&write_handle); /* 任务控制 */
-    FASSERT_MSG(xReturn == pdPASS, "I2cWriteTask creation is failed.");
-#endif
-
-#if defined(CONFIG_TARGET_PHYTIUMPI)
     err = FFreeRTOSI2cInitSet(FMIO1_ID, FI2C_MASTER, MASTER_SLAVE_ADDR);
     if (err != FREERTOS_I2C_SUCCESS)
     {
@@ -532,78 +434,15 @@ static void I2cInitTask(void *pvParameters)
                           (const char *)"I2cSlaveTask",/* 任务名字 */
                           (uint16_t)1024,  /* 任务栈大小 */
                           (void *)os_i2c_slave,/* 任务入口函数参数 */
-                          (UBaseType_t)configMAX_PRIORITIES - 2, /* 任务的优先级 */
-                          (TaskHandle_t *)&slave_handle); /* 任务控制 */
-    FASSERT_MSG(xReturn == pdPASS, "I2cSlaveTask creation is failed.");
-#endif
-
-#if defined(CONFIG_TARGET_D2000)
-    err = FFreeRTOSI2cInitSet(FI2C0_ID, FI2C_MASTER, MASTER_SLAVE_ADDR);
-    if (err != FREERTOS_I2C_SUCCESS)
-    {
-        vPrintf("I2c FFreeRTOSI2cInitSet failed.\r\n");
-        return;
-    }
-
-    err = FFreeRTOSI2cInitSet(FI2C2_ID, FI2C_SLAVE, MASTER_SLAVE_ADDR);
-    if (err != FREERTOS_I2C_SUCCESS)
-    {
-        vPrintf("I2c FFreeRTOSI2cInitSet failed.\r\n");
-        return;
-    }
-
-    xReturn = xTaskCreate((TaskFunction_t)I2cReadTask,  /* 任务入口函数 */
-                          (const char *)"I2cReadTask",/* 任务名字 */
-                          (uint16_t)1024,  /* 任务栈大小 */
-                          (void *)os_i2c_master,/* 任务入口函数参数 */
                           (UBaseType_t)configMAX_PRIORITIES - 3, /* 任务的优先级 */
-                          (TaskHandle_t *)&read_handle); /* 任务控制 */
-    FASSERT_MSG(xReturn == pdPASS, "I2cReadTask creation is failed.");
-
-    xReturn = xTaskCreate((TaskFunction_t)I2cWriteTask,  /* 任务入口函数 */
-                          (const char *)"I2cWriteTask",/* 任务名字 */
-                          (uint16_t)1024,  /* 任务栈大小 */
-                          (void *)os_i2c_master,/* 任务入口函数参数 */
-                          (UBaseType_t)configMAX_PRIORITIES - 1, /* 任务的优先级 */
-                          (TaskHandle_t *)&write_handle); /* 任务控制 */
-    FASSERT_MSG(xReturn == pdPASS, "I2cWriteTask creation is failed.");
-
-    xReturn = xTaskCreate((TaskFunction_t)I2cSlaveTask,  /* 任务入口函数 */
-                          (const char *)"I2cSlaveTask",/* 任务名字 */
-                          (uint16_t)1024,  /* 任务栈大小 */
-                          (void *)os_i2c_slave,/* 任务入口函数参数 */
-                          (UBaseType_t)configMAX_PRIORITIES - 2, /* 任务的优先级 */
                           (TaskHandle_t *)&slave_handle); /* 任务控制 */
     FASSERT_MSG(xReturn == pdPASS, "I2cSlaveTask creation is failed.");
-#endif
-#if defined(CONFIG_TARGET_FT2004)
-    err = FFreeRTOSI2cInitSet(FI2C0_ID, FI2C_MASTER, EEPROM_ADDR);
-    if (err != FREERTOS_I2C_SUCCESS)
-    {
-        vPrintf("I2c FFreeRTOSI2cInitSet failed.\r\n");
-        return;
-    }
-    xReturn = xTaskCreate((TaskFunction_t)I2cReadTask,  /* 任务入口函数 */
-                          (const char *)"I2cReadTask",/* 任务名字 */
-                          (uint16_t)1024,  /* 任务栈大小 */
-                          (void *)os_i2c_master,/* 任务入口函数参数 */
-                          (UBaseType_t)configMAX_PRIORITIES - 2, /* 任务的优先级 */
-                          (TaskHandle_t *)&read_handle); /* 任务控制 */
-    FASSERT_MSG(xReturn == pdPASS, "I2cReadTask creation is failed.");
 
-    xReturn = xTaskCreate((TaskFunction_t)I2cWriteTask,  /* 任务入口函数 */
-                          (const char *)"I2cWriteTask",/* 任务名字 */
-                          (uint16_t)1024,  /* 任务栈大小 */
-                          (void *)os_i2c_master,/* 任务入口函数参数 */
-                          (UBaseType_t)configMAX_PRIORITIES - 1, /* 任务的优先级 */
-                          (TaskHandle_t *)&write_handle); /* 任务控制 */
-    FASSERT_MSG(xReturn == pdPASS, "I2cWriteTask creation is failed.");
-#endif
     taskEXIT_CRITICAL(); //退出临界区
     vTaskDelete(NULL);
 }
 
-BaseType_t FFreeRTOSI2cCreate(void)
+BaseType_t FFreeRTOSI2cLoopbackCreate(void)
 {
     BaseType_t xReturn = pdPASS;/* 定义一个创建信息返回值，默认为 pdPASS */
     BaseType_t xTimerStarted = pdPASS;
@@ -620,6 +459,7 @@ BaseType_t FFreeRTOSI2cCreate(void)
 
     taskEXIT_CRITICAL(); //退出临界区
     printf("I2c task is created successfully.\r\n");
+    vTaskDelay(TASK_DELAY_MS*3);
     return xReturn;
 }
 

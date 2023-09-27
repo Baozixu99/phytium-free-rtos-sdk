@@ -9,9 +9,10 @@
 ## 2. 如何使用例程
 
 本例程需要用到
-- Phytium开发板（E2000）
+- Phytium开发板(E2000D/E2000Q/FT2000-4/D2000/PhytiumPi)
 - [Phytium FreeRTOS SDK](https://gitee.com/phytium_embedded/phytium-free-rtos-sdk)
 - [Phytium Standalone SDK](https://gitee.com/phytium_embedded/phytium-standalone-sdk)
+- Flash芯片
 
 ### 2.1 硬件配置方法
 
@@ -27,7 +28,19 @@
 - CONFIG_TARGET_D2000
 - CONFIG_TARGET_PHYTIUMPI
 
-本例程在 E2000-测试板A上完成测试
+### 2.1.1 E2000
+- E2000 demo板需使用杜邦线外接Flash进行测试，方法如下
+
+![e2000_spi_flash](./figs/e2000_spi_flash.png)
+
+- 上图为E2000开发板J30与SPI引脚对应图，将flash芯片使用外接连接即可
+
+### 2.1.2 PhytiumPi
+- PhytiumPi需使用杜邦线外接Flash进行测试，方法如下
+
+![phytiumpi_spi_flash](./figs/phytiumpi_spi_flash.png)
+
+- 上图为PhytiumPi开发板J1与SPI引脚对应图，将flash芯片使用外接连接即可
 
 ### 2.2 SDK配置方法
 

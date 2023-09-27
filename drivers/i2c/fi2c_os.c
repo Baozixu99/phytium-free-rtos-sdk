@@ -35,20 +35,13 @@
 #include "fdebug.h"
 #include "fio_mux.h"
 
-#if defined(CONFIG_TARGET_E2000D) || defined(CONFIG_TARGET_E2000Q)|| defined(CONFIG_TARGET_PHYTIUMPI)
-    #include "fmio_hw.h"
-    #include "fmio.h"
-#endif
+#include "fmio_hw.h"
+#include "fmio.h"
 
-#if defined(CONFIG_TARGET_E2000D) || defined(CONFIG_TARGET_E2000Q) || defined(CONFIG_TARGET_PHYTIUMPI)
 static FMioCtrl i2c_master;
 static FMioCtrl i2c_slave;
 static FFreeRTOSI2c os_i2c[FMIO_NUM] = {0};
-#endif
 
-#if defined(CONFIG_TARGET_D2000) || defined(CONFIG_TARGET_FT2004)
-static FFreeRTOSI2c os_i2c[FI2C_NUM] = {0};
-#endif
 /* virtual eeprom memory */
 
 /**
@@ -98,7 +91,6 @@ FFreeRTOSI2c *FFreeRTOSI2cInit(u32 instance_id, u32 work_mode, u32 slave_address
     FI2cConfig i2c_config;
 
     /* E2000 use MIO -> I2C */
-#if defined(CONFIG_TARGET_E2000D) || defined(CONFIG_TARGET_E2000Q) || defined(CONFIG_TARGET_PHYTIUMPI)
     FASSERT(instance_id < FMIO_NUM);
 
     if (FT_COMPONENT_IS_READY == os_i2c[instance_id].i2c_device.is_ready)
@@ -157,32 +149,7 @@ FFreeRTOSI2c *FFreeRTOSI2cInit(u32 instance_id, u32 work_mode, u32 slave_address
         i2c_config.irq_prority = I2C_SLAVE_IRQ_PRORITY;
     }
     FIOPadSetMioMux(i2c_config.instance_id);
-#endif
-#if defined(CONFIG_TARGET_D2000)
-    FASSERT(instance_id < FI2C_NUM);
 
-    if (FT_COMPONENT_IS_READY == os_i2c[instance_id].i2c_device.is_ready)
-    {
-        vPrintf("I2c device %d is already initialized.\r\n", instance_id);
-        return NULL;
-    }
-
-    i2c_config = *FI2cLookupConfig(instance_id);
-    if (work_mode == FI2C_MASTER) /* 主机中断优先级低于从机接收 */
-    {
-        i2c_config.irq_prority = I2C_MASTER_IRQ_PRORITY;
-    }
-    else
-    {
-        i2c_config.irq_prority = I2C_SLAVE_IRQ_PRORITY;
-    }
-    /* Modify configuration */
-    i2c_config.work_mode = work_mode;
-    i2c_config.slave_addr = slave_address;
-    i2c_config.speed_rate = speed_rate;
-    /* Setup iomux */
-   
-#endif
     err = FI2cCfgInitialize(&os_i2c[instance_id].i2c_device, &i2c_config);
     if (err != FREERTOS_I2C_SUCCESS)
     {
@@ -207,10 +174,8 @@ void FFreeRTOSI2cDeinit(FFreeRTOSI2c *os_i2c_p)
 {
     FASSERT(os_i2c_p);
     FASSERT(os_i2c_p->wr_semaphore != NULL);
-#if defined(CONFIG_TARGET_E2000D) || defined(CONFIG_TARGET_E2000Q) 
     FMioCtrl *pctrl = &i2c_master;
     FMioFuncDeinit(pctrl);
-#endif
     /* 避免没有关闭中断，存在触发 */
     InterruptMask(os_i2c_p->i2c_device.config.irq_num);
     FI2cDeInitialize(&os_i2c_p->i2c_device);

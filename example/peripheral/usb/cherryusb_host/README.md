@@ -27,17 +27,17 @@ CherryUSB 是一个用于嵌入式系统 USB 协议栈，支持运行在Host模�
 - Letter Shell组件，依赖 USE_LETTER_SHELL
 
 本例子已经提供好具体的编译指令，以下进行介绍:
-    1. make 将目录下的工程进行编译
-    2. make clean  将目录下的工程进行清理
-    3. make image   将目录下的工程进行编译，并将生成的elf 复制到目标地址
-    4. make list_kconfig 当前工程支持哪些配置文件
-    5. make load_kconfig LOAD_CONFIG_NAME=<kconfig configuration files>  将预设配置加载至工程中
-    6. make menuconfig   配置目录下的参数变量
-    7. make backup_kconfig 将目录下的sdkconfig 备份到./configs下
+- make 将目录下的工程进行编译
+- make clean  将目录下的工程进行清理
+- make image   将目录下的工程进行编译，并将生成的elf 复制到目标地址
+- make list_kconfig 当前工程支持哪些配置文件
+- make load_kconfig LOAD_CONFIG_NAME=<kconfig configuration files>  将预设配置加载至工程中
+- make menuconfig   配置目录下的参数变量
+- make backup_kconfig 将目录下的sdkconfig 备份到./configs下
 
-- 具体使用方法为：
-    - 在当前目录下
-    - 执行以上指令
+具体使用方法为：
+- 在当前目录下
+- 执行以上指令
 
 ### 2.3 构建和下载
 
@@ -47,7 +47,7 @@ CherryUSB 是一个用于嵌入式系统 USB 协议栈，支持运行在Host模�
 
 - 选择目标平台和例程需要的配置
 ```
-make load_e2000d_aarch64
+make load_kconfig LOAD_CONFIG_NAME=e2000d_aarch64_demo_cherry_usb
 ```
 
 - 进行编译
@@ -121,7 +121,7 @@ usb mouse /usb1/mouse1
 
 ![usb_mouse_input](./figs/usb_mouse_input.png)
 
-- 上图中，首先打印的是通过 USB 键盘输入的字符串，已经一系列特殊字符，然后是鼠标的输入，x和y是鼠标的平面坐标位置，w是鼠标中间滚轮的位置，<-、-> 和 C 分别是按下鼠标左、右键和中间滚轮后的返回
+- 上图中，首先打印的是通过 USB 键盘输入的字符串，以及一系列特殊字符，然后是鼠标的输入，x和y是鼠标的平面坐标位置，w是鼠标中间滚轮的位置，<-、-> 和 C 分别是按下鼠标左、右键和中间滚轮后的返回
 
 ## 3. 如何解决问题
 

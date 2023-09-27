@@ -26,6 +26,7 @@
 - CONFIG_TARGET_E2000Q
 - CONFIG_TARGET_FT2004
 - CONFIG_TARGET_D2000
+- CONFIG_TARGET_PHYTIUMPI
 
 ### 2.2 SDK配置方法
 
@@ -39,13 +40,13 @@
 - CONFIG_USE_LETTER_SHELL
 
 本例子已经提供好具体的编译指令，以下进行介绍:
-    1. make 将目录下的工程进行编译
-    2. make clean  将目录下的工程进行清理
-    3. make image   将目录下的工程进行编译，并将生成的elf 复制到目标地址
-    4. make list_kconfig 当前工程支持哪些配置文件
-    5. make load_kconfig LOAD_CONFIG_NAME=<kconfig configuration files>  将预设配置加载至工程中
-    6. make menuconfig   配置目录下的参数变量
-    7. make backup_kconfig 将目录下的sdkconfig 备份到./configs下
+- make 将目录下的工程进行编译
+- make clean  将目录下的工程进行清理
+- make image   将目录下的工程进行编译，并将生成的elf 复制到目标地址
+- make list_kconfig 当前工程支持哪些配置文件
+- make load_kconfig LOAD_CONFIG_NAME=< kconfig-nfiguration files > 将预设配置加载至工程中
+- make menuconfig   配置目录下的参数变量
+- make backup_kconfig 将目录下的sdkconfig 备份到./configs下
 
 具体使用方法为:
 - 在当前目录下
@@ -122,7 +123,7 @@ lwip probe 0 0 1 0 192.168.4.10 192.168.4.1 255.255.255.0
 
 命令定义为:
 ```
-lwip probe <device id> <interface id> <dhcp_en> <ipaddr> <gateway> <netmask> 
+lwip probe <driver id> <device id> <interface id> <dhcp_en> <ipaddr> <gateway> <netmask> 
 ```
 - driver id 为驱动类型 ， 0为xmac ，1为gmac
 - device id 为mac控制器

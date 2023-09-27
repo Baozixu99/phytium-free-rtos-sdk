@@ -2,13 +2,13 @@
 
 ## 1. 例程介绍
 
-本例程示范了freertos环境下的inteerrupt的使用。
+本例程示范了freertos环境下的interrupt的使用。
 主要介绍了二值信号量、计数信号量、在中断中使用队列等方法
 
 ## 2. 如何使用例程
 
 本例程需要用到
-- Phytium开发板（FT2000-4/D2000/E2000D/E2000Q/E2000Q）
+- Phytium开发板（FT2000-4/D2000/E2000D/E2000Q/E2000Q/PhytiumPi）
 - [Phytium freeRTOS SDK](https://gitee.com/phytium_embedded/phytium-free-rtos-sdk)
 - [Phytium standalone SDK](https://gitee.com/phytium_embedded/phytium-standalone-sdk)
 ### 2.1 硬件配置方法
@@ -57,6 +57,22 @@
 ><font size="1">描述构建、烧录下载镜像的过程，列出相关的命令</font><br />
 
 [参考 freertos 使用说明](../../../docs/reference/usr/usage.md)
+
+#### 2.3.1 下载过程
+
+- host侧设置重启host侧tftp服务器
+```
+sudo service tftpd-hpa restart
+```
+
+- 开发板侧使用bootelf命令跳转
+```
+setenv ipaddr 192.168.4.20  
+setenv serverip 192.168.4.50 
+setenv gatewayip 192.168.4.1 
+tftpboot 0x90100000 freertos.elf
+bootelf -p 0x90100000
+```
 
 ### 2.4 输出与实验现象
 

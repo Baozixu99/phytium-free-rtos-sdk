@@ -9,7 +9,7 @@
 ## 2. 如何使用例程
 
 本例程需要用到
-- Phytium开发板（E2000D/E2000Q）
+- Phytium开发板（E2000D/E2000Q/PhytiumPi）
 - [Phytium freeRTOS SDK](https://gitee.com/phytium_embedded/phytium-free-rtos-sdk)
 - [Phytium standalone SDK](https://gitee.com/phytium_embedded/phytium-standalone-sdk)
 
@@ -18,11 +18,14 @@
 ### 2.1 硬件配置方法
 
 本例程支持的硬件平台包括
-- E2000D、E2000Q开发板
+- E2000D、E2000Q、PhytiumPi开发板
+
+注：为防止破坏固件Phytium目前仅支持使用RAM测试
 
 对应的配置项是
 - CONFIG_TARGET_E2000D
 - CONFIG_TARGET_E2000Q
+- CONFIG_TARGET_PHYTIUMPI
 
 ### 2.2 SDK配置方法
 
