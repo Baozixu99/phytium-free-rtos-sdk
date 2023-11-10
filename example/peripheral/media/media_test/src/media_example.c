@@ -20,7 +20,7 @@
  *  Ver   Who        Date         Changes
  * ----- ------     --------    --------------------------------------
  * 1.0  Wangzq     2022/12/20  Modify the format and establish the version
- * 1.1  Wangzq     2023/07/07  change the third-party and driver relation 
+ * 1.1  Wangzq     2023/07/07  change the third-party and driver relation
  */
 #include <stdio.h>
 #include <string.h>
@@ -51,10 +51,11 @@
 static TaskHandle_t init_task;
 static TaskHandle_t hpd_task ;
 
-static FFreeRTOSMedia *os_media;
-static InputParm *input_config;
+static FFreeRTOSMedia os_media;
 static  EventGroupHandle_t media_event = NULL;
 static GraphicsTest blt_buffer;
+
+static u8 *static_frame_buffer_address = (u8 *)0xa0000000 ;
 /************************** Function Prototypes ******************************/
 static void FFreeRTOSMediaSendEvent(u32 evt_bits)
 {
@@ -196,29 +197,45 @@ static void FDcDpIrqAllEnable(FDcDp *instance_p)
 /**
  * @name: FFreeRTOSMediaInitTask
  * @msg:  a task for init the media
- * @param {void} *pvParameters is config of instance of dcdp
  * @return Null
  */
-static void FFreeRTOSMediaInitTask(void *pvParameters)
+static void FFreeRTOSMediaInitTask(void)
 {
-    input_config = (InputParm *)pvParameters;
-    u32 channel_num = input_config->channel;
-    u32 width = input_config->width;
-    u32 height = input_config->height;
-    u32 multi_mode = input_config->multi_mode;
-    u32 color_depth = input_config->color_depth;
-    u32 refresh_rate = input_config->refresh_rate;
+    u32 index, start_index, end_index;
 
-    os_media = FFreeRTOSMediaHwInit(channel_num, width, height, multi_mode, color_depth, refresh_rate);
-    FFreeRTOSMediaIrqSet(&os_media->dcdp_ctrl);
-    FDcDpIrqAllEnable(&os_media->dcdp_ctrl);
+    /*设置用户参数*/
+    u32 channel = 2;/* 0 or 1 or 2*/
+    if (channel == FDCDP_INSTANCE_NUM)
+    {
+        start_index = 0;
+        end_index = FDCDP_INSTANCE_NUM;
+    }
+    else
+    {
+        start_index = channel;
+        end_index = channel + 1;
+    }
+    for (index = start_index; index < end_index; index ++)
+    {
+        os_media.dcdp_ctrl.user_config[index].width = 640;
+        os_media.dcdp_ctrl.user_config[index].height = 480;
+        os_media.dcdp_ctrl.user_config[index].refresh_rate = 60;
+        os_media.dcdp_ctrl.user_config[index].color_depth = 32;
+        os_media.dcdp_ctrl.user_config[index].multi_mode = 0;
+        os_media.dcdp_ctrl.user_config[index].fb_phy = (uintptr)static_frame_buffer_address;
+        os_media.dcdp_ctrl.user_config[index].fb_virtual = (uintptr)static_frame_buffer_address ;/*当前例程虚拟地址和物理地址一致，实际需要根据需要进行映射*/
+    }
+
+    FFreeRTOSMedia *os_config  = FFreeRTOSMediaHwInit(channel, &os_media);
+    FFreeRTOSMediaIrqSet(&os_config->dcdp_ctrl);
+    FDcDpIrqAllEnable(&os_config->dcdp_ctrl);
     vTaskDelete(NULL);
 }
 
 /**
  * @name: FFreeRTOSMediaChannelDeinit
  * @msg:  deinit the media
- * @param {u32} id is channel of media
+ * @param  {u32} id is the number of dcdp
  * @return Null
  */
 void FFreeRTOSMediaChannelDeinit(u32 id)
@@ -226,11 +243,10 @@ void FFreeRTOSMediaChannelDeinit(u32 id)
     taskENTER_CRITICAL();
     vEventGroupDelete(media_event);
     media_event = NULL;
-    FDcDpDeInitialize(&os_media->dcdp_ctrl, id);
+    FDcDpDeInitialize(&os_media.dcdp_ctrl, id);/*deinit the id channel*/
     taskEXIT_CRITICAL();
     return;
 }
-
 
 /**
  * @name: BltVideoToFill
@@ -246,7 +262,7 @@ static void PhyFramebufferWrite(FDcCtrl *instance_p, uintptr offset, u32 length,
     u32 Index;
     for (Index = 0; Index < length; Index++)
     {
-        FtOut32(instance_p->fdc_current_config.framebuffer.framebuffer_p + offset + Index * 4, *((u32 *)(config + Index * 4)));
+        FtOut32(os_media.dcdp_ctrl.user_config->fb_virtual + offset + Index * 4, *((u32 *)(config + Index * 4)));
     }
 }
 
@@ -289,67 +305,46 @@ static void BltVideoToFill(FDcCtrl *instance_p, GraphicsTest *config, u32 width,
  */
 FError FMediaDisplayDemo(void)
 {
-    FDcDp *instance_p = &os_media->dcdp_ctrl;
-    InputParm *input_config = InputParaReturn();
-    for (u32 index = 0; index < 2; index ++)
+    FDcDp *instance_p = &os_media.dcdp_ctrl;
+    for (u32 index = 0; index < FDCDP_INSTANCE_NUM; index ++)
     {
         blt_buffer.Red = 0xff;
         blt_buffer.Green = 0xff;
         blt_buffer.Blue = 0x0;
         blt_buffer.reserve = 0;
-        BltVideoToFill(&instance_p->dc_instance_p[index], &blt_buffer, input_config->width, input_config->height);
+        BltVideoToFill(&instance_p->dc_instance_p[index], &blt_buffer, instance_p->user_config[index].width, instance_p->user_config[index].height);
     }
 }
 
-static void FFreeRTOSMediaHpdTask(void *pvParameters)
+/* create the hpd task */
+static void FFreeRTOSMediaHpdTask(void)
 {
-    input_config = (InputParm *)pvParameters;
     u32 index;
     u32 ret = 0 ;
-    u32 channel = input_config->channel;
-    u32 multi_mode = input_config->multi_mode;
-    u32 color_depth = input_config->color_depth;
-    u32 refresh_rate = input_config->refresh_rate;
-    u32 width = input_config->width;
-    u32 height = input_config->height;
-    u32 start_index;
-    u32 end_index;//ensure the channel number
-
-    if (channel == FDCDP_INSTANCE_NUM)
-    {
-        start_index = 0;
-        end_index = channel;
-    }
-    else
-    {
-        start_index = channel;
-        end_index = channel + 1;
-    }
-
     FFreeRTOSMediaWaitEvent(FMEDIA_EVT_INTR(FMEDIA_CHANNEL_0) | FMEDIA_EVT_INTR(FMEDIA_CHANNEL_1), portMAX_DELAY);
 
     for (;;)
     {
-        for (index = start_index; index < end_index; index++)
+        for (index = 0; index < FDCDP_INSTANCE_NUM; index++)
         {
-            if (os_media->dcdp_ctrl.connect_flg[index] == 1)
+            if (os_media.dcdp_ctrl.connect_flg[index] == 1)
             {
-                ret = FFreeRTOSMediaHpdReInit(index, width, height, multi_mode, color_depth, refresh_rate);
+                ret = FDcDpHotPlugConnect(&os_media.dcdp_ctrl, index);
                 FFreeRTOSMediaClearEvent(media_event, FMEDIA_EVT_INTR(index));
                 if (ret == FMEDIA_DP_SUCCESS)
                 {
                     printf("Hpd task finish ,  reinit the dp success.\r\n");
                 }
 
-                os_media->dcdp_ctrl.connect_flg[index] == 0;
+                os_media.dcdp_ctrl.connect_flg[index] == 0;
             }
         }
         vTaskDelay(200);
     }
 }
 
-/* create media test, id is media module number */
-BaseType_t FFreeRTOSMediaCreate(void *args)
+/* create media test*/
+BaseType_t FFreeRTOSMediaCreate(void)
 {
     BaseType_t xReturn = pdPASS; /* 定义一个创建信息返回值，默认为 pdPASS */
     FASSERT_MSG(NULL == media_event, "Event group exists.");
@@ -360,7 +355,7 @@ BaseType_t FFreeRTOSMediaCreate(void *args)
     xReturn = xTaskCreate((TaskFunction_t)FFreeRTOSMediaInitTask, /* 任务入口函数 */
                           (const char *)"FFreeRTOSMediaInitTask", /* 任务名字 */
                           (uint16_t)1024,                         /* 任务栈大小 */
-                          (void *)args,                    /* 任务入口函数参数 */
+                          NULL,                    /* 任务入口函数参数 */
                           (UBaseType_t)configMAX_PRIORITIES - 2,                       /* 任务的优先级 */
                           (TaskHandle_t *)&init_task);
 
@@ -368,7 +363,7 @@ BaseType_t FFreeRTOSMediaCreate(void *args)
     xReturn = xTaskCreate((TaskFunction_t)FFreeRTOSMediaHpdTask, /* 任务入口函数 */
                           (const char *)"FFreeRTOSMediaHpdTask", /* 任务名字 */
                           (uint16_t)1024,                        /* 任务栈大小 */
-                          (void *)args,                   /* 任务入口函数参数 */
+                          NULL,                   /* 任务入口函数参数 */
                           (UBaseType_t)configMAX_PRIORITIES - 1,                 /* 任务的优先级 */
                           (TaskHandle_t *)&hpd_task);
     /* exit critical region */

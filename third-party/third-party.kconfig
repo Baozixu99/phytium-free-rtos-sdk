@@ -40,18 +40,6 @@ config USE_AMP
 
     endif
 
-
-config USE_SDMMC_CMD
-    bool
-    prompt "Use sd/mmc/sdio/emmc cmd"
-    default n
-    help
-        Include Sd/MMC/SDIO/eMMc Command framework
-
-    if USE_SDMMC_CMD
-        source "$SDK_DIR/third-party/sdmmc/Kconfig"
-    endif
-
 config USE_YMODEM
     bool
     prompt "Use ymodem"
@@ -125,10 +113,6 @@ config USE_LVGL
     prompt "Use lvgl"
     help
         Include USE_LVGL
-    
-    if USE_LVGL
-        source "$SDK_DIR/third-party/lvgl-8.3/Kconfig"
-    endif
 
 config USE_FREEMODBUS
     bool
@@ -149,7 +133,7 @@ config USE_CHERRY_USB
         Include CherryUSB for XHCI controller
 
     if USE_CHERRY_USB
-        source "$(FREERTOS_SDK_ROOT)/third-party/cherryusb/Kconfig"
+        source "$(FREERTOS_SDK_DIR)/third-party/cherryusb/Kconfig"
     endif
 
 config USE_CRYPTO_PLUS_PLUS
@@ -159,5 +143,30 @@ config USE_CRYPTO_PLUS_PLUS
     prompt "Use Crypto++"
     help
         Include Crypto++ as Crypto library
+
+config USE_FSL_SDMMC
+    bool
+    default n
+    prompt "Use fsl-sdmmc"
+    help
+        Include FSL SDMMC as SDMMC Protocol
+
+    if USE_FSL_SDMMC
+        source "$(FREERTOS_SDK_DIR)/third-party/fsl_sdmmc/fsl_sdmmc.kconfig"
+    endif
+
+
+config USE_FSL_WIFI
+    bool
+    default n
+    prompt "Use fsl-wifi"
+    select USE_FSL_SDMMC
+    help
+        Include NXP FSL WIFI
+
+    if USE_FSL_WIFI
+        source "$(FREERTOS_SDK_DIR)/third-party/fsl_wifi/fsl_wifi.kconfig"
+    endif
+
 
 endmenu

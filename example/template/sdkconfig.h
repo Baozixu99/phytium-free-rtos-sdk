@@ -114,8 +114,6 @@
 #define CONFIG_ENABLE_IOPAD
 /* CONFIG_USE_SPI is not set */
 /* CONFIG_USE_QSPI is not set */
-#define CONFIG_USE_GIC
-#define CONFIG_ENABLE_GICV3
 #define CONFIG_USE_SERIAL
 
 /* Usart Configuration */
@@ -141,6 +139,7 @@
 /* CONFIG_USE_IPC is not set */
 /* CONFIG_USE_MEDIA is not set */
 /* CONFIG_USE_SCMI_MHU is not set */
+/* CONFIG_USE_I2S is not set */
 /* end of Drivers configuration */
 
 /* Build setup */
@@ -176,7 +175,8 @@
 /* Lib */
 
 #define CONFIG_USE_COMPILE_CHAIN
-/* CONFIG_USB_USER_DEFINED is not set */
+/* CONFIG_USE_NEWLIB is not set */
+/* CONFIG_USE_USER_DEFINED is not set */
 /* end of Lib */
 /* CONFIG_ENABLE_CXX is not set */
 
@@ -280,7 +280,6 @@
 /* CONFIG_DEFAULT_LETTER_SHELL_USE_UART2 is not set */
 /* end of Letter Shell Configuration */
 /* CONFIG_USE_AMP is not set */
-/* CONFIG_USE_SDMMC_CMD is not set */
 /* CONFIG_USE_YMODEM is not set */
 /* CONFIG_USE_SFUD is not set */
 #define CONFIG_USE_BACKTRACE
@@ -291,9 +290,10 @@
 /* CONFIG_USE_LVGL is not set */
 /* CONFIG_USE_FREEMODBUS is not set */
 /* CONFIG_USE_CHERRY_USB is not set */
+/* CONFIG_USE_FSL_SDMMC is not set */
 /* end of Third-party configuration */
 
-/* Kernel Configuration */
+/* FreeRTOS Kernel Configuration */
 
 #define CONFIG_FREERTOS_OPTIMIZED_SCHEDULER
 #define CONFIG_FREERTOS_HZ 1000
@@ -313,6 +313,7 @@
 /* CONFIG_FREERTOS_USE_TICKLESS_IDLE is not set */
 #define CONFIG_FREERTOS_TOTAL_HEAP_SIZE 10240
 #define CONFIG_FREERTOS_TASK_FPU_SUPPORT 1
-/* end of Kernel Configuration */
+/* CONFIG_FREERTOS_USE_POSIX is not set */
+/* end of FreeRTOS Kernel Configuration */
 
 #endif

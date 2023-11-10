@@ -29,12 +29,13 @@
 #include "FreeRTOS.h"
 #include "fassert.h"
 #include "finterrupt.h"
+#include "fparameters.h"
 #include "timers.h"
 #include "task.h"
 #include "fcpu_info.h"
 #include "event_groups.h"
 
-#include "fdcdp_multi_display.h"
+#include "fdcdp.h"
 #include "lv_port_disp.h"
 #include "lv_conf.h"
 #include "../lvgl.h"
@@ -51,40 +52,20 @@ static void FFreeRTOSMediaDispFlush(lv_disp_drv_t *disp_drv, const lv_area_t *ar
  * @msg:  set the lvgl framebuffer addr and ensure the connected dp have the correct addr
  * @return null
  */
-void FMediaDispFramebuffer(disp_parm *disp_config)
+void FMediaDispFramebuffer(FDcDp *instance)
 {
-    u32 index;
-    u32 start_index;
-    u32 end_index;
-    if (disp_config->channel == FDCDP_INSTANCE_NUM)
+    FASSERT(instance != NULL);
+  
+    if ((rtt_fbp[0] == NULL))
     {
-        start_index = 0;
-        end_index = disp_config->channel;
+        rtt_fbp[0] = (lv_color_int_t *)instance->user_config[0].fb_virtual;
+        multi_mode = instance->user_config[0].multi_mode;
     }
     else
     {
-        start_index = disp_config->channel;
-        end_index = disp_config->channel + 1;
+        rtt_fbp[1] = (lv_color_int_t *)instance->user_config[1].fb_virtual;
     }
-    for (index = start_index; index < end_index; index ++)
-    {
-        if (disp_config->connect[index] == 0)
-        {
-            if ((rtt_fbp[0] == NULL))
-            {
-                rtt_fbp[0] = (lv_color_int_t *)disp_config->fb_config[index];
-            }
-            else
-            {
-                rtt_fbp[1] = (lv_color_int_t *)disp_config->fb_config[index];
-            }
-        }
-        else
-        {
-            printf("the dp %d is not conneted ,the screen can not open\r\n",index);
-        }
-
-    }
+    return;
 
 }
 
@@ -93,7 +74,7 @@ void FMediaDispFramebuffer(disp_parm *disp_config)
  * @msg:  init the lv config and set the instance
  * @return null
  */
-void FFreeRTOSPortInit(disp_parm *disp_config)
+void FFreeRTOSPortInit(void)
 {
     static lv_disp_draw_buf_t draw_buf_dsc_1;
     static lv_color_t buf_1[LV_HOR_RES_MAX * 10];                             /*A buffer for 10 rows*/
@@ -105,7 +86,6 @@ void FFreeRTOSPortInit(disp_parm *disp_config)
     /*Set the resolution of the display*/
     disp_drv.hor_res = LV_HOR_RES_MAX;
     disp_drv.ver_res = LV_VER_RES_MAX;
-    multi_mode = disp_config->multi_mode;
 
     /*Used to copy the buffer's content to the display*/
     disp_drv.flush_cb = FFreeRTOSMediaDispFlush;
@@ -115,8 +95,6 @@ void FFreeRTOSPortInit(disp_parm *disp_config)
     /*Finally register the driver*/
     lv_disp_drv_register(&disp_drv);
 
-    FMediaDispFramebuffer(disp_config);
-    printf("**************\r\n");
     return;
 }
 

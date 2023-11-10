@@ -1,4 +1,4 @@
-FATFS_OS_DIR := $(FREERTOS_SDK_ROOT)/third-party/fatfs-0.1.4
+FATFS_OS_DIR := $(FREERTOS_SDK_DIR)/third-party/fatfs-0.1.4
 FATFS_BM_DIR := $(STANDALONE_DIR)/third-party/fatfs-0.1.4
 
 include $(FATFS_BM_DIR)/fatfs.mk

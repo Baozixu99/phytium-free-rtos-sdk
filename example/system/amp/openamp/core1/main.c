@@ -36,14 +36,15 @@
 #define OPENAMP_MAIN_DEBUG_W(format, ...) FT_DEBUG_PRINT_W(OPENAMP_MAIN_DEBUG_TAG, format, ##__VA_ARGS__)
 #define OPENAMP_MAIN_DEBUG_E(format, ...) FT_DEBUG_PRINT_E(OPENAMP_MAIN_DEBUG_TAG, format, ##__VA_ARGS__)
 
-extern void TestLetterShell() ;
-extern int rpmsg_ping_task(void);
-
+extern int rpmsg_listening_func(void);
 int main(void)
 {
     BaseType_t ret;
 
-    rpmsg_ping_task();
+    ret = rpmsg_listening_func();
+    if(ret != pdPASS)
+        goto FAIL_EXIT;
+    OPENAMP_MAIN_DEBUG_I("Creat task OK!");
 
     vTaskStartScheduler(); /* 启动任务，开启调度 */   
     while (1); /* 正常不会执行到这里 */

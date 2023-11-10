@@ -58,12 +58,6 @@ extern "C" {
 #define SHARED_MEM_SIZE     0x100000UL  /* 必须要和kernel 进行约定 */
 #define SHARED_BUF_OFFSET   0x8000UL
 
-
-#ifdef CONFIG_USE_OPENAMP_IPI
-#define IPI_IRQ_VECT_ID     0
-#define IPI_CHN_BITMASK     CONFIG_IPI_CHN_BITMASK
-#endif
-
 #ifndef CONFIG_USE_OPENAMP_IPI
 #define  POLL_STOP 0x1U
 #endif
@@ -80,6 +74,7 @@ extern "C" {
         unsigned int ipi_chn_mask; /**< IPI channel mask */
         atomic_int ipi_nokick;
 #endif /* !RPMSG_NO_IPI */
+        unsigned int cpu_mask;
     };
 
     /************************** Function Prototypes ******************************/
@@ -139,7 +134,7 @@ extern "C" {
      *
      * @platform: pointer to the platform
      */
-    void platform_cleanup(void *platform);
+    int platform_cleanup(void *platform);
 
 
 #if defined __cplusplus

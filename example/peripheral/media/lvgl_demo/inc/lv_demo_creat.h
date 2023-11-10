@@ -53,10 +53,10 @@ typedef struct
 BaseType_t FFreeRTOSlVGLDemoCreate(void);
 
 /*creat the media init task*/
-BaseType_t FFreeRTOSMediaInitCreate(void *args);
+BaseType_t FFreeRTOSMediaInitCreate(void );
 
 /*creat the lvgl config task*/
-BaseType_t FFreeRTOSlVGLConfigCreate(void *args);
+BaseType_t FFreeRTOSlVGLConfigCreate(void);
 
 #if LV_USE_DEMO_BENCHMARK
 /*the benchmark demo of lvgl*/

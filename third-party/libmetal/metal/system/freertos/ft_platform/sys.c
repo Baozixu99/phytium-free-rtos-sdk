@@ -1,5 +1,5 @@
 /*
- * Copyright : (C) 2022 Phytium Information Technology, Inc. 
+ * Copyright : (C) 2022 Phytium Information Technology, Inc. 
  * All Rights Reserved.
  *  
  * This program is OPEN SOURCE software: you can redistribute it and/or modify it  
@@ -12,13 +12,14 @@
  *  
  * 
  * FilePath: sys.c
- * Date: 2022-02-24 13:56:43
- * LastEditTime: 2022-03-21 17:04:18
- * Description:  This file is for 
+ * Date: 2022-01-03 13:04:02
+ * LastEditTime: 2022-01-06 21:48:13
+ * Description:  This file is for  machine specific system primitives implementation.
  * 
- * Modify History: 
- *  Ver   Who        Date         Changes
- * ----- ------     --------    --------------------------------------
+ * Modify History: 
+ *  Ver   Who  Date   Changes
+ * ----- ------  -------- --------------------------------------
+ * 1.0	huanghe 2022/02/05 first release
  */
 
 
@@ -69,10 +70,12 @@ unsigned int sys_irq_save_disable(void)
 
 void metal_machine_cache_flush(void *addr, unsigned int len)
 {
+
 	if (!addr && !len)
 		FCacheDCacheFlush();
 	else
 		FCacheDCacheFlushRange((uintptr_t)addr, len);
+	
 }
 
 void metal_machine_cache_invalidate(void *addr, unsigned int len)
@@ -83,7 +86,9 @@ void metal_machine_cache_invalidate(void *addr, unsigned int len)
 		FCacheDCacheInvalidateRange((uintptr_t)addr, len);
 }
 
-
+/**
+ * @brief poll function until some event happens
+ */
 void metal_weak metal_generic_default_poll(void)
 {
 	metal_asm volatile("wfi");

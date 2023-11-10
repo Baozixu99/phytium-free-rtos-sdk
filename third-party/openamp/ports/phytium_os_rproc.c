@@ -34,12 +34,12 @@
 #include "sdkconfig.h"
 #include "fdebug.h"
 #include "finterrupt.h"
-#include <stdio.h>
+#include "stdio.h"
 #include "fmmu.h"
 #include "ftypes.h"
 #include "fcpu_info.h"
-
-
+#include "fpsci.h"
+#include "fcache.h"
 
 /************************** Constant Definitions *****************************/
 
@@ -91,7 +91,7 @@ static void PhytiumIrqhandler(s32 vector, void *param)
 #endif
 
 static struct remoteproc *
-PhytiumProcInit(struct remoteproc *rproc, struct remoteproc_ops *ops,
+PhytiumProcInit(struct remoteproc *rproc,const struct remoteproc_ops *ops,
                 void *arg)
 {
     struct remoteproc_priv *prproc = arg;
@@ -250,14 +250,68 @@ static int PhytiumProcNotify(struct remoteproc *rproc, uint32_t id)
     return 0;
 }
 
+static int Phytium_rproc_start(struct remoteproc *rproc)
+{
+	struct remoteproc_priv *priv;
+	FError ret;
+
+	priv = rproc->priv;
+	FCacheDCacheFlush();
+	ret = FPsciCpuMaskOn(priv->cpu_mask, (uintptr_t)rproc->bootaddr);
+	if (ret != 0) {
+		PHYTIUM_RPROC_MAIN_DEBUG_E("Failed to start core mask 0x%x, ret=0x%x\n\r", priv->cpu_mask, ret);
+		return -1;
+	} 
+
+	return 0;
+}
+
+static int PhytiumProcStop(struct remoteproc *rproc)
+{
+	/* It is lacking a stop operation in the libPM */
+	(void)rproc;
+	return 0;
+}
+
+static int PhytiumProcShutdown(struct remoteproc *rproc)
+{
+	struct remoteproc_priv *priv;
+	int ret;
+	struct remoteproc_mem *mem;
+	struct metal_list *node;
+
+	priv = rproc->priv;
+	/* Delete all the registered remoteproc memories */
+	metal_list_for_each(&rproc->mems, node) {
+		struct metal_list *tmpnode;
+		metal_phys_addr_t pa, pa_end;
+
+		mem = metal_container_of(node, struct remoteproc_mem, node);
+		tmpnode = node;
+		node = tmpnode->prev;
+		metal_list_del(tmpnode);
+		metal_free_memory(mem->io);
+		metal_free_memory(mem);
+	}
+/*
+	if (rproc->state == RPROC_RUNNING)
+	{
+		ret = XPm_ForcePowerDown(priv->cpu_id, REQUEST_ACK_NO);
+		if (ret != XST_SUCCESS)
+		return -1;
+	}
+*/
+	return 0;
+}
+
 struct remoteproc_ops phytium_proc_ops =
 {
     .init = PhytiumProcInit,
-    .remove = PhytiumProcRemove,
-    .mmap = PhytiumProcMmap,
-    .notify = PhytiumProcNotify,
-    .start = NULL,
-    .stop = NULL,
-    .shutdown = NULL,
+	.remove = PhytiumProcRemove,
+	.mmap = PhytiumProcMmap,
+	.notify = PhytiumProcNotify,
+	.start = Phytium_rproc_start,
+	.stop = PhytiumProcStop,
+	.shutdown = PhytiumProcShutdown,
 };
 

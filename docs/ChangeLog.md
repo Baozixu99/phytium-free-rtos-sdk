@@ -1,3 +1,85 @@
+# Phytium Standalone SDK 2023-11-09 ChangeLog
+
+Change Log since 2023-11-01
+
+## example
+
+- added extended frame test examples
+
+# Phytium Standalone SDK 2023-11-01 ChangeLog
+
+Change Log since 2023-11-01
+
+## example
+
+- change the media example for driver
+
+## driver
+
+- change the media driver for adapting the sdk
+
+## third-party
+
+- change the lvgl-port and delete the Kconfig
+
+# Phytium Standalone SDK 2023-11-01 ChangeLog
+
+Change Log since 2023-10-25
+
+## example
+
+- add new openamp example, support all app
+
+## third-party
+
+- remove lib,link openamp and libmetal v1.4.0 in standalone third-party
+
+# Phytium Standalone SDK 2023-10-25 ChangeLog
+
+Change Log since 2023-10-12
+
+## example
+
+- add network/wlan example, support station mode and ap mode
+
+## third-party
+
+- add fsl_wifi conponment
+
+# Phytium Standalone SDK 2023-10-12 ChangeLog
+
+Change Log since 2023-10-09
+
+## example
+
+- Add posix test example
+
+## third-party
+
+- Adapt to newlib c library in standalone sdk
+- Add Portable Operating System Interface (POSIX threading wrapper) for FreeRTOS
+
+# Phytium Standalone SDK 2023-10-12 ChangeLog
+
+Change Log since 2023-10-09
+
+## example
+
+- update sd example
+- update fatfs example
+
+## third-party
+
+- replace sdmmc with fsl_sdmmc
+
+# Phytium Standalone SDK 2023-10-09 v0.7.1 ChangeLog
+
+Change Log since 2023-10-07
+
+## example
+
+- adapt to new standalone sdk for gic restruct
+
 # Phytium Standalone SDK 2023-09-26 ChangeLog
 
 Change Log since 2023-09-21

@@ -49,8 +49,8 @@
 static const char *mount_points[FFREERTOS_DISK_TYPE_NUM] =
 {
     [FFREERTOS_FATFS_RAM_DISK] = FF_RAM_DISK_MOUNT_POINT,
-    [FFREERTOS_FATFS_TF_CARD] = FF_FSDIO_TF_DISK_MOUNT_POINT,
-    [FFREERTOS_FATFS_EMMC_CARD] = FF_FSDIO_EMMC_DISK_MOUNT_POINT,
+    [FFREERTOS_FATFS_TF_CARD] = FF_FSDIF_TF_DISK_MOUNT_POINT,
+    [FFREERTOS_FATFS_EMMC_CARD] = FF_FSDIF_EMMC_DISK_MOUNT_POINT,
     [FFREERTOS_FATFS_USB_DISK] = FF_USB_DISK_MOUNT_POINT,
     [FFREERTOS_FATFS_SATA_DISK] = FF_SATA_DISK_MOUNT_POINT,
     [FFREERTOS_FATFS_SATA_PCIE_DISK] = FF_SATA_PCIE_DISK_MOUNT_POINT
@@ -108,7 +108,7 @@ static void FatfsInitTask(void *args)
 #ifdef CONFIG_FATFS_RAM_DISK
     fr = ff_setup(&file_sys[FFREERTOS_FATFS_RAM_DISK],
                   mount_points[FFREERTOS_FATFS_RAM_DISK],
-                  &fs_option, pdFALSE);
+                  &fs_option, pdTRUE);
 
     if (FR_OK != fr)
     {
@@ -117,10 +117,10 @@ static void FatfsInitTask(void *args)
     }
 #endif
 
-#ifdef CONFIG_FATFS_SDMMC_FSDIO_TF
+#ifdef CONFIG_FATFS_SDMMC_FSDIF_TF
     fr = ff_setup(&file_sys[FFREERTOS_FATFS_TF_CARD],
                   mount_points[FFREERTOS_FATFS_TF_CARD],
-                  &fs_option, pdFALSE);
+                  &fs_option, pdTRUE);
 
     if (FR_OK != fr)
     {
@@ -129,14 +129,14 @@ static void FatfsInitTask(void *args)
     }
 #endif
 
-#ifdef CONFIG_FATFS_SDMMC_FSDIO_EMMC
+#ifdef CONFIG_FATFS_SDMMC_FSDIF_EMMC
     fr = ff_setup(&file_sys[FFREERTOS_FATFS_EMMC_CARD],
                   mount_points[FFREERTOS_FATFS_EMMC_CARD],
-                  &fs_option, pdFALSE);
+                  &fs_option, pdTRUE);
 
     if (FR_OK != fr)
     {
-        FF_ERROR("SDIO card init failed, err = %d.", fr);
+        FF_ERROR("eMMC card init failed, err = %d.", fr);
         goto task_exit;
     }
 #endif
@@ -144,7 +144,7 @@ static void FatfsInitTask(void *args)
 #ifdef CONFIG_FATFS_USB
     fr = ff_setup(&file_sys[FFREERTOS_FATFS_USB_DISK],
                   mount_points[FFREERTOS_FATFS_USB_DISK],
-                  &fs_option, pdFALSE);
+                  &fs_option, pdTRUE);
 
     if (FR_OK != fr)
     {
@@ -156,7 +156,7 @@ static void FatfsInitTask(void *args)
 #ifdef CONFIG_FATFS_FSATA
     fr = ff_setup(&file_sys[FFREERTOS_FATFS_SATA_DISK],
                   mount_points[FFREERTOS_FATFS_SATA_DISK],
-                  &fs_option, pdFALSE);
+                  &fs_option, pdTRUE);
 
     if (FR_OK != fr)
     {
@@ -167,7 +167,7 @@ static void FatfsInitTask(void *args)
 #ifdef CONFIG_FATFS_FSATA_PCIE
     fr = ff_setup(&file_sys[FFREERTOS_FATFS_SATA_PCIE_DISK],
                   mount_points[FFREERTOS_FATFS_SATA_PCIE_DISK],
-                  &fs_option, pdFALSE);
+                  &fs_option, pdTRUE);
 
     if (FR_OK != fr)
     {
@@ -175,6 +175,8 @@ static void FatfsInitTask(void *args)
         goto task_exit;
     }
 #endif
+
+    printf("Storage device init finished !!!\r\n");
     FatfsSendEvent(FATFS_EVT_INIT_DONE);
 task_exit:
     vTaskDelete(NULL); /* delete task itself */
@@ -199,7 +201,7 @@ static void FatfsTestTask(void *args)
         }
 #endif
 
-#ifdef CONFIG_FATFS_SDMMC_FSDIO_TF
+#ifdef CONFIG_FATFS_SDMMC_FSDIF_TF
         printf("\r\n========Basic test for TF Card=================\r\n");
         fr = ff_basic_test(mount_points[FFREERTOS_FATFS_TF_CARD], "logfile.txt");
         if (FR_OK != fr)
@@ -209,7 +211,7 @@ static void FatfsTestTask(void *args)
         }
 #endif
 
-#ifdef CONFIG_FATFS_SDMMC_FSDIO_EMMC
+#ifdef CONFIG_FATFS_SDMMC_FSDIF_EMMC
         printf("\r\n========Basic test for eMMC=================\r\n");
         fr = ff_basic_test(mount_points[FFREERTOS_FATFS_EMMC_CARD], "logfile.txt");
         if (FR_OK != fr)
@@ -264,7 +266,7 @@ static void FatfsTestTask(void *args)
         }
 #endif
 
-#ifdef CONFIG_FATFS_SDMMC_FSDIO_TF
+#ifdef CONFIG_FATFS_SDMMC_FSDIF_TF
         printf("\r\n========Speed test for TF Card=================\r\n");
         fr = ff_speed_bench(mount_points[FFREERTOS_FATFS_TF_CARD], 300000U);
         if (FR_OK != fr)
@@ -274,7 +276,7 @@ static void FatfsTestTask(void *args)
         }
 #endif
 
-#ifdef CONFIG_FATFS_SDMMC_FSDIO_EMMC
+#ifdef CONFIG_FATFS_SDMMC_FSDIF_EMMC
         printf("\r\n========Speed test for eMMC=================\r\n");
         fr = ff_speed_bench(mount_points[FFREERTOS_FATFS_EMMC_CARD], 300000U);
         if (FR_OK != fr)
@@ -327,7 +329,7 @@ static void FatfsTestTask(void *args)
         }
 #endif
 
-#ifdef CONFIG_FATFS_SDMMC_FSDIO_TF
+#ifdef CONFIG_FATFS_SDMMC_FSDIF_TF
         printf("\r\n========Cycle test for TF Disk=================\r\n");
         if (ff_cycle_test(mount_points[FFREERTOS_FATFS_TF_CARD], 3))
         {
@@ -335,7 +337,7 @@ static void FatfsTestTask(void *args)
         }
 #endif
 
-#ifdef CONFIG_FATFS_SDMMC_FSDIO_EMMC
+#ifdef CONFIG_FATFS_SDMMC_FSDIF_EMMC
         printf("\r\n========Cycle test for SDIO Disk=================\r\n");
         if (ff_cycle_test(mount_points[FFREERTOS_FATFS_EMMC_CARD], 3))
         {

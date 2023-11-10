@@ -1,7 +1,8 @@
 PROJECT_DIR = $(CURDIR)
 FREERTOS_SDK_DIR = $(CURDIR)/../../../../../
 
-USER_CSRC := $(wildcard  ./*.c)
+USER_CSRC := main.c
+USER_CSRC += $(wildcard  src/*.c)
 
 USER_INCLUDE := $(PROJECT_DIR)
 

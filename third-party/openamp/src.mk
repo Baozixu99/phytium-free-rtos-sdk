@@ -1,10 +1,17 @@
 ifdef CONFIG_USE_OPENAMP
 
-CSRCS_RELATIVE_FILES += $(wildcard lib/*.c \
-					lib/remoteproc/*.c \
-					lib/rpmsg/*.c \
-					lib/service/rpmsg/rpc/*.c \
-					lib/virtio/*.c \
-					ports/*.c )
+ifdef CONFIG_USE_FREERTOS
+
+	CSRCS_RELATIVE_FILES += $(wildcard ports/*.c)
 
 endif
+
+OPENAMP_C_DIR = $(SDK_DIR)/third-party/openamp
+
+ABSOLUTE_CFILES += $(wildcard $(OPENAMP_C_DIR)/lib/*.c \
+						$(OPENAMP_C_DIR)/lib/remoteproc/*.c \
+						$(OPENAMP_C_DIR)/lib/rpmsg/*.c \
+						$(OPENAMP_C_DIR)/lib/service/rpmsg/rpc/*.c \
+						$(OPENAMP_C_DIR)/lib/virtio/*.c )
+
+endif #CONFIG_USE_OPENAMP

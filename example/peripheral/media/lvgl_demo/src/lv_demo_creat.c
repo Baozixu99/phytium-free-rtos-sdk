@@ -35,8 +35,6 @@
 #include "lv_demo_creat.h"
 #include "lv_demo_test.h"
 #include "lv_port_disp.h"
-#include "fdcdp_multi_display.h"
-
 
 #if LV_USE_DEMO_BENCHMARK
     #include "lv_demo_benchmark.h"
@@ -49,7 +47,6 @@
 #if LV_USE_DEMO_WIDGETS
     #include "lv_demo_widgets.h"
 #endif
-
 /************************** Constant Definitions *****************************/
 #define LVGL_HEART_TIMER_PERIOD        (pdMS_TO_TICKS(1UL))
 #define LVGL_CONTINUE_TIMER             10000000
@@ -59,9 +56,6 @@ static TaskHandle_t demo_task;
 static TaskHandle_t lvgl_init_task;
 static TaskHandle_t init_task;
 static TaskHandle_t hpd_task ;
-
-static disp_parm *disp_config;
-static InputParm *input_config;
 
 extern void FFreeRTOSDispdEnableUpdate(void);
 extern void FFreeRTOSDispdDisableUpdate(void);
@@ -172,73 +166,30 @@ static void FFreeRTOSLVGLDemoTask(void)
     }
 }
 
-/**
- * @name: FFreeRTOSMediaInitTask
- * @msg:  init the lvgl device
- * @param  {void *} pvParameters is the parameters of demo
- * @return Null
- */
-static void FFreeRTOSMediaInitTask(void *pvParameters)
-{
-    FASSERT(NULL != pvParameters);
-    InputParm *input_config = (InputParm *)pvParameters ;
-    FFreeRTOSMediaDeviceInit(input_config->channel, input_config->width, input_config->height, input_config->multi_mode, input_config->color_depth, input_config->refresh_rate);
-    vTaskDelete(NULL);
-}
 
-/**
- * @name: FFreeRTOSMediaHpdTask
- * @msg:  handle the hpd event
- * @param  {void *} pvParameters is the parameters of demo
- * @return Null
- */
-static void FFreeRTOSMediaHpdTask(void *pvParameters)
-{
-    FASSERT(NULL != pvParameters);
-    InputParm *input_config = (InputParm *)pvParameters ;
-    FFreeRTOSMediaHpdHandle(input_config->channel, input_config->width, input_config->height, input_config->multi_mode, input_config->color_depth, input_config->refresh_rate);
-    vTaskDelete(NULL);
-}
-
-/**
- * @name: FFreeRTOSLVGLConfigTask
- * @msg:  config the lvgl
- * @param  {void *} pvParameters is the parameters of demo
- * @return Null
- */
-static void FFreeRTOSLVGLConfigTask(void *pvParameters)
-{
-    FASSERT(NULL != pvParameters);
-    InputParm *input_config = (InputParm *)pvParameters ;
-    lv_init();
-    disp_config = FDcDpMultiDisplayFrameBufferSet(input_config->channel, input_config->width, input_config->height, input_config->color_depth, input_config->multi_mode);
-    FFreeRTOSPortInit(disp_config);
-    vTaskDelete(NULL);
-}
 
 /**
  * @name: FFreeRTOSMediaInitCreate
  * @msg: creat the media init task
- * @param  {void *} args is the parameters of init function
  * @return xReturn,pdPASS:success,others:creat failed
  */
-BaseType_t FFreeRTOSMediaInitCreate(void *args)
+BaseType_t FFreeRTOSMediaInitCreate(void)
 {
     BaseType_t xReturn = pdPASS; /* 定义一个创建信息返回值，默认为 pdPASS */
     /* enter critical region */
     taskENTER_CRITICAL();
     /* Media init task */
-    xReturn = xTaskCreate((TaskFunction_t)FFreeRTOSMediaInitTask,  /* 任务入口函数 */
-                          (const char *)"FFreeRTOSMediaInitTask",  /* 任务名字 */
+    xReturn = xTaskCreate((TaskFunction_t)FFreeRTOSMediaDeviceInit,  /* 任务入口函数 */
+                          (const char *)"FFreeRTOSMediaDeviceInit",  /* 任务名字 */
                           (uint16_t)1024,                         /* 任务栈大小 */
-                          (void *)args,                   /* 任务入口函数参数 */
+                          NULL,                   /* 任务入口函数参数 */
                           (UBaseType_t)configMAX_PRIORITIES - 2,                       /* 任务的优先级 */
                           (TaskHandle_t *)&init_task); /* 任务控制 */
     /* Hpd task control */
-    xReturn = xTaskCreate((TaskFunction_t)FFreeRTOSMediaHpdTask, /* 任务入口函数 */
-                          (const char *)"FFreeRTOSMediaHpdTask", /* 任务名字 */
+    xReturn = xTaskCreate((TaskFunction_t)FFreeRTOSMediaHpdHandle, /* 任务入口函数 */
+                          (const char *)"FFreeRTOSMediaHpdHandle", /* 任务名字 */
                           (uint16_t)1024,                        /* 任务栈大小 */
-                          (void *)args,                   /* 任务入口函数参数 */
+                          NULL,                   /* 任务入口函数参数 */
                           (UBaseType_t)configMAX_PRIORITIES - 1,                      /* 任务的优先级 */
                           (TaskHandle_t *)&hpd_task);
     /* exit critical region */
@@ -252,7 +203,7 @@ BaseType_t FFreeRTOSMediaInitCreate(void *args)
  * @msg:  set the lvgl init task
  * @return xReturn,pdPASS:success,others:creat failed
  */
-BaseType_t FFreeRTOSlVGLConfigCreate(void *args)
+BaseType_t FFreeRTOSlVGLConfigCreate(void )
 {
     BaseType_t xReturn = pdPASS; /* 定义一个创建信息返回值，默认为 pdPASS */
     BaseType_t timer_started = pdPASS;
@@ -261,7 +212,7 @@ BaseType_t FFreeRTOSlVGLConfigCreate(void *args)
     xReturn = xTaskCreate((TaskFunction_t)FFreeRTOSLVGLConfigTask,  /* 任务入口函数 */
                           (const char *)"FFreeRTOSLVGLConfigTask",  /* 任务名字 */
                           (uint16_t)1024,                         /* 任务栈大小 */
-                          (void *)args,                                 /* 任务入口函数参数 */
+                          NULL,                                 /* 任务入口函数参数 */
                           (UBaseType_t)configMAX_PRIORITIES - 3,                         /* 任务的优先级 */
                           (TaskHandle_t *)&lvgl_init_task); /* 任务控制 */
 

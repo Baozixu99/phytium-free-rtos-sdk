@@ -6,6 +6,9 @@ CSRCS_RELATIVE_FILES += $(wildcard  *.c)
 CSRCS_RELATIVE_FILES += $(wildcard  portable/MemMang/heap_4.c)
 CSRCS_RELATIVE_FILES += $(wildcard  portable/*.c)
 
+ifdef CONFIG_FREERTOS_USE_POSIX
+CSRCS_RELATIVE_FILES += $(wildcard  posix/FreeRTOS-Plus-POSIX/source/*.c)
+endif
 
 ifdef CONFIG_TARGET_ARMV8_AARCH64
 	CSRCS_RELATIVE_FILES += $(wildcard  portable/GCC/ft_platform/aarch64/*.c)

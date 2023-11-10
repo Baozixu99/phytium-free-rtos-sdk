@@ -37,11 +37,7 @@
 #define OPENAMP_MAIN_DEBUG_W(format, ...) FT_DEBUG_PRINT_W(OPENAMP_MAIN_DEBUG_TAG, format, ##__VA_ARGS__)
 #define OPENAMP_MAIN_DEBUG_E(format, ...) FT_DEBUG_PRINT_E(OPENAMP_MAIN_DEBUG_TAG, format, ##__VA_ARGS__)
 
-extern void TestLetterShell() ;
-extern int rpmsg_echo(int argc, char *argv[]) ;
-
-#ifdef CONFIG_DEBUG_CODE
-
+extern int FOpenampCmdEntry(int argc, char *argv[]) ;
 
 int main(void)
 {
@@ -55,28 +51,7 @@ int main(void)
     while (1); /* 正常不会执行到这里 */
 
 FAIL_EXIT:
-    printf("failed 0x%x \r\n", ret);  
+    printf("failed 0x%x \r\n", ret);
     return 0;
 }
-
-#else
-
-extern int rpmsg_echo_task(int argc, char *argv[]);
-
-
-int main(void)
-{
-    BaseType_t ret;
-    f_printk("freertos %s ,%s \r\n",__DATE__, __TIME__) ;
-
-    rpmsg_echo_task(0, NULL);
-    vTaskStartScheduler(); /* 启动任务，开启调度 */
-    while (1); /* 正常不会执行到这里 */
-
-FAIL_EXIT:
-    printf("failed 0x%x \r\n", ret);  
-    return 0;
-}
-
-#endif
 

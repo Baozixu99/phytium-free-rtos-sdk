@@ -292,14 +292,11 @@ int platform_poll(void *priv)
     while (1)
     {
 #ifndef CONFIG_USE_OPENAMP_IPI
-        if (metal_io_read32(prproc->kick_io, 0) & 0x2)   //RPROC_M2S_SHIFT
+        if (metal_io_read32(prproc->kick_io, 0) & POLL_STOP)   //RPROC_M2S_SHIFT
         {
-            ret = remoteproc_get_notification(rproc,
-                                              RSC_NOTIFY_ID_ANY);
+            ret = remoteproc_get_notification(rproc,RSC_NOTIFY_ID_ANY);
             if (ret)
-            {
                 return ret;
-            }
             break;
         }
         (void)flags;
@@ -308,12 +305,9 @@ int platform_poll(void *priv)
         if (!(atomic_flag_test_and_set(&prproc->ipi_nokick)))
         {
             metal_irq_restore_enable(flags);
-            ret = remoteproc_get_notification(rproc,
-                                              RSC_NOTIFY_ID_ANY);
+            ret = remoteproc_get_notification(rproc,RSC_NOTIFY_ID_ANY);
             if (ret)
-            {
                 return ret;
-            }
             break;
         }
         _rproc_wait();
@@ -336,13 +330,14 @@ void platform_release_rpmsg_vdev(struct rpmsg_device *rpdev, void *platform)
     remoteproc_remove_virtio(rproc, rpvdev->vdev);
 }
 
-void platform_cleanup(void *platform)
+int platform_cleanup(void *platform)
 {
-    struct remoteproc *rproc = platform;
+	int ret = 0;
+	struct remoteproc *rproc = platform;
 
-    if (rproc)
-    {
-        remoteproc_remove(rproc);
-    }
-    cleanup_system();
+	if (rproc)
+		ret = remoteproc_remove(rproc);
+	cleanup_system();
+
+	return ret;
 }

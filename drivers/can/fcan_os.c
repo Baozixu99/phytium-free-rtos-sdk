@@ -152,7 +152,8 @@ FError FFreeRTOSCanControl(FFreeRTOSCan *os_can_p, int cmd, void *arg)
         case FREERTOS_CAN_CTRL_FD_ENABLE:
             use_canfd = (boolean)(uintptr)arg;
             FCanFdEnable(&os_can_p->can_ctrl, use_canfd);
-            break;    
+            break;   
+            
         default:
             FCAN_ERROR("Invalid cmd.");
             ret = FCAN_INVAL_PARAM;

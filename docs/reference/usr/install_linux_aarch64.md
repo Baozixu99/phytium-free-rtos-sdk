@@ -55,15 +55,12 @@ cd ./phytium-free-rtos-sdk
 - 打印下列环境变量，观察各变量是否存在，指向的目录是否正确
 > `PHYTIUM_DEV_PATH`指向DEV目录
 
-> `FREERTOS_SDK_ROOT`指向SDK源文件目录
-
 > `AARCH32_CROSS_PATH`指向32位交叉编译链目录
 
 > `AARCH64_CROSS_PATH`指向64位交叉编译链目录
 
 ```
 echo $PHYTIUM_DEV_PATH 
-echo $FREERTOS_SDK_ROOT 
 echo $AARCH32_CROSS_PATH 
 echo $AARCH64_CROSS_PATH 
 ```

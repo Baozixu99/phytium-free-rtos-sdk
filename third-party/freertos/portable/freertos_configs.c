@@ -36,7 +36,7 @@
 #include "fcpu_info.h"
 #include "fassert.h"
 #include "fexception.h"
-#include "fprintf.h"
+
 
 static volatile u32 is_in_irq = 0 ;
 

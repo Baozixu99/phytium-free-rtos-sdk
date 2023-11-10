@@ -42,8 +42,5 @@ BUILD_INC_PATH_DIR += $(SDK_DIR)/third-party/lwip-2.1.2 \
 		BUILD_INC_PATH_DIR += $(SDK_DIR)/third-party/lwip-2.1.2/apps/lwiperf
 	endif #CONFIG_USE_LWIP_APP_LWIPERF
 
-
-
-
 endif #CONFIG_USE_LWIP
 

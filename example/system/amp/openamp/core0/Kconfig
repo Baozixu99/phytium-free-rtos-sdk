@@ -4,23 +4,13 @@
 #
 
 
-mainmenu "Phytium Freertos Configuration"
+mainmenu "Phytium FreeRTOS Configuration"
 
 	menu "Project Configuration"
 
-		menu " Freertos Configuration"
-		config TARGET_NAME
-			string "Build Target Name"
-			default "openamp_core0"
-			help
-				Build Target name for the demo
-	
-		config SHM_BASE_ADDR
-			hex "Share memory address set"
-			default 0xc0000000
-
-	endmenu
-
+	config SHM_BASE_ADDR
+		hex "Share memory address set"
+		default 0xc0000000
 
 	menu "AMP Config"
 
@@ -36,7 +26,7 @@ mainmenu "Phytium Freertos Configuration"
 			hex "Spin-lock shared memory"
 			default 0x80000000
 
-		config TARGET_CPU_ID
+		config TARGET_CPU_MASK
 			int "Destination CPU id"
 			default 1
 
@@ -45,13 +35,6 @@ mainmenu "Phytium Freertos Configuration"
 			default 1
 			help
 				Each bit represents a CPU, for example, 0x3 represents CPU 0 and CPU 3 in the code.
-		
-		config DEBUG_CODE
-			bool
-			prompt "DEBUG_CODE"
-			default 1
-			help
-				Debug mode means using two bare metal code to simulate the operation of OpenAMP program
 		
 	endmenu
 	

@@ -4,8 +4,8 @@
 /* Project Configuration */
 
 #define CONFIG_FATFS_BASIC_TEST
-#define CONFIG_FATFS_SPEED_TEST
-#define CONFIG_FATFS_CYCLE_TEST
+/* CONFIG_FATFS_SPEED_TEST is not set */
+/* CONFIG_FATFS_CYCLE_TEST is not set */
 /* end of Project Configuration */
 #define CONFIG_USE_FREERTOS
 
@@ -16,31 +16,28 @@
 
 /* Arm architecture configuration */
 
-/* CONFIG_ARCH_ARMV8_AARCH64 is not set */
-#define CONFIG_ARCH_ARMV8_AARCH32
+#define CONFIG_ARCH_ARMV8_AARCH64
+/* CONFIG_ARCH_ARMV8_AARCH32 is not set */
 
 /* Compiler configuration */
 
 #define CONFIG_ARM_GCC_SELECT
 /* CONFIG_ARM_CLANG_SELECT is not set */
 #define CONFIG_TOOLCHAIN_NAME "gcc"
-#define CONFIG_TARGET_ARMV8_AARCH32
-#define CONFIG_ARCH_EXECUTION_STATE "aarch32"
-
-/* Fpu configuration */
-
-/* CONFIG_ARCH_FPU_VFP_V3 is not set */
-#define CONFIG_ARCH_FPU_VFP_V4
-#define CONFIG_ARM_DPFPU32
-/* CONFIG_ARM_FPU_ABI_SOFT is not set */
-#define CONFIG_ARM_FPU_SYMBOL "crypto-neon-fp-armv8"
+#define CONFIG_TARGET_ARMV8_AARCH64
+#define CONFIG_ARCH_EXECUTION_STATE "aarch64"
 #define CONFIG_ARM_NEON
-#define CONFIG_ARCH_FPU
-/* end of Fpu configuration */
+#define CONFIG_ARM_CRC
+#define CONFIG_ARM_CRYPTO
+#define CONFIG_ARM_FLOAT_POINT
+/* CONFIG_GCC_CODE_MODEL_TINY is not set */
+#define CONFIG_GCC_CODE_MODEL_SMALL
+/* CONFIG_GCC_CODE_MODEL_LARGE is not set */
 /* end of Compiler configuration */
 #define CONFIG_USE_CACHE
 #define CONFIG_USE_MMU
-#define CONFIG_USE_AARCH64_L1_TO_AARCH32
+/* CONFIG_BOOT_WITH_FLUSH_CACHE is not set */
+/* CONFIG_MMU_DEBUG_PRINTS is not set */
 /* end of Arm architecture configuration */
 /* end of Arch configuration */
 
@@ -118,8 +115,6 @@
 #define CONFIG_ENABLE_IOPAD
 /* CONFIG_USE_SPI is not set */
 /* CONFIG_USE_QSPI is not set */
-#define CONFIG_USE_GIC
-#define CONFIG_ENABLE_GICV3
 #define CONFIG_USE_SERIAL
 
 /* Usart Configuration */
@@ -134,7 +129,7 @@
 /* CONFIG_USE_MIO is not set */
 #define CONFIG_USE_SDMMC
 /* CONFIG_ENABLE_FSDMMC is not set */
-#define CONFIG_ENABLE_FSDIO
+#define CONFIG_ENABLE_FSDIF
 /* CONFIG_USE_PCIE is not set */
 /* CONFIG_USE_WDT is not set */
 /* CONFIG_USE_DMA is not set */
@@ -147,6 +142,7 @@
 /* CONFIG_USE_IPC is not set */
 /* CONFIG_USE_MEDIA is not set */
 /* CONFIG_USE_SCMI_MHU is not set */
+/* CONFIG_USE_I2S is not set */
 /* end of Drivers configuration */
 
 /* Build setup */
@@ -182,7 +178,8 @@
 /* Lib */
 
 #define CONFIG_USE_COMPILE_CHAIN
-/* CONFIG_USB_USER_DEFINED is not set */
+/* CONFIG_USE_NEWLIB is not set */
+/* CONFIG_USE_USER_DEFINED is not set */
 /* end of Lib */
 /* CONFIG_ENABLE_CXX is not set */
 
@@ -193,12 +190,8 @@
 #define CONFIG_IMAGE_LOAD_ADDRESS 0x80100000
 #define CONFIG_IMAGE_MAX_LENGTH 0x2000000
 #define CONFIG_HEAP_SIZE 2
-#define CONFIG_SVC_STACK_SIZE 0x1000
-#define CONFIG_SYS_STACK_SIZE 0x1000
-#define CONFIG_IRQ_STACK_SIZE 0x1000
-#define CONFIG_ABORT_STACK_SIZE 0x1000
-#define CONFIG_FIQ_STACK_SIZE 0x1000
-#define CONFIG_UNDEF_STACK_SIZE 0x1000
+#define CONFIG_STACK_SIZE 0x400
+#define CONFIG_FPU_STACK_SIZE 0x1000
 /* end of Linker Options */
 /* end of Build setup */
 
@@ -290,13 +283,6 @@
 /* CONFIG_DEFAULT_LETTER_SHELL_USE_UART2 is not set */
 /* end of Letter Shell Configuration */
 /* CONFIG_USE_AMP is not set */
-#define CONFIG_USE_SDMMC_CMD
-
-/* Sdmmc configuration */
-
-/* CONFIG_SDMMC_USE_FSDMMC is not set */
-#define CONFIG_SDMMC_USE_FSDIO
-/* end of Sdmmc configuration */
 /* CONFIG_USE_YMODEM is not set */
 /* CONFIG_USE_SFUD is not set */
 #define CONFIG_USE_BACKTRACE
@@ -312,11 +298,19 @@
 #define CONFIG_FATFS_RAM_DISK_SIZE_MB 500
 #define CONFIG_FATFS_RAM_DISK_SECTOR_SIZE_BYTE 512
 /* end of RAM Disk Configuration */
-/* CONFIG_FATFS_SDMMC_FSDIO_TF is not set */
-/* CONFIG_FATFS_SDMMC_FSDIO_EMMC is not set */
+#define CONFIG_FATFS_SDMMC
+#define CONFIG_FATFS_SDMMC_FSDIF_TF
+#define CONFIG_FATFS_SDMMC_FSDIF_EMMC
+#define CONFIG_FATFS_SDMMC_PARTITION 1
 /* CONFIG_FATFS_SDMMC_FSDMMC_TF is not set */
-/* CONFIG_FATFS_SATA_DISK is not set */
-/* CONFIG_FATFS_USB is not set */
+#define CONFIG_FATFS_SATA_DISK
+
+/* SATA Disk Configuration */
+
+/* CONFIG_FATFS_FSATA is not set */
+/* CONFIG_FATFS_FSATA_PCIE is not set */
+/* end of SATA Disk Configuration */
+#define CONFIG_FATFS_USB
 #define CONFIG_FATFS_VOLUME_COUNT 10
 /* CONFIG_FATFS_LFN_NONE is not set */
 #define CONFIG_FATFS_LFN_HEAP
@@ -333,10 +327,43 @@
 /* CONFIG_USE_LITTLE_FS is not set */
 /* CONFIG_USE_LVGL is not set */
 /* CONFIG_USE_FREEMODBUS is not set */
-/* CONFIG_USE_CHERRY_USB is not set */
+#define CONFIG_USE_CHERRY_USB
+
+/* CherryUSB Configuration */
+
+#define CONFIG_CHERRY_USB_PORT_XHCI
+/* CONFIG_CHERRY_USB_PORT_PHYTIUM_OTG is not set */
+#define CONFIG_CHERRYUSB_HOST
+/* CONFIG_CHERRYUSB_DEVICE is not set */
+#define CONFIG_CHERRY_USB_HOST_HUB
+#define CONFIG_CHERRY_USB_HOST_MSC
+/* CONFIG_CHERRY_USB_HOST_HID is not set */
+/* CONFIG_CHERRY_USB_HOST_VEDIO is not set */
+/* CONFIG_CHERRY_USB_HOST_CDC is not set */
+/* CONFIG_CHERRY_USB_HOST_RNDIS_WIRELESS is not set */
+/* end of CherryUSB Configuration */
+#define CONFIG_USE_FSL_SDMMC
+
+/* FSL Sdmmc configuration */
+
+/* Host configuration */
+
+#define CONFIG_FSL_SDMMC_USE_FSDIF
+/* CONFIG_FSL_SDMMC_USE_FSDMMC is not set */
+/* end of Host configuration */
+
+/* Protocol configuration */
+
+#define CONFIG_FSL_SDMMC_ENABLE_SD
+#define CONFIG_FSL_SDMMC_ENABLE_MMC
+/* CONFIG_FSL_SDMMC_ENABLE_SDIO is not set */
+/* CONFIG_FSL_SDMMC_ENABLE_SD_SPI is not set */
+/* end of Protocol configuration */
+/* end of FSL Sdmmc configuration */
+/* CONFIG_USE_FSL_WIFI is not set */
 /* end of Third-party configuration */
 
-/* Kernel Configuration */
+/* FreeRTOS Kernel Configuration */
 
 #define CONFIG_FREERTOS_OPTIMIZED_SCHEDULER
 #define CONFIG_FREERTOS_HZ 1000
@@ -356,6 +383,7 @@
 /* CONFIG_FREERTOS_USE_TICKLESS_IDLE is not set */
 #define CONFIG_FREERTOS_TOTAL_HEAP_SIZE 10240
 #define CONFIG_FREERTOS_TASK_FPU_SUPPORT 1
-/* end of Kernel Configuration */
+/* CONFIG_FREERTOS_USE_POSIX is not set */
+/* end of FreeRTOS Kernel Configuration */
 
 #endif

@@ -6,16 +6,12 @@ FREERTOS_SDK_DIR = $(CURDIR)/../..
 BOOT_IMG_NAME      ?= freertos
 
 USER_CSRC := main.c
-USER_CSRC += $(wildcard  src/*.c) #添加src文件目录的所有C文件
-USER_CSRC += $(wildcard  ../common/*.c) #添加 ../common 目录的所有C文件
 			
 USER_ASRC :=  #添加汇编代码
 USER_CXXSRC := #添加C++代码
 
 #添加 .h 文件所在目录
-USER_INCLUDE := $(PROJECT_DIR)	\
-				$(PROJECT_DIR)/inc \
-				$(PROJECT_DIR)/../common
+USER_INCLUDE := $(PROJECT_DIR)	
 
 
 include $(FREERTOS_SDK_DIR)/tools/makeall.mk

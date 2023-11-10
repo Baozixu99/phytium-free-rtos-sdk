@@ -1,12 +1,3 @@
-mainmenu "Phytium Baremetal Configuration"
-
-	menu "Freertos Configuration"
-	config TARGET_NAME
-		string "Build Target Name"
-		default "atomic"
-		help
-			Build Target name for the demo
-	
-endmenu
+mainmenu "Phytium FreeRTOS Configuration"
 
 source "$(SDK_DIR)/../freertos.kconfig"

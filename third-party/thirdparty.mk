@@ -124,17 +124,6 @@ lib_cherryusb_info:
 BAREMETAL_LIBS+= $(BUILD_OUT_PATH)/lib_cherryusb.a
 endif
 
-ifdef CONFIG_USE_SDMMC_CMD
-$(BUILD_OUT_PATH)/lib_sdmmc.a: lib_sdmmc.a
-lib_sdmmc.a:
-	$(call rtos_invoke_make_in_dir,$(FREERTOS_SDK_DIR),third-party/sdmmc-1.0,makefile,all,)
-lib_sdmmc_debug:
-	$(call rtos_invoke_make_in_dir,$(FREERTOS_SDK_DIR),third-party/sdmmc-1.0,makefile,debug,)
-lib_sdmmc_info:
-	$(call rtos_invoke_make_in_dir,$(FREERTOS_SDK_DIR),third-party/sdmmc-1.0,makefile,compiler_info,)
-BAREMETAL_LIBS+= $(BUILD_OUT_PATH)/lib_sdmmc.a
-endif
-
 # libmetal
 ifdef CONFIG_USE_LIBMETAL
 $(BUILD_OUT_PATH)/lib_libmetal.a: lib_libmetal.a
@@ -145,6 +134,28 @@ lib_libmetal_debug:
 lib_libmetal_info:
 	$(call rtos_invoke_make_in_dir,$(FREERTOS_SDK_DIR),third-party/libmetal,makefile,compiler_info,)
 BAREMETAL_LIBS+= $(BUILD_OUT_PATH)/lib_libmetal.a
+endif
+
+ifdef CONFIG_USE_FSL_SDMMC
+$(BUILD_OUT_PATH)/libfslsdmmc.a: libfslsdmmc.a
+libfslsdmmc.a:
+	$(call rtos_invoke_make_in_dir,$(FREERTOS_SDK_DIR),third-party/fsl_sdmmc,makefile,all,)
+libfslsdmmc_debug:
+	$(call rtos_invoke_make_in_dir,$(FREERTOS_SDK_DIR),third-party/fsl_sdmmc,makefile,debug,)
+libfslsdmmc_info:
+	$(call rtos_invoke_make_in_dir,$(FREERTOS_SDK_DIR),third-party/fsl_sdmmc,makefile,compiler_info,)
+BAREMETAL_LIBS+= $(BUILD_OUT_PATH)/libfslsdmmc.a
+endif
+
+ifdef CONFIG_USE_FSL_WIFI
+$(BUILD_OUT_PATH)/libfslwifi.a: libfslwifi.a
+libfslwifi.a:
+	$(call rtos_invoke_make_in_dir,$(FREERTOS_SDK_DIR),third-party/fsl_wifi,makefile,all,)
+libfslwifi_debug:
+	$(call rtos_invoke_make_in_dir,$(FREERTOS_SDK_DIR),third-party/fsl_wifi,makefile,debug,)
+libfslwifi_info:
+	$(call rtos_invoke_make_in_dir,$(FREERTOS_SDK_DIR),third-party/fsl_wifi,makefile,compiler_info,)
+BAREMETAL_LIBS+= $(BUILD_OUT_PATH)/libfslwifi.a
 endif
 
 # ifdef CONFIG_USE_SDMMC_CMD

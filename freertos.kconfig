@@ -14,14 +14,14 @@ source "$(SDK_DIR)/common/common.kconfig"
 source "$(SDK_DIR)/drivers/drivers.kconfig"
 source "$(SDK_DIR)/tools/build/build.kconfig"
 menu "Component Configuration"  
-    source "$(FREERTOS_SDK_ROOT)/drivers/Kconfig"
+    source "$(FREERTOS_SDK_DIR)/drivers/Kconfig"
 endmenu
 
 source "$(FREERTOS_SDK_DIR)/third-party/third-party.kconfig"
 
-menu "Kernel Configuration"
-    source "$(FREERTOS_SDK_DIR)/third-party/freertos/Kconfig"
-endmenu
+source "$(FREERTOS_SDK_DIR)/third-party/freertos/freertos.kconfig"
 
+
+#source "$(SDK_DIR)/lib/Kconfig"
 
 

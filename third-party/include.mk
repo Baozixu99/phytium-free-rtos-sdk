@@ -39,15 +39,18 @@ ifdef CONFIG_USE_CHERRY_USB
 include $(FREERTOS_SDK_DIR)/third-party/cherryusb/include.mk
 endif
 
-# fsdio
-ifdef CONFIG_USE_SDMMC
-include $(FREERTOS_SDK_DIR)/third-party/sdmmc-1.0/include.mk
-endif
-
 ifdef CONFIG_USE_LIBMETAL
 include $(FREERTOS_SDK_DIR)/third-party/libmetal/include.mk
 endif
 
 ifdef CONFIG_USE_OPENAMP
 include $(FREERTOS_SDK_DIR)/third-party/openamp/include.mk
+endif
+
+ifdef CONFIG_USE_FSL_SDMMC
+include $(FREERTOS_SDK_DIR)/third-party/fsl_sdmmc/include.mk
+endif
+
+ifdef CONFIG_USE_FSL_WIFI
+include $(FREERTOS_SDK_DIR)/third-party/fsl_wifi/include.mk
 endif

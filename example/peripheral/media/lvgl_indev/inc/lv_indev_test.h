@@ -40,10 +40,14 @@ void lv_demo_indev(void);
 void FFreeRTOSMediaChannelDeinit(u32 id);
 
 /*handle the hpd event*/
-void FFreeRTOSMediaHpdHandle(u32 channel, u32 width, u32 height, u32 multi_mode, u32 color_depth, u32 refresh_rate);
+void FFreeRTOSMediaHpdHandle(void);
 
 /*init the media */
-void FFreeRTOSMediaDeviceInit(u32 channel, u32 width, u32 height, u32 multi_mode, u32 color_depth, u32 refresh_rate);
+void FFreeRTOSMediaDeviceInit(void);
+
+/*lvgl config*/
+void FFreeRTOSLVGLConfigTask(void);
+
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif

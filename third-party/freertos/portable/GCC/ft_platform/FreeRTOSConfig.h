@@ -109,7 +109,7 @@
 #define configCHECK_FOR_STACK_OVERFLOW 0
 #define configUSE_RECURSIVE_MUTEXES 1
 #define configUSE_MALLOC_FAILED_HOOK 1
-#define configUSE_APPLICATION_TASK_TAG 0
+
 #define configUSE_COUNTING_SEMAPHORES 1
 #define configUSE_QUEUE_SETS 1
 #define configSUPPORT_STATIC_ALLOCATION 1 //use dynamic memory allocation
@@ -222,5 +222,9 @@ QEMU-Virt. */
     void vPrintStringAndNumber(const char *pcString, uint32_t ulValue);
     void vPrintf(const char *format, ...);
 #endif
+
+
+#define configUSE_POSIX_ERRNO   1
+#define configUSE_APPLICATION_TASK_TAG 1
 
 #endif /* FREERTOS_CONFIG_H */

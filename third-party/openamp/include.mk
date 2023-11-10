@@ -2,16 +2,21 @@ ifdef CONFIG_USE_OPENAMP
 
 THIRDP_CUR_DIR := $(FREERTOS_SDK_DIR)/third-party
 
-# src files
-BUILD_INC_PATH_DIR += $(THIRDP_CUR_DIR)/openamp/lib \
-			$(THIRDP_CUR_DIR)/openamp/lib/include \
-			$(THIRDP_CUR_DIR)/openamp/lib/include/openamp \
-			$(THIRDP_CUR_DIR)/openamp/lib/rpmsg \
-			$(THIRDP_CUR_DIR)/openamp/ports \
-			$(THIRDP_CUR_DIR)/openamp/lib/remoteproc \
-			$(THIRDP_CUR_DIR)/openamp/lib/rpmsg \
-			$(THIRDP_CUR_DIR)/openamp/lib/service/rpmsg/rpc \
-			$(THIRDP_CUR_DIR)/openamp/lib/virtio \
-			$(THIRDP_CUR_DIR)/openamp/ports 
+ifdef CONFIG_USE_FREERTOS
+
+	BUILD_INC_PATH_DIR +=  $(THIRDP_CUR_DIR)/openamp/ports
 
 endif
+
+BUILD_INC_PATH_DIR +=  $(SDK_DIR)/third-party/openamp/lib \
+			$(SDK_DIR)/third-party/openamp/lib/include \
+			$(SDK_DIR)/third-party/openamp/lib/include/openamp \
+			$(SDK_DIR)/third-party/openamp/lib/rpmsg \
+			$(SDK_DIR)/third-party/openamp/ports \
+			$(SDK_DIR)/third-party/openamp/lib/remoteproc \
+			$(SDK_DIR)/third-party/openamp/lib/rpmsg \
+			$(SDK_DIR)/third-party/openamp/lib/service/rpmsg/rpc \
+			$(SDK_DIR)/third-party/openamp/lib/virtio 
+			 
+
+endif #CONFIG_USE_OPENAMP

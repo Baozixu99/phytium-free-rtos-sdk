@@ -196,3 +196,16 @@
             If set to 1, tasks are created without an FPU context and must call vPortTaskUsesFPU() to give
             themselves an FPU context before using any FPU instructions.
             If set to 2, all tasks will have an FPU context by default.
+    
+     config FREERTOS_USE_POSIX
+        bool "Enable use Portable Operating System Interface (POSIX threading wrapper) for FreeRTOS"
+        default n
+        help
+        The Portable Operating System Interface (POSIX) is a family of standards specified by 
+        the IEEE Computer Society for maintaining compatibility between operating systems. 
+        FreeRTOS+POSIX implements a small subset of the POSIX threading API. 
+        This subset allows application developers familiar with POSIX API to develop a 
+        FreeRTOS application using POSIX like threading primitives. 
+        FreeRTOS+POSIX does not implement more than 80% of the POSIX API. 
+        Therefore, an existing POSIX compliant application or a POSIX compliant library 
+        cannot be ported to run on FreeRTOS Kernel using only this wrapper.

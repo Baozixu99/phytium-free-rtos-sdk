@@ -38,7 +38,7 @@
 
 #include "ftypes.h"
 #include "fparameters.h"
-#include "fdcdp_multi_display.h"
+#include "fdcdp.h"
 #ifdef __cplusplus
 extern "C"
 {
@@ -66,10 +66,10 @@ void FFreeRTOSDispdEnableUpdate(void);
 void FFreeRTOSDispdDisableUpdate(void);
 
 /* Framebuffer config*/
-void FMediaDispFramebuffer(disp_parm *disp_config);
+void FMediaDispFramebuffer(FDcDp *instance);
 
 /*init the lv config and set the instance*/
-void FFreeRTOSPortInit(disp_parm *disp_config);
+void FFreeRTOSPortInit(void);
 
 /**********************
  *      MACROS

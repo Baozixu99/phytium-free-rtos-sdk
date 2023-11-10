@@ -13,7 +13,7 @@
  *
  * FilePath: lv_indev_test.c
  * Created Date: 2023-07-06 14:36:43
- * Last Modified: 2023-07-07 18:38:45
+ * Last Modified: 2023-11-02 10:53:32
  * Description:  This file is for config the test
  *
  * Modify History:
@@ -30,15 +30,14 @@
 #include "timers.h"
 #include "fassert.h"
 #include "fcpu_info.h"
+#include "fparameters_comm.h"
 
 #include "fdcdp.h"
 #include "fdc.h"
 #include "fdp.h"
 #include "fdp_hw.h"
 #include "fdc_hw.h"
-#include "fdcdp_multi_display.h"
 #include "fmedia_os.h"
-#include "fdcdp_multi_display.h"
 
 #include "lv_indev_port.h"
 #include "lv_port_disp.h"
@@ -48,10 +47,11 @@
 #define FMEDIA_CHANNEL_0                    0
 #define FMEDIA_CHANNEL_1                    1
 
-static FFreeRTOSMedia *os_media;
+static FFreeRTOSMedia os_media;
 
 static EventGroupHandle_t media_event = NULL;
-
+static u8 *static_frame_buffer_address = (u8 *)0xa0000000 ;
+/************************** functions Definitions *****************************/
 static void FFreeRTOSMediaSendEvent(u32 evt_bits)
 {
     FASSERT(media_event);
@@ -86,7 +86,6 @@ static boolean FFreeRTOSMediaClearEvent(EventGroupHandle_t pvEventGroup, const u
     return TRUE;
 }
 
-
 /**
  * @name: FFreeRTOSMediaHpdConnectCallback
  * @msg:  the hpd connect event
@@ -104,7 +103,6 @@ static void FFreeRTOSMediaHpdConnectCallback(void *args, u32 index)
     printf("Dp:%d connect\r\n", index);
 
 }
-
 
 /**
  * @name: FFreeRTOSMediaHpdBreakCallback
@@ -202,21 +200,40 @@ static void FFreeRTOSMediaIrqAllEnable(FDcDp *instance_p)
 /**
  * @name: FFreeRTOSMediaDeviceInit
  * @msg:  enable the Dc and Dp
- * @param  {u32} channel is the dc channel
- * @param  {u32} width is the width
- * @param  {u32} height is the height
- * @param  {u32} multi_mode is multi display mode,0:clone,1:hor,2:ver
- * @param  {u32} color_depth is the color depth
- * @param  {u32} refresh_rate is the refresh rate of screen
  * @return Null
  */
-void FFreeRTOSMediaDeviceInit(u32 channel, u32 width, u32 height, u32 multi_mode, u32 color_depth, u32 refresh_rate)
+void FFreeRTOSMediaDeviceInit(void)
 {
-    os_media = FFreeRTOSMediaHwInit(channel, width, height, multi_mode, color_depth, refresh_rate);
+    u32 index, start_index, end_index;
+
+    /*设置用户参数*/
+    u32 channel = 2;/* 0 or 1 or 2*/
+    if (channel == FDCDP_INSTANCE_NUM)
+    {
+        start_index = 0;
+        end_index = FDCDP_INSTANCE_NUM;
+    }
+    else
+    {
+        start_index = channel;
+        end_index = channel + 1;
+    }
+    for (index = start_index; index < end_index; index ++)
+    {
+        os_media.dcdp_ctrl.user_config[index].width = 640;
+        os_media.dcdp_ctrl.user_config[index].height = 480;
+        os_media.dcdp_ctrl.user_config[index].refresh_rate = 60;
+        os_media.dcdp_ctrl.user_config[index].color_depth = 32;
+        os_media.dcdp_ctrl.user_config[index].multi_mode = 0;
+        os_media.dcdp_ctrl.user_config[index].fb_phy = (uintptr)static_frame_buffer_address;
+        os_media.dcdp_ctrl.user_config[index].fb_virtual = (uintptr)static_frame_buffer_address ;/*当前例程虚拟地址和物理地址一致，实际需要根据需要进行映射*/
+    }
+    FFreeRTOSMedia *os_config = FFreeRTOSMediaHwInit(channel, &os_media);
     FASSERT_MSG(NULL == media_event, "Event group exists.");
     FASSERT_MSG((media_event = xEventGroupCreate()) != NULL, "Create event group failed.");
-    FFreeRTOSMediaIrqSet(&os_media->dcdp_ctrl);
-    FFreeRTOSMediaIrqAllEnable(&os_media->dcdp_ctrl);
+    FFreeRTOSMediaIrqSet(&os_config->dcdp_ctrl);
+    FFreeRTOSMediaIrqAllEnable(&os_config->dcdp_ctrl);
+    vTaskDelete(NULL);
 }
 
 /**
@@ -230,7 +247,7 @@ void FFreeRTOSMediaChannelDeinit(u32 id)
     taskENTER_CRITICAL();
     vEventGroupDelete(media_event);
     media_event = NULL;
-    FDcDpDeInitialize(&os_media->dcdp_ctrl, id);
+    FDcDpDeInitialize(&os_media.dcdp_ctrl, id);
     taskEXIT_CRITICAL(); /* allow schedule after deinit */
     return ;
 }
@@ -238,46 +255,28 @@ void FFreeRTOSMediaChannelDeinit(u32 id)
 /**
  * @name: FFreeRTOSMediaHpdHandle
  * @msg:  handle the hpd event
- * @param  {u32} channel is the dc channel
- * @param  {u32} width is the width
- * @param  {u32} height is the height
- * @param  {u32} multi_mode is multi display mode,0:clone,1:hor,2:ver
- * @param  {u32} color_depth is the color depth
- * @param  {u32} refresh_rate is the refresh rate of screen
  * @return Null
  */
-void FFreeRTOSMediaHpdHandle(u32 channel, u32 width, u32 height, u32 multi_mode, u32 color_depth, u32 refresh_rate)
+void FFreeRTOSMediaHpdHandle(void)
 {
-    u32 index;
+ u32 index;
     u32 ret = FMEDIA_DP_SUCCESS;
-    u32 start_index;
-    u32 end_index;//ensure the channel number
 
-    if (channel == FDCDP_INSTANCE_NUM)
-    {
-        start_index = 0;
-        end_index = channel;
-    }
-    else
-    {
-        start_index = channel;
-        end_index = channel + 1;
-    }
     FFreeRTOSMediaWaitEvent(FMEDIA_EVT_INTR(FMEDIA_CHANNEL_0) | FMEDIA_EVT_INTR(FMEDIA_CHANNEL_1), portMAX_DELAY);
 
     for (;;)
     {
-        for (index = start_index; index < end_index; index++)
+        for (index = 0; index < FDCDP_INSTANCE_NUM; index++)
         {
-            if (os_media->dcdp_ctrl.connect_flg[index] == 1)
+            if (os_media.dcdp_ctrl.connect_flg[index] == 1)
             {
-                ret = FFreeRTOSMediaHpdReInit(index, width, height, multi_mode, color_depth, refresh_rate);
+                ret = FDcDpHotPlugConnect(&os_media.dcdp_ctrl, index);
                 FFreeRTOSMediaClearEvent(media_event, FMEDIA_EVT_INTR(index));
                 if (ret == FMEDIA_DP_SUCCESS)
                 {
                     printf("Hpd task finish ,  reinit the dp success.\r\n");
                 }
-                os_media->dcdp_ctrl.connect_flg[index] == 0;
+                os_media.dcdp_ctrl.connect_flg[index] == 0;
             }
         }
         vTaskDelay(200);
@@ -285,4 +284,20 @@ void FFreeRTOSMediaHpdHandle(u32 channel, u32 width, u32 height, u32 multi_mode,
 }
 
 
-
+/**
+ * @name: FFreeRTOSLVGLConfigTask
+ * @msg:  config the lvgl
+ * @param  {void *} pvParameters is the parameters of demo
+ * @return Null
+ */
+void FFreeRTOSLVGLConfigTask(void)
+{
+    u32 index;
+    lv_init();
+    FFreeRTOSPortInit();
+    for (index = 0; index < FDCDP_INSTANCE_NUM; index ++)
+    {
+        FMediaDispFramebuffer(&os_media.dcdp_ctrl);
+    }
+    vTaskDelete(NULL);
+}

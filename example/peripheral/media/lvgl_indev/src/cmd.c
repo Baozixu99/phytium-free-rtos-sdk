@@ -39,18 +39,11 @@
 #include "lv_indev_creat.h"
 #include "lv_indev_test.h"
 
-static InputParm input_config;
-
 static void FFreeRTOSMediaCmdUsage(void)
 {
     printf("Usage:\r\n");
-    printf("    Media init <channel> <width> <height> <multi_mode> <color_depth> <refresh_rate\r\n");
-    printf("        -- <channel> 0/1/2, channel 0 ,channel 1 , channel 0 and channel 1 \r\n");
-    printf("        -- <width> the  resolution of width\r\n");
-    printf("        -- <height> the  resolution of height\r\n");
-    printf("        -- <multi_mode>  the sigle screen or multi-display \r\n");
-    printf("        -- <color_depth> the color_depth of screen ,default color_depth is 32\r\n");
-    printf("        -- <refresh_rate> the refresh_rate of screen ,default refresh_rate is 60\r\n");
+    printf("    Media init \r\n");
+    printf("        -- init the dp \r\n");;
     printf("    Media lvgl-init \r\n");
     printf("        -- init the lvgl and set the para for demo\r\n");
     printf("    Media init-kb <id>\r\n");
@@ -76,34 +69,13 @@ static int MediaCmdEntry(int argc, char *argv[])
     }
     if (!strcmp(argv[1], "init"))
     {
-        if (argc >= 3)
-        {
-            input_config.channel  = (u32)simple_strtoul(argv[2], NULL, 10);
-            if (input_config.channel > FDCDP_INSTANCE_NUM)
+            BaseType_t task_ret = FFreeRTOSMediaInitCreate();
+  
+            if (pdPASS != task_ret)
             {
-                printf("Please insert the correct num,such as 0,1 or 2 \r\n");
+                return -2;
             }
-            input_config.width = (u32)simple_strtoul(argv[3], NULL, 10);
-            input_config.height = (u32)simple_strtoul(argv[4], NULL, 10);
-            input_config.multi_mode = (u32)simple_strtoul(argv[5], NULL, 10);
-            input_config.color_depth = (u32)simple_strtoul(argv[6], NULL, 10);
-            input_config.refresh_rate = (u32)simple_strtoul(argv[7], NULL, 10);
-        }
-        else
-        {
-            input_config.channel = 0;
-            input_config.width = 1024;
-            input_config.height = 768;
-            input_config.multi_mode = 0;
-            input_config.color_depth = 32;
-            input_config.refresh_rate = 60;
-        }
-        BaseType_t task_ret = FFreeRTOSMediaInitCreate(&input_config);
-        if (pdPASS != task_ret)
-        {
-            return -2;
-        }
-        inited = TRUE;
+            inited = TRUE;
     }
     if (!strcmp(argv[1], "lvgl-init"))
     {
@@ -112,7 +84,7 @@ static int MediaCmdEntry(int argc, char *argv[])
             printf("please ensure the media has been inited \r\n");
             return -2;
         }
-        BaseType_t task_ret = FFreeRTOSlVGLConfigCreate(&input_config);
+        BaseType_t task_ret = FFreeRTOSlVGLConfigCreate();
 
         if (pdPASS != task_ret)
         {

@@ -127,8 +127,6 @@
 #define CONFIG_ENABLE_IOPAD
 /* CONFIG_USE_SPI is not set */
 /* CONFIG_USE_QSPI is not set */
-#define CONFIG_USE_GIC
-#define CONFIG_ENABLE_GICV3
 #define CONFIG_USE_SERIAL
 
 /* Usart Configuration */

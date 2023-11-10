@@ -76,6 +76,8 @@ static void vNestedPeriodTask(void *pvParameters)
 
 static void FLowPriorityHandler(s32 vector, void *param)
 {
+    static fsize_t value[3] = {0};
+
     static float val = 0.3;
 
     val = val * 2.1;
@@ -84,7 +86,7 @@ static void FLowPriorityHandler(s32 vector, void *param)
 	low_priority_intr_flag++;
 
     /* Enable the nested interrupts to allow preemption */
-    INTERRUPT_NESTED_ENABLE();
+    FInterruptNestedEnable(value);
 
     InterruptCoreInterSend(INTERRUPT_HIGH_ID, (1 << cpu_id));
 
@@ -97,7 +99,7 @@ static void FLowPriorityHandler(s32 vector, void *param)
     };
 
     /* Disable the nested interrupt before exiting IRQ mode */
-	INTERRUPT_NESTED_DISABLE();
+	FInterruptNestedDisable(value);
 
     printf("low_priority_intr_flag is %d, %f \n\n\n", low_priority_intr_flag, val);
 

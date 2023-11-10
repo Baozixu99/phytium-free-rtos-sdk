@@ -1,5 +1,7 @@
 # Phytium-FreeRTOS-SDK
 
+**v0.7.1** [ReleaseNote](./docs/ChangeLog.md)
+
 ## 1. 介绍
 
 本项目发布了Phytium系列CPU的FreeRTOS源代码，参考例程以及配置构建工具
@@ -155,7 +157,7 @@ D2000 是一款面向桌面应用的高性能通用 8 核处理器。每 2 个�
 | QSPI (Nor Flash)               | E2000 <br>D2000 <br>FT2000/4              |                                      | qspi                 |
 | SPI                            | E2000 <br>PHYTIUMPI                       |                                      | spi                  |
 | TIMER & TACHO                  | E2000 <br>PHYTIUMPI                       |                                      | timer&tacho          |
-| SDIO                           | E2000 <br>PHYTIUMPI                       |                                      | sd                   |
+| SDIF                           | E2000 <br>PHYTIUMPI                       |                                      | sd                   |
 | PWM                            | E2000 <br>PHYTIUMPI                       |                                      | pwm                  |
 | USB                            | E2000 <br>PHYTIUMPI                       |                                      | usb                  |
 | WDT                            | FT2000/4 <br>D2000 <br>E2000 <br>PHYTIUMPI|                                      | wdt                  |

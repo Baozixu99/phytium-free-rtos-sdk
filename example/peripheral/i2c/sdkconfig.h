@@ -20,11 +20,7 @@
 #define CONFIG_TOOLCHAIN_NAME "gcc"
 #define CONFIG_TARGET_ARMV8_AARCH64
 #define CONFIG_ARCH_EXECUTION_STATE "aarch64"
-
-/* Fpu configuration */
-
 #define CONFIG_ARM_NEON
-/* end of Fpu configuration */
 #define CONFIG_ARM_CRC
 #define CONFIG_ARM_CRYPTO
 #define CONFIG_ARM_FLOAT_POINT
@@ -41,15 +37,14 @@
 
 /* Soc configuration */
 
-/* CONFIG_TARGET_PHYTIUMPI is not set */
+#define CONFIG_TARGET_PHYTIUMPI
 /* CONFIG_TARGET_E2000Q is not set */
-#define CONFIG_TARGET_E2000D
+/* CONFIG_TARGET_E2000D is not set */
 /* CONFIG_TARGET_E2000S is not set */
 /* CONFIG_TARGET_FT2004 is not set */
 /* CONFIG_TARGET_D2000 is not set */
-#define CONFIG_SOC_NAME "e2000"
-#define CONFIG_TARGET_TYPE_NAME "d"
-#define CONFIG_SOC_CORE_NUM 2
+#define CONFIG_SOC_NAME "phytiumpi"
+#define CONFIG_SOC_CORE_NUM 4
 #define CONFIG_F32BIT_MEMORY_ADDRESS 0x80000000
 #define CONFIG_F32BIT_MEMORY_LENGTH 0x80000000
 #define CONFIG_F64BIT_MEMORY_ADDRESS 0x2000000000
@@ -63,21 +58,20 @@
 
 /* Board Configuration */
 
-#define CONFIG_E2000D_DEMO_BOARD
-#define CONFIG_BOARD_NAME "demo"
-
-/* IO mux configuration when board start up */
-
+#define CONFIG_BOARD_NAME "firefly"
 /* CONFIG_USE_SPI_IOPAD is not set */
 /* CONFIG_USE_GPIO_IOPAD is not set */
 /* CONFIG_USE_CAN_IOPAD is not set */
 /* CONFIG_USE_QSPI_IOPAD is not set */
 /* CONFIG_USE_PWM_IOPAD is not set */
-/* CONFIG_USE_ADC_IOPAD is not set */
 /* CONFIG_USE_MIO_IOPAD is not set */
 /* CONFIG_USE_TACHO_IOPAD is not set */
 /* CONFIG_USE_UART_IOPAD is not set */
 /* CONFIG_USE_THIRD_PARTY_IOPAD is not set */
+#define CONFIG_FIREFLY_DEMO_BOARD
+
+/* IO mux configuration when board start up */
+
 /* end of IO mux configuration when board start up */
 /* CONFIG_CUS_DEMO_BOARD is not set */
 
@@ -115,8 +109,6 @@
 #define CONFIG_ENABLE_IOPAD
 /* CONFIG_USE_SPI is not set */
 /* CONFIG_USE_QSPI is not set */
-#define CONFIG_USE_GIC
-#define CONFIG_ENABLE_GICV3
 #define CONFIG_USE_SERIAL
 
 /* Usart Configuration */
@@ -148,6 +140,7 @@
 /* CONFIG_USE_IPC is not set */
 /* CONFIG_USE_MEDIA is not set */
 /* CONFIG_USE_SCMI_MHU is not set */
+/* CONFIG_USE_I2S is not set */
 /* end of Drivers configuration */
 
 /* Build setup */
@@ -183,7 +176,8 @@
 /* Lib */
 
 #define CONFIG_USE_COMPILE_CHAIN
-/* CONFIG_USB_USER_DEFINED is not set */
+/* CONFIG_USE_NEWLIB is not set */
+/* CONFIG_USE_USER_DEFINED is not set */
 /* end of Lib */
 /* CONFIG_ENABLE_CXX is not set */
 
@@ -287,7 +281,6 @@
 /* CONFIG_DEFAULT_LETTER_SHELL_USE_UART2 is not set */
 /* end of Letter Shell Configuration */
 /* CONFIG_USE_AMP is not set */
-/* CONFIG_USE_SDMMC_CMD is not set */
 /* CONFIG_USE_YMODEM is not set */
 /* CONFIG_USE_SFUD is not set */
 #define CONFIG_USE_BACKTRACE
@@ -298,9 +291,11 @@
 /* CONFIG_USE_LVGL is not set */
 /* CONFIG_USE_FREEMODBUS is not set */
 /* CONFIG_USE_CHERRY_USB is not set */
+/* CONFIG_USE_FSL_SDMMC is not set */
+/* CONFIG_USE_FSL_WIFI is not set */
 /* end of Third-party configuration */
 
-/* Kernel Configuration */
+/* FreeRTOS Kernel Configuration */
 
 #define CONFIG_FREERTOS_OPTIMIZED_SCHEDULER
 #define CONFIG_FREERTOS_HZ 1000
@@ -320,6 +315,7 @@
 /* CONFIG_FREERTOS_USE_TICKLESS_IDLE is not set */
 #define CONFIG_FREERTOS_TOTAL_HEAP_SIZE 10240
 #define CONFIG_FREERTOS_TASK_FPU_SUPPORT 1
-/* end of Kernel Configuration */
+/* CONFIG_FREERTOS_USE_POSIX is not set */
+/* end of FreeRTOS Kernel Configuration */
 
 #endif

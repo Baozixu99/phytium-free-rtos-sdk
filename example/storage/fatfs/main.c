@@ -28,17 +28,18 @@
 #include "fatfs_examples.h"
 #include "sdkconfig.h"
 
-
-#ifdef CONFIG_FATFS_SDMMC
-    #include "sdmmc_system.h"
+#if defined(CONFIG_FATFS_SDMMC_FSDIF_TF) || defined(CONFIG_FATFS_SDMMC_FSDIF_EMMC)
+#include "fsdif_timing.h"
+#include "fsl_sdmmc.h"
 #endif
 
 int main(void)
 {
     BaseType_t ret;
 
-#ifdef CONFIG_FATFS_SDMMC
-    sdmmc_sys_init();
+#if defined(CONFIG_FATFS_SDMMC_FSDIF_TF) || defined(CONFIG_FATFS_SDMMC_FSDIF_EMMC)
+    FSdifTimingInit();
+    SDMMC_OSAInit();
 #endif
 
     ret = FFreeRTOSFatfsTest();
@@ -51,6 +52,11 @@ int main(void)
 
     vTaskStartScheduler(); /* 启动任务，开启调度 */
     while (1); /* 正常不会执行到这里 */
+
+#if defined(CONFIG_FATFS_SDMMC_FSDIF_TF) || defined(CONFIG_FATFS_SDMMC_FSDIF_EMMC)
+    SDMMC_OSADeInit();
+    FSdifTimingDeinit();
+#endif
 
 FAIL_EXIT:
     printf("Failed,the ret value is 0x%x. \r\n", ret);

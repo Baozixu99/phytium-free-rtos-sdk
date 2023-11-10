@@ -67,6 +67,7 @@ dkms.conf
 #pyc files
 *.pyc
 .vscode
+.vscode-ctags
 
 # Standalone sdk
 standalone

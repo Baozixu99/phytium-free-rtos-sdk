@@ -34,7 +34,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "finterrupt.h"
-#include "fgic_cpu_interface.h"
+#include "fgic_v3.h"
 
 #ifndef configINTERRUPT_CONTROLLER_BASE_ADDRESS
     #error configINTERRUPT_CONTROLLER_BASE_ADDRESS must be defined.  See https://www.FreeRTOS.org/Using-FreeRTOS-on-Cortex-A-Embedded-Processors.html

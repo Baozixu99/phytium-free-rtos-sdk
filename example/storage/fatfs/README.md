@@ -74,8 +74,8 @@ bootelf -p 0x90100000
 
 ### 2.4 输出与实验现象
 
-- 打开配置 CONFIG_FATFS_SDIO_TF, 使能 MicroSD(TF) 卡
-- 打开配置 CONFIG_FATFS_SDIO_EMMC, 使能 eMMC
+- 打开配置 CONFIG_FATFS_SDIF_TF, 使能 MicroSD(TF) 卡
+- 打开配置 CONFIG_FATFS_SDIF_EMMC, 使能 eMMC
 - 打开配置 CONFIG_FATFS_USB, 使能 U 盘
 - 打开配置 CONFIG_FATFS_FSATA, 使能 SATA 硬盘
 - 打开配置 CONFIG_FATFS_FSATA_PCIE, 使能 SATA 硬盘与 PCIE 接口

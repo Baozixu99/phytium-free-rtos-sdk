@@ -4,26 +4,15 @@
 #
 
 
-mainmenu "Phytium Freertos Configuration"
+mainmenu "Phytium FreeRTOS Configuration"
 
 	menu "Project Configuration"
 
-		menu " Freertos Configuration"
-		config TARGET_NAME
-			string "Build Target Name"
-			default "openamp_core1"
-			help
-				Build Target name for the demo
-	
-		config SHM_BASE_ADDR
-			hex "Share memory address set"
-			default 0xc0000000
-
-	endmenu
-
+	config SHM_BASE_ADDR
+		hex "Share memory address set"
+		default 0xc0000000
 	
 	menu "Amp Config"
-
 
 		config IPI_IRQ_NUM
 			int "Communication interruption number between multiple cores"

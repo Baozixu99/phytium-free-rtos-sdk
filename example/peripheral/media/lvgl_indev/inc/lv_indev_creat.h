@@ -40,16 +40,6 @@ extern "C" {
 #include "lvgl-8.3/lvgl.h"
 #endif
 
-typedef struct
-{
-    u32 channel;
-    u32 width;
-    u32 height;
-    u32 multi_mode;
-    u32 color_depth;
-    u32 refresh_rate;
-} InputParm;
-
 /*creat the media demo init task*/
 BaseType_t FFreeRTOSDemoCreate(void);
 
@@ -59,16 +49,14 @@ BaseType_t FFreeRTOSInitKbCreate(u32 id);
 /*init the mouse*/
 BaseType_t FFreeRTOSInitMsCreate(u32 id);
 
-/*creat the media init task*/
-BaseType_t FFreeRTOSMediaInitCreate(void *args);
-
-/*creat the lvgl init task*/
-BaseType_t FFreeRTOSlVGLConfigCreate(void *args);
-
 /*list the usb device*/
 BaseType_t FFreeRTOSListUsbDev(int argc, char *argv[]);
 
+/*init the media*/
+BaseType_t FFreeRTOSMediaInitCreate(void);
 
+/*set the lvgl init task*/
+BaseType_t FFreeRTOSlVGLConfigCreate(void);
 
 #ifdef __cplusplus
 } /*extern "C"*/

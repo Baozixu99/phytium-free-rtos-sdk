@@ -48,10 +48,8 @@ typedef struct
 } FFreeRTOSMedia;
 
 /*init the media and return the meidia instance*/
-FFreeRTOSMedia *FFreeRTOSMediaHwInit(u32 channel, u32 width, u32 height, u32 multi_mode,u32 color_depth,u32 refresh_rate);
+FFreeRTOSMedia *FFreeRTOSMediaHwInit(u32 channel,FFreeRTOSMedia *instance);
 
-/*hpd event to check and reinit the media*/
-FError FFreeRTOSMediaHpdReInit(u32 channel, u32 width, u32 height, u32 multi_mode,u32 color_depth,u32 refresh_rate);
 
 #ifdef __cplusplus
 }

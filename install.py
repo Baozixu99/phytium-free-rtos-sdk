@@ -18,6 +18,7 @@ windows_msys2 = 2
 
 ### environment constant
 sdk_profile_path = "/etc/profile.d/phytium_dev.sh"
+sdk_version = "v0.7.1"
 
 def rm_line(str, file_path):
     with open(file_path,'r+') as f:
@@ -78,7 +79,6 @@ if (curr_path != install_path):
 freertos_sdk_path = install_path
 print("[1]: Standalone SDK at {}".format(freertos_sdk_path))
 
-
 # make sure sdk scripts are executable
 os.system("chmod +x ./*.sh --silent ")
 os.system("chmod +x ./scripts/*.sh --silent ")
@@ -86,7 +86,7 @@ os.system("chmod +x ./make/*.mk --silent ")
 os.system("chmod +x ./lib/Kconfiglib/*.py --silent ")
 
 # Add standalone sdk
-standalone_sdk_v="6061198125dbbcf87ecb9ca56b82cf65ce2ccd8e"
+standalone_sdk_v="420010ebd1d6ec474a14dd793953cd42964993dd"
 standalone_path=freertos_sdk_path  + '/standalone'
 standalone_branche="master"
 standalone_remote="https://gitee.com/phytium_embedded/phytium-standalone-sdk.git"
@@ -127,22 +127,17 @@ try:
 
 except Exception as ex:
     print(ex)
-    print("[1]: Create SDK profile {} failed !!!!".format(sdk_profile_path))
+    print("[2]: Create SDK profile {} failed !!!!".format(sdk_profile_path))
     exit()
-
 
 rm_line("### PHYTIUM FREERTOS SDK SETTING START",sdk_profile_path)
 rm_line("export FREERTOS_SDK_ROOT=",sdk_profile_path)
 rm_line("export FREERTOS_STANDALONE=",sdk_profile_path)
 rm_line("### PHYTIUM FREERTOS SDK SETTING END",sdk_profile_path)
 
-
-
 print("[2]: Reset environment")
 
 ## STEP 3: get cross-platform compiler
-
-
 #########################################
 if not os.path.exists(os.environ.get('AARCH32_CROSS_PATH')):
     print("[3]: Failed, AARCH32 CC package {} non found !!!".format('AARCH32_CROSS_PATH'))
@@ -152,19 +147,12 @@ if not os.path.exists(os.environ.get('AARCH64_CROSS_PATH')):
     print("[3]: Failed, AARCH64 CC package {} non found !!!".format('AARCH64_CROSS_PATH'))
     exit()
 
-print("[4]: GNU CC version: 10.3.1-2021.07")
+print("[3]: GNU CC version: 10.3.1-2021.07")
 
-## STEP 4: write environment variables
-os.environ['FREERTOS_SDK_ROOT'] = freertos_sdk_path
-
-os.system("echo \"### PHYTIUM FREERTOS SDK SETTING START\" >> {}".format(sdk_profile_path))
-os.system("echo \"export FREERTOS_SDK_ROOT={}\" >> {}".format(freertos_sdk_path, sdk_profile_path))
-os.system("echo \"export FREERTOS_STANDALONE={}\" >> {}".format(standalone_path, sdk_profile_path))
-os.system("echo \"### PHYTIUM FREERTOS SDK SETTING END\" >> {}".format(sdk_profile_path))
-
-## STEP 5: display success message and enable environment
-print("[5]: Success!!! Standalone SDK is Install at {}".format(freertos_sdk_path))
-print("[5]: SDK Environment Variables is in {}".format(sdk_profile_path))
-print("[5]: Phytium FREERTOS SDK Setup Done for {}!!!".format(usr))
-print("[5]: Input 'source {}' or Reboot System to Active SDK".format(sdk_profile_path))
+## STEP 4: display success message and enable environment
+print("[4]: Success!!! Standalone SDK is Install at {}".format(freertos_sdk_path))
+print("[4]: SDK Environment Variables is in {}".format(sdk_profile_path))
+print("[4]: Phytium FREERTOS SDK Setup Done for {}!!!".format(usr))
+print("[4]: FREERTOS SDK version is {}".format(sdk_version))
+print("[4]: Input 'source {}' or Reboot System to Active SDK".format(sdk_profile_path))
 

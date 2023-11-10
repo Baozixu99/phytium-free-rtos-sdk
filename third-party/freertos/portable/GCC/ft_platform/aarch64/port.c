@@ -35,7 +35,7 @@
 #include "task.h"
 #include "ftypes.h"
 #include "finterrupt.h"
-#include "fgic_cpu_interface.h"
+#include "fgic_v3.h"
 
 #ifndef configUNIQUE_INTERRUPT_PRIORITIES
     #error configUNIQUE_INTERRUPT_PRIORITIES must be defined.  See http://www.freertos.org/Using-FreeRTOS-on-Cortex-A-Embedded-Processors.html

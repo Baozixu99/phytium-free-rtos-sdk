@@ -33,15 +33,6 @@
 extern "C"
 {
 #endif
-typedef struct
-{
-    u32 channel;
-    u32 width;
-    u32 height;
-    u32 multi_mode;
-    u32 color_depth;
-    u32 refresh_rate;
-} InputParm;
 
 typedef struct
 {
@@ -51,13 +42,11 @@ typedef struct
     u8 reserve;
 } GraphicsTest;
 
-/* return the input config */
-InputParm *InputParaReturn(void);
-
+/*create the media demo*/
 FError FMediaDisplayDemo(void);
 
 /*create the media init task*/
-BaseType_t FFreeRTOSMediaCreate(void *args);
+BaseType_t FFreeRTOSMediaCreate(void);
 
 /*deinit the media*/
 void FFreeRTOSMediaChannelDeinit(u32 id);

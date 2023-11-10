@@ -1,18 +1,16 @@
-
-
-
-#ifndef __METAL_SYS__H__
-#define __METAL_SYS__H__
+#ifndef METAL_SYS__H
+#define METAL_SYS__H
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
+
+#include "finterrupt.h"
 
 #define METAL_INTERNAL
 
-#if 1
-
-#define XLNX_MAXIRQS XSCUGIC_MAX_NUM_INTR_INPUTS
+#ifdef METAL_INTERNAL
 
 static inline void sys_irq_enable(unsigned int vector)
 {
@@ -30,4 +28,4 @@ static inline void sys_irq_disable(unsigned int vector)
 }
 #endif
 
-#endif /* __METAL_GENERIC_ZYNQMP_A53_SYS__H__ */
+#endif /* __METAL_GENERIC_SYS__H__ */

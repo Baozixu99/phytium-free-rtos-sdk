@@ -3,11 +3,7 @@
 
 /* Project Configuration */
 
-/*  Freertos Configuration */
-
-#define CONFIG_TARGET_NAME "openamp_core1"
 #define CONFIG_SHM_BASE_ADDR 0xc0000000
-/* end of  Freertos Configuration */
 
 /* Amp Config */
 
@@ -36,11 +32,7 @@
 #define CONFIG_TOOLCHAIN_NAME "gcc"
 #define CONFIG_TARGET_ARMV8_AARCH64
 #define CONFIG_ARCH_EXECUTION_STATE "aarch64"
-
-/* Fpu configuration */
-
 #define CONFIG_ARM_NEON
-/* end of Fpu configuration */
 #define CONFIG_ARM_CRC
 #define CONFIG_ARM_CRYPTO
 #define CONFIG_ARM_FLOAT_POINT
@@ -97,6 +89,7 @@
 
 /* Build project name */
 
+#define CONFIG_TARGET_NAME "openamp_core1"
 /* end of Build project name */
 /* end of Board Configuration */
 
@@ -128,8 +121,6 @@
 #define CONFIG_ENABLE_IOPAD
 /* CONFIG_USE_SPI is not set */
 /* CONFIG_USE_QSPI is not set */
-#define CONFIG_USE_GIC
-#define CONFIG_ENABLE_GICV3
 #define CONFIG_USE_SERIAL
 
 /* Usart Configuration */
@@ -155,12 +146,13 @@
 /* CONFIG_USE_IPC is not set */
 /* CONFIG_USE_MEDIA is not set */
 /* CONFIG_USE_SCMI_MHU is not set */
+/* CONFIG_USE_I2S is not set */
 /* end of Drivers configuration */
 
 /* Build setup */
 
 #define CONFIG_CHECK_DEPS
-#define CONFIG_OUTPUT_BINARY
+/* CONFIG_OUTPUT_BINARY is not set */
 
 /* Optimization options */
 
@@ -190,7 +182,8 @@
 /* Lib */
 
 #define CONFIG_USE_COMPILE_CHAIN
-/* CONFIG_USB_USER_DEFINED is not set */
+/* CONFIG_USE_NEWLIB is not set */
+/* CONFIG_USE_USER_DEFINED is not set */
 /* end of Lib */
 /* CONFIG_ENABLE_CXX is not set */
 
@@ -307,7 +300,6 @@
 #define CONFIG_MEM_NORMAL
 /* end of Baremetal config */
 /* end of OpenAmp */
-/* CONFIG_USE_SDMMC_CMD is not set */
 /* CONFIG_USE_YMODEM is not set */
 /* CONFIG_USE_SFUD is not set */
 #define CONFIG_USE_BACKTRACE
@@ -318,9 +310,11 @@
 /* CONFIG_USE_LVGL is not set */
 /* CONFIG_USE_FREEMODBUS is not set */
 /* CONFIG_USE_CHERRY_USB is not set */
+/* CONFIG_USE_FSL_SDMMC is not set */
+/* CONFIG_USE_FSL_WIFI is not set */
 /* end of Third-party configuration */
 
-/* Kernel Configuration */
+/* FreeRTOS Kernel Configuration */
 
 #define CONFIG_FREERTOS_OPTIMIZED_SCHEDULER
 #define CONFIG_FREERTOS_HZ 1000
@@ -340,6 +334,7 @@
 /* CONFIG_FREERTOS_USE_TICKLESS_IDLE is not set */
 #define CONFIG_FREERTOS_TOTAL_HEAP_SIZE 10240
 #define CONFIG_FREERTOS_TASK_FPU_SUPPORT 1
-/* end of Kernel Configuration */
+/* CONFIG_FREERTOS_USE_POSIX is not set */
+/* end of FreeRTOS Kernel Configuration */
 
 #endif
