@@ -98,7 +98,7 @@
    ![](./figs/E2000D_aarch32_openamp_startup.png)
 
 - 2.4 输入 'openamp_echo auto' 运行openamp 测试程序
-- 2.5 结果显示为
+- 2.5 结果显示为(openamp和libmetal版本号可能存在区别)
 
    ![aarch32运行结果](figs/aarch32_runtime.png)
    ![aarch32运行结果](figs/aarch32_runtime1.png)
@@ -127,7 +127,7 @@
    ![](./figs/E2000D_aarch64_openamp_startup.png)
 
 - 2.4 输入 'openamp_echo auto' 运行openamp 测试程序
-- 2.5 结果显示为
+- 2.5 结果显示为(openamp和libmetal版本号可能存在区别)
 
    ![aarch64_runtime](figs/aarch64_runtime.png)
    ![aarch64_runtime](figs/aarch64_runtime1.png)

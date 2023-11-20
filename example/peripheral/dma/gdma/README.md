@@ -101,7 +101,7 @@ bootelf -p 0xa0100000
 gdma memcpy
 ```
 
-![memcpy](./figs/memcpy.png)
+![memcpy_result](./figs/memcpy_result.png)
 
 
 ## 3. 如何解决问题

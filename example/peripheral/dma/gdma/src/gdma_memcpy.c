@@ -17,12 +17,14 @@
  * Description:  This files is for GDMA task implementations 
  *
  * Modify History:
- *  Ver   Who        Date         Changes
- * ----- ------     --------    --------------------------------------
- * 1.0 zhugengyu    2022/08/26   first commit
+ *  Ver      Who           Date         Changes
+ * -----    ------       --------      --------------------------------------
+ *  1.0    zhugengyu     2022/7/27     init commit
+ *  2.0    liqiaozhong   2023/11/10    synchronous update with standalone sdk
  */
 /***************************** Include Files *********************************/
 #include <string.h>
+#include <stdbool.h>
 
 #include "FreeRTOSConfig.h"
 #include "FreeRTOS.h"
@@ -37,38 +39,40 @@
 
 #include "fgdma_os.h"
 /************************** Constant Definitions *****************************/
+#define FGDMA_CONTROLLER_ID  FGDMA0_ID
 #define GDMA_CHAN_TRANS_END(chan)           (0x1U << (chan))
-#define GDMA_BUF_A_LEN                      200U
-#define GDMA_BUF_B_LEN                      1024U
+#define GDMA_TASKA_CHANNEL_ID               0U
+#define GDMA_TASKB_CHANNEL_ID               1U
+#define GDMA_TASKA_TRANS_LEN                256U
+#define GDMA_TASKB_TRANS_LEN                1024U
 #define GDMA_WORK_TASK_NUM                  2U
+#define GDMA_TRANS_TIMES                    3U
 /**************************** Type Definitions *******************************/
 
 /************************** Variable Definitions *****************************/
-static FFreeRTOSGdma *gdma = NULL;
+static FFreeRTOSGdma *gdma_instance_p = NULL;
+static FFreeRTOSGdmaChanCfg os_channel_config_taska;
+static FFreeRTOSGdmaChanCfg os_channel_config_taskb;
 static TaskHandle_t task_a = NULL;
 static TaskHandle_t task_b = NULL;
 static TimerHandle_t exit_timer = NULL;
 static EventGroupHandle_t chan_evt = NULL;
-static xSemaphoreHandle init_locker = NULL;
-static u8 src_a[GDMA_BUF_A_LEN] __attribute__((aligned(4))) = {0U};
-static u8 dst_a[GDMA_BUF_A_LEN] __attribute__((aligned(4))) = {0U};
-static u8 src_b[GDMA_BUF_B_LEN] __attribute__((aligned(4))) = {0U};
-static u8 dst_b[GDMA_BUF_B_LEN] __attribute__((aligned(4))) = {0U};
-static u32 chan_evt_bits = 0U; /* bits by GDMA_CHAN_TRANS_END */
-static u32 memcpy_times = 3U;
-static boolean is_running = FALSE;
-
+static xSemaphoreHandle gdma_task_counter = NULL;
+static uint8_t src_a[GDMA_TASKA_TRANS_LEN] __attribute__((aligned(16))) = {0U}; /* should be aligned with both read and write burst size, defalut: 16-byte */
+static uint8_t dst_a[GDMA_TASKA_TRANS_LEN] __attribute__((aligned(16))) = {0U};
+static uint8_t src_b[GDMA_TASKB_TRANS_LEN] __attribute__((aligned(16))) = {0U};
+static uint8_t dst_b[GDMA_TASKB_TRANS_LEN] __attribute__((aligned(16))) = {0U};
+static uint32_t chan_evt_bits = 0U; /* bits that indicate GDMA_CHAN_TRANS_END */
+static bool is_running = FALSE;
 /***************** Macros (Inline Functions) Definitions *********************/
 #define FGDMA_DEBUG_TAG "GDMA-MEM"
 #define FGDMA_ERROR(format, ...)   FT_DEBUG_PRINT_E(FGDMA_DEBUG_TAG, format, ##__VA_ARGS__)
 #define FGDMA_WARN(format, ...)    FT_DEBUG_PRINT_W(FGDMA_DEBUG_TAG, format, ##__VA_ARGS__)
 #define FGDMA_INFO(format, ...)    FT_DEBUG_PRINT_I(FGDMA_DEBUG_TAG, format, ##__VA_ARGS__)
 #define FGDMA_DEBUG(format, ...)   FT_DEBUG_PRINT_D(FGDMA_DEBUG_TAG, format, ##__VA_ARGS__)
-
 /************************** Function Prototypes ******************************/
 
 /*****************************************************************************/
-
 static void GdmaMemcpyExitCallback(TimerHandle_t timer)
 {
     printf("exiting...\r\n");
@@ -92,26 +96,26 @@ static void GdmaMemcpyExitCallback(TimerHandle_t timer)
         chan_evt_bits = 0U;
     }
 
-    if (init_locker)
+    if (gdma_task_counter)
     {
-        vSemaphoreDelete(init_locker);
-        init_locker = NULL;
+        vSemaphoreDelete(gdma_task_counter);
+        gdma_task_counter = NULL;
     }
 
-    if (gdma)
+    if (gdma_instance_p)
     {
-        if (FT_SUCCESS != FFreeRTOSGdmaDeInit(gdma))
+        if (FFREERTOS_GDMA_OK != FFreeRTOSGdmaDeInit(gdma_instance_p))
         {
-            FGDMA_ERROR("delete gdma failed !!!");
+            FGDMA_ERROR("Deinit GDMA instance failed.");
         }
-        gdma = NULL;
+        gdma_instance_p = NULL;
     }
 
     if (exit_timer)
     {
         if (pdPASS != xTimerDelete(exit_timer, 0))
         {
-            FGDMA_ERROR("delete exit timer failed !!!");
+            FGDMA_ERROR("Delete exit timer failed.");
         }
         exit_timer = NULL;
     }
@@ -119,78 +123,58 @@ static void GdmaMemcpyExitCallback(TimerHandle_t timer)
     is_running = FALSE;
 }
 
-static FFreeRTOSGdmaRequest *GdmaPrepareRequest(u8 *src, u8 *dst, fsize_t buf_len, fsize_t trans_num)
+static void GdmaMemcpyAckChanXEnd(uint32_t channel_id, void *args)
 {
-    FASSERT_MSG(buf_len % trans_num == 0, "invalid transaction num");
-    FFreeRTOSGdmaRequest *req = pvPortMalloc(sizeof(FFreeRTOSGdmaRequest));
-    fsize_t loop;
-    fsize_t pre_buf_len = buf_len / trans_num;
-
-    req->trans = pvPortMalloc(sizeof(FFreeRTOSGdmaTranscation) * trans_num);
-    req->valid_trans_num = 0U;
-    req->total_trans_num = trans_num;
-    for (loop = 0; loop < trans_num; loop++)
-    {
-        req->trans[loop].src_buf = src + pre_buf_len * loop;
-        req->trans[loop].dst_buf = dst + pre_buf_len * loop;
-        req->trans[loop].data_len = pre_buf_len;
-        FGDMA_INFO("src: %p, dst: %p, len: %d.", req->trans[loop].src_buf, req->trans[loop].dst_buf,
-                   req->trans[loop].data_len);
-        req->valid_trans_num++;
-    }
-
-    return req;
-}
-
-static void GdmaMemcpyAckChanXEnd(FGdmaChan *const chan, void *args)
-{
-    FASSERT(chan);
-    FGdmaChanIndex chan_id = chan->config.chan_id;
+    FASSERT(channel_id < FFREERTOS_GDMA_NUM_OF_CHAN);
 
     BaseType_t xhigher_priority_task_woken = pdFALSE;
     BaseType_t x_result = pdFALSE;
 
-    FGDMA_INFO("ack gdma chan %d.", chan_id);
-    x_result = xEventGroupSetBitsFromISR(chan_evt, GDMA_CHAN_TRANS_END(chan_id),
-                                         &xhigher_priority_task_woken);
+    FGDMA_INFO("FreeRTOS ack: GDMA chan-%d transfer end.", channel_id);
+    x_result = xEventGroupSetBitsFromISR(chan_evt, GDMA_CHAN_TRANS_END(channel_id), &xhigher_priority_task_woken);
+    
+    if (x_result == pdFALSE)
+    {
+        FGDMA_ERROR("xEventGroupSetBitsFromISR() fail.");
+    }
 
+    portYIELD_FROM_ISR(xhigher_priority_task_woken);
+    
     return;
 }
 
-static boolean GdmaMemcpyWaitChanXEnd(u32 chan_id)
+static unsigned long GdmaMemcpyWaitChanXEnd(uint32_t channel_id)
 {
-    const TickType_t wait_delay = pdMS_TO_TICKS(5000UL); /* wait for 5 seconds */
-    EventBits_t ev;
-    boolean ok = FALSE;
+    FASSERT(channel_id < FFREERTOS_GDMA_NUM_OF_CHAN);
+
+    EventBits_t evt_result;
 
     /* block task to wait memcpy finish signal */
-    ev = xEventGroupWaitBits(chan_evt, GDMA_CHAN_TRANS_END(chan_id),
-                             pdTRUE, pdTRUE, wait_delay); /* wait for all bits */
-    if ((ev & GDMA_CHAN_TRANS_END(chan_id))) /* wait until channel finished memcpy */
+    evt_result = xEventGroupWaitBits(chan_evt, GDMA_CHAN_TRANS_END(channel_id),
+                                     pdTRUE, pdTRUE, pdMS_TO_TICKS(5000UL)); /* wait for channel end event bit(5s) */
+    if ((evt_result & GDMA_CHAN_TRANS_END(channel_id))) /* wait until channel finished memcpy */
     {
-        FGDMA_INFO("memcpy finished !! chan bits: 0x%x.", chan_evt_bits);
-        ok = TRUE;
+        FGDMA_INFO("GDMA memcpy finished. Channel bits: 0x%x.", chan_evt_bits);
+        return TRUE;
     }
     else
     {
-        FGDMA_ERROR("wait memcpy timeout !!! 0x%x != 0x%x.", ev, chan_evt_bits);
-        ok = FALSE;
+        FGDMA_ERROR("Wait GDMA memcpy timeout. Channel bits: 0x%x, correct value: 0x%x.", evt_result, chan_evt_bits);
+        return FALSE;
     }
 
-    return ok;
+    return TRUE;
 }
 
 static void GdmaInitTask(void *args)
 {
-    u32 gdma_id = FGDMA0_ID;
+    gdma_instance_p = FFreeRTOSGdmaInit(FGDMA_CONTROLLER_ID);
+    FASSERT_MSG(gdma_instance_p, "Init gdma controller failed.");
 
-    gdma = FFreeRTOSGdmaInit(gdma_id);
-    FASSERT_MSG(gdma, "init gdma failed");
-
-    FASSERT_MSG(init_locker, "init locker NULL");
-    for (u32 loop = 0U; loop < GDMA_WORK_TASK_NUM; loop++)
+    FASSERT_MSG(gdma_task_counter, "GDMA task counter does not exist.");
+    for (size_t loop = 0; loop < GDMA_WORK_TASK_NUM; loop++)
     {
-        xSemaphoreGive(init_locker);
+        xSemaphoreGive(gdma_task_counter);
     }
 
     vTaskDelete(NULL);
@@ -198,158 +182,195 @@ static void GdmaInitTask(void *args)
 
 static void GdmaMemcpyTaskA(void *args)
 {
-    FASSERT(init_locker);
-    xSemaphoreTake(init_locker, portMAX_DELAY);
+    FASSERT_MSG(gdma_task_counter, "GDMA task counter does not exist.");
+    
+    xSemaphoreTake(gdma_task_counter, portMAX_DELAY);
 
     char ch = 'A';
-    u32 chan_id = 0U;
-    u8 times = 0U;
-    FError err = FT_SUCCESS;
-    const TickType_t wait_delay = pdMS_TO_TICKS(2000UL); /* wait for 2 seconds */
-    FFreeRTOSGdmaRequest *req_a = GdmaPrepareRequest(src_a, dst_a, GDMA_BUF_A_LEN, 5);
-
-    req_a->req_done_handler = GdmaMemcpyAckChanXEnd;
-    req_a->req_done_args = NULL;
-
-    err = FFreeRTOSGdmaSetupChannel(gdma, chan_id, req_a);
-    if (FT_SUCCESS != err)
-    {
-        FGDMA_ERROR("setup chan-%d failed.", chan_id);
-        goto task_err;
-    }
+    uint8_t times = 0U;
+    FError err = FFREERTOS_GDMA_OK;
 
     for (;;)
     {
-        FGDMA_INFO("[A]start memcpy data ...");
+        /* os channel config set */
+        os_channel_config_taska.trans_mode = FFREERTOS_GDMA_OPER_DIRECT;
+        os_channel_config_taska.src_addr = (uintptr_t)src_a;
+        os_channel_config_taska.dst_addr = (uintptr_t)dst_a;
+        os_channel_config_taska.trans_length = GDMA_TASKA_TRANS_LEN;
 
-        /* recv task has high priority, send task will not run before recv task blocked */
+        err = FFreeRTOSGdmaChanConfigure(gdma_instance_p, GDMA_TASKA_CHANNEL_ID, &os_channel_config_taska);
+        if (FFREERTOS_GDMA_OK != err)
+        {
+            FGDMA_ERROR("FFreeRTOSGdmaChanConfigure in channel-%d failed.", GDMA_TASKA_CHANNEL_ID);
+            goto task_err;
+        }
+
+        FFreeRTOSGdmaChanRegisterEvtHandler(gdma_instance_p, 
+                                            GDMA_TASKA_CHANNEL_ID, 
+                                            FFREERTOS_GDMA_CHAN_EVT_TRANS_END,
+                                            GdmaMemcpyAckChanXEnd,
+                                            NULL);
+
         ch = (char)('A' + (times) % 10); /* send different content each time */
 
-        memset(src_a, ch, GDMA_BUF_A_LEN);
-        memset(dst_a, 0, GDMA_BUF_A_LEN);
+        memset((void *)src_a, ch, GDMA_TASKA_TRANS_LEN);
+        memset((void *)dst_a, 0, GDMA_TASKA_TRANS_LEN);
 
-        FCacheDCacheInvalidateRange((uintptr)src_a, GDMA_BUF_A_LEN);
-        FCacheDCacheInvalidateRange((uintptr)dst_a, GDMA_BUF_A_LEN);
+        /* Memory barrier operation */
+        FCacheDCacheInvalidateRange((uintptr_t)src_a, GDMA_TASKA_TRANS_LEN); 
+        FCacheDCacheInvalidateRange((uintptr_t)dst_a, GDMA_TASKA_TRANS_LEN);
 
-        if (FT_SUCCESS != FFreeRTOSGdmaStart(gdma, chan_id))
+        FGDMA_INFO("[Task-A]start GDMA memcpy data ...");
+        FFreeRTOSGdmaChanStart(gdma_instance_p, GDMA_TASKA_CHANNEL_ID);
+
+        /* recv task has high priority, send task will not run before recv task blocked */
+        if (!GdmaMemcpyWaitChanXEnd(GDMA_TASKA_CHANNEL_ID))
         {
-            FGDMA_ERROR("[A]start failed !!!");
             goto task_err;
         }
 
-        if (!GdmaMemcpyWaitChanXEnd(chan_id))
-        {
-            goto task_err;
-        }
-
-        FCacheDCacheInvalidateRange((uintptr)src_a, GDMA_BUF_A_LEN);
-        FCacheDCacheInvalidateRange((uintptr)dst_a, GDMA_BUF_A_LEN);
+        FCacheDCacheInvalidateRange((uintptr)src_a, GDMA_TASKA_TRANS_LEN);
+        FCacheDCacheInvalidateRange((uintptr)dst_a, GDMA_TASKA_TRANS_LEN);
 
         /* compare if memcpy success */
-        if (0 == memcmp(src_a, dst_a, GDMA_BUF_A_LEN))
+        if (0 == memcmp(src_a, dst_a, GDMA_TASKA_TRANS_LEN))
         {
             taskENTER_CRITICAL();
-            printf("[A]memcpy success !!!\r\n");
-            printf("[A]src buf...\r\n");
-            FtDumpHexByte((const u8 *)src_a, min((fsize_t)GDMA_BUF_A_LEN, (fsize_t)64U));
-            printf("[A]dst buf...\r\n");
-            FtDumpHexByte((const u8 *)dst_a, min((fsize_t)GDMA_BUF_A_LEN, (fsize_t)64U));
+            printf("\r\n[Task-A]GDMA memcpy success.\r\n");
+            printf("[Task-A]src buf...\r\n");
+            FtDumpHexByte((const uint8_t *)src_a, min((size_t)GDMA_TASKA_TRANS_LEN, (size_t)64U));
+            printf("[Task-A]dst buf...\r\n");
+            FtDumpHexByte((const uint8_t *)dst_a, min((size_t)GDMA_TASKA_TRANS_LEN, (size_t)64U));
             taskEXIT_CRITICAL();
         }
         else
         {
-            FGDMA_ERROR("[A]src != dst, memcpy failed !!!");
+            FGDMA_ERROR("[Task-A]src != dst, GDMA memcpy failed.");
             goto task_err;
         }
 
-        if (times++ > memcpy_times)
+        err = FFreeRTOSGdmaChanStop(gdma_instance_p, GDMA_TASKA_CHANNEL_ID);
+        if (FFREERTOS_GDMA_OK != err)
+        {
+            FGDMA_ERROR("FFreeRTOSGdmaChanStop in channel-%d failed.", GDMA_TASKA_CHANNEL_ID);
+            goto task_err;
+        }
+        
+        err = FFreeRTOSGdmaChanDeconfigure(gdma_instance_p, GDMA_TASKA_CHANNEL_ID);
+        if (FFREERTOS_GDMA_OK != err)
+        {
+            FGDMA_ERROR("FFreeRTOSGdmaChanDeconfigure in channel-%d failed.", GDMA_TASKA_CHANNEL_ID);
+            goto task_err;
+        }
+
+        if (times++ > GDMA_TRANS_TIMES)
         {
             break;
         }
 
-        vTaskDelay(wait_delay);
+        vTaskDelay(pdMS_TO_TICKS(2000U)); /* wait for 2 seconds */
     }
 
 task_err:
-    (void)FFreeRTOSGdmaRevokeChannel(gdma, chan_id);
-    printf("[A]exit from memcpy task !!!\r\n");
+    (void)FFreeRTOSGdmaChanDeconfigure(gdma_instance_p, GDMA_TASKA_CHANNEL_ID);
+    printf("[Task-A]exit from GDMA memcpy task.\r\n");
     vTaskSuspend(NULL); /* failed, not able to run, suspend task itself */
 }
 
 static void GdmaMemcpyTaskB(void *args)
 {
-    FASSERT(init_locker);
-    xSemaphoreTake(init_locker, portMAX_DELAY);
+    FASSERT_MSG(gdma_task_counter, "GDMA task counter does not exist.");
+    
+    xSemaphoreTake(gdma_task_counter, portMAX_DELAY);
 
     char ch = '0';
-    u8 times = 0U;
-    u32 chan_id = 1U;
-    FError err = FT_SUCCESS;
-    const TickType_t wait_delay = pdMS_TO_TICKS(2000UL); /* wait for 2 seconds */
-    FFreeRTOSGdmaRequest *req_b = GdmaPrepareRequest(src_b, dst_b, GDMA_BUF_B_LEN, chan_id);
-
-    req_b->req_done_handler = GdmaMemcpyAckChanXEnd;
-    req_b->req_done_args = NULL;
-
-    err = FFreeRTOSGdmaSetupChannel(gdma, chan_id, req_b);
-    if (FT_SUCCESS != err)
-    {
-        FGDMA_ERROR("setup chan-%d failed.", chan_id);
-        goto task_err;
-    }
+    uint8_t times = 0U;
+    FError err = FFREERTOS_GDMA_OK;
 
     for (;;)
     {
-        FGDMA_INFO("[B]start memcpy ...");
+        /* os channel config set */
+        os_channel_config_taskb.trans_mode = FFREERTOS_GDMA_OPER_BDL;
+        os_channel_config_taskb.src_addr = (uintptr_t)src_b;
+        os_channel_config_taskb.dst_addr = (uintptr_t)dst_b;
+        os_channel_config_taskb.trans_length = GDMA_TASKB_TRANS_LEN;
 
-        /* recv task has high priority, send task will not run before recv task blocked */
+        err = FFreeRTOSGdmaChanConfigure(gdma_instance_p, GDMA_TASKB_CHANNEL_ID, &os_channel_config_taskb);
+        if (FFREERTOS_GDMA_OK != err)
+        {
+            FGDMA_ERROR("FFreeRTOSGdmaChanConfigure in channel-%d failed.", GDMA_TASKB_CHANNEL_ID);
+            goto task_err;
+        }
+
+        FFreeRTOSGdmaChanRegisterEvtHandler(gdma_instance_p, 
+                                            GDMA_TASKB_CHANNEL_ID, 
+                                            FFREERTOS_GDMA_CHAN_EVT_TRANS_END,
+                                            GdmaMemcpyAckChanXEnd,
+                                            NULL);
+
         ch = (char)('0' + (times) % 10); /* send different content each time */
 
-        memset(src_b, ch, GDMA_BUF_B_LEN);
-        memset(dst_b, 0, GDMA_BUF_B_LEN);
+        memset((void *)src_b, ch, GDMA_TASKB_TRANS_LEN);
+        memset((void *)dst_b, 0, GDMA_TASKB_TRANS_LEN);
 
-        FCacheDCacheInvalidateRange((uintptr)src_b, GDMA_BUF_B_LEN);
-        FCacheDCacheInvalidateRange((uintptr)dst_b, GDMA_BUF_B_LEN);
+        /* Memory barrier operation */
+        FCacheDCacheInvalidateRange((uintptr_t)src_b, GDMA_TASKB_TRANS_LEN); 
+        FCacheDCacheInvalidateRange((uintptr_t)dst_b, GDMA_TASKB_TRANS_LEN);
 
-        if (FT_SUCCESS != FFreeRTOSGdmaStart(gdma, chan_id))
+        FGDMA_INFO("[Task-B]start GDMA memcpy data ...");
+        FFreeRTOSGdmaChanStart(gdma_instance_p, GDMA_TASKB_CHANNEL_ID);
+
+        /* recv task has high priority, send task will not run before recv task blocked */
+        if (!GdmaMemcpyWaitChanXEnd(GDMA_TASKB_CHANNEL_ID))
         {
-            FGDMA_ERROR("[B]start failed !!!");
             goto task_err;
         }
 
-        if (!GdmaMemcpyWaitChanXEnd(chan_id))
-        {
-            goto task_err;
-        }
+        FCacheDCacheInvalidateRange((uintptr)src_b, GDMA_TASKB_TRANS_LEN);
+        FCacheDCacheInvalidateRange((uintptr)dst_b, GDMA_TASKB_TRANS_LEN);
 
         /* compare if memcpy success */
-        if (0 == memcmp(src_b, dst_b, GDMA_BUF_B_LEN))
+        if (0 == memcmp(src_a, dst_a, GDMA_TASKB_TRANS_LEN))
         {
             taskENTER_CRITICAL();
-            printf("[B]memcpy success !!!\r\n");
-            printf("[B]src buf...\r\n");
-            FtDumpHexByte((const u8 *)src_b, min((fsize_t)GDMA_BUF_B_LEN, (fsize_t)64U));
-            printf("[B]dst buf...\r\n");
-            FtDumpHexByte((const u8 *)dst_b, min((fsize_t)GDMA_BUF_B_LEN, (fsize_t)64U));
+            printf("\r\n[Task-B]GDMA memcpy success.\r\n");
+            printf("[Task-B]src buf...\r\n");
+            FtDumpHexByte((const uint8_t *)src_b, min((size_t)GDMA_TASKB_TRANS_LEN, (size_t)64U));
+            printf("[Task-B]dst buf...\r\n");
+            FtDumpHexByte((const uint8_t *)dst_b, min((size_t)GDMA_TASKB_TRANS_LEN, (size_t)64U));
             taskEXIT_CRITICAL();
         }
         else
         {
-            FGDMA_ERROR("[B]src != dst, memcpy failed !!!");
+            FGDMA_ERROR("[TaskB]src != dst, GDMA memcpy failed.");
             goto task_err;
         }
 
-        if (times++ > memcpy_times)
+        err = FFreeRTOSGdmaChanStop(gdma_instance_p, GDMA_TASKB_CHANNEL_ID);
+        if (FFREERTOS_GDMA_OK != err)
+        {
+            FGDMA_ERROR("FFreeRTOSGdmaChanStop in channel-%d failed.", GDMA_TASKB_CHANNEL_ID);
+            goto task_err;
+        }
+        
+        err = FFreeRTOSGdmaChanDeconfigure(gdma_instance_p, GDMA_TASKB_CHANNEL_ID);
+        if (FFREERTOS_GDMA_OK != err)
+        {
+            FGDMA_ERROR("FFreeRTOSGdmaChanDeconfigure in channel-%d failed.", GDMA_TASKB_CHANNEL_ID);
+            goto task_err;
+        }
+
+        if (times++ > GDMA_TRANS_TIMES)
         {
             break;
         }
 
-        vTaskDelay(wait_delay);
+        vTaskDelay(pdMS_TO_TICKS(2000U)); /* wait for 2 seconds */
     }
 
 task_err:
-    (void)FFreeRTOSGdmaRevokeChannel(gdma, chan_id);
-    printf("[B]exit from memcpy task !!!\r\n");
+    (void)FFreeRTOSGdmaChanDeconfigure(gdma_instance_p, GDMA_TASKB_CHANNEL_ID);
+    printf("[Task-B]exit from GDMA memcpy task.\r\n");
     vTaskSuspend(NULL); /* failed, not able to run, suspend task itself */
 }
 
@@ -360,17 +381,17 @@ BaseType_t FFreeRTOSRunGdmaMemcpy(void)
 
     if (is_running)
     {
-        FGDMA_ERROR("task is running !!!!");
+        FGDMA_ERROR("task is running, please wait for the program to complete.");
         return pdPASS;
     }
 
     is_running = TRUE;
 
-    FASSERT_MSG(NULL == chan_evt, "event group exists !!!");
-    FASSERT_MSG((chan_evt = xEventGroupCreate()) != NULL, "create event group failed !!!");
+    FASSERT_MSG(NULL == chan_evt, "Event group has been created aready.");
+    FASSERT_MSG((chan_evt = xEventGroupCreate()) != NULL, "Create event group failed.");
 
-    FASSERT_MSG(NULL == init_locker, "init locker exists !!!");
-    FASSERT_MSG((init_locker = xSemaphoreCreateCounting(GDMA_WORK_TASK_NUM, 0U)) != NULL, "create event group failed !!!");
+    FASSERT_MSG(NULL == gdma_task_counter, "GDMA task counter has been created aready.");
+    FASSERT_MSG((gdma_task_counter = xSemaphoreCreateCounting(GDMA_WORK_TASK_NUM, 0U)) != NULL, "create event group failed !!!");
 
     taskENTER_CRITICAL(); /* no schedule when create task */
 

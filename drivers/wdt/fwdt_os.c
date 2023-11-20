@@ -127,10 +127,6 @@ FError FFreeRTOSWdtControl(FFreeRTOSWdt *os_wdt_p, int cmd, void *args)
             }
             break;
 
-        case FREERTOS_WDT_CTRL_GET_TIMELEFT:
-            *((u32 *)args) = FWdtGetTimeleft(pctrl);
-            break;
-
         case FREERTOS_WDT_CTRL_KEEPALIVE:
             ret = FWdtRefresh(pctrl);
             if (FWDT_SUCCESS != ret)

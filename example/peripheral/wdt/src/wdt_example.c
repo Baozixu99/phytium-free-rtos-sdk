@@ -192,12 +192,6 @@ static void prvAutoReloadTimerCallback(TimerHandle_t xTimer)
         vPrintf("Auto-reload callback executing, Delete FFreeRTOSWdtQueueReceiveTask and software timer.\r\n");
         FFreeRTOSWdtDelete(os_wdt_ctrl_p);
     }
-    else
-    {
-        FFreeRTOSWdtControl(os_wdt_ctrl_p, FREERTOS_WDT_CTRL_GET_TIMELEFT, &time_left);
-        vPrintf("Auto-reload callback executing, wdt timeleft=%d\n", time_left);
-    }
-
 }
 
 BaseType_t FFreeRTOSWdtCreate(u32 id)

@@ -4,7 +4,7 @@ THIRDP_CUR_DIR := $(FREERTOS_SDK_DIR)/third-party
 
 ifdef CONFIG_USE_FREERTOS
 
-	BUILD_INC_PATH_DIR +=  $(THIRDP_CUR_DIR)/libmetal/metal/system/freertos/ft_platform
+	BUILD_INC_PATH_DIR += $(THIRDP_CUR_DIR)/libmetal/metal/system/freertos/ft_platform
 
 endif
 

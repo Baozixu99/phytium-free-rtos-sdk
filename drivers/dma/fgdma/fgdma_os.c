@@ -17,9 +17,10 @@
  * Description:  This file is for required function implementations of gdma driver used in FreeRTOS.
  *
  * Modify History:
- *  Ver   Who        Date         Changes
- * ----- ------     --------    --------------------------------------
- * 1.0   zhugengyu  2022/7/27   init commit
+ *  Ver      Who           Date         Changes
+ * -----    ------       --------      --------------------------------------
+ *  1.0    zhugengyu     2022/7/27     init commit
+ *  2.0    liqiaozhong   2023/11/10    synchronous update with standalone sdk
  */
 /***************************** Include Files *********************************/
 #include <string.h>
@@ -36,27 +37,45 @@
 #include "fgdma_hw.h"
 
 #include "fgdma_os.h"
-
 /************************** Constant Definitions *****************************/
 
 /**************************** Type Definitions *******************************/
 
 /************************** Variable Definitions *****************************/
-static FFreeRTOSGdma gdma[FGDMA_INSTANCE_NUM];
-
+static FFreeRTOSGdma gdma_instance[FGDMA_INSTANCE_NUM];
+static FGdmaBdlDesc *channel_first_desc_addr[FFREERTOS_GDMA_NUM_OF_CHAN];
 /***************** Macros (Inline Functions) Definitions *********************/
 #define FGDMA_DEBUG_TAG "GDMA-OS"
 #define FGDMA_ERROR(format, ...)   FT_DEBUG_PRINT_E(FGDMA_DEBUG_TAG, format, ##__VA_ARGS__)
 #define FGDMA_WARN(format, ...)    FT_DEBUG_PRINT_W(FGDMA_DEBUG_TAG, format, ##__VA_ARGS__)
 #define FGDMA_INFO(format, ...)    FT_DEBUG_PRINT_I(FGDMA_DEBUG_TAG, format, ##__VA_ARGS__)
 #define FGDMA_DEBUG(format, ...)   FT_DEBUG_PRINT_D(FGDMA_DEBUG_TAG, format, ##__VA_ARGS__)
-
 /************************** Function Prototypes ******************************/
 
 /*****************************************************************************/
+/* GDMA transfer end irq response function */
+static void GdmaChannelTransferEnd(FGdmaChanIrq *const chan_irq_info_p, void *args)
+{   
+    FASSERT(chan_irq_info_p);
+
+    FGdmaChanIndex channel_id = chan_irq_info_p->chan_id;
+    uint32_t ctrl_id = chan_irq_info_p->gdma_instance->config.instance_id;
+    FreeRTOSGdmaChanEvtHandler usr_evt_handler = gdma_instance[ctrl_id].os_evt_handler[channel_id][FFREERTOS_GDMA_CHAN_EVT_TRANS_END];
+    void *usr_evt_handler_arg = gdma_instance[ctrl_id].os_evt_handler_arg[channel_id][FFREERTOS_GDMA_CHAN_EVT_TRANS_END];
+
+    if (usr_evt_handler != NULL)
+    {
+        usr_evt_handler(channel_id, usr_evt_handler_arg);
+    }
+    FGDMA_INFO("Channel: %d Transfer completed.\n", channel_id);
+
+    return;
+}
+
 static inline FError FGdmaOsTakeSema(SemaphoreHandle_t locker)
 {
     FASSERT_MSG((NULL != locker), "Locker not exists.");
+
     if (pdFALSE == xSemaphoreTake(locker, portMAX_DELAY))
     {
         FGDMA_ERROR("Failed to take locker!!!");
@@ -77,65 +96,108 @@ static inline void FGdmaOsGiveSema(SemaphoreHandle_t locker)
     return;
 }
 
-static void FGdmaOsSetupInterrupt(FGdma *const ctrl)
+/* for GIC register */
+/* if GDMA chennels share the same intr num of the controller */
+static void FGdmaSetupShareInterrupt(FGdma *const gdma_ctrl_p)
 {
-    FASSERT(ctrl);
-    FGdmaConfig *config = &ctrl->config;
-    uintptr base_addr = config->base_addr;
-    u32 cpu_id = 0;
-    u32 irq_id = config->irq_num[0];
+    FASSERT(gdma_ctrl_p);
+    FASSERT(gdma_ctrl_p->gdma_ready);
+
+    uint32_t cpu_id = 0;
     GetCpuId(&cpu_id);
+    FGDMA_INFO("cpu id is %d", cpu_id);
 
-    FGDMA_INFO("cpu_id is cpu_id %d", cpu_id);
-    FGDMA_INFO("interrupt_id is %d", irq_id);
-    InterruptSetTargetCpus(irq_id, cpu_id);
+    FGdmaConfig *gdma_config_p = &gdma_ctrl_p->config;
 
-    InterruptSetPriority(irq_id, config->irq_prority);
+    InterruptSetTargetCpus(gdma_config_p->irq_num[0], cpu_id);
+    InterruptSetPriority(gdma_config_p->irq_num[0], gdma_config_p->irq_prority);
 
     /* register intr callback */
-    InterruptInstall(irq_id,
+    InterruptInstall(gdma_config_p->irq_num[0],
                      FGdmaIrqHandler,
-                     ctrl,
+                     gdma_ctrl_p,
                      NULL);
 
     /* enable gdma irq */
-    InterruptUmask(irq_id);
+    InterruptUmask(gdma_config_p->irq_num[0]);
+    FGDMA_INFO("GDMA GIC interrupt register FINISH.");
 
-    FGDMA_INFO("gdma interrupt setup done!!!");
     return;
 }
 
-FFreeRTOSGdma *FFreeRTOSGdmaInit(u32 id)
+/* if GDMA chennels have their own intr nums */
+static void FGdmaSetupPrivateInterrupt(FGdma *const gdma_ctrl_p, FGdmaChanIndex channel_id)
 {
-    FASSERT_MSG(id < FGDMA_INSTANCE_NUM, "Invalid gdma id.");
-    FFreeRTOSGdma *instance = &gdma[id];
-    FGdma *const ctrl = &instance->ctrl;
-    FGdmaConfig config;
-    FMemp *memp = &instance->memp;
-    void *memp_buf_beg = (void *)instance->memp_buf;
-    void *memp_buf_end = (void *)instance->memp_buf + sizeof(instance->memp_buf);
+    FASSERT(gdma_ctrl_p);
+    FASSERT(gdma_ctrl_p->gdma_ready);
+    FASSERT(channel_id < FFREERTOS_GDMA_NUM_OF_CHAN);
+
+    uint32_t cpu_id = 0;
+    FGdmaConfig *gdma_config_p = &gdma_ctrl_p->config;
+
+    InterruptSetTargetCpus(gdma_config_p->irq_num[channel_id], cpu_id);
+    InterruptSetPriority(gdma_config_p->irq_num[channel_id], gdma_config_p->irq_prority);
+
+    /* register intr callback */
+    InterruptInstall(gdma_config_p->irq_num[channel_id],
+                     FGdmaIrqHandlerPrivateChannel,
+                     &gdma_ctrl_p->chan_irq_info[channel_id],
+                     NULL);
+
+    /* enable gdma irq */
+    InterruptUmask(gdma_config_p->irq_num[channel_id]);
+    FGDMA_INFO("GDMA GIC interrupt register FINISH.");
+
+    return;
+}
+
+void FFreeRTOSGdmaChanRegisterEvtHandler(FFreeRTOSGdma *const instance_p,
+                                         uint32_t channel_id,
+                                         FFreeRTOSGdmaChanEvtType evt,
+                                         FreeRTOSGdmaChanEvtHandler os_evt_handler, 
+                                         void *os_evt_handler_arg)
+{
+    FASSERT(instance_p);
+    FASSERT(channel_id < FFREERTOS_GDMA_NUM_OF_CHAN);
+    FASSERT(evt < FFREERTOS_GDMA_CHAN_NUM_OF_EVT);
+    FASSERT(os_evt_handler);
+
+    instance_p->os_evt_handler[channel_id][evt] = os_evt_handler;
+    instance_p->os_evt_handler_arg[channel_id][evt] =os_evt_handler_arg;
+
+    return;
+}
+
+/* GDMA ctrl(controller) init function */
+FFreeRTOSGdma *FFreeRTOSGdmaInit(uint32_t ctrl_id)
+{
+    FASSERT_MSG(ctrl_id < FGDMA_INSTANCE_NUM, "Invalid GDMA controller id.");
+
+    FFreeRTOSGdma *instance_p = &gdma_instance[ctrl_id];
+    FGdma *ctrl_p = &instance_p->ctrl;
+    FGdmaConfig ctrl_config;
+    FMemp *memp = &instance_p->memp;
+    void *memp_buf_beg = (void *)instance_p->memp_buf;
+    void *memp_buf_end = (void *)instance_p->memp_buf + sizeof(instance_p->memp_buf);
     FError err = FFREERTOS_GDMA_OK;
 
-    if (FT_COMPONENT_IS_READY == ctrl->is_ready)
-    {
-        FGDMA_WARN("gdma ctrl %d already inited!!!", id);
-        return instance;
-    }
+    taskENTER_CRITICAL(); /* forbidden scheduler during init */
 
-    /* no scheduler during init */
-    taskENTER_CRITICAL();
-
-    config = *FGdmaLookupConfig(id);
-    config.irq_prority = FFREERTOS_GDMA_IRQ_PRIORITY;
-    err = FGdmaCfgInitialize(ctrl, &config);
+    ctrl_config = *FGdmaLookupConfig(ctrl_id);
+    ctrl_config.irq_prority = FFREERTOS_GDMA_IRQ_PRIORITY;
+    err = FGdmaCfgInitialize(ctrl_p, &ctrl_config);
     if (FGDMA_SUCCESS != err)
     {
-        FGDMA_ERROR("Init gdma-%d failed, 0x%x", id, err);
+        FGDMA_ERROR("Init gdma-%d failed, err = 0x%x", ctrl_id, err);
         goto err_exit;
     }
 
-    FGdmaOsSetupInterrupt(ctrl);
+    if (ctrl_p->config.caps & FGDMA_IRQ1_MASK)
+    {
+        FGdmaSetupShareInterrupt(ctrl_p);
+    }
 
+    /* init memory pool */
     err = FMempInit(memp, memp_buf_beg, memp_buf_end);
     if (FMEMP_SUCCESS != err)
     {
@@ -143,159 +205,212 @@ FFreeRTOSGdma *FFreeRTOSGdmaInit(u32 id)
         goto err_exit;
     }
 
-    FASSERT_MSG(NULL == instance->locker, "Locker exists!!!");
-    FASSERT_MSG((instance->locker = xSemaphoreCreateMutex()) != NULL, "Create mutex failed!!!");
-
-    /* start gdma first, then config gdma channel */
-    err = FGdmaStart(ctrl);
+    FASSERT_MSG(NULL == instance_p->locker, "Mutex instance_p->locker aready exists.");
+    FASSERT_MSG((instance_p->locker = xSemaphoreCreateMutex()) != NULL, "Create mutex instance_p->locker failed.");
 
 err_exit:
     taskEXIT_CRITICAL(); /* allow schedule after init */
-    return (FT_SUCCESS == err) ? instance : NULL; /* exit with NULL if failed */
+    return (FT_SUCCESS == err) ? instance_p : NULL; /* exit with NULL if failed */
 }
 
-FError FFreeRTOSGdmaDeInit(FFreeRTOSGdma *const instance)
+/* GDMA instance deinit function */
+FError FFreeRTOSGdmaDeInit(FFreeRTOSGdma *const instance_p)
 {
-    FASSERT(instance);
-    FGdma *const ctrl = &instance->ctrl;
-    FGdmaConfig *config = &ctrl->config;
-    FMemp *memp = &instance->memp;
+    FASSERT(instance_p);
+    FGdma *ctrl_p = &instance_p->ctrl;
+    FGdmaConfig *config = &ctrl_p->config;
+    FMemp *memp = &instance_p->memp;
     FError err = FFREERTOS_GDMA_OK;
 
-    if (FT_COMPONENT_IS_READY != ctrl->is_ready)
+    taskENTER_CRITICAL();  /* no schedule when deinit */
+
+    err = FGdmaGlobalStop(ctrl_p);
+    if (FMEMP_SUCCESS != err)
     {
-        FGDMA_ERROR("Gdma ctrl %d not yet init!!!", ctrl->config.instance_id);
-        return FFREERTOS_GDMA_NOT_INIT;
+        FGDMA_ERROR("FGdmaGlobalStop failed, err = 0x%x.", err);
+        taskEXIT_CRITICAL();
+        return err;
     }
-
-    taskENTER_CRITICAL();  /* no schedule when deinit instance */
-
-    err = FGdmaStop(ctrl);
     FMempDeinit(memp);
-    FGdmaDeInitialize(ctrl);
+    FGdmaDeInitialize(ctrl_p);
 
-    vSemaphoreDelete(instance->locker);
-    instance->locker = NULL;
+    vSemaphoreDelete(instance_p->locker);
+    instance_p->locker = NULL;
 
     taskEXIT_CRITICAL(); /* allow schedule after deinit */
+
     return err;
 }
 
-FError FFreeRTOSGdmaSetupChannel(FFreeRTOSGdma *const instance, u32 chan_id, const FFreeRTOSGdmaRequest *req)
+/* GDMA channenl configure function */
+FError FFreeRTOSGdmaChanConfigure(FFreeRTOSGdma *const instance_p, 
+                                  uint32_t channel_id, 
+                                  FFreeRTOSGdmaChanCfg const *os_channel_config_p)
 {
-    FASSERT(instance);
-    FGdma *const ctrl = &instance->ctrl;
-    FMemp *memp = &instance->memp;
-    FError err = FFREERTOS_GDMA_OK;
-    FFreeRTOSGdmaChan *chan_os = &instance->chan[chan_id];
-    FFreeRTOSGdmaTranscation *trans = NULL;
-    FGdmaChanConfig *chan_config = NULL;
-    u32 buf_idx;
+    FASSERT(instance_p);
+    FASSERT_MSG(channel_id < FFREERTOS_GDMA_NUM_OF_CHAN, "Invalid GDMA channel id.");
+    FASSERT(os_channel_config_p);
 
-    err = FGdmaOsTakeSema(instance->locker);
+    FGdma *ctrl_p = &instance_p->ctrl;
+    FError err = FFREERTOS_GDMA_OK;
+
+    err = FGdmaOsTakeSema(instance_p->locker);
     if (FFREERTOS_GDMA_OK != err)
     {
+        FGDMA_ERROR("Mutex instance_p->locker is occupied.");
         return err;
     }
 
-    chan_os->bdl_list = FMempMallocAlign(memp, sizeof(FGdmaBdlDesc) * req->valid_trans_num, FGDMA_ADDR_ALIGMENT);
-    if (NULL == chan_os->bdl_list)
+    /* channel config set */
+    FGdmaChanConfig channel_config = FGDMA_DEFAULT_CHAN_CONFIG();
+
+    if (os_channel_config_p->trans_mode == FFREERTOS_GDMA_OPER_DIRECT)
     {
-        FGDMA_ERROR("Allocate buffer failed!!!");
-        err = FFREERTOS_GDMA_ALLOCATE_FAIL;
-        goto err_exit;
+        channel_config.trans_mode = FGDMA_OPER_DIRECT;
+        channel_config.src_addr = os_channel_config_p->src_addr;
+        channel_config.dst_addr = os_channel_config_p->dst_addr;
+        channel_config.trans_length = os_channel_config_p->trans_length;
     }
-
-    chan_config = &chan_os->chan.config;
-    *chan_config = FGDMA_DEFAULT_BDL_CHAN_CONFIG(chan_id, chan_os->bdl_list, req->valid_trans_num);
-    err = FGdmaAllocateChan(ctrl, &chan_os->chan, chan_config);
-    if (FGDMA_SUCCESS != err)
+    else if (os_channel_config_p->trans_mode == FFREERTOS_GDMA_OPER_BDL)
     {
-        FGDMA_ERROR("Allocate chan failed!!!");
-        goto err_exit;
-    }
+        FMemp *memp = &instance_p->memp;
 
-    FGdmaChanRegisterEvtHandler(&chan_os->chan,
-                                FGDMA_CHAN_EVT_TRANS_END,
-                                req->req_done_handler,
-                                req->req_done_args);
-
-    /* assign bdl for each transaction buffer */
-    for (buf_idx = 0; buf_idx < req->valid_trans_num; buf_idx++)
-    {
-        trans = &req->trans[buf_idx];
-
-        /* append bdl entry */
-        err = FGdmaAppendBDLEntry(&chan_os->chan, (uintptr)trans->src_buf,
-                                  (uintptr)trans->dst_buf, trans->data_len);
-        if (FGDMA_SUCCESS != err)
+        /* allocate a piece of memory space from memroy pool for BDL descriptor list */
+        FGdmaBdlDesc *first_desc_addr = FMempMallocAlign(memp, 
+                                                         sizeof(FGdmaBdlDesc) * channel_config.valid_desc_num, 
+                                                         FGDMA_BDL_DESC_ALIGMENT);
+        if (first_desc_addr == NULL)
         {
-            FGDMA_ERROR("Setup bdl entry failed!!!");
+            FGDMA_ERROR("Allocate memory space from memroy pool failed.");
+            err = FFREERTOS_GDMA_ALLOCATE_FAIL;
             goto err_exit;
         }
+        channel_first_desc_addr[channel_id] = first_desc_addr;
+
+        /* creat BDL descriptor list */
+        FGdmaBdlDescConfig bdl_desc_config[channel_config.valid_desc_num];
+        s32 pre_desc_trans_len = os_channel_config_p->trans_length / channel_config.valid_desc_num;
+        for (s32 loop = 0; loop < channel_config.valid_desc_num; loop++)
+        {
+            bdl_desc_config[loop] = FGDMA_DEFAULT_DESC_CONFIG();
+            bdl_desc_config[loop].current_desc_num = loop;
+            bdl_desc_config[loop].src_addr = os_channel_config_p->src_addr + loop * pre_desc_trans_len;
+            bdl_desc_config[loop].dst_addr = os_channel_config_p->dst_addr + loop * pre_desc_trans_len;
+            bdl_desc_config[loop].trans_length = pre_desc_trans_len;
+            FGdmaBDLSetDesc(first_desc_addr, &bdl_desc_config[loop]);
+        }
+
+        channel_config.trans_mode = FGDMA_OPER_BDL;
+        channel_config.first_desc_addr = first_desc_addr;
     }
 
-err_exit:
-    FGdmaOsGiveSema(instance->locker);
-    return err;
-}
-
-FError FFreeRTOSGdmaRevokeChannel(FFreeRTOSGdma *const instance, u32 chan_id)
-{
-    FASSERT(instance);
-    FGdma *const ctrl = &instance->ctrl;
-    FError err = FFREERTOS_GDMA_OK;
-    FMemp *memp = &instance->memp;
-    u32 chan_idx;
-    FFreeRTOSGdmaChan *chan_os = &instance->chan[chan_id];
-
-    err = FGdmaOsTakeSema(instance->locker);
-    if (FFREERTOS_GDMA_OK != err)
-    {
-        return err;
-    }
-
-    /* free dynamic memroy allocated for bdl */
-    if (chan_os->bdl_list)
-    {
-        FMempFree(memp, chan_os->bdl_list);
-        chan_os->bdl_list = NULL;
-    }
-
-    /* deallocate channel */
-    err = FGdmaDellocateChan(&chan_os->chan);
+    /* use channel config to configure channel */
+    err = FGdmaChanConfigure(ctrl_p, channel_id, &channel_config);
     if (FGDMA_SUCCESS != err)
     {
-        FGDMA_ERROR("Dellocate chan %d failed.", chan_id);
-    }
-
-err_exit:
-    FGdmaOsGiveSema(instance->locker);
-    return err;
-}
-
-FError FFreeRTOSGdmaStart(FFreeRTOSGdma *const instance, u32 chan_id)
-{
-    FASSERT(instance);
-    FGdma *const ctrl = &instance->ctrl;
-    FError err = FFREERTOS_GDMA_OK;
-    FFreeRTOSGdmaChan *chan_os = &instance->chan[chan_id];
-
-    err = FGdmaOsTakeSema(instance->locker);
-    if (FFREERTOS_GDMA_OK != err)
-    {
-        return err;
-    }
-
-    err = FGdmaBDLTransfer(&chan_os->chan); /* start transfer of each channel */
-    if (FGDMA_SUCCESS != err)
-    {
+        FGDMA_ERROR("GDMA channel configure failed.");
         goto err_exit;
     }
 
-    /* you may wait memcpy end in other task */
+    /* register GIC interrupt */
+    if (ctrl_p->config.caps & FGDMA_IRQ2_MASK)
+    {
+        FGdmaSetupPrivateInterrupt(ctrl_p, channel_id);
+    }
+
+    FGdmaChanRegisterEvtHandler(ctrl_p,
+                                channel_id,
+                                FGDMA_CHAN_EVT_TRANS_END,
+                                GdmaChannelTransferEnd,
+                                NULL);
 
 err_exit:
-    FGdmaOsGiveSema(instance->locker);
+    FGdmaOsGiveSema(instance_p->locker);
+    return err;
+}
+
+/* GDMA channel transfer start function */
+void FFreeRTOSGdmaChanStart(FFreeRTOSGdma *const instance_p, uint32_t channel_id)
+{
+    FASSERT(instance_p);
+    FASSERT_MSG(channel_id < FFREERTOS_GDMA_NUM_OF_CHAN, "Invalid GDMA channel id.");
+
+    FGdma *ctrl_p = &instance_p->ctrl;
+    FError err = FFREERTOS_GDMA_OK;
+
+    err = FGdmaOsTakeSema(instance_p->locker);
+    if (FFREERTOS_GDMA_OK != err)
+    {
+        FGDMA_ERROR("Mutex instance_p->locker is occupied.");
+        goto err_exit;
+    }
+
+    FGdmaChanStartTrans(ctrl_p, channel_id); /* start channel transfer */
+
+err_exit:
+    FGdmaOsGiveSema(instance_p->locker);
+    return;
+}
+
+/* GDMA channel stop function */
+FError FFreeRTOSGdmaChanStop(FFreeRTOSGdma *const instance_p, uint32_t channel_id)
+{
+    FASSERT(instance_p);
+    FASSERT_MSG(channel_id < FFREERTOS_GDMA_NUM_OF_CHAN, "Invalid GDMA channel id.");
+
+    FGdma *ctrl_p = &instance_p->ctrl;
+    FError err = FFREERTOS_GDMA_OK;
+
+    err = FGdmaOsTakeSema(instance_p->locker);
+    if (FFREERTOS_GDMA_OK != err)
+    {
+        FGDMA_ERROR("Mutex instance_p->locker is occupied.");
+        goto err_exit;
+    }
+
+    err = FGdmaChanAbort(ctrl_p, channel_id);
+    if (err != FFREERTOS_GDMA_OK)
+    {
+        FGDMA_ERROR("GDMA abort failed.");
+        goto err_exit;
+    }
+
+err_exit:
+    FGdmaOsGiveSema(instance_p->locker);
+    return err;
+}
+
+FError FFreeRTOSGdmaChanDeconfigure(FFreeRTOSGdma *const instance_p, uint32_t channel_id)
+{
+    FASSERT(instance_p);
+    FASSERT_MSG(channel_id < FFREERTOS_GDMA_NUM_OF_CHAN, "Invalid GDMA channel id.");
+
+    FGdma *ctrl_p = &instance_p->ctrl;
+    FError err = FFREERTOS_GDMA_OK;
+    FMemp *memp = &instance_p->memp;
+
+    err = FGdmaOsTakeSema(instance_p->locker);
+    if (FFREERTOS_GDMA_OK != err)
+    {
+        FGDMA_ERROR("Mutex instance_p->locker is occupied.");
+        goto err_exit;
+    }
+
+    /* free dynamic memroy allocated for BDL desciptor list */
+    if (channel_first_desc_addr[channel_id])
+    {
+        FMempFree(memp, channel_first_desc_addr[channel_id]);
+        channel_first_desc_addr[channel_id] = NULL;
+    }
+
+    /* deconfigure GDMA channel */
+    err = FGdmaChanDeconfigure(ctrl_p, channel_id);
+    if (FGDMA_SUCCESS != err)
+    {
+        FGDMA_ERROR("Deconfigure GDMA channel-%d failed.", channel_id);
+    }
+
+err_exit:
+    FGdmaOsGiveSema(instance_p->locker);
     return err;
 }

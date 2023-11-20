@@ -91,7 +91,7 @@ static void PhytiumIrqhandler(s32 vector, void *param)
 #endif
 
 static struct remoteproc *
-PhytiumProcInit(struct remoteproc *rproc,const struct remoteproc_ops *ops,
+PhytiumProcInit(struct remoteproc *rproc,struct remoteproc_ops *ops,
                 void *arg)
 {
     struct remoteproc_priv *prproc = arg;

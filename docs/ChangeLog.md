@@ -1,3 +1,28 @@
+# Phytium Standalone SDK 2023-11-20 ChangeLog
+
+Change Log since 2023-11-15
+
+## example
+
+- add openamp for linux examples
+
+## third-party
+
+- add libmetal port to support freertos
+
+# Phytium Standalone SDK 2023-11-15 ChangeLog
+
+Change Log since 2023-11-09
+
+## example
+
+- synchronous update with GDMA OS driver
+- code decouple work
+
+## driver
+
+- GDMA synchronous update with standalone SDK
+
 # Phytium Standalone SDK 2023-11-09 ChangeLog
 
 Change Log since 2023-11-01
@@ -5,6 +30,14 @@ Change Log since 2023-11-01
 ## example
 
 - added extended frame test examples
+
+# Phytium Standalone SDK 2023-11-06 ChangeLog
+
+Change Log since 2023-11-06
+
+## example
+
+- update network example configs and adapt the example to the new standalone framework.
 
 # Phytium Standalone SDK 2023-11-01 ChangeLog
 

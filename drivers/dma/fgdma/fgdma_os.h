@@ -17,9 +17,10 @@
  * Description:  This file is for providing function related definitions of gdma driver used in FreeRTOS.
  *
  * Modify History:
- *  Ver   Who        Date         Changes
- * ----- ------     --------    --------------------------------------
- * 1.0   zhugengyu  2022/7/27   init commit
+ *  Ver      Who           Date         Changes
+ * -----    ------       --------      --------------------------------------
+ *  1.0    zhugengyu     2022/7/27     init commit
+ *  2.0    liqiaozhong   2023/11/10    synchronous update with standalone sdk
  */
 #ifndef  FGDMA_OS_H
 #define  FGDMA_OS_H
@@ -38,46 +39,50 @@ extern "C"
 #endif
 
 #define FFREERTOS_GDMA_OK                   FT_SUCCESS
-#define FFREERTOS_GDMA_NOT_INIT             FT_CODE_ERR(ErrModPort, ErrGdma, 0)
-#define FFREERTOS_GDMA_SEMA_ERR             FT_CODE_ERR(ErrModPort, ErrGdma, 1)
-#define FFREERTOS_GDMA_ALREADY_INIT         FT_CODE_ERR(ErrModPort, ErrGdma, 2)
-#define FFREERTOS_GDMA_ALLOCATE_FAIL        FT_CODE_ERR(ErrModPort, ErrGdma, 3)
-#define FFREERTOS_GDMA_MEMCPY_FAIL          FT_CODE_ERR(ErrModPort, ErrGdma, 4)
+#define FFREERTOS_GDMA_COMMON_ERR           FT_CODE_ERR(ErrModPort, ErrGdma, 0)
+#define FFREERTOS_GDMA_NOT_INIT             FT_CODE_ERR(ErrModPort, ErrGdma, 1)
+#define FFREERTOS_GDMA_SEMA_ERR             FT_CODE_ERR(ErrModPort, ErrGdma, 2)
+#define FFREERTOS_GDMA_ALREADY_INIT         FT_CODE_ERR(ErrModPort, ErrGdma, 3)
+#define FFREERTOS_GDMA_ALLOCATE_FAIL        FT_CODE_ERR(ErrModPort, ErrGdma, 4)
+#define FFREERTOS_GDMA_MEMCPY_FAIL          FT_CODE_ERR(ErrModPort, ErrGdma, 5)
 
 #define FFREERTOS_GDMA_IRQ_PRIORITY         IRQ_PRIORITY_VALUE_12
+#define FFREERTOS_GDMA_NUM_OF_CHAN          FGDMA_NUM_OF_CHAN
 /**************************** Type Definitions *******************************/
+typedef enum
+{
+    FFREERTOS_GDMA_CHAN_EVT_BDL_END,   /* one BDL descriptor transfer end */
+    FFREERTOS_GDMA_CHAN_EVT_TRANS_END, /* channel transfer end */
+    FFREERTOS_GDMA_CHAN_EVT_BUSY,      /* channel is still transferring */
+
+    FFREERTOS_GDMA_CHAN_NUM_OF_EVT
+} FFreeRTOSGdmaChanEvtType; /* FreeRTOS GDMA channel event */
+
+typedef enum
+{
+    FFREERTOS_GDMA_OPER_DIRECT = 0, /* direct mode */
+    FFREERTOS_GDMA_OPER_BDL         /* BDL mode */
+} FFreeRTOSGdmaChanMode; /* FreeRTOS GDMA channel mode */
+
+typedef void (*FreeRTOSGdmaChanEvtHandler)(uint32_t channel_id, void *arg);
 
 typedef struct
 {
-    FGdmaChan chan;
-    FGdmaBdlDesc *bdl_list; /* descriptor of every chan, dynamic allocated */
-} FFreeRTOSGdmaChan; /* instance of gdma channel in FreeRTOS */
+    FGdma                      ctrl;
+    SemaphoreHandle_t          locker;
+    FMemp                      memp;                                                                   /* instance of memory pool */
+    uint8_t                    memp_buf[SZ_16K];                                                       /* buffer used to support dynamic memory */
+    FreeRTOSGdmaChanEvtHandler os_evt_handler[FGDMA_NUM_OF_CHAN][FFREERTOS_GDMA_CHAN_NUM_OF_EVT];
+    void                       *os_evt_handler_arg[FGDMA_NUM_OF_CHAN][FFREERTOS_GDMA_CHAN_NUM_OF_EVT];
+} FFreeRTOSGdma; /* GDMA instance in FreeRTOS */
 
 typedef struct
 {
-    FGdma ctrl;
-    SemaphoreHandle_t locker;
-    FFreeRTOSGdmaChan chan[FGDMA_NUM_OF_CHAN];
-    FMemp memp;          /* instance of memory pool */
-    u8 memp_buf[SZ_16K]; /* buffer used to support dynamic memory */
-} FFreeRTOSGdma; /* instance of gdma in FreeRTOS */
-
-typedef struct
-{
-    u8 *src_buf; /* src memory buffer */
-    u8 *dst_buf; /* dst memory buffer */
-    fsize_t data_len; /* length of src & dst memory buffer */
-} FFreeRTOSGdmaTranscation; /* config of one memcpy transaction */
-
-typedef struct
-{
-    FFreeRTOSGdmaTranscation *trans; /* list of transcations */
-    u32 valid_trans_num; /* num of transcations can be used in request */
-    u32 total_trans_num; /* length of transcation buffer */
-    FGdmaChanEvtHandler req_done_handler; /* callback for request done */
-    void *req_done_args;
-} FFreeRTOSGdmaRequest; /* config of one memcpy request, may include multiple transaction */
-
+    FFreeRTOSGdmaChanMode trans_mode;  /* GDMA channel mode: direct or BDL */
+    uintptr_t               src_addr;  /* GDMA transfer source address - physical address */
+    uintptr_t               dst_addr;  /* GDMA transfer destination address - physical address */
+    size_t               trans_length; /* GDMA transfer data length */
+} FFreeRTOSGdmaChanCfg; /* GDMA channel config in FreeRTOS */
 /************************** Variable Definitions *****************************/
 
 /***************** Macros (Inline Functions) Definitions *********************/
@@ -85,21 +90,31 @@ typedef struct
 /************************** Function Prototypes ******************************/
 
 /*****************************************************************************/
-/* init and get gdma instance */
-FFreeRTOSGdma *FFreeRTOSGdmaInit(u32 instance_id);
+/* GDMA ctrl(controller) init function */
+FFreeRTOSGdma *FFreeRTOSGdmaInit(uint32_t instance_id);
 
-/* deinit gdma instance */
-FError FFreeRTOSGdmaDeInit(FFreeRTOSGdma *const instance);
+/* GDMA instance deinit function */
+FError FFreeRTOSGdmaDeInit(FFreeRTOSGdma *const instance_p);
 
-/* start gdma transfer by request */
-FError FFreeRTOSGdmaSetupChannel(FFreeRTOSGdma *const instance, u32 chan_id, const FFreeRTOSGdmaRequest *req);
+/* GDMA channenl configure function */
+FError FFreeRTOSGdmaChanConfigure(FFreeRTOSGdma *const instance_p, 
+                                  uint32_t channel_id, 
+                                  FFreeRTOSGdmaChanCfg const *os_channel_config_p);
 
-/* revoke setup of allocated channel */
-FError FFreeRTOSGdmaRevokeChannel(FFreeRTOSGdma *const instance, u32 chan_id);
+/* GDMA channel transfer start function */
+void FFreeRTOSGdmaChanStart(FFreeRTOSGdma *const instance_p, uint32_t channel_id);
 
-/* start up dma transfer */
-FError FFreeRTOSGdmaStart(FFreeRTOSGdma *const instance, u32 chan_id);
+/* GDMA channel stop function */
+FError FFreeRTOSGdmaChanStop(FFreeRTOSGdma *const instance_p, uint32_t channel_id);
 
+/* GDMA channel deconfigure function */
+FError FFreeRTOSGdmaChanDeconfigure(FFreeRTOSGdma *const instance_p, uint32_t channel_id);
+
+void FFreeRTOSGdmaChanRegisterEvtHandler(FFreeRTOSGdma *const instance_p,
+                                         uint32_t channel_id,
+                                         FFreeRTOSGdmaChanEvtType evt,
+                                         FreeRTOSGdmaChanEvtHandler os_evt_handler, 
+                                         void *os_evt_handler_arg);
 
 #ifdef __cplusplus
 }

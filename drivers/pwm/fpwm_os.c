@@ -154,11 +154,11 @@ static FError FFreeRTOSPwmControl(FFreeRTOSPwm *os_pwm_p, int cmd, void *arg)
  * @name: FFreeRTOSPwmSet
  * @msg:  set freeRTOS pwm channel config, include div, period and pulse.
  * @param {FFreeRTOSPwm} *os_pwm_p, pointer to os pwm instance
- * @param {FPwmChannel} channel, pwm channel
+ * @param {u8} channel, pwm channel
  * @param {FPwmVariableConfig} pwm_cfg_p, pwm config parameters, include mode and duty
  * @return err code information, FPWM_SUCCESS indicates success，others indicates failed
  */
-FError FFreeRTOSPwmSet(FFreeRTOSPwm *os_pwm_p, FPwmChannel channel, FPwmVariableConfig *pwm_cfg_p)
+FError FFreeRTOSPwmSet(FFreeRTOSPwm *os_pwm_p, u8 channel, FPwmVariableConfig *pwm_cfg_p)
 {
     FASSERT(os_pwm_p);
     FASSERT(os_pwm_p->pwm_semaphore != NULL);
@@ -176,11 +176,11 @@ FError FFreeRTOSPwmSet(FFreeRTOSPwm *os_pwm_p, FPwmChannel channel, FPwmVariable
  * @name: FFreeRTOSPwmGet
  * @msg:  get freeRTOS pwm channel config, include div, period and pulse.
  * @param {FFreeRTOSPwm} *os_pwm_p, pointer to os pwm instance
- * @param {FPwmChannel} channel, pwm channel
+ * @param {u8} channel, pwm channel
  * @param {FPwmVariableConfig} *pwm_cfg_p, pwm config parameters, include mode and duty
  * @return err code information, FPWM_SUCCESS indicates success，others indicates failed
  */
-FError FFreeRTOSPwmGet(FFreeRTOSPwm *os_pwm_p, FPwmChannel channel, FPwmVariableConfig *pwm_cfg_p)
+FError FFreeRTOSPwmGet(FFreeRTOSPwm *os_pwm_p, u8 channel, FPwmVariableConfig *pwm_cfg_p)
 {
     FASSERT(os_pwm_p);
     FASSERT(os_pwm_p->pwm_semaphore != NULL);
@@ -202,11 +202,11 @@ FError FFreeRTOSPwmGet(FFreeRTOSPwm *os_pwm_p, FPwmChannel channel, FPwmVariable
  * @name: FFreeRTOSPwmEnable
  * @msg:  enable or disable freeRTOS pwm channel output
  * @param {FFreeRTOSPwm} *os_pwm_p, pointer to os pwm instance
- * @param {FPwmChannel} channel, pwm channel
+ * @param {u8} channel, pwm channel
  * @param {boolean} state, TRUE-enable, FALSE-disable
  * @return err code information, FPWM_SUCCESS indicates success，others indicates failed
  */
-FError FFreeRTOSPwmEnable(FFreeRTOSPwm *os_pwm_p, FPwmChannel channel, boolean state)
+FError FFreeRTOSPwmEnable(FFreeRTOSPwm *os_pwm_p, u8 channel, boolean state)
 {
     FASSERT(os_pwm_p);
     FASSERT(os_pwm_p->pwm_semaphore != NULL);
@@ -274,11 +274,11 @@ FError FFreeRTOSPwmDbGet(FFreeRTOSPwm *os_pwm_p, FPwmDbVariableConfig *db_cfg_p)
  * @name: FFreeRTOSPwmPulseSet
  * @msg:  set freeRTOS pwm channel pulse.
  * @param {FFreeRTOSPwm} *os_pwm_p, pointer to os pwm instance
- * @param {FPwmChannel} channel, pwm channel
+ * @param {u8} channel, pwm channel
  * @param {u16} pulse, pwm pulse to set
  * @return err code information, FPWM_SUCCESS indicates success，others indicates failed
  */
-FError FFreeRTOSPwmPulseSet(FFreeRTOSPwm *os_pwm_p, FPwmChannel channel, u16 pulse)
+FError FFreeRTOSPwmPulseSet(FFreeRTOSPwm *os_pwm_p, u8 channel, u16 pulse)
 {
     FASSERT(os_pwm_p);
     FASSERT(os_pwm_p->pwm_semaphore != NULL);

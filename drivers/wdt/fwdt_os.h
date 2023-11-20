@@ -44,7 +44,7 @@ extern "C"
 
 #define FREERTOS_WDT_CTRL_GET_TIMEOUT    (1) /* get timeout(in seconds) */
 #define FREERTOS_WDT_CTRL_SET_TIMEOUT    (2) /* set timeout(in seconds) */
-#define FREERTOS_WDT_CTRL_GET_TIMELEFT   (3) /* get the left time before reboot(in seconds) */
+
 #define FREERTOS_WDT_CTRL_KEEPALIVE      (4) /* refresh watchdog */
 #define FREERTOS_WDT_CTRL_START          (5) /* start watchdog */
 #define FREERTOS_WDT_CTRL_STOP           (6) /* stop watchdog */

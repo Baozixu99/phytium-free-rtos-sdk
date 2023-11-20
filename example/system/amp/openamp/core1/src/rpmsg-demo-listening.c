@@ -210,7 +210,7 @@ void rpmsg_listening_task(void *args)
         }
         else
         {
-            rpdev = platform_create_rpmsg_vdev(platform, 0, VIRTIO_DEV_DEVICE, NULL,NULL);
+            rpdev = platform_create_rpmsg_vdev(platform, 0, VIRTIO_DEV_SLAVE, NULL,NULL);
             if (!rpdev)
             {
                 DEMO_LIST_SLAVE_DEBUG_E("Failed to create rpmsg virtio device.\r\n");

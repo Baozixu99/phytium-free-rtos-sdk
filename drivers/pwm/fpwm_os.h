@@ -71,13 +71,13 @@ FFreeRTOSPwm *FFreeRTOSPwmInit(u32 instance_id);
 FError FFreeRTOSPwmDeinit(FFreeRTOSPwm *os_pwm_p);
 
 /* pwm channel enable or disable */
-FError FFreeRTOSPwmEnable(FFreeRTOSPwm *os_pwm_p, FPwmChannel channel, boolean state);
+FError FFreeRTOSPwmEnable(FFreeRTOSPwm *os_pwm_p, u8 channel, boolean state);
 
 /* set pwm channel config */
-FError FFreeRTOSPwmSet(FFreeRTOSPwm *os_pwm_p, FPwmChannel channel, FPwmVariableConfig *pwm_cfg_p);
+FError FFreeRTOSPwmSet(FFreeRTOSPwm *os_pwm_p, u8 channel, FPwmVariableConfig *pwm_cfg_p);
 
 /* get pwm channel config */
-FError FFreeRTOSPwmGet(FFreeRTOSPwm *os_pwm_p, FPwmChannel channel, FPwmVariableConfig *pwm_cfg_p);
+FError FFreeRTOSPwmGet(FFreeRTOSPwm *os_pwm_p, u8 channel, FPwmVariableConfig *pwm_cfg_p);
 
 /* set pwm db config */
 FError FFreeRTOSPwmDbSet(FFreeRTOSPwm *os_pwm_p, FPwmDbVariableConfig *db_cfg_p);
@@ -86,7 +86,7 @@ FError FFreeRTOSPwmDbSet(FFreeRTOSPwm *os_pwm_p, FPwmDbVariableConfig *db_cfg_p)
 FError FFreeRTOSPwmDbGet(FFreeRTOSPwm *os_pwm_p, FPwmDbVariableConfig *db_cfg_p);
 
 /* set pwm channel pulse */
-FError FFreeRTOSPwmPulseSet(FFreeRTOSPwm *os_pwm_p, FPwmChannel channel, u16 pulse);
+FError FFreeRTOSPwmPulseSet(FFreeRTOSPwm *os_pwm_p, u8 channel, u16 pulse);
 
 #ifdef __cplusplus
 }

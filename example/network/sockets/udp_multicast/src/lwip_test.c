@@ -153,7 +153,7 @@ void LwipTestCreate(void *args)
     /* Add network interface to the netif_list, and set it as default */
     if (!LwipPortAdd(netif_p, &ipaddr, &netmask,
                      &gw, mac_address,
-                     (UserConfig *)args, 0))
+                     (UserConfig *)args))
     {
         printf("Error adding N/W interface.\r\n");
         goto failed;
@@ -295,7 +295,7 @@ static int LwipDeviceSet(int argc, char *argv[])
 
         /* close rx thread */
         vPortEnterCritical();
-        LwipPortStop(netif_p);
+        LwipPortStop(netif_p,input_config.dhcp_en);
         vPortFree(netif_p);
         vPortExitCritical();
     }

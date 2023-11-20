@@ -299,7 +299,7 @@ int FRunningApp(struct rpmsg_device *rdev, void *priv)
 static int FRpmsgDemoManager(void *platform)
 {
     int ret = 0;
-    rpdev = platform_create_rpmsg_vdev(platform, 0, VIRTIO_DEV_DRIVER, NULL, rpmsg_name_service_bind_cb);
+    rpdev = platform_create_rpmsg_vdev(platform, 0, VIRTIO_DEV_MASTER, NULL, rpmsg_name_service_bind_cb);
     if (!rpdev)
     {
         DEMO_MANG_MASTER_DEBUG_E("Failed to create rpmsg virtio device.\r\n");

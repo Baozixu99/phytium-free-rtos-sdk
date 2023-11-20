@@ -119,12 +119,7 @@
 /* CONFIG_USE_GPIO is not set */
 /* CONFIG_USE_ETH is not set */
 #define CONFIG_USE_CAN
-
-/* CAN Configuration */
-
 #define CONFIG_USE_FCAN
-#define CONFIG_FCAN_USE_CANFD
-/* end of CAN Configuration */
 /* CONFIG_USE_I2C is not set */
 /* CONFIG_USE_TIMER is not set */
 /* CONFIG_USE_MIO is not set */
