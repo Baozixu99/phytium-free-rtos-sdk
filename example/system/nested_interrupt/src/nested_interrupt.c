@@ -57,63 +57,79 @@ static void vTriggerNestedInterrupt(void);
 
 static u32 cpu_id = 0;
 
-
 static volatile u8 low_priority_intr_flag = 0;	/* Flag to update low priority interrupt counter */
 static volatile u8 high_priority_intr_flag = 0;	/* Flag to update high priority interrupt counter */
 
+float val_low = 0.3;
+float val_high = 0.1;
 
 static void vNestedPeriodTask(void *pvParameters)
 {
     u8 count = 0;
-    for (;;)
+    for (count = 0; count < 10; count++)
     {
-        vTaskDelay(3000 / portTICK_RATE_MS);
-        printf("Nested Interrupt Test %d.\r\n", count++);
+        printf("Nested Interrupt Test %d.\r\n", count);
         vTriggerNestedInterrupt();
+        vTaskDelay(1000 / portTICK_RATE_MS);
     }
+    vTaskDelete(NULL);
 }
 
+static void FLowPriorityHandlerFunc(void)
+{
+    val_low = val_low * 1.01;
+
+	/* Update the flag to indicate the interrupt */
+	low_priority_intr_flag++;
+
+    /* Activate high-priority intr */
+    InterruptCoreInterSend(INTERRUPT_HIGH_ID, (1 << cpu_id));
+
+	/* Wait till interrupts from counter configured with high priority interrupt */
+	while(high_priority_intr_flag == 0);
+
+    printf("low_priority_intr_flag is %d, val_low=%f\r\n", low_priority_intr_flag, val_low);
+}
 
 static void FLowPriorityHandler(s32 vector, void *param)
 {
+
     static fsize_t value[3] = {0};
 
-    static float val = 0.3;
-
-    val = val * 2.1;
-    
-    /* update the flag to indicate the interrupt */
-	low_priority_intr_flag++;
-
-    /* Enable the nested interrupts to allow preemption */
+	/* Enable the nested interrupts to allow preemption */     
     FInterruptNestedEnable(value);
 
-    InterruptCoreInterSend(INTERRUPT_HIGH_ID, (1 << cpu_id));
-
-    printf("Nested interrupt enable.\r\n");
-
-	/* wait till interrupts from counter configured with high priority interrupt */
-	while(high_priority_intr_flag == 0)
-    {
-        
-    };
+    /* A function operation must be used between interrupt nesting enable and disable */
+    FLowPriorityHandlerFunc();
 
     /* Disable the nested interrupt before exiting IRQ mode */
-	FInterruptNestedDisable(value);
-
-    printf("low_priority_intr_flag is %d, %f \n\n\n", low_priority_intr_flag, val);
+    FInterruptNestedDisable(value);
 
 }
 
+static void FHighPriorityHandlerFunc(void)
+{
+    high_priority_intr_flag++;
+
+    val_high = val_high * 1.01;
+
+    printf("high_priority_intr_flag is %d, val_high=%f\r\n", high_priority_intr_flag, val_high);
+}
+
+
 static void FHighPriorityHandler(s32 vector, void *param)
 {
-    /* update the flag to indicate the interrupt */
-    high_priority_intr_flag++;
-    static float val = 0.3;
 
-    val = val * 2.0;
+    static fsize_t value[3] = {0};
 
-    printf("high_priority_intr_flag is %d, %f \r\n", high_priority_intr_flag, val);
+    /* Enable the nested interrupts to allow preemption */     
+    FInterruptNestedEnable(value);
+
+    /* A function operation must be used between interrupt nesting enable and disable */
+    FHighPriorityHandlerFunc();
+
+    /* Disable the nested interrupt before exiting IRQ mode */
+    FInterruptNestedDisable(value);
 
 }
 
@@ -153,7 +169,6 @@ static void vTriggerNestedInterrupt(void)
     InterruptCoreInterSend(INTERRUPT_LOW_ID, (1 << cpu_id));
 
 }
-
 
 void CreateNestedTasks(void)
 {

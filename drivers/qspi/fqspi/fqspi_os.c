@@ -105,7 +105,6 @@ FError FFreeRTOSQspiTransfer(FFreeRTOSQspi *os_qspi_p, FFreeRTOSQspiMessage *mes
     FASSERT(cs < FQSPI_CS_NUM);
 
     static u8 cs_bak = 0;
-    static u8 read_cmd_bak = 0;
     size_t read_len = 0;
 
     /* New transfer can be performed only after current one is finished */
@@ -152,10 +151,9 @@ FError FFreeRTOSQspiTransfer(FFreeRTOSQspi *os_qspi_p, FFreeRTOSQspiMessage *mes
             if (NULL != read_buf)
             {
                 /* read norflash data */
-                if (cmd != read_cmd_bak)
+                if (pctrl->rd_cfg.rd_cmd != cmd)
                 {
                     ret |= FQspiFlashReadDataConfig(pctrl, cmd);
-                    read_cmd_bak = cmd;
                     if (FQSPI_SUCCESS != ret)
                     {
                         FQSPI_ERROR("Qspi read config failed.");

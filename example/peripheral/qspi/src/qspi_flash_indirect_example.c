@@ -11,15 +11,15 @@
  * See the Phytium Public License for more details.
  *
  *
- * FilePath: qspi_example.c
- * Date: 2022-07-11 11:32:48
- * LastEditTime: 2022-07-11 11:32:48
- * Description:  This file is for qspi test example functions.
+ * FilePath: qspi_flash_indirect_example.c
+ * Date: 2023-11-20 11:32:48
+ * LastEditTime: 2023-11-20 11:32:48
+ * Description:  This file is an example function implementation for the indirect mode of qspi flash
  *
  * Modify History:
  *  Ver   Who           Date           Changes
  * ----- ------       --------      --------------------------------------
- * 1.0  wangxiaodong  2022/8/9      first release
+ * 1.0  huangjin      2023/11/16    first release
  */
 #include <string.h>
 #include "FreeRTOSConfig.h"
@@ -33,16 +33,11 @@
 #include "sdkconfig.h"
 #include "fio_mux.h"
 
-/* The periods assigned to the one-shot timers. */
-#define ONE_SHOT_TIMER_PERIOD       ( pdMS_TO_TICKS( 50000UL ) )
-
 /* write and read task delay in milliseconds */
-#define TASK_DELAY_MS   10000UL
-
+#define TASK_DELAY_MS   1000UL
 
 static xTaskHandle read_handle;
 static xTaskHandle write_handle;
-static TimerHandle_t xOneShotTimer;
 
 /* Offset 1M from flash maximum capacity*/
 #define FLASH_WR_OFFSET SZ_1M 
@@ -57,7 +52,7 @@ static u8 rd_buf[DAT_LENGTH] = {0};
 static u8 wr_buf[DAT_LENGTH] = {0};
 
 /* test task number */
-#define READ_WRITE_TASK_NUM 2
+#define READ_WRITE_TASK_NUM 3
 static xSemaphoreHandle xCountingSemaphore;
 
 static FFreeRTOSQspi *os_qspi_ctrl_p = NULL;
@@ -73,6 +68,8 @@ static void QspiInitTask(void *pvParameters)
     u32 qspi_id = (u32)(uintptr)pvParameters;
 
 #if defined(CONFIG_TARGET_E2000)
+    /*init iomux*/
+    FIOMuxInit();
     FIOPadSetQspiMux(qspi_id, FQSPI_CS_0);
     FIOPadSetQspiMux(qspi_id, FQSPI_CS_1);
 #endif
@@ -86,35 +83,30 @@ static void QspiInitTask(void *pvParameters)
         goto qspi_init_exit;
     }
 
-    for (int i = 0; i < READ_WRITE_TASK_NUM; i++)
-    {
-        xSemaphoreGive(xCountingSemaphore);
-    }
-
 qspi_init_exit:
     vTaskDelete(NULL);
 }
 
 static void QspiReadTask(void *pvParameters)
 {
-    const char *pcTaskName = "QspiReadTask is running\r\n";
     const TickType_t xDelay = pdMS_TO_TICKS(TASK_DELAY_MS);
     FError ret = FQSPI_SUCCESS;
-
-    xSemaphoreTake(xCountingSemaphore, portMAX_DELAY);
+    int i = 0;
 
     /* As per most tasks, this task is implemented in an infinite loop. */
     for (;;)
     {
+        if (uxSemaphoreGetCount( xCountingSemaphore ) == READ_WRITE_TASK_NUM)
+        {
+            FFreeRTOSQspiDelete();
+            printf("Delete QspiReadTask successfully.\r\n");
+            vTaskDelete(NULL);
+        }
         /* Print out the name of this task. */
-        printf(pcTaskName);
+        printf("QspiReadTask is running. count = %d\r\n", uxSemaphoreGetCount( xCountingSemaphore )+1);
 
-        message.read_buf = rd_buf;
-        message.length = DAT_LENGTH;
-        message.addr = flash_wr_start;
-        message.cmd = FQSPI_FLASH_CMD_READ;
-        message.cs = QSPI_CS_CHANNEL;
-        ret = FFreeRTOSQspiTransfer(os_qspi_ctrl_p, &message);
+        /* Read norflash data */
+        ret = FQspiFlashPortReadData(&os_qspi_ctrl_p->qspi_ctrl, FQSPI_FLASH_CMD_READ, flash_wr_start, rd_buf, DAT_LENGTH);
         if (FQSPI_SUCCESS != ret)
         {
             printf("QspiReadTask FFreeRTOSQspiTransfer failed, return value: 0x%x\r\n", ret);
@@ -122,6 +114,17 @@ static void QspiReadTask(void *pvParameters)
         taskENTER_CRITICAL(); //进入临界区
         FtDumpHexByte(rd_buf, DAT_LENGTH);
         taskEXIT_CRITICAL(); //退出临界区
+
+        /* 判断读写内容是否一致 */
+        for (i = 0; i < DAT_LENGTH; i++)
+        {
+            if (rd_buf[i] != wr_buf[i])
+            {
+                printf("The read and write data is inconsistent.\r\n");
+                break;
+            }
+        }
+        xSemaphoreGive(xCountingSemaphore);
 
         /* Delay for a period.  This time a call to vTaskDelay() is used which
         places the task into the Blocked state until the delay period has
@@ -139,17 +142,22 @@ static void QspiWriteTask(void *pvParameters)
     const TickType_t xDelay = pdMS_TO_TICKS(TASK_DELAY_MS);
     int i = 0;
     FError ret = FQSPI_SUCCESS;
-
-    xSemaphoreTake(xCountingSemaphore, portMAX_DELAY);
-
+    u32 array_index = 0;
+    u32 write_addr = 0;
+    
     /* As per most tasks, this task is implemented in an infinite loop. */
     for (;;)
     {
+        if (uxSemaphoreGetCount( xCountingSemaphore ) == READ_WRITE_TASK_NUM)
+        {
+            printf("Delete QspiWriteTask successfully.\r\n");
+            vTaskDelete(NULL);
+        }
         /* Print out the name of this task. */
         printf(pcTaskName);
         for (i = 0; i < DAT_LENGTH; i++)
         {
-            wr_buf[i] = wr_buf[i] + 0x11;
+            wr_buf[i] = uxSemaphoreGetCount( xCountingSemaphore ) + i;
         }
 
         message.addr = flash_wr_start;
@@ -158,20 +166,30 @@ static void QspiWriteTask(void *pvParameters)
         ret = FFreeRTOSQspiTransfer(os_qspi_ctrl_p, &message);
         if (FQSPI_SUCCESS != ret)
         {
-            printf("QspiWriteTask FFreeRTOSQspiTransfer failed, return value: 0x%x\r\n", ret);
+            printf("Failed to erase sectors. return value: 0x%x\r\n", ret);
         }
 
-        message.write_buf = wr_buf;
-        message.length = DAT_LENGTH;
-        message.addr = flash_wr_start;
-        message.cmd = FQSPI_FLASH_CMD_PP;
-        message.cs = QSPI_CS_CHANNEL;
-
-        ret = FFreeRTOSQspiTransfer(os_qspi_ctrl_p, &message);
-        if (FQSPI_SUCCESS != ret)
+        write_addr = os_qspi_ctrl_p->qspi_ctrl.flash_size - FLASH_WR_OFFSET;
+        /* Write norflash data */
+        while (array_index < sizeof(wr_buf))
         {
-            printf("QspiWriteTask FFreeRTOSQspiTransfer failed, return value: 0x%x\r\n", ret);
+            u8 data_to_write[4] = {0};
+            for (i = 0; i < 4; i++)
+            {
+                if (array_index < sizeof(wr_buf))
+                {
+                    data_to_write[i] = wr_buf[array_index];
+                    array_index++;
+                }
+                else
+                {
+                    break;
+                }
+            }
+            ret = FQspiFlashPortWriteData(&os_qspi_ctrl_p->qspi_ctrl, FQSPI_FLASH_CMD_PP, write_addr, (u8 *)(data_to_write), 4);
+            write_addr += 4;
         }
+        array_index = 0;
 
         /* Delay for a period.  This time a call to vTaskDelay() is used which
         places the task into the Blocked state until the delay period has
@@ -183,18 +201,9 @@ static void QspiWriteTask(void *pvParameters)
     }
 }
 
-static void prvOneShotTimerCallback(TimerHandle_t xTimer)
-{
-    /* Output a string to show the time at which the callback was executed. */
-    printf("One-shot timer callback executing, which will delete QspiReadTask and QspiWriteTask.\r\n");
-
-    FFreeRTOSQspiDelete();
-}
-
-BaseType_t FFreeRTOSQspiCreate(u32 id)
+BaseType_t FFreeRTOSQspiIndirectTaskCreate(u32 id)
 {
     BaseType_t xReturn = pdPASS;/* 定义一个创建信息返回值，默认为 pdPASS */
-    BaseType_t xTimerStarted = pdPASS;
 
     memset(&message, 0, sizeof(message));
 
@@ -211,89 +220,36 @@ BaseType_t FFreeRTOSQspiCreate(u32 id)
                           (const char *)"QspiInitTask",/* 任务名字 */
                           (uint16_t)1024,  /* 任务栈大小 */
                           (void *)(uintptr)id,/* 任务入口函数参数 */
-                          (UBaseType_t)2,  /* 任务的优先级 */
+                          (UBaseType_t)configMAX_PRIORITIES - 1,  /* 任务的优先级 */
                           NULL);
+
+    xReturn = xTaskCreate((TaskFunction_t)QspiWriteTask,  /* 任务入口函数 */
+                        (const char *)"QspiWriteTask",/* 任务名字 */
+                        (uint16_t)1024,  /* 任务栈大小 */
+                        NULL,/* 任务入口函数参数 */
+                        (UBaseType_t)configMAX_PRIORITIES - 2, /* 任务的优先级 */
+                        (TaskHandle_t *)&write_handle); /* 任务控制 */
 
     xReturn = xTaskCreate((TaskFunction_t)QspiReadTask,  /* 任务入口函数 */
                           (const char *)"QspiReadTask",/* 任务名字 */
                           (uint16_t)1024,  /* 任务栈大小 */
                           NULL,/* 任务入口函数参数 */
-                          (UBaseType_t)configMAX_PRIORITIES - 1, /* 任务的优先级 */
+                          (UBaseType_t)configMAX_PRIORITIES - 3, /* 任务的优先级 */
                           (TaskHandle_t *)&read_handle); /* 任务控制 */
 
-    xReturn = xTaskCreate((TaskFunction_t)QspiWriteTask,  /* 任务入口函数 */
-                          (const char *)"QspiWriteTask",/* 任务名字 */
-                          (uint16_t)1024,  /* 任务栈大小 */
-                          NULL,/* 任务入口函数参数 */
-                          (UBaseType_t)configMAX_PRIORITIES - 1, /* 任务的优先级 */
-                          (TaskHandle_t *)&write_handle); /* 任务控制 */
-
-    /* Create the one shot software timer, storing the handle to the created
-    software timer in xOneShotTimer. */
-    xOneShotTimer = xTimerCreate("OneShot Software Timer",       /* Text name for the software timer - not used by FreeRTOS. */
-                                 ONE_SHOT_TIMER_PERIOD,        /* The software timer's period in ticks. */
-                                 pdFALSE,                      /* Setting uxAutoRealod to pdFALSE creates a one-shot software timer. */
-                                 0,                            /* This example does not use the timer id. */
-                                 prvOneShotTimerCallback);     /* The callback function to be used by the software timer being created. */
-
-    /* Check the timers were created. */
-    if (xOneShotTimer != NULL)
-    {
-        /* Start the software timers, using a block time of 0 (no block time).
-        The scheduler has not been started yet so any block time specified here
-        would be ignored anyway. */
-        xTimerStarted = xTimerStart(xOneShotTimer, 0);
-
-        /* The implementation of xTimerStart() uses the timer command queue, and
-        xTimerStart() will fail if the timer command queue gets full.  The timer
-        service task does not get created until the scheduler is started, so all
-        commands sent to the command queue will stay in the queue until after
-        the scheduler has been started.  Check both calls to xTimerStart()
-        passed. */
-        if (xTimerStarted != pdPASS)
-        {
-            printf("CreateSoftwareTimerTasks xTimerStart failed.\r\n");
-        }
-    }
-    else
-    {
-        printf("CreateSoftwareTimerTasks xTimerCreate failed.\r\n");
-    }
-
-    taskEXIT_CRITICAL();
+    taskEXIT_CRITICAL(); /*退出临界区*/
 
     return xReturn;
 }
 
 static void FFreeRTOSQspiDelete(void)
 {
-    BaseType_t xReturn = pdPASS;
-    FFreeRTOSQspiDeinit(os_qspi_ctrl_p);
-    if (read_handle)
-    {
-        vTaskDelete(read_handle);
-        printf("Delete QspiReadTask successfully.\r\n");
-    }
+    FIOMuxDeInit();
 
-    if (write_handle)
-    {
-        vTaskDelete(write_handle);
-        printf("Delete QspiWriteTask successfully.\r\n");
-    }
+    FFreeRTOSQspiDeinit(os_qspi_ctrl_p);
 
     /* delete count sem */
     vSemaphoreDelete(xCountingSemaphore);
-
-    /* delete timer */
-    xReturn = xTimerDelete(xOneShotTimer, 0);
-    if (xReturn != pdPASS)
-    {
-        printf("OneShot Software Timer Delete failed.\r\n");
-    }
-    else
-    {
-        printf("OneShot Software Timer Delete successfully.\r\n");
-    }
 }
 
 

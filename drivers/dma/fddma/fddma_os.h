@@ -14,12 +14,13 @@
  * FilePath: fddma_os.h
  * Date: 2022-07-20 09:15:37
  * LastEditTime: 2022-07-20 09:15:38
- * Description:  This files is for providing function related definitions of ddma driver used in FreeRTOS.
+ * Description:  This files is for providing function related definitions of DDMA driver used in FreeRTOS.
  *
  * Modify History:
- *  Ver   Who        Date         Changes
- * ----- ------     --------    --------------------------------------
- * 1.0   zhugengyu  2022/7/27   init commit
+ *  Ver    Who          Date         Changes
+ * -----  ------       --------     --------------------------------------
+ *  1.0   zhugengyu    2022/7/27    init commit
+ *  1.1   liqiaozhong  2023/11/10   synchronous update with standalone sdk
  */
 
 #ifndef  FDDMA_OS_H
@@ -31,6 +32,7 @@
 
 #include "fparameters.h"
 #include "fddma.h"
+#include "fddma_hw.h"
 /************************** Constant Definitions *****************************/
 #ifdef __cplusplus
 extern "C"
@@ -46,19 +48,17 @@ extern "C"
 
 #define FFREERTOS_DDMA_IRQ_PRIORITY         IRQ_PRIORITY_VALUE_12
 /**************************** Type Definitions *******************************/
-
 typedef struct
 {
 
-} FFreeRTOSDdmaConfig; /* freertos ddma config, reserved for future use */
+} FFreeRTOSDdmaConfig; /* freertos DDMA config, reserved for future use */
 
 typedef struct
 {
     FDdma ctrl;
     FFreeRTOSDdmaConfig config;
     SemaphoreHandle_t locker;
-    FDdmaChan chan[FDDMA_NUM_OF_CHAN]; /* ddma channel of instance */
-} FFreeRTOSDdma; /* freertos ddma instance */
+} FFreeRTOSDdma; /* freertos DDMA instance */
 
 typedef struct
 {
@@ -69,33 +69,31 @@ typedef struct
     boolean is_rx; /* TRUE: dev ==> mem, FALSE: mem ==> dev */
     FDdmaChanEvtHandler req_done_handler; /* callback when request done */
     void *req_done_args;
-} FFreeRTOSRequest; /* freertos ddma transfer request */
-
+} FFreeRTOSRequest; /* freertos DDMA transfer request */
 /************************** Variable Definitions *****************************/
 
 /***************** Macros (Inline Functions) Definitions *********************/
 
 /************************** Function Prototypes ******************************/
-
-/* init and get ddma instance */
+/* init and get DDMA instance */
 FFreeRTOSDdma *FFreeRTOSDdmaInit(u32 instance_id, const FFreeRTOSDdmaConfig *config);
 
-/* deinit ddma instance */
+/* deinit DDMA instance */
 FError FFreeRTOSDdmaDeinit(FFreeRTOSDdma *const instance);
 
-/* setup ddma channel before transfer */
+/* setup DDMA channel before transfer */
 FError FFreeRTOSDdmaSetupChannel(FFreeRTOSDdma *const instance, u32 chan_id, const FFreeRTOSRequest *request);
 
 /* revoke channel setup */
 FError FFreeRTOSDdmaRevokeChannel(FFreeRTOSDdma *const instance, u32 chan_id);
 
-/* start dma transfer of channel  */
+/* start DDMA transfer of channel  */
 FError FFreeRTOSDdmaStartChannel(FFreeRTOSDdma *const instance, u32 chan_id);
 
-/* stop dma transfer of channel */
+/* stop DDMA transfer of channel */
 FError FFreeRTOSDdmaStopChannel(FFreeRTOSDdma *const instance, u32 chan_id);
 
-/* stop all dma channel */
+/* stop all DDMA channel */
 FError FFreeRTOSDdmaStop(FFreeRTOSDdma *const instance);
 
 #ifdef __cplusplus

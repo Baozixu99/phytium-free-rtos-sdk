@@ -164,6 +164,7 @@ FFreeRTOSSpim *FFreeRTOSSpimInit(u32 id, const FFreeRTOSSpimConifg *input_config
     config.irq_prority = FFREERTOS_SPIM_IRQ_PRIORITY;
     config.max_freq_hz = FSPIM_OS_MAX_SPEED;
 
+    FIOMuxInit();
     FIOPadSetSpimMux(id);
 
     FSPIM_INFO("init spi-%d @ 0x%x", config.instance_id, config.base_addr);

@@ -20,11 +20,7 @@
 #define CONFIG_TOOLCHAIN_NAME "gcc"
 #define CONFIG_TARGET_ARMV8_AARCH64
 #define CONFIG_ARCH_EXECUTION_STATE "aarch64"
-
-/* Fpu configuration */
-
 #define CONFIG_ARM_NEON
-/* end of Fpu configuration */
 #define CONFIG_ARM_CRC
 #define CONFIG_ARM_CRYPTO
 #define CONFIG_ARM_FLOAT_POINT
@@ -155,7 +151,6 @@
 /* CONFIG_DEBUG_NOOPT is not set */
 /* CONFIG_DEBUG_CUSTOMOPT is not set */
 #define CONFIG_DEBUG_FULLOPT
-/* CONFIG_DEBUG_ENABLE_ALL_WARNING is not set */
 #define CONFIG_DEBUG_OPT_UNUSED_SECTIONS
 #define CONFIG_DEBUG_LINK_MAP
 /* CONFIG_CCACHE is not set */
@@ -165,6 +160,7 @@
 
 /* Debug options */
 
+/* CONFIG_DEBUG_ENABLE_ALL_WARNING is not set */
 /* CONFIG_WALL_WARNING_ERROR is not set */
 /* CONFIG_STRICT_PROTOTYPES is not set */
 /* CONFIG_DEBUG_SYMBOLS is not set */

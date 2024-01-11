@@ -14,7 +14,7 @@
  * FilePath: main.c
  * Date: 2022-06-17 08:17:59
  * LastEditTime: 2022-06-17 08:17:59
- * Description:  This file is for ddma example that running shell task and open scheduler
+ * Description:  This file is for DDMA example that running shell task and open scheduler.
  *
  * Modify History:
  *  Ver   Who       Date        Changes

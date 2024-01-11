@@ -31,12 +31,6 @@ int main(void)
 {
     BaseType_t ret;
 
-    ret = FFreeRTOSQspiCreate(0);
-    if (ret != pdPASS)
-    {
-        goto FAIL_EXIT;
-    }
-
     ret = LSUserShellTask() ;
     if (ret != pdPASS)
     {

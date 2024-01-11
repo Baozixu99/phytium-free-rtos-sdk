@@ -252,12 +252,14 @@ static err_t low_level_init(struct netif *netif)
     FXmac *xmac_p = NULL;
     FError ret;
     u32 dmacrreg;
-    FXmacOsControl os_config;
+    FXmacPhyControl xmac_phy_config;
     s32_t status = FT_SUCCESS;
-    FASSERT(netif != NULL);
-    FASSERT(netif->state != NULL);
+
     UserConfig *config_p;
 
+    FASSERT(netif != NULL);
+    FASSERT(netif->state != NULL);
+    
     xmac_netif_p = mem_malloc(sizeof * xmac_netif_p);
     if (xmac_netif_p == NULL)
     {
@@ -272,26 +274,26 @@ static err_t low_level_init(struct netif *netif)
     FXMAC_LWIP_NET_PRINT_I("netif->state is %p \r\n ", netif->state);
 
     config_p = (UserConfig *)netif->state;
-    os_config.instance_id = config_p->mac_instance;
+    xmac_phy_config.instance_id = config_p->mac_instance;
 
     switch (config_p->mii_interface)
     {
         case LWIP_PORT_INTERFACE_RGMII:
-            os_config.interface = FXMAC_OS_INTERFACE_RGMII;
+            xmac_phy_config.interface = FXMAC_OS_INTERFACE_RGMII;
             break;
         case LWIP_PORT_INTERFACE_SGMII:
-            os_config.interface = FXMAC_OS_INTERFACE_SGMII;
+            xmac_phy_config.interface = FXMAC_OS_INTERFACE_SGMII;
             break;
         default:
-            os_config.interface = FXMAC_OS_INTERFACE_RGMII;
+            xmac_phy_config.interface = FXMAC_OS_INTERFACE_RGMII;
             break;
     }
 
-    os_config.autonegotiation = config_p->autonegotiation; /* 1 is autonegotiation ,0 is manually set */
-    os_config.phy_speed = config_p->phy_speed;  /* FXMAC_PHY_SPEED_XXX */
-    os_config.phy_duplex = config_p->phy_duplex; /* FXMAC_PHY_XXX_DUPLEX */
+    xmac_phy_config.autonegotiation = config_p->autonegotiation; /* 1 is autonegotiation ,0 is manually set */
+    xmac_phy_config.phy_speed = config_p->phy_speed;  /* FXMAC_PHY_SPEED_XXX */
+    xmac_phy_config.phy_duplex = config_p->phy_duplex; /* FXMAC_PHY_XXX_DUPLEX */
 
-    instance_p = FXmacOsGetInstancePointer(&os_config);
+    instance_p = FXmacOsGetInstancePointer(&xmac_phy_config);
     if (instance_p == NULL)
     {
         FXMAC_LWIP_NET_PRINT_E("FXmacOsGetInstancePointer is error\r\n");
@@ -303,12 +305,9 @@ static err_t low_level_init(struct netif *netif)
         instance_p->hwaddr[i] = netif->hwaddr[i];
     }
 
-#if LWIP_IPV6
-    instance_p->config = FXMAC_OS_CONFIG_COPY_ALL_FRAMES;
-#endif
+    instance_p->feature = config_p->capability;
 
     ret = FXmacOsInit(instance_p);
-
     if (ret != FT_SUCCESS)
     {
         FXMAC_LWIP_NET_PRINT_E("FXmacOsInit is error\r\n");
@@ -321,9 +320,9 @@ static err_t low_level_init(struct netif *netif)
 
 
     /* maximum transfer unit */
-    if (instance_p->config & FXMAC_OS_CONFIG_JUMBO)
+    if (instance_p->feature & FXMAC_OS_CONFIG_JUMBO)
     {
-        netif->mtu = FXMAC_MTU_JUMBO - FXMAC_HDR_SIZE;
+        netif->mtu = FXMAC_MTU_JUMBO;
     }
     else
     {

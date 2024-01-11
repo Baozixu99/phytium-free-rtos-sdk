@@ -1,3 +1,57 @@
+# Phytium Standalone SDK 2024-01-11 ChangeLog
+
+Change Log since 2024-01-09
+
+## third-party
+
+- Adapt to the work mode of standalone sdk in aarch32
+
+# Phytium Standalone SDK 2024-01-11 ChangeLog
+
+Change Log since 2023-01-10
+
+## driver
+
+- add feature variable in struct FXmacOs and FGmacOs,which can receive the value from user_config.
+- modified  to accommodate the porting of later examples: jumbo and multicast.
+- Moving phy operations(FGmacPhyCfgInitialize) from interrupts to threads in fgmac_os.c.
+
+## third-party
+
+- modified  to accommodate the porting of later examples: jumbo and multicast.
+
+# Phytium Standalone SDK 2024-01-09 ChangeLog
+
+Change Log since 2023-12-25
+
+## driver
+
+- new standalone version adaptation of xmac and gmac.
+ 
+## example
+
+- reconstruting network example:lwip-startup.
+
+# Phytium Standalone SDK 2023-12-15 ChangeLog
+
+Change Log since 2023-11-21
+
+## example
+
+- DDMA sync update with DDMA driver
+
+## driver
+
+- DDMA synchronous update with standalone SDK
+
+# Phytium Standalone SDK 2023-11-21 ChangeLog
+
+Change Log since 2023-11-20
+
+## example
+
+- add qspi examples and readme
+
 # Phytium Standalone SDK 2023-11-20 ChangeLog
 
 Change Log since 2023-11-15

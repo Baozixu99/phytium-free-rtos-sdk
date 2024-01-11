@@ -41,7 +41,7 @@
 #include "lwip_port.h"
 #include "fparameters.h"
 
-#define OS_MAC_DEBUG_TAG "OS_MAC"
+#define OS_MAC_DEBUG_TAG "OS_GMAC"
 #define OS_MAC_DEBUG_D(format, ...) FT_DEBUG_PRINT_D(OS_MAC_DEBUG_TAG, format, ##__VA_ARGS__)
 #define OS_MAC_DEBUG_I(format, ...) FT_DEBUG_PRINT_I(OS_MAC_DEBUG_TAG, format, ##__VA_ARGS__)
 #define OS_MAC_DEBUG_E(format, ...) FT_DEBUG_PRINT_E(OS_MAC_DEBUG_TAG, format, ##__VA_ARGS__)
@@ -60,12 +60,19 @@ static void EthLinkPhyStatusChecker(void *param)
 
     if (FGMAC_RGSMIIIS_LNKSTS_UP == (FGMAC_RGSMIIIS_LNKSTS & status))
     {
-        FGmacPhyCfgInitialize(instance_p);
         OS_MAC_DEBUG_I("Link is up.");
+
+        if(instance_p->phy_link_status != FGMAC_LINKUP)
+        {
+            OS_MAC_DEBUG_I("Link needs negotiation.");
+            instance_p->phy_link_status = FGMAC_NEGOTIATION;
+        }
+            
     }
     else
     {
         OS_MAC_DEBUG_I("Link is down.");
+        instance_p->phy_link_status = FGMAC_LINKDOWN;
     }
 
     return;
@@ -312,10 +319,20 @@ FError FGmacOsInit(FGmacOs *instance_p)
         OS_MAC_DEBUG_W("In %s:EmacPs Configuration Failed....", __func__);
     }
 
+    if(instance_p->feature & FGMAC_OS_CONFIG_MULTICAST_ADDRESS_FILITER)
+    {
+        FGmacMulticastHashEnable(gmac_p);
+    }
+
+    if(instance_p->feature & FGMAC_OS_CONFIG_JUMBO)
+    {
+        FGmacJumboEnable(gmac_p);
+    }
+
     FGmacSetMacAddr(instance_p->instance.config.base_addr, (void *)(instance_p->hwaddr));
 
     /* initialize phy */
-    status = FGmacPhyCfgInitialize(gmac_p);
+    status = FGmacPhyCfgInitialize(gmac_p,GMAC_PHY_RESET_ENABLE);
     if (status != FGMAC_SUCCESS)
     {
         OS_MAC_DEBUG_W("FGmacPhyCfgInitialize: init phy failed.");
@@ -340,13 +357,11 @@ FError FGmacOsInit(FGmacOs *instance_p)
     /* initialize interrupt */
     FGmacSetupIsr(gmac_p);
 
-
-
     return FT_SUCCESS ;
 }
 
 
-FGmacOs *FGmacOsGetInstancePointer(FtOsGmacPhyControl *config_p)
+FGmacOs *FGmacOsGetInstancePointer(FGmacPhyControl *config_p)
 {
     FGmacOs *instance_p;
     FASSERT(config_p != NULL);
@@ -356,7 +371,7 @@ FGmacOs *FGmacOsGetInstancePointer(FtOsGmacPhyControl *config_p)
     FASSERT_MSG(config_p->phy_duplex <= FGMAC_PHY_FULL_DUPLEX, "config_p->phy_duplex %d is over FGMAC_PHY_FULL_DUPLEX", config_p->phy_duplex);
 
     instance_p = &fgmac_os_instace[config_p->instance_id];
-    memcpy(&instance_p->mac_config, config_p, sizeof(FtOsGmacPhyControl));
+    memcpy(&instance_p->mac_config, config_p, sizeof(FGmacPhyControl));
     return instance_p;
 }
 
@@ -596,7 +611,7 @@ enum lwip_port_link_status FGmacPhyStatus(struct LwipPort *gmac_netif_p)
 {
     FGmac *gmac_p;
     FGmacOs *instance_p;
-    u32  phy_link_status;
+    err_t phy_ret;
     FASSERT(gmac_netif_p != NULL);
     FASSERT(gmac_netif_p->state != NULL);
 
@@ -610,11 +625,22 @@ enum lwip_port_link_status FGmacPhyStatus(struct LwipPort *gmac_netif_p)
         return ETH_LINK_DOWN;
     }
 
-    /* read gmac phy link status */
-    phy_link_status = FGmacPhyLinkDetect(gmac_p, gmac_p->phy_addr);
-
-    if (phy_link_status)
+    if(gmac_p->phy_link_status == FGMAC_NEGOTIATION)
     {
+        
+        phy_ret = FGmacPhyCfgInitialize(gmac_p,GMAC_PHY_RESET_DISABLE);
+        if (phy_ret != FT_SUCCESS)
+        {
+            OS_MAC_DEBUG_E("FGmacPhyCfgInitialize is error \r\n");
+            return ETH_LINK_DOWN;
+        }
+        gmac_p->phy_link_status = FGMAC_LINKUP;
+    }
+
+
+    /* read gmac phy link status */
+    if(gmac_p->phy_link_status == FGMAC_LINKUP)
+    {       
         return ETH_LINK_UP;
     }
     else

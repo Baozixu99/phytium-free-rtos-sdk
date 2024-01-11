@@ -25,14 +25,17 @@
 
 #ifndef QSPI_EXAMPLE_H
 #define QSPI_EXAMPLE_H
-
+#include "portmacro.h"
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
 /* qspi read and write test */
-BaseType_t FFreeRTOSQspiCreate(u32 id);
+BaseType_t FFreeRTOSQspiPolledTaskCreate(u32 id);
+BaseType_t FFreeRTOSQspiCheckTaskCreate(u32 id);
+BaseType_t FFreeRTOSQspiDualFlashTaskCreate(void);
+BaseType_t FFreeRTOSQspiIndirectTaskCreate(u32 id);
 
 #ifdef __cplusplus
 }

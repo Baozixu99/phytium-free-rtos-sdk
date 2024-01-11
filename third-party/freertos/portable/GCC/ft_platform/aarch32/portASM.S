@@ -53,10 +53,10 @@
 
 .macro portSAVE_CONTEXT
 
-	/* Save the LR and SPSR onto the system mode stack before switching to
-	system mode to save the remaining system mode registers. */
-	SRSDB	sp!, #SYS_MODE
-	CPS		#SYS_MODE
+	/* Save the LR and SPSR onto the Supervisor mode stack before switching to
+	Supervisor mode to save the remaining Supervisor mode registers. */
+	SRSDB	sp!, #SVC_MODE
+	CPS		#SVC_MODE
 	PUSH	{R0-R12, R14}
 
 	/* Push the critical nesting count. */
@@ -158,8 +158,8 @@ FreeRTOS_SWI_Handler:
  *****************************************************************************/
 .type vPortRestoreTaskContext, %function
 vPortRestoreTaskContext:
-	/* Switch to system mode. */
-	CPS		#SYS_MODE
+	/* Switch to Supervisor mode. */
+	CPS		#SVC_MODE
 	portRESTORE_CONTEXT
 
 .align 4

@@ -48,19 +48,15 @@ extern "C"
 
 #define FGMAX_MAX_HARDWARE_ADDRESS_LENGTH 6
 
-#define FT_OS_GMAC0_ID FGMAC0_ID
-#define FT_OS_GMAC1_ID FGMAC1_ID
-
-#define FT_NETIF_LINKUP 0x1U
-#define FT_NETIF_DOWN 0x2U
+#define GMAC_PHY_RESET_ENABLE 1
+#define GMAC_PHY_RESET_DISABLE 0
 
 /** @defgroup ENET_Buffers_setting
   * @{
   */
 
-
-
 #define GMAC_MTU            1500U
+#define GMAC_MTU_JUMBO            10240U
 
 /* Common PHY Registers (AR8035) */
 #define PHY_INTERRUPT_ENABLE_OFFSET ((u16)0x12)
@@ -85,34 +81,35 @@ extern "C"
 #define GMAC_OS_IRQ_PRIORITY_VALUE (configMAX_API_CALL_INTERRUPT_PRIORITY+1)
 FASSERT_STATIC((GMAC_OS_IRQ_PRIORITY_VALUE <= IRQ_PRIORITY_VALUE_15) && (GMAC_OS_IRQ_PRIORITY_VALUE >= configMAX_API_CALL_INTERRUPT_PRIORITY));
 
+#define FGMAC_OS_CONFIG_JUMBO  BIT(0)
+#define FGMAC_OS_CONFIG_MULTICAST_ADDRESS_FILITER  BIT(1) /* Allow multicast address hash filtering */
+
 typedef struct
 {
     u32 instance_id;
     u32 autonegotiation; /* 1 is autonegotiation ,0 is manually set */
     u32 phy_speed;  /* FXMAC_PHY_SPEED_XXX */
     u32 phy_duplex; /* FXMAC_PHY_XXX_DUPLEX */
-} FtOsGmacPhyControl;
+} FGmacPhyControl;
 
 typedef struct
 {
     FGmac instance;
-    FtOsGmacPhyControl mac_config;
+    FGmacPhyControl mac_config;
 
     u8 tx_buf[GMAC_TX_DESCNUM * FGMAC_MAX_PACKET_SIZE] __aligned(FGMAC_DMA_MIN_ALIGN);
     u8 rx_buf[GMAC_RX_DESCNUM * FGMAC_MAX_PACKET_SIZE] __aligned(FGMAC_DMA_MIN_ALIGN);
     u8 tx_desc[GMAC_TX_DESCNUM * sizeof(FGmacDmaDesc)] __aligned(FGMAC_DMA_MIN_ALIGN);
     u8 rx_desc[GMAC_RX_DESCNUM * sizeof(FGmacDmaDesc)] __aligned(FGMAC_DMA_MIN_ALIGN);
-
-    u8 is_ready;   /* Ft_Os_Gmac Object first need Init use Ft_Os_GmacObjec_Init */
-    SemaphoreHandle_t s_semaphore;    /*   Semaphore to signal incoming packets */
-    EventGroupHandle_t s_status_event; /* Event Group to show netif's status ,follow FT_NETIF_XX*/
+    /* indicates whether to enbale gmac run in special mode,such as jumbo */
+    u32 feature;
     struct LwipPort *stack_pointer; /* Docking data stack data structure */
     u8 hwaddr[FGMAX_MAX_HARDWARE_ADDRESS_LENGTH];
 } FGmacOs;
 
 
 FError FGmacOsInit(FGmacOs *instance_p);
-FGmacOs *FGmacOsGetInstancePointer(FtOsGmacPhyControl *config_p);
+FGmacOs *FGmacOsGetInstancePointer(FGmacPhyControl *config_p);
 FError FGmacOsConfig(FGmacOs *instance_p, int cmd, void *arg);
 void *FGmacOsRx(FGmacOs *instance_p);
 FError FGmacOsTx(FGmacOs *instance_p, void *tx_buf);

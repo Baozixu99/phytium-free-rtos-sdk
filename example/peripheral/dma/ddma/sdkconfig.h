@@ -150,7 +150,6 @@
 /* CONFIG_DEBUG_NOOPT is not set */
 /* CONFIG_DEBUG_CUSTOMOPT is not set */
 #define CONFIG_DEBUG_FULLOPT
-/* CONFIG_DEBUG_ENABLE_ALL_WARNING is not set */
 #define CONFIG_DEBUG_OPT_UNUSED_SECTIONS
 #define CONFIG_DEBUG_LINK_MAP
 /* CONFIG_CCACHE is not set */
@@ -160,6 +159,7 @@
 
 /* Debug options */
 
+/* CONFIG_DEBUG_ENABLE_ALL_WARNING is not set */
 /* CONFIG_WALL_WARNING_ERROR is not set */
 /* CONFIG_STRICT_PROTOTYPES is not set */
 /* CONFIG_DEBUG_SYMBOLS is not set */

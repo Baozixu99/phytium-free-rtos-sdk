@@ -43,10 +43,13 @@ extern "C" {
 #define FXMAX_RX_BDSPACE_LENGTH    0x20000 /* default set 128KB*/
 #define FXMAX_TX_BDSPACE_LENGTH    0x20000 /* default set 128KB*/
 
-#define FXMAX_RX_PBUFS_LENGTH       128
 #define FXMAX_TX_PBUFS_LENGTH       128
+#define FXMAX_RX_PBUFS_LENGTH       128
 
 #define FXMAX_MAX_HARDWARE_ADDRESS_LENGTH 6
+
+#define XMAC_PHY_RESET_ENABLE 1
+#define XMAC_PHY_RESET_DISABLE 0
 
 /* configuration */
 #define FXMAC_OS_CONFIG_JUMBO  BIT(0)
@@ -106,12 +109,12 @@ typedef struct
     u32 autonegotiation; /* 1 is autonegotiation ,0 is manually set */
     u32 phy_speed;  /* FXMAC_PHY_SPEED_XXX */
     u32 phy_duplex; /* FXMAC_PHY_XXX_DUPLEX */
-} FXmacOsControl;
+} FXmacPhyControl;
 
 typedef struct
 {
     FXmac instance;
-    FXmacOsControl mac_config;
+    FXmacPhyControl mac_config;
 
     FXmacNetifBuffer buffer;
 
@@ -119,14 +122,14 @@ typedef struct
     PqQueue recv_q;
     PqQueue send_q;
 
-    /* configuration */
-    u32 config;
+    /* indicates whether to enbale xmac run in special mode,such as jumbo */
+    u32 feature;
 
     struct LwipPort *stack_pointer; /* Docking data stack data structure */
     u8 hwaddr[FXMAX_MAX_HARDWARE_ADDRESS_LENGTH];
 } FXmacOs;
 
-FXmacOs *FXmacOsGetInstancePointer(FXmacOsControl *config_p);
+FXmacOs *FXmacOsGetInstancePointer(FXmacPhyControl *config_p);
 FError FXmacOsInit(FXmacOs *instance_p);
 FError FXmacOsConfig(FXmacOs *instance_p, int cmd, void *arg);
 void *FXmacOsRx(FXmacOs *instance_p);

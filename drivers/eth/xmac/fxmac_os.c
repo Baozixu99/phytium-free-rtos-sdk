@@ -43,11 +43,11 @@
 
 #include "fdebug.h"
 
-#define FXMAC_OS_XMAC_DEBUG_TAG "FXMAC_OS_XMAC"
-#define FXMAC_OS_XMAC_PRINT_E(format, ...) FT_DEBUG_PRINT_E(FXMAC_OS_XMAC_DEBUG_TAG, format, ##__VA_ARGS__)
-#define FXMAC_OS_XMAC_PRINT_I(format, ...) FT_DEBUG_PRINT_I(FXMAC_OS_XMAC_DEBUG_TAG, format, ##__VA_ARGS__)
-#define FXMAC_OS_XMAC_PRINT_D(format, ...) FT_DEBUG_PRINT_D(FXMAC_OS_XMAC_DEBUG_TAG, format, ##__VA_ARGS__)
-#define FXMAC_OS_XMAC_PRINT_W(format, ...) FT_DEBUG_PRINT_W(FXMAC_OS_XMAC_DEBUG_TAG, format, ##__VA_ARGS__)
+#define OS_MAC_DEBUG_TAG "OS_XMAC"
+#define FXMAC_OS_XMAC_PRINT_E(format, ...) FT_DEBUG_PRINT_E(OS_MAC_DEBUG_TAG, format, ##__VA_ARGS__)
+#define FXMAC_OS_XMAC_PRINT_I(format, ...) FT_DEBUG_PRINT_I(OS_MAC_DEBUG_TAG, format, ##__VA_ARGS__)
+#define FXMAC_OS_XMAC_PRINT_D(format, ...) FT_DEBUG_PRINT_D(OS_MAC_DEBUG_TAG, format, ##__VA_ARGS__)
+#define FXMAC_OS_XMAC_PRINT_W(format, ...) FT_DEBUG_PRINT_W(OS_MAC_DEBUG_TAG, format, ##__VA_ARGS__)
 
 #define FXMAC_BD_TO_INDEX(ringptr, bdptr) \
     (((uintptr)bdptr - (uintptr)(ringptr)->base_bd_addr) / (ringptr)->separation)
@@ -57,10 +57,14 @@ static void FXmacSetupIsr(FXmacOs *instance_p);
 extern void sys_sem_signal(sys_sem_t *sem);
 static FXmacOs fxmac_os_instace[FXMAC_NUM] =
 {
-    [FXMAC0_ID] = {.config = (0)},
-    [FXMAC1_ID] = {.config = (0)},
-    [FXMAC2_ID] = {.config = (0)},
-    [FXMAC3_ID] = {.config = (0)},
+        [FXMAC0_ID] = {0},
+        [FXMAC1_ID] = {0},
+#if defined(FXMAC2_ID)
+        [FXMAC2_ID] = {0},
+#endif
+#if defined(FXMAC3_ID)
+        [FXMAC3_ID] = {0},
+#endif
 };
 
 int isr_calling_flg = 0;
@@ -261,7 +265,7 @@ FError FXmacSgsend(FXmacOs *instance_p, struct pbuf *p)
         FCacheDCacheFlushRange((uintptr)q->payload, (uintptr)q->len);
         FXMAC_BD_SET_ADDRESS_TX(txbd, (uintptr)q->payload);
 
-        if (instance_p->config & FXMAC_OS_CONFIG_JUMBO)
+        if (instance_p->feature & FXMAC_OS_CONFIG_JUMBO)
         {
             max_fr_size = FXMAC_MAX_FRAME_SIZE_JUMBO;
         }
@@ -336,9 +340,9 @@ void SetupRxBds(FXmacOs *instance_p, FXmacBdRing *rxring)
     {
         freebds--;
 
-        if (instance_p->config & FXMAC_OS_CONFIG_JUMBO)
+        if (instance_p->feature & FXMAC_OS_CONFIG_JUMBO)
         {
-            p = pbuf_alloc(PBUF_RAW, FXMAC_MAX_FRAME_SIZE_JUMBO, PBUF_POOL);
+            p = pbuf_alloc(PBUF_RAW, FXMAC_MAX_FRAME_SIZE_JUMBO, PBUF_RAM);
         }
         else
         {
@@ -379,7 +383,7 @@ void SetupRxBds(FXmacOs *instance_p, FXmacBdRing *rxring)
             return;
         }
 
-        if (instance_p->config & FXMAC_OS_CONFIG_JUMBO)
+        if (instance_p->feature & FXMAC_OS_CONFIG_JUMBO)
         {
             FCacheDCacheInvalidateRange((uintptr)p->payload, (uintptr)MAX_FRAME_SIZE_JUMBO);
         }
@@ -456,7 +460,7 @@ void FXmacRecvHandler(void *arg)
             /*
              * Adjust the buffer size to the actual number of bytes received.
              */
-            if (instance_p->config & FXMAC_OS_CONFIG_JUMBO)
+            if (instance_p->feature & FXMAC_OS_CONFIG_JUMBO)
             {
                 rx_bytes = FXMAC_GET_RX_FRAME_SIZE(curbdptr);
             }
@@ -593,9 +597,9 @@ FError FXmacInitDma(FXmacOs *instance_p)
      */
     for (i = 0; i < FXMAX_RX_PBUFS_LENGTH; i++)
     {
-        if (instance_p->config & FXMAC_OS_CONFIG_JUMBO)
+        if (instance_p->feature & FXMAC_OS_CONFIG_JUMBO)
         {
-            p = pbuf_alloc(PBUF_RAW, FXMAC_MAX_FRAME_SIZE_JUMBO, PBUF_POOL);
+            p = pbuf_alloc(PBUF_RAW, FXMAC_MAX_FRAME_SIZE_JUMBO, PBUF_RAM);
         }
         else
         {
@@ -639,7 +643,7 @@ FError FXmacInitDma(FXmacOs *instance_p)
         *temp = 0;
         DSB();
 
-        if (instance_p->config & FXMAC_OS_CONFIG_JUMBO)
+        if (instance_p->feature & FXMAC_OS_CONFIG_JUMBO)
         {
             FCacheDCacheInvalidateRange((uintptr)p->payload, (uintptr)MAX_FRAME_SIZE_JUMBO);
         }
@@ -856,63 +860,19 @@ void FXmacLinkChange(void *args)
         FXMAC_OS_XMAC_PRINT_I("xmac_p->config.base_address is %p", xmac_p->config.base_address);
         ctrl = FXMAC_READREG32(xmac_p->config.base_address, FXMAC_PCS_AN_LP_OFFSET);
         link = (ctrl & FXMAC_PCS_LINK_PARTNER_NEXT_PAGE_STATUS) >> 15;
-        FXMAC_OS_XMAC_PRINT_I("Link status is 0x%x", link);
-
         switch (link)
         {
             case 0:
+                FXMAC_OS_XMAC_PRINT_I("Link status is down");
                 link_status = FXMAC_LINKDOWN;
                 break;
             case 1:
+                FXMAC_OS_XMAC_PRINT_I("Link status is up");
                 link_status = FXMAC_LINKUP;
                 break;
             default:
                 FXMAC_OS_XMAC_PRINT_E("Link status is error 0x%x ", link);
                 return;
-        }
-
-        if (xmac_p->config.auto_neg == 0)
-        {
-            if (link_status == FXMAC_LINKUP)
-            {
-                FXMAC_OS_XMAC_PRINT_I("No neg link up (%d/%s)", xmac_p->config.speed, xmac_p->config.duplex == 1 ? "FULL" : "Half");
-                xmac_p->link_status = FXMAC_NEGOTIATING;
-            }
-            else
-            {
-                FXMAC_OS_XMAC_PRINT_I("No neg link down.");
-                xmac_p->link_status = FXMAC_LINKDOWN;
-            }
-        }
-
-        /* read sgmii reg to get status */
-        ctrl = FXMAC_READREG32(xmac_p->config.base_address, FXMAC_PCS_AN_LP_OFFSET);
-        speed_bit = (ctrl & FXMAC_PCS_AN_LP_SPEED) >> FXMAC_PCS_AN_LP_SPEED_OFFSET;
-        duplex = (ctrl & FXMAC_PCS_AN_LP_DUPLEX) >> FXMAC_PCS_AN_LP_DUPLEX_OFFSET;
-
-        if (speed_bit == 2)
-        {
-            speed = FXMAC_SPEED_1000;
-        }
-        else if (speed_bit == 1)
-        {
-            speed = FXMAC_SPEED_100;
-        }
-        else
-        {
-            speed = FXMAC_SPEED_10;
-        }
-
-        if (link_status != xmac_p->link_status)
-        {
-            FXMAC_OS_XMAC_PRINT_I("Sgmii link_status has changed.");
-        }
-
-        /* add erase NCFGR config */
-        if ((speed != xmac_p->config.speed) || (duplex != xmac_p->config.duplex))
-        {
-            FXMAC_OS_XMAC_PRINT_I("Sgmii link_status has changed.");
-            FXMAC_OS_XMAC_PRINT_I("New speed is %d, duplex is %d", speed, duplex);
         }
 
         if (link_status == FXMAC_LINKUP)
@@ -925,8 +885,7 @@ void FXmacLinkChange(void *args)
         }
         else
         {
-            xmac_p->link_status = link_status;
-            FXMAC_OS_XMAC_PRINT_I("Change status is 0x%x", link_status);
+            xmac_p->link_status = FXMAC_LINKDOWN;
         }
     }
 }
@@ -1003,7 +962,7 @@ enum lwip_port_link_status FXmacLwipPortLinkDetect(FXmacOs *instance_p)
             if ((phy_link_status == FXMAC_LINKUP) && FXmacPhyAutonegStatus(xmac_p, xmac_p->phy_address))
             {
                 err_t phy_ret;
-                phy_ret = FXmacPhyInit(xmac_p, xmac_p->config.speed, xmac_p->config.duplex, xmac_p->config.auto_neg);
+                phy_ret = FXmacPhyInit(xmac_p, xmac_p->config.speed, xmac_p->config.duplex, xmac_p->config.auto_neg,XMAC_PHY_RESET_DISABLE);
 
                 if (phy_ret != FT_SUCCESS)
                 {
@@ -1043,7 +1002,7 @@ enum lwip_port_link_status FXmacPhyReconnect(struct LwipPort *xmac_netif_p)
         {
             /* 重新自协商 */
             err_t phy_ret;
-            phy_ret = FXmacPhyInit(xmac_p, xmac_p->config.speed, xmac_p->config.duplex, xmac_p->config.auto_neg);
+            phy_ret = FXmacPhyInit(xmac_p, xmac_p->config.speed, xmac_p->config.duplex, xmac_p->config.auto_neg,XMAC_PHY_RESET_DISABLE);
             if (phy_ret != FT_SUCCESS)
             {
                 FXMAC_OS_XMAC_PRINT_I("FXmacPhyInit is error.");
@@ -1218,23 +1177,23 @@ FError FXmacOsInit(FXmacOs *instance_p)
         FXMAC_OS_XMAC_PRINT_E("In %s:EmacPs Configuration Failed....", __func__);
     }
 
-    if (instance_p->config & FXMAC_OS_CONFIG_JUMBO)
+    if (instance_p->feature & FXMAC_OS_CONFIG_JUMBO)
     {
         FXmacSetOptions(xmac_p, FXMAC_JUMBO_ENABLE_OPTION, 0);
     }
 
-    if (instance_p->config & FXMAC_OS_CONFIG_RX_POLL_RECV)
+    if (instance_p->feature & FXMAC_OS_CONFIG_RX_POLL_RECV)
     {
         xmac_p->mask &= (~FXMAC_IXR_RXCOMPL_MASK);
     }
 
-    if (instance_p->config & FXMAC_OS_CONFIG_MULTICAST_ADDRESS_FILITER)
+    if (instance_p->feature & FXMAC_OS_CONFIG_MULTICAST_ADDRESS_FILITER)
     {
         FXmacSetOptions(xmac_p, FXMAC_MULTICAST_OPTION, 0);
     }
 
     /* enable copy all frames */
-    if (instance_p->config & FXMAC_OS_CONFIG_COPY_ALL_FRAMES)
+    if (instance_p->feature & FXMAC_OS_CONFIG_COPY_ALL_FRAMES)
     {
         FXmacSetOptions(xmac_p, FXMAC_PROMISC_OPTION, 0);
     }
@@ -1246,13 +1205,13 @@ FError FXmacOsInit(FXmacOs *instance_p)
     }
 
     /* close fcs check */
-    if (instance_p->config & FXMAC_OS_CONFIG_CLOSE_FCS_CHECK)
+    if (instance_p->feature & FXMAC_OS_CONFIG_CLOSE_FCS_CHECK)
     {
         FXmacSetOptions(xmac_p, FXMAC_FCS_STRIP_OPTION, 0);
     }
 
     /* initialize phy */
-    status = FXmacPhyInit(xmac_p, xmac_p->config.speed, xmac_p->config.duplex, xmac_p->config.auto_neg);
+    status = FXmacPhyInit(xmac_p, xmac_p->config.speed, xmac_p->config.duplex, xmac_p->config.auto_neg,XMAC_PHY_RESET_ENABLE);
     if (status != FT_SUCCESS)
     {
         FXMAC_OS_XMAC_PRINT_W("FXmacPhyInit is error.");
@@ -1275,10 +1234,6 @@ FError FXmacOsInit(FXmacOs *instance_p)
     return FT_SUCCESS;
 }
 
-FError FXmacOsConfig(FXmacOs *instance_p, int cmd, void *arg)
-{
-    return FT_SUCCESS;
-}
 
 /**
  * @name: FXmacOsRx
@@ -1362,7 +1317,7 @@ FError FXmacOsTx(FXmacOs *instance_p, void *tx_buf)
     return ret;
 }
 
-FXmacOs *FXmacOsGetInstancePointer(FXmacOsControl *config_p)
+FXmacOs *FXmacOsGetInstancePointer(FXmacPhyControl *config_p)
 {
     FXmacOs *instance_p;
     FASSERT(config_p != NULL);
@@ -1373,7 +1328,7 @@ FXmacOs *FXmacOsGetInstancePointer(FXmacOsControl *config_p)
     FASSERT_MSG(config_p->phy_duplex <= FXMAC_PHY_FULL_DUPLEX, "config_p->phy_duplex %d is over FXMAC_PHY_FULL_DUPLEX", config_p->phy_duplex);
 
     instance_p = &fxmac_os_instace[config_p->instance_id];
-    memcpy(&instance_p->mac_config, config_p, sizeof(FXmacOsControl));
+    memcpy(&instance_p->mac_config, config_p, sizeof(FXmacPhyControl));
     return instance_p;
 }
 
@@ -1392,7 +1347,6 @@ void FXmacOsStop(FXmacOs *instance_p)
 void FXmacOsStart(FXmacOs *instance_p)
 {
     FASSERT(instance_p != NULL);
-
     /* start mac */
     FXmacStart(&instance_p->instance);
 }

@@ -14,13 +14,15 @@
  * FilePath: cmd_ddma.c
  * Date: 2022-07-14 14:06:43
  * LastEditTime: 2022-07-14 14:06:43
- * Description:  This file is for ddma command interface
+ * Description:  This file is for DDMA command interface.
  *
  * Modify History:
- *  Ver   Who        Date         Changes
- * ----- ------     --------    --------------------------------------
- * 1.0 zhugengyu    2022/08/26   first commit
+ *  Ver    Who          Date         Changes
+ * -----  ------       --------     --------------------------------------
+ *  1.0   zhugengyu    2022/7/27    init commit
+ *  1.1   liqiaozhong  2023/11/10   synchronous update with standalone sdk
  */
+
 /***************************** Include Files *********************************/
 #include <string.h>
 #include <stdio.h>

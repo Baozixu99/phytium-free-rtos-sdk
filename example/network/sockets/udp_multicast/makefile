@@ -27,8 +27,5 @@ ifdef CONFIG_OUTPUT_BINARY
 endif
 	@ls $(USR_BOOT_DIR)/$(BOOT_IMG_NAME).* -l
 
-jailhouse:
-	scp ./$(CONFIG_TARGET_NAME).bin root@192.168.4.224:/root/gitee_jailhouse/phytium-jailhouse/src/jailhouse
-
 test_code:
 	$(MAKE) -C $(PROJECT_DIR)/test/ all

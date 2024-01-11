@@ -1,62 +1,75 @@
-# lwip base on freertos
+# LWIP STARTUP 测试
 
 ## 1. 例程介绍
 
-- 本例程示范了freertos环境下的lwip移植。
-- 并且介绍了开发者如何在我方sdk下如何正常初始化网络控制器
+><font size="1">介绍例程的用途，使用场景，相关基本概念，描述用户可以使用例程完成哪些工作</font><br />
+
+本例程示范了MAC控制器在lwip各种模式下的初始化流程，初始化成功后的网卡数据收发正常，能够ping通网络。
+
+### 1.1 网卡ipv4模式初始化测试例程 (lwip_ipv4_example.c)
+- ipv4模式下初始化开发板上所有网口以及对应网卡控制器
+- 为每个网卡配置静态IPv4地址
+- 可以通过主机端对相应网口进行ping通
+
+### 1.2 网卡ipv6模式初始化测试例程 (lwip_ipv6_example.c)
+- ipv6模式下初始化开发板上所有网口以及对应网卡控制器
+- 为每个网卡配置静态IPv6地址
+- 可以通过主机端对相应网口进行ping通
+
+### 1.3 网卡dhcp模式初始化测试例程 (lwip_dhcp_example.c)
+- dhcp模式下初始化开发板上所有网口以及对应网卡控制器
+- 由dhcp服务器对每个网卡自动分配IPv4地址
+- 可以通过主机端对相应网口进行ping通
 
 ## 2. 如何使用例程
 
-本例程需要用到
-- Phytium开发板（E2000/D2000/FT2004）
-- [Phytium freeRTOS SDK](https://gitee.com/phytium_embedded/phytium-free-rtos-sdk)
-- [Phytium standalone SDK](https://gitee.com/phytium_embedded/phytium-standalone-sdk)
+><font size="1">描述开发平台准备，使用例程配置，构建和下载镜像的过程</font><br />
+
+本例程需要以下硬件，
+
+- E2000D/Q Demo板，FT2000/4开发板，D2000开发板，PhytiumPi
+- 串口线和串口上位机
+
 ### 2.1 硬件配置方法
 
-本例程支持的硬件平台包括
-
-- E2000D/Q
-- FT2004
-- D2000
-- PhytiumPi
-
-对应的配置项是，
-
-- CONFIG_TARGET_E2000D
-- CONFIG_TARGET_E2000Q
-- CONFIG_TARGET_FT2004
-- CONFIG_TARGET_D2000
-- CONFIG_TARGET_PHYTIUMPI
+><font size="1">哪些硬件平台是支持的，需要哪些外设，例程与开发板哪些IO口相关等（建议附录开发板照片，展示哪些IO口被引出）</font><br />
+- 为方便测试，一般需要自带路由器设备。
+- 利用路由器上的多个接口，我们可以更加方便的进行多网口测试。
+- 路由器一般能够提供dhcp服务，利用该服务，我们可以在运行网卡dhcp模式初始化测试例程时看到相应的dhcp服务器分配地址的现象。
+- 关于路由器配置，请参考网上相关资料自行配置。
 
 ### 2.2 SDK配置方法
 
-本例程需要，
+><font size="1">依赖哪些驱动、库和第三方组件，如何完成配置（列出需要使能的关键配置项）</font><br />
 
-- 使能LWIP
+本例程需要：
+- LWIP组件，依赖 USE_LWIP
+- Letter Shell组件，依赖 USE_LETTER_SHELL
 
 对应的配置项是，
 
 - CONFIG_USE_LWIP
 - CONFIG_USE_LETTER_SHELL
 
-本例子已经提供好具体的编译指令，以下进行介绍:
-- make 将目录下的工程进行编译
-- make clean  将目录下的工程进行清理
-- make image   将目录下的工程进行编译，并将生成的elf 复制到目标地址
-- make list_kconfig 当前工程支持哪些配置文件
-- make load_kconfig LOAD_CONFIG_NAME=< kconfig-nfiguration files > 将预设配置加载至工程中
-- make menuconfig   配置目录下的参数变量
-- make backup_kconfig 将目录下的sdkconfig 备份到./configs下
+- 本例子已经提供好具体的编译指令，以下进行介绍：
 
-具体使用方法为:
-- 在当前目录下
-- 执行以上指令
+  1. make 将目录下的工程进行编译
+  2. make clean  将目录下的工程进行清理
+  3. make image   将目录下的工程进行编译，并将生成的elf 复制到目标地址
+  4. make list_kconfig 当前工程支持哪些配置文件
+  5. make load_kconfig LOAD_CONFIG_NAME=`<kconfig configuration files>`  将预设配置加载至工程中
+  6. make menuconfig   配置目录下的参数变量
+  7. make backup_kconfig 将目录下的sdkconfig 备份到./configs下
+- 具体使用方法为：
+
+  - 在当前目录下
+  - 执行以上指令
 
 ### 2.3 构建和下载
 
-#### 2.3.1 构建过程
+><font size="1">描述构建、烧录下载镜像的过程，列出相关的命令</font><br />
 
-本文档将以E2000Ddemo开发板为例，对于其它平台，使用对应的默认配置
+本文档将以E2000D demo开发板为例，对于其它平台，使用对应的默认配置
 
 - 在host端完成配置
 - 选择目标平台
@@ -83,16 +96,16 @@ make
 make image
 ```
 
-#### 2.3.2 下载过程
-
 - host侧设置重启host侧tftp服务器
+
 ```
-sudo service tftpd-hpa start
+sudo service tftpd-hpa restart
 ```
 
 - 开发板侧使用bootelf命令跳转
+
 ```
-setenv ipaddr 192.168.4.20
+setenv ipaddr 192.168.4.20  
 setenv serverip 192.168.4.50 
 setenv gatewayip 192.168.4.1 
 tftpboot 0x90100000 freertos.elf
@@ -101,52 +114,34 @@ bootelf -p 0x90100000
 
 ### 2.4 输出与实验现象
 
-- 启动进入后，根据连接的xmac口，输入指令完成网口初始化
+><font size="1">描述输入输出情况，列出存在哪些输出，对应的输出是什么（建议附录相关现象图片）</font><br />
 
-### 2.4.1 如何配置demo 程序
-
-- 本程序默认支持ipv4，开发者使用"make menuconfig"在以下配置选项中打开
-
-![](./pic/network_demo_config.png)
-
-- 如上图所示，开发者可以通过勾选 Enable IPv6 开启IPv6 的功能，通过勾选Enable DHCP 开启 dhcp client 功能
-
-
-### 2.4.2 如何进行实验
-
-- 当开发者配置好程序之后,通过2.3.1/2.3.2的方式将编译好的镜像文件拷贝至开发板中。
-- 以E2000D/Q demo 板为例,开发者输入以下命令则可以初始化网卡：
+#### 2.4.1 网卡ipv4模式初始化测试例程 (lwip_ipv4_example.c)
 
 ```
-lwip probe 0 0 1 0 192.168.4.10 192.168.4.1 255.255.255.0
+lwip ipv4
 ```
 
-命令定义为:
+![ipv4_example_result](./fig/ipv4_example_result.png)
+![ipv4_example_ping](./fig/ipv4_ping.png)
+
+#### 2.4.2 网卡ipv6模式初始化测试例程 (lwip_ipv6_example.c)
+
 ```
-lwip probe <driver id> <device id> <interface id> <dhcp_en> <ipaddr> <gateway> <netmask> 
+lwip ipv6
 ```
-- driver id 为驱动类型 ， 0为xmac ，1为gmac
-- device id 为mac控制器
-- interface id 为gmii 控制器类型，0 is rgmii ,1 is sgmii
-- dhcp_en 1为使能dhcp 功能，0为关闭dhcp 功能
-- ipaddr 为ipv4 地址，示例为: 192.168.4.10
-- gateway 为网关 ，示例为: 192.168.4.
-- netmask 为子网掩码，示例为255.255.255.0
 
+![ipv6_example_result](./fig/ipv6_example_result.png)
+![ipv6_example_ping](./fig/ipv6_ping.png)
 
-- 效果图如下
+#### 2.4.3 网卡dhcp模式初始化测试例程 (lwip_dhcp_example.c)
 
-![](./pic/lwip_probe.png)
-![](./pic/ping.png)
-![](./pic/ping_ipv6.png)
-
-- 使能dhcp模式后，输入以下指令,开启dhcp网卡测试
 ```
-lwip probe 0 0 1 1
+lwip dhcp
 ```
-![](./pic/dhcp_test.png)
-![](./pic/dhcp_ping.png)
 
+![dhcp_example_result](./fig/dhcp_example_result.png)
+![dhcp_example_ping](./fig/dhcp_ping.png)
 
 
 ## 3. 如何解决问题

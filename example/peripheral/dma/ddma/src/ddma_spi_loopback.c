@@ -14,12 +14,13 @@
  * FilePath: ddma_spi_loopback.c
  * Date: 2022-07-20 09:24:39
  * LastEditTime: 2022-07-20 09:24:39
- * Description:  This file is for DDMA task implementations 
+ * Description:  This file is for DDMA task implementations.
  *
  * Modify History:
- *  Ver   Who        Date         Changes
- * ----- ------     --------    --------------------------------------
- * 1.0 zhugengyu    2022/08/26   first commit
+ *  Ver    Who          Date         Changes
+ * -----  ------       --------     --------------------------------------
+ *  1.0   zhugengyu    2022/7/27    init commit
+ *  1.1   liqiaozhong  2023/11/10   synchronous update with standalone sdk
  */
 /***************************** Include Files *********************************/
 #include <string.h>
@@ -37,7 +38,6 @@
 #include "fspim_os.h"
 #include "fddma_os.h"
 #include "fspim_hw.h"
-
 /************************** Constant Definitions *****************************/
 #define TX_RX_BUF_LEN           128
 #define CHAN_REQ_DONE(chan)    (0x1 << chan) /* if signal, chan req finished */
@@ -76,7 +76,6 @@ static TaskHandle_t recv_task = NULL;
 static TimerHandle_t exit_timer = NULL;
 static u32 loopback_times = 3U;
 static boolean is_running = FALSE;
-
 static const u32 spim_rx_slave_id[FSPI_NUM] =
 {
     [FSPI0_ID] = FDDMA0_SPIM0_RX_SLAVE_ID,
@@ -84,7 +83,6 @@ static const u32 spim_rx_slave_id[FSPI_NUM] =
     [FSPI2_ID] = FDDMA0_SPIM2_RX_SLAVE_ID,
     [FSPI3_ID] = FDDMA0_SPIM3_RX_SLAVE_ID
 };
-
 static const u32 spim_tx_slave_id[FSPI_NUM] =
 {
     [FSPI0_ID] = FDDMA0_SPIM0_TX_SLAVE_ID,
@@ -92,16 +90,13 @@ static const u32 spim_tx_slave_id[FSPI_NUM] =
     [FSPI2_ID] = FDDMA0_SPIM2_TX_SLAVE_ID,
     [FSPI3_ID] = FDDMA0_SPIM3_TX_SLAVE_ID
 };
-
 /***************** Macros (Inline Functions) Definitions *********************/
 #define FDDMA_DEBUG_TAG "DDMA-LP"
 #define FDDMA_ERROR(format, ...)   FT_DEBUG_PRINT_E(FDDMA_DEBUG_TAG, format, ##__VA_ARGS__)
 #define FDDMA_WARN(format, ...)    FT_DEBUG_PRINT_W(FDDMA_DEBUG_TAG, format, ##__VA_ARGS__)
 #define FDDMA_INFO(format, ...)    FT_DEBUG_PRINT_I(FDDMA_DEBUG_TAG, format, ##__VA_ARGS__)
 #define FDDMA_DEBUG(format, ...)   FT_DEBUG_PRINT_D(FDDMA_DEBUG_TAG, format, ##__VA_ARGS__)
-
 /************************** Function Prototypes ******************************/
-
 static void DdmaSpiLoopbackExitCallback(TimerHandle_t timer)
 {
     FError err = FT_SUCCESS;
@@ -129,12 +124,12 @@ static void DdmaSpiLoopbackExitCallback(TimerHandle_t timer)
     {
         if (FT_SUCCESS != FFreeRTOSDdmaRevokeChannel(ddma, rx_chan_id))
         {
-            FDDMA_ERROR("delete rx chan failed !!!");
+            FDDMA_ERROR("Delete RX channel failed.");
         }
 
         if (FT_SUCCESS != FFreeRTOSDdmaRevokeChannel(ddma, tx_chan_id))
         {
-            FDDMA_ERROR("delete tx chan failed !!!");
+            FDDMA_ERROR("Delete TX channel failed.");
         }
 
         err = FFreeRTOSDdmaDeinit(ddma);
@@ -153,28 +148,37 @@ static void DdmaSpiLoopbackExitCallback(TimerHandle_t timer)
         sync = NULL;
     }
 
-    if (pdPASS != xTimerDelete(timer, 0)) /* delete timer ifself */
+    if (pdPASS != xTimerDelete(timer, 0)) /* delete timer itself */
     {
-        FDDMA_ERROR("delete exit timer failed !!!");
+        FDDMA_ERROR("Delete exit timer failed.");
         exit_timer = NULL;
     }
 
     is_running = FALSE;
 }
 
-static void DdmaSpiLoopbackAckDMADone(FDdmaChan *const dma_chan, void *arg)
+static void DdmaSpiLoopbackAckDMADone(FDdmaChanIrq *const chan_irq_info_p, void *arg)
 {
-    FASSERT(dma_chan);
+    FASSERT(chan_irq_info_p);
 
     BaseType_t xhigher_priority_task_woken = pdFALSE;
     BaseType_t x_result = pdFALSE;
 
-    FDDMA_INFO("ack chan-%d %s done for ddma.", dma_chan->config.id,
-               (dma_chan->config.id == rx_chan_id) ? "rx" : "tx");
-    FASSERT_MSG(chan_evt, "rx event group not exists !!!");
+    FDDMA_INFO("Ack chan-%d %s done for DDMA.", chan_irq_info_p->channel_id,
+               (chan_irq_info_p->channel_id == rx_chan_id) ? "RX" : "TX");
+    FASSERT_MSG(chan_evt, "RX event group not exists.");
+
     x_result = xEventGroupSetBitsFromISR(chan_evt,
-                                         CHAN_REQ_DONE(dma_chan->config.id),
+                                         CHAN_REQ_DONE(chan_irq_info_p->channel_id),
                                          &xhigher_priority_task_woken);
+
+
+    if (x_result == pdFALSE)
+    {
+        FDDMA_ERROR("xEventGroupSetBitsFromISR() fail.");
+    }
+
+    portYIELD_FROM_ISR(xhigher_priority_task_woken);
 
     return;
 }
@@ -186,28 +190,26 @@ static boolean DdmaSpiLoopbackWaitDmaEnd(void)
     EventBits_t ev;
     u32 wait_bits = CHAN_REQ_DONE(rx_chan_id) | CHAN_REQ_DONE(tx_chan_id);
 
-    ev = xEventGroupWaitBits(chan_evt,
-                             wait_bits,
-                             pdTRUE, pdTRUE, wait_delay);
+    ev = xEventGroupWaitBits(chan_evt, wait_bits, pdTRUE, pdTRUE, wait_delay);
     if ((ev & wait_bits) == wait_bits)
     {
-        FDDMA_INFO("ddma transfer success !!!");
+        FDDMA_INFO("DDMA transfer success.");
     }
     else
     {
         if ((ev & CHAN_REQ_DONE(tx_chan_id)) == 0U)
         {
-            FDDMA_ERROR("tx timeout !!!");
+            FDDMA_ERROR("TX timeout.");
         }
 
         if ((ev & CHAN_REQ_DONE(rx_chan_id)) == 0U)
         {
-            FDDMA_ERROR("rx timeout !!!");
+            FDDMA_ERROR("RX timeout.");
         }
 
         if (ev & wait_bits == 0U)
         {
-            FDDMA_ERROR("rx and tx timeout !!!");
+            FDDMA_ERROR("Both TX and RX timeout.");
         }
 
         ok = FALSE;
@@ -219,10 +221,10 @@ static boolean DdmaSpiLoopbackWaitDmaEnd(void)
 static inline boolean DdmaSpiLoopbackGiveSync()
 {
     boolean data = TRUE;
-    FASSERT_MSG((NULL != sync), "sync not exists");
+    FASSERT_MSG((NULL != sync), "Sync not exists.");
     if (pdFALSE == xQueueSend(sync, &data, portMAX_DELAY))
     {
-        FDDMA_ERROR("failed to give locker !!!");
+        FDDMA_ERROR("Failed to give locker.");
         return FALSE;
     }
 
@@ -232,10 +234,10 @@ static inline boolean DdmaSpiLoopbackGiveSync()
 static inline void DdmaSpiLoopbackTakeSync()
 {
     boolean data = FALSE;
-    FASSERT_MSG((NULL != sync), "sync not exists");
+    FASSERT_MSG((NULL != sync), "Sync not exists.");
     if (pdFALSE == xQueueReceive(sync, &data, portMAX_DELAY))
     {
-        FDDMA_ERROR("failed to give locker !!!");
+        FDDMA_ERROR("Failed to give locker.");
     }
 
     return;
@@ -243,17 +245,17 @@ static inline void DdmaSpiLoopbackTakeSync()
 
 static void DdmaInitTask(void *args)
 {
-    const u32 ddma_id = FDDMA0_ID; /* spi use ddma0 only */
+    const u32 ddma_id = FDDMA0_ID; /* spi use DDMA-0 only */
     FError err = FT_SUCCESS;
     uintptr spi_base;
 
     trans_len = dma_trans_bytes;
 
-    spim = FFreeRTOSSpimInit(spi_instance_id, &spim_config); /* init spim */
-    FASSERT_MSG(spim, "init spim failed");
+    spim = FFreeRTOSSpimInit(spi_instance_id, &spim_config); /* init SPIM */
+    FASSERT_MSG(spim, "Init SPIM failed.");
 
-    ddma = FFreeRTOSDdmaInit(ddma_id, &ddma_config); /* deinit ddma */
-    FASSERT_MSG(ddma, "init ddma failed");
+    ddma = FFreeRTOSDdmaInit(ddma_id, &ddma_config); /* deinit DDMA */
+    FASSERT_MSG(ddma, "Init DDMA failed.");
 
     spi_base = spim->ctrl.config.base_addr;
 
@@ -265,7 +267,7 @@ static void DdmaInitTask(void *args)
     rx_request.req_done_handler = DdmaSpiLoopbackAckDMADone;
     rx_request.req_done_args = NULL;
     err = FFreeRTOSDdmaSetupChannel(ddma, rx_chan_id, &rx_request);
-    FASSERT_MSG(FT_SUCCESS == err, "init rx chan failed");
+    FASSERT_MSG(FT_SUCCESS == err, "Init RX channel failed.");
 
     tx_request.slave_id = spim_tx_slave_id[spi_instance_id];
     tx_request.mem_addr = (uintptr)(void *)tx_buf;
@@ -275,7 +277,7 @@ static void DdmaInitTask(void *args)
     tx_request.req_done_handler = DdmaSpiLoopbackAckDMADone;
     tx_request.req_done_args = NULL;
     err = FFreeRTOSDdmaSetupChannel(ddma, tx_chan_id, &tx_request);
-    FASSERT_MSG(FT_SUCCESS == err, "init tx chan failed");
+    FASSERT_MSG(FT_SUCCESS == err, "Init TX channel failed.");
 
     DdmaSpiLoopbackGiveSync(); /* give sync and allow sending */
 
@@ -291,7 +293,7 @@ static void DdmaSpiLoopbackSendTask(void *args)
 
     for (;;)
     {
-        FDDMA_INFO("waiting send data...");
+        FDDMA_INFO("Waiting send data...");
 
         DdmaSpiLoopbackTakeSync(); /* is sending, take send sync and cannot send again */
 
@@ -305,10 +307,10 @@ static void DdmaSpiLoopbackSendTask(void *args)
 
         FCacheDCacheInvalidateRange((uintptr)(void *)tx_buf, trans_len);
 
-        printf("before loopback ..... \r\n");
-        printf("tx buf ===> \r\n");
+        printf("Before loopback ..... \r\n");
+        printf("TX buf ===> \r\n");
         FtDumpHexByte((u8 *)tx_buf, trans_len);
-        printf("rx buf <=== \r\n");
+        printf("RX buf <=== \r\n");
         FtDumpHexByte((u8 *)rx_buf, trans_len);
 
         spi_msg.rx_buf = rx_buf;
@@ -319,7 +321,7 @@ static void DdmaSpiLoopbackSendTask(void *args)
         if ((FFREERTOS_DDMA_OK != FFreeRTOSDdmaStartChannel(ddma, rx_chan_id)) ||
             (FFREERTOS_DDMA_OK != FFreeRTOSDdmaStartChannel(ddma, tx_chan_id)))
         {
-            FDDMA_ERROR("start dma failed !!!");
+            FDDMA_ERROR("Start DDMA channel failed.");
             break;
         }
 
@@ -328,7 +330,7 @@ static void DdmaSpiLoopbackSendTask(void *args)
         /* setup spi transfer only for the first time */
         if ((0 == times) && (FFREERTOS_DDMA_OK != FFreeRTOSSpimTransfer(spim, &spi_msg)))
         {
-            FDDMA_ERROR("start spi transfer failed !!!");
+            FDDMA_ERROR("Start SPI transfer failed.");
             break;;
         }
 
@@ -341,7 +343,7 @@ static void DdmaSpiLoopbackSendTask(void *args)
     }
 
 task_err:
-    printf("send task finished !!!\r\n");
+    printf("Send task finished.\r\n");
     FFreeRTOSDdmaStop(ddma);
     vTaskSuspend(NULL);
 }
@@ -352,9 +354,9 @@ static void DdmaSpiLoopbackRecvTask(void *args)
 
     for (;;)
     {
-        FDDMA_INFO("waiting recv data...");
+        FDDMA_INFO("Waiting for recv data...");
 
-        /* block recv task until rx done */
+        /* block recv task until RX done */
         if (!DdmaSpiLoopbackWaitDmaEnd())
         {
             continue;
@@ -363,26 +365,26 @@ static void DdmaSpiLoopbackRecvTask(void *args)
         if ((FFREERTOS_DDMA_OK != FFreeRTOSDdmaStopChannel(ddma, tx_chan_id)) ||
             (FFREERTOS_DDMA_OK != FFreeRTOSDdmaStopChannel(ddma, rx_chan_id)))
         {
-            FDDMA_ERROR("stop dma transfer failed !!!");
+            FDDMA_ERROR("Stop DDMA transfer failed.");
             continue;
         }
 
         FCacheDCacheInvalidateRange((uintptr)(void *)rx_buf, trans_len);
 
-        printf("after loopback ..... \r\n");
-        printf("tx buf ===> \r\n");
+        printf("After loopback ..... \r\n");
+        printf("TX buf ===> \r\n");
         FtDumpHexByte(tx_buf, trans_len);
-        printf("rx buf <=== \r\n");
+        printf("RX buf <=== \r\n");
         FtDumpHexByte(rx_buf, trans_len);
 
         /* compare if loopback success */
         if (0 == memcmp(rx_buf, tx_buf, trans_len))
         {
-            printf("loopback transfer success !!!\r\n");
+            printf("Loopback transfer success.\r\n");
         }
         else
         {
-            FDDMA_ERROR("rx != tx, loopback transfer failed !!!");
+            FDDMA_ERROR("RX data != TX data, loopback transfer failed.");
         }
 
         if (times++ > loopback_times)
@@ -390,10 +392,10 @@ static void DdmaSpiLoopbackRecvTask(void *args)
             break;
         }
 
-        DdmaSpiLoopbackGiveSync(); /* recv finished, give send sync and allow sending */
+        DdmaSpiLoopbackGiveSync(); /* recv finish, give send sync and allow sending */
     }
 
-    printf("recv task finished !!!\r\n");
+    printf("Receive task finished.\r\n");
     FFreeRTOSDdmaStop(ddma);
     vTaskSuspend(NULL);
 }
@@ -401,11 +403,11 @@ static void DdmaSpiLoopbackRecvTask(void *args)
 BaseType_t FFreeRTOSRunDDMASpiLoopback(u32 spi_id, u32 bytes)
 {
     BaseType_t ret = pdPASS;
-    const TickType_t total_run_time = pdMS_TO_TICKS(30000UL); /* loopback run for 10 secs deadline */
+    const TickType_t total_run_time = pdMS_TO_TICKS(30000UL); /* loopback runs for 10 secs deadline */
 
     if (is_running)
     {
-        FDDMA_ERROR("task is running !!!!");
+        FDDMA_ERROR("Task is running.");
         return pdPASS;
     }
 
@@ -413,11 +415,11 @@ BaseType_t FFreeRTOSRunDDMASpiLoopback(u32 spi_id, u32 bytes)
     spi_instance_id = spi_id;
     dma_trans_bytes = bytes;
 
-    FASSERT_MSG(NULL == chan_evt, "event group exists !!!");
-    FASSERT_MSG((chan_evt = xEventGroupCreate()) != NULL, "create event group failed !!!");
+    FASSERT_MSG(NULL == chan_evt, "Event group exists.");
+    FASSERT_MSG((chan_evt = xEventGroupCreate()) != NULL, "Create event group failed.");
 
-    FASSERT_MSG(NULL == sync, "sync exists !!!");
-    FASSERT_MSG((sync = xQueueCreate(1, sizeof(boolean))) != NULL, "create sync failed !!!");
+    FASSERT_MSG(NULL == sync, "Sync exists.");
+    FASSERT_MSG((sync = xQueueCreate(1, sizeof(boolean))) != NULL, "Create sync failed.");
 
     taskENTER_CRITICAL(); /* no schedule when create task */
 
@@ -428,7 +430,7 @@ BaseType_t FFreeRTOSRunDDMASpiLoopback(u32 spi_id, u32 bytes)
                       (UBaseType_t)configMAX_PRIORITIES - 1,  /* task priority */
                       NULL); /* task handler */
 
-    FASSERT_MSG(pdPASS == ret, "create task failed");
+    FASSERT_MSG(pdPASS == ret, "Create task failed.");
 
     ret = xTaskCreate((TaskFunction_t)DdmaSpiLoopbackSendTask,  /* task entry */
                       (const char *)"DdmaSpiLoopbackSendTask",/* task name */
@@ -437,7 +439,7 @@ BaseType_t FFreeRTOSRunDDMASpiLoopback(u32 spi_id, u32 bytes)
                       (UBaseType_t)configMAX_PRIORITIES - 2,  /* task priority */
                       (TaskHandle_t *)&send_task); /* task handler */
 
-    FASSERT_MSG(pdPASS == ret, "create task failed");
+    FASSERT_MSG(pdPASS == ret, "Create task failed.");
 
     ret = xTaskCreate((TaskFunction_t)DdmaSpiLoopbackRecvTask,  /* task entry */
                       (const char *)"DdmaSpiLoopbackRecvTask",/* task name */
@@ -446,7 +448,7 @@ BaseType_t FFreeRTOSRunDDMASpiLoopback(u32 spi_id, u32 bytes)
                       (UBaseType_t)configMAX_PRIORITIES - 1,  /* task priority */
                       (TaskHandle_t *)&recv_task); /* task handler */
 
-    FASSERT_MSG(pdPASS == ret, "create task failed");
+    FASSERT_MSG(pdPASS == ret, "Create task failed.");
 
     exit_timer = xTimerCreate("Exit-Timer",                 /* Text name for the software timer - not used by FreeRTOS. */
                               total_run_time,                 /* The software timer's period in ticks. */
@@ -454,13 +456,13 @@ BaseType_t FFreeRTOSRunDDMASpiLoopback(u32 spi_id, u32 bytes)
                               NULL,                           /* use timer id to pass task data for reference. */
                               DdmaSpiLoopbackExitCallback);   /* The callback function to be used by the software timer being created. */
 
-    FASSERT_MSG(NULL != exit_timer, "create exit timer failed");
+    FASSERT_MSG(NULL != exit_timer, "Create exit timer failed.");
 
     taskEXIT_CRITICAL(); /* allow schedule since task created */
 
     ret = xTimerStart(exit_timer, 0); /* start */
 
-    FASSERT_MSG(pdPASS == ret, "start exit timer failed");
+    FASSERT_MSG(pdPASS == ret, "Start exit timer failed.");
 
     return ret;
 }

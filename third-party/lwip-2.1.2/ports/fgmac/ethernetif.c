@@ -130,7 +130,6 @@ static void ethernetif_input(struct netif *netif)
 
 
     while (1)
-
     {
         /* move received packet into a new pbuf */
         SYS_ARCH_PROTECT(lev);
@@ -244,7 +243,7 @@ static err_t low_level_init(struct netif *netif)
     FGmac *gmac_p = NULL;
     FError ret;
     u32 dmacrreg;
-    FtOsGmacPhyControl os_config;
+    FGmacPhyControl gmac_phy_config;
     s32_t status = FT_SUCCESS;
     FASSERT(netif != NULL);
     FASSERT(netif->state != NULL);
@@ -261,13 +260,13 @@ static err_t low_level_init(struct netif *netif)
     ETHNETIF_DEBUG_I("netif->state is %p \r\n ", netif->state);
 
     config_p = (UserConfig *)netif->state;
-    os_config.instance_id = config_p->mac_instance;
+    gmac_phy_config.instance_id = config_p->mac_instance;
 
-    os_config.autonegotiation = config_p->autonegotiation; /* 1 is autonegotiation ,0 is manually set */
-    os_config.phy_speed = config_p->phy_speed;  /* FGMAC_PHY_SPEED_XXX */
-    os_config.phy_duplex = config_p->phy_duplex; /* FGMAC_PHY_XXX_DUPLEX */
+    gmac_phy_config.autonegotiation = config_p->autonegotiation; /* 1 is autonegotiation ,0 is manually set */
+    gmac_phy_config.phy_speed = config_p->phy_speed;  /* FGMAC_PHY_SPEED_XXX */
+    gmac_phy_config.phy_duplex = config_p->phy_duplex; /* FGMAC_PHY_XXX_DUPLEX */
 
-    instance_p = FGmacOsGetInstancePointer(&os_config);
+    instance_p = FGmacOsGetInstancePointer(&gmac_phy_config);
     if (instance_p == NULL)
     {
         ETHNETIF_DEBUG_E("FGmacOsGetInstancePointer is error\r\n");
@@ -278,6 +277,8 @@ static err_t low_level_init(struct netif *netif)
     {
         instance_p->hwaddr[i] = netif->hwaddr[i];
     }
+
+    instance_p->feature = config_p->capability;
 
     ret = FGmacOsInit(instance_p);
 
@@ -292,7 +293,14 @@ static err_t low_level_init(struct netif *netif)
     instance_p->stack_pointer = gmac_netif_p;
 
     /* maximum transfer unit */
-    netif->mtu = GMAC_MTU;
+    if(instance_p->feature & FGMAC_OS_CONFIG_JUMBO)
+    {
+        netif->mtu = GMAC_MTU_JUMBO;
+    }
+    else
+    {
+        netif->mtu = GMAC_MTU;
+    }
 
     netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP |
                    NETIF_FLAG_LINK_UP;
