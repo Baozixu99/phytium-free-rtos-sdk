@@ -173,7 +173,7 @@ struct usbh_hub {
     struct usbh_hubport *parent;
     usb_slist_t hub_event_list;
     struct usbh_bus *usb;
-    uint ports; /* num of ports */
+    uint32_t ports; /* num of ports */
     USB_MEM_ALIGNX uint8_t g_hub_buf[32];
     USB_MEM_ALIGNX uint8_t g_hub_intbuf[CONFIG_USBHOST_MAX_EXTHUBS + 1][1];
 };

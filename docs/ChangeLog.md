@@ -1,3 +1,23 @@
+# Phytium Standalone SDK 2024-01-15 ChangeLog
+
+Change Log since 2024-01-12
+
+## example
+
+- update sdkconfig default platform
+
+# Phytium Standalone SDK 2024-01-12 ChangeLog
+
+Change Log since 2024-01-11
+
+## tools
+
+- modify install.py to support windows native build
+
+## doc
+
+- add reference doc to support windows native environment
+
 # Phytium Standalone SDK 2024-01-11 ChangeLog
 
 Change Log since 2024-01-09
