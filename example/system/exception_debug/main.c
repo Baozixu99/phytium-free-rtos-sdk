@@ -32,13 +32,7 @@
 #include "fio.h"
 #include "fkernel.h"
 #include "sdkconfig.h"
-
-#ifdef __aarch64__
-#include "faarch64.h"
-#else
-#include "faarch32.h"
-#endif
-
+#include "faarch.h"
 
 static int FExcOpsInvalidMemAccess(void)
 {

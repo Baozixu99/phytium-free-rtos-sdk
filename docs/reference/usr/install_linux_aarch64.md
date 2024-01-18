@@ -2,7 +2,7 @@
 
 Linux arm aarch64下通过下载SDK开发工具包完成安装，运行脚本`source ./setup_dev.sh`完成安装，安装前请先确认当前设备属于`Linux arm aarch64`
 
-![linux-aarch64](https://images.gitee.com/uploads/images/2021/1019/171438_af96408a_8736513.png "linux-aarch64.png")
+![linux-aarch64](./pic/linux-aarch64.png "linux-aarch64.png")
 
 Linux arm aarch64安装包集成了，
 - `gcc-arm-10.3-2021.07-aarch64-aarch64-none-elf.tar.xz`和`gcc-arm-10.3-2021.07-aarch64-arm-none-eabi.tar.xz`,aarch64交叉编译链，SDK安装过程中会被解压到DEV目录的`cross_tool`目录下
@@ -24,7 +24,7 @@ Linux arm aarch64安装包集成了，
 
 - (2). 进入DEV目录，运行`./setup_dev.py`，安装开发环境
 
-![安装开发环境](https://images.gitee.com/uploads/images/2021/1101/100708_6eafde33_8736513.png "安装开发环境.png")
+![安装开发环境](./pic/安装开发环境.png "安装开发环境.png")
 
 - (3). 通过git拉取Phytium FreeRTOS SDK的代码，如
 
@@ -64,7 +64,7 @@ echo $PHYTIUM_DEV_PATH
 echo $AARCH32_CROSS_PATH 
 echo $AARCH64_CROSS_PATH 
 ```
-![检查环境变量](https://images.gitee.com/uploads/images/2021/1019/181052_1ceab431_8736513.png "检查环境变量.png")
+![检查环境变量](./pic/检查环境变量.png "检查环境变量.png")
 
 - 环境变量打印正确无误，表示**安装成功**
 ## 1.4 卸载开发环境

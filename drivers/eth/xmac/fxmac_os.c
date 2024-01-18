@@ -31,12 +31,7 @@
 #include "lwip_port.h"
 #include "eth_ieee_reg.h"
 #include "fcpu_info.h"
-
-#ifdef __aarch64__
-    #include "faarch64.h"
-#else
-    #include "faarch32.h"
-#endif
+#include "faarch.h"
 
 #include "FreeRTOS.h"
 #include "semphr.h"

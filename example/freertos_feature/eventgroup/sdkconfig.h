@@ -170,7 +170,6 @@
 #define CONFIG_IMAGE_MAX_LENGTH 0x1000000
 #define CONFIG_HEAP_SIZE 1
 #define CONFIG_STACK_SIZE 0x400
-#define CONFIG_FPU_STACK_SIZE 0x1000
 /* end of Linker Options */
 /* end of Build setup */
 

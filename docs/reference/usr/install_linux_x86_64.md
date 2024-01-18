@@ -2,7 +2,7 @@
 
 Linux x86_64下通过下载SDK开发工具包完成安装，运行脚本`source ./setup_dev.sh`完成安装，安装前请先确认当前设备属于`Linux x86_64`
 
-![linux-x86_64](https://images.gitee.com/uploads/images/2021/1019/095533_a960e2a6_8736513.png "linux-x86_64.png")
+![linux-x86_64](./pic/linux-x86_64.png "linux-x86_64.png")
 
 Linux x86_64安装包集成了，
 - `gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf.tar.xz`和`gcc-arm-10.3-2021.07-x86_64-arm-none-eabi.tar.xz`,aarch64交叉编译链，SDK安装过程中会被解压到DEV目录的`cross_tool`目录下

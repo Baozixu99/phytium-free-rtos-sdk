@@ -31,12 +31,7 @@
 #include "lwip/sys.h"
 #include "lwip/mem.h"
 #include "lwip/stats.h"
-
-#ifdef __aarch64__
-    #include "faarch64.h"
-#else
-    #include "faarch32.h"
-#endif
+#include "faarch.h"
 
 #include "fdebug.h"
 

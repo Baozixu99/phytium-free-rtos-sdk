@@ -122,17 +122,17 @@ tftp> q
 - 将2.1.1章下载的`tftp.zip`解压到开发环境，如`D:\phytium-dev\tftp`
 - 以**管理员权限**打开Windows cmd，进入`D:\phytium-dev\tftp`，运行`.\reinstall.cmd`完成Tftpd服务安装
 
-![输入图片说明](https://images.gitee.com/uploads/images/2021/1013/193051_97e9949e_8736513.png "管理员权限打开.png")
+![输入图片说明](./pic/管理员权限打开.png "管理员权限打开.png")
 
-![输入图片说明](https://images.gitee.com/uploads/images/2021/1014/111121_2be64492_8736513.png "屏幕截图.png")
+![输入图片说明](./pic/屏幕截图.png "屏幕截图.png")
 
 - 之后每次使用前，进入Windows服务，手动将一下服务打开
 
-![输入图片说明](https://images.gitee.com/uploads/images/2021/1013/152422_b398ef37_8736513.png "启动tftpd服务.png")
+![输入图片说明](./pic/启动tftpd服务.png "启动tftpd服务.png")
 
 - 进入SDK，双击`D:\phytium-dev\phytium-free-rtos-sdk`目录下的`run_tftd.cmd`，启动tftp工具，设置tftp目录和ip
 
-![输入图片说明](https://images.gitee.com/uploads/images/2021/1013/152524_2db6cb31_8736513.png "tftpd配置工具.png")
+![输入图片说明](./pic/tftpd配置工具.png "tftpd配置工具.png")
 
 - 将镜像文件放置在上图所示的`%PHYTIUM_IDE_PATH%\tftp`目录下，开发板即可通过`tftpboot`加载镜像
 

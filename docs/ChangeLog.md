@@ -1,3 +1,22 @@
+# Phytium Standalone SDK 2024-01-18 ChangeLog
+
+Change Log since 2024-01-18
+
+- Modify gitee install.py
+
+# Phytium Standalone SDK 2024-01-15 ChangeLog
+
+Change Log since 2024-01-15
+
+## docs
+
+- Added the description of user defined board
+- fixed image display issue on gitlab
+
+## third-party
+
+- Uniform use of faarch.h
+
 # Phytium Standalone SDK 2024-01-15 ChangeLog
 
 Change Log since 2024-01-12

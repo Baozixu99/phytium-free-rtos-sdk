@@ -280,8 +280,8 @@ static void FFreeRTOSCanSendTask(void *pvParameters)
                 printf("can%d send failed.\n", instance_id);
             }
             count[instance_id]++;
-            xQueueSendToBack(xQueue, &instance_id, portMAX_DELAY);
             vTaskDelay(CAN_SEND_PERIOD);
+            xQueueSendToBack(xQueue, &instance_id, portMAX_DELAY);
         }
         if ( (send_frame[instance_id - 1].canid == send_max_id) )
         {

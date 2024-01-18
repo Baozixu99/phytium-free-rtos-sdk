@@ -4,11 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#if defined(__aarch64__)
-#include "faarch64.h"
-#else
-#include "faarch32.h"
-#endif
+#include "faarch.h"
 
 #include "usb_osal.h"
 #include "usb_errno.h"

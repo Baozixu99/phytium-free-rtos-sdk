@@ -29,6 +29,7 @@
 
 - 参考[使用说明](./docs/reference/usr/usage.md), 新建Phytium FreeRTOS SDK的应用工程，与开发板建立连接
 - 参考[例程](./example/template/), 新建Phytium FreeRTOS SDK的例程，在开发板上运行
+- 参考[添加板卡](./docs/reference/usr/how_to_add_board.md)，添加自定义板卡
 
 ---
 

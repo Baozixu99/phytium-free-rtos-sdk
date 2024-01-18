@@ -27,9 +27,7 @@
 #include <metal/io.h>
 #include <metal/sys.h>
 #include <stdint.h>
-#ifndef __aarch64__
-#include "faarch32.h"
-#endif
+#include "faarch.h"
 #include "fmmu.h"
 #include "fcache.h"
 
