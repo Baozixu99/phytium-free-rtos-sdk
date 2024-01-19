@@ -1,11 +1,15 @@
 
-# CherryUSB Host 测试
+# XHCI Host 测试 (平台设备)
 
 ## 1. 例程介绍
 
 ><font size="1">介绍例程的用途，使用场景，相关基本概念，描述用户可以使用例程完成哪些工作</font><br />
 
+XHCI(eXtensible Host Controller Interface)，即可扩展的主机控制器接口，是英特尔公司开发的一个USB主机控制器接口，主要是面向USB 3.0的，同时它也支持USB 2.0及以下的设备，XHCI 控制器有两种类型，一种是平台设备，另外一种是 PCIe 扩展设备
+
 CherryUSB 是一个用于嵌入式系统 USB 协议栈，支持运行在Host模式和Device模式
+
+本例程展示了如何使用 CherryUSB 驱动平台 XHCI 控制器，识别和使用 USB 设备，如果使用 PCIe 扩展的 XHCI 控制器可以参考[xhci_pcie 例程](../xhci_pcie/README.md)
 
 ## 2. 如何使用例程
 
@@ -16,7 +20,7 @@ CherryUSB 是一个用于嵌入式系统 USB 协议栈，支持运行在Host模�
 ><font size="1">哪些硬件平台是支持的，需要哪些外设，例程与开发板哪些IO口相关等（建议附录开发板照片，展示哪些IO口被引出）</font><br />
 
 本例程在 E2000 平台测试通过，您可以参考以下方法配置本例程所需要的硬件和软件环境，
-- E2000开发板
+- E2000 开发板/飞腾派
 - 本例程基于E2000 Demo 开发板，使用logitech键盘、Dell鼠标和Sandisk盘完成测试
 
 ### 2.2 SDK配置方法
@@ -137,6 +141,6 @@ usb mouse /usb1/mouse1
 
 - V0.3.1 首次合入
 - v0.1.0 支持USB 3.0 设备枚举
-
+- v0.7.1 区分 XHCI 平台设备和 PCIe 设备
 
 

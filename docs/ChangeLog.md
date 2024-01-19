@@ -1,3 +1,16 @@
+# Phytium Standalone SDK 2024-01-19 ChangeLog
+
+Change Log since 2024-01-17
+
+## example
+
+- add xhci pcie device example
+- modify original xhci example as xhci platform example
+
+## third-party
+
+- fix some print mistype in debug log
+
 # Phytium Standalone SDK 2024-01-18 ChangeLog
 
 Change Log since 2024-01-18

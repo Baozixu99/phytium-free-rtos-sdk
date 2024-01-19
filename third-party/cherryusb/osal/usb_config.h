@@ -107,7 +107,7 @@ void *usb_hc_malloc_align(size_t align, size_t size);
 
 /* ================ USB HOST Stack Configuration ================== */
 
-#define CONFIG_USBHOST_MAX_RHPORTS          2
+#define CONFIG_USBHOST_MAX_RHPORTS          8
 #define CONFIG_USBHOST_MAX_EXTHUBS          2
 #define CONFIG_USBHOST_MAX_EHPORTS          4
 #define CONFIG_USBHOST_MAX_INTERFACES       6

@@ -19,12 +19,10 @@ USER_INCLUDE := $(PROJECT_DIR)	\
 
 include $(FREERTOS_SDK_DIR)/tools/makeall.mk
 
-USR_BOOT_DIR		?= /mnt/d/tftboot
+USR_BOOT_DIR		?= /mnt/d/tftpboot
 
 
-image:
-	$(MAKE) clean
-	$(MAKE) all -j
+image: all
 	@cp ./$(IMAGE_OUT_NAME).elf $(USR_BOOT_DIR)/freertos.elf
 ifdef CONFIG_OUTPUT_BINARY
 	@cp ./$(IMAGE_OUT_NAME).bin $(USR_BOOT_DIR)/freertos.bin

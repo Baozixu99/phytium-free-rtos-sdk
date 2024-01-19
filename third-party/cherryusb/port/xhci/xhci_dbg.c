@@ -40,7 +40,7 @@
 #define XHCI_DUMP_EP_CTX 0
 #define XHCI_DUMP_INPUT_CTX 0
 #define XHCI_DUMP_ENDPOINT 0
-#define XHCI_DUMP_PORT_STATUS 0
+#define XHCI_DUMP_PORT_STATUS 1
 
 /**
  * Dump host controller registers
@@ -344,7 +344,8 @@ void xhci_dump_endpoint(const struct xhci_endpoint *ep) {
  */
 void xhci_dump_port_status(uint32_t port, uint32_t portsc) {
 #if XHCI_DUMP_PORT_STATUS
-	USB_LOG_DBG("====port-%d====\n");
+	USB_LOG_DBG("====port-%d====\n", port);
+	USB_LOG_DBG("changed=%d \n", !!(XHCI_PORTSC_CSC & port));
 	USB_LOG_DBG("connect=%d \n", !!(XHCI_PORTSC_CCS & port));
 	USB_LOG_DBG("enabled=%d \n", !!(XHCI_PORTSC_PED & port));
 	USB_LOG_DBG("powered=%d \n", !!(XHCI_PORTSC_PP & port));
