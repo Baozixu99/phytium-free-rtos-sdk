@@ -1,4 +1,10 @@
-# Phytium Standalone SDK 2024-01-19 ChangeLog
+# Phytium FreeRTOS SDK 2024-01-29 ChangeLog
+
+Change Log since 2024-01-29
+
+- Use the new Standalone SDK to adapt jailhouse
+
+# Phytium FreeRTOS SDK 2024-01-19 ChangeLog
 
 Change Log since 2024-01-17
 
@@ -11,13 +17,13 @@ Change Log since 2024-01-17
 
 - fix some print mistype in debug log
 
-# Phytium Standalone SDK 2024-01-18 ChangeLog
+# Phytium FreeRTOS SDK 2024-01-18 ChangeLog
 
 Change Log since 2024-01-18
 
 - Modify gitee install.py
 
-# Phytium Standalone SDK 2024-01-15 ChangeLog
+# Phytium FreeRTOS SDK 2024-01-15 ChangeLog
 
 Change Log since 2024-01-15
 
@@ -30,7 +36,7 @@ Change Log since 2024-01-15
 
 - Uniform use of faarch.h
 
-# Phytium Standalone SDK 2024-01-15 ChangeLog
+# Phytium FreeRTOS SDK 2024-01-15 ChangeLog
 
 Change Log since 2024-01-12
 
@@ -38,7 +44,7 @@ Change Log since 2024-01-12
 
 - update sdkconfig default platform
 
-# Phytium Standalone SDK 2024-01-12 ChangeLog
+# Phytium FreeRTOS SDK 2024-01-12 ChangeLog
 
 Change Log since 2024-01-11
 
@@ -50,7 +56,7 @@ Change Log since 2024-01-11
 
 - add reference doc to support windows native environment
 
-# Phytium Standalone SDK 2024-01-11 ChangeLog
+# Phytium FreeRTOS SDK 2024-01-11 ChangeLog
 
 Change Log since 2024-01-09
 
@@ -58,7 +64,7 @@ Change Log since 2024-01-09
 
 - Adapt to the work mode of standalone sdk in aarch32
 
-# Phytium Standalone SDK 2024-01-11 ChangeLog
+# Phytium FreeRTOS SDK 2024-01-11 ChangeLog
 
 Change Log since 2023-01-10
 
@@ -72,7 +78,7 @@ Change Log since 2023-01-10
 
 - modified  to accommodate the porting of later examples: jumbo and multicast.
 
-# Phytium Standalone SDK 2024-01-09 ChangeLog
+# Phytium FreeRTOS SDK 2024-01-09 ChangeLog
 
 Change Log since 2023-12-25
 
@@ -84,7 +90,7 @@ Change Log since 2023-12-25
 
 - reconstruting network example:lwip-startup.
 
-# Phytium Standalone SDK 2023-12-15 ChangeLog
+# Phytium FreeRTOS SDK 2023-12-15 ChangeLog
 
 Change Log since 2023-11-21
 
@@ -96,7 +102,7 @@ Change Log since 2023-11-21
 
 - DDMA synchronous update with standalone SDK
 
-# Phytium Standalone SDK 2023-11-21 ChangeLog
+# Phytium FreeRTOS SDK 2023-11-21 ChangeLog
 
 Change Log since 2023-11-20
 
@@ -104,7 +110,7 @@ Change Log since 2023-11-20
 
 - add qspi examples and readme
 
-# Phytium Standalone SDK 2023-11-20 ChangeLog
+# Phytium FreeRTOS SDK 2023-11-20 ChangeLog
 
 Change Log since 2023-11-15
 
@@ -129,7 +135,7 @@ Change Log since 2023-11-09
 
 - GDMA synchronous update with standalone SDK
 
-# Phytium Standalone SDK 2023-11-09 ChangeLog
+# Phytium FreeRTOS SDK 2023-11-09 ChangeLog
 
 Change Log since 2023-11-01
 
@@ -137,7 +143,7 @@ Change Log since 2023-11-01
 
 - added extended frame test examples
 
-# Phytium Standalone SDK 2023-11-06 ChangeLog
+# Phytium FreeRTOS SDK 2023-11-06 ChangeLog
 
 Change Log since 2023-11-06
 
@@ -145,7 +151,7 @@ Change Log since 2023-11-06
 
 - update network example configs and adapt the example to the new standalone framework.
 
-# Phytium Standalone SDK 2023-11-01 ChangeLog
+# Phytium FreeRTOS SDK 2023-11-01 ChangeLog
 
 Change Log since 2023-11-01
 
@@ -161,7 +167,7 @@ Change Log since 2023-11-01
 
 - change the lvgl-port and delete the Kconfig
 
-# Phytium Standalone SDK 2023-11-01 ChangeLog
+# Phytium FreeRTOS SDK 2023-11-01 ChangeLog
 
 Change Log since 2023-10-25
 
@@ -173,7 +179,7 @@ Change Log since 2023-10-25
 
 - remove lib,link openamp and libmetal v1.4.0 in standalone third-party
 
-# Phytium Standalone SDK 2023-10-25 ChangeLog
+# Phytium FreeRTOS SDK 2023-10-25 ChangeLog
 
 Change Log since 2023-10-12
 
@@ -185,7 +191,7 @@ Change Log since 2023-10-12
 
 - add fsl_wifi conponment
 
-# Phytium Standalone SDK 2023-10-12 ChangeLog
+# Phytium FreeRTOS SDK 2023-10-12 ChangeLog
 
 Change Log since 2023-10-09
 
@@ -198,7 +204,7 @@ Change Log since 2023-10-09
 - Adapt to newlib c library in standalone sdk
 - Add Portable Operating System Interface (POSIX threading wrapper) for FreeRTOS
 
-# Phytium Standalone SDK 2023-10-12 ChangeLog
+# Phytium FreeRTOS SDK 2023-10-12 ChangeLog
 
 Change Log since 2023-10-09
 
@@ -211,7 +217,7 @@ Change Log since 2023-10-09
 
 - replace sdmmc with fsl_sdmmc
 
-# Phytium Standalone SDK 2023-10-09 v0.7.1 ChangeLog
+# Phytium FreeRTOS SDK 2023-10-09 v0.7.1 ChangeLog
 
 Change Log since 2023-10-07
 
@@ -219,7 +225,7 @@ Change Log since 2023-10-07
 
 - adapt to new standalone sdk for gic restruct
 
-# Phytium Standalone SDK 2023-09-26 ChangeLog
+# Phytium FreeRTOS SDK 2023-09-26 ChangeLog
 
 Change Log since 2023-09-21
 
@@ -854,7 +860,7 @@ Change Log sinc 2022-11-1
 - sfud debug
 - add spiffs port for spim
 
-# Phytium Standalone SDK 2022-10-31 ChangeLog
+# Phytium FreeRTOS SDK 2022-10-31 ChangeLog
 
 Change Log sinc 2022-10-31
 
