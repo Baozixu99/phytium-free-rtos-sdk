@@ -102,7 +102,8 @@ static void GpioIOIrqExitCallback(TimerHandle_t timer)
         vTaskDelete(input_task);
         input_task = NULL;
     }
-
+    /* deinit iomux */
+    FIOMuxDeInit();
     if (FT_SUCCESS != FFreeRTOSGpioDeInit(in_gpio))
     {
         FGPIO_ERROR("Delete gpio failed.");
@@ -152,7 +153,7 @@ static void GpioIOAckPinIrq(s32 vector, void *param)
                                          &xhigher_priority_task_woken);
 }
 
-static void GdmaInitTask(void *args)
+static void GpioInitTask(void *args)
 {
     FError err = FT_SUCCESS;
     FGpioPinId pin_id;
@@ -169,7 +170,8 @@ static void GdmaInitTask(void *args)
     {
         in_gpio = out_gpio; /* no need to init if in-pin and out-pin under same ctrl */
     }
-
+    /* init mio fuction */
+    FIOMuxInit();
     /* init output/input pin */
     FIOPadSetGpioMux(FFREERTOS_GPIO_PIN_CTRL_ID(out_pin), FFREERTOS_GPIO_PIN_ID(out_pin)); /* set io pad */
     FIOPadSetGpioMux(FFREERTOS_GPIO_PIN_CTRL_ID(in_pin), FFREERTOS_GPIO_PIN_ID(in_pin)); /* set io pad */
@@ -299,8 +301,8 @@ BaseType_t FFreeRTOSRunGpioIOIrq(u32 out_pin_idx, u32 in_pin_idx)
 
     taskENTER_CRITICAL(); /* no schedule when create task */
 
-    ret = xTaskCreate((TaskFunction_t)GdmaInitTask,  /* task entry */
-                      (const char *)"GdmaInitTask",/* task name */
+    ret = xTaskCreate((TaskFunction_t)GpioInitTask,  /* task entry */
+                      (const char *)"GpioInitTask",/* task name */
                       (uint16_t)1024,  /* task stack size in words */
                       NULL, /* task params */
                       (UBaseType_t)configMAX_PRIORITIES - 1,  /* task priority */

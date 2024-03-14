@@ -1,3 +1,56 @@
+# Phytium FreeRTOS SDK 2024-03-14 ChangeLog
+
+Change Log since 2024-03-11
+
+## example
+
+- Openamp example set new role and update readme
+- Openamp_for_linux example fix bug
+
+# Phytium FreeRTOS SDK 2024-03-11 ChangeLog
+
+Change Log since 2024-03-08
+
+## example
+
+- change gpio example for adapting the sdk and update the config
+
+## driver
+
+- change gpio driver for adapting the sdk 
+
+# Phytium FreeRTOS SDK 2024-03-08 ChangeLog
+
+Change Log since 2024-02-29
+
+## example 
+
+- add ui example
+
+## third -party 
+
+- change shell with echo ctrl
+
+# Phytium FreeRTOS SDK 2024-02-29 ChangeLog
+
+Change Log since 2024-02-29
+
+## example
+
+- add i2s example 
+
+## driver
+
+- add i2s driver and change ddma driver for adapting the bdl format
+
+# Phytium FreeRTOS SDK 2024-02-29 ChangeLog
+
+Change Log since 2024-02-29
+
+## example
+
+- add missing FIOMuxInit function
+
 # Phytium FreeRTOS SDK 2024-01-29 ChangeLog
 
 Change Log since 2024-01-29

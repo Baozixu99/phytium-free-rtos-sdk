@@ -33,6 +33,7 @@
 #include "fsleep.h"
 
 #include "fddma_os.h"
+#include "fddma_bdl.h"
 /************************** Constant Definitions *****************************/
 
 /**************************** Type Definitions *******************************/
@@ -197,6 +198,8 @@ FError FFreeRTOSDdmaSetupChannel(FFreeRTOSDdma *const instance, u32 chan_id, con
     chan_config.req_mode = request->is_rx ? FDDMA_CHAN_REQ_RX : FDDMA_CHAN_REQ_TX;
     chan_config.timeout = 0xffff;
     chan_config.trans_len = request->trans_len;
+    chan_config.first_desc_addr = request->first_desc_addr;
+    chan_config.valid_desc_num = request->valid_desc_num;
 
     FDDMA_INFO("Channel: %d, slave id: %d, ddr: 0x%x, dev: 0x%x, req mode: %s, trans len: %d",
                chan_id,
@@ -218,6 +221,55 @@ FError FFreeRTOSDdmaSetupChannel(FFreeRTOSDdma *const instance, u32 chan_id, con
 
 err_exit:
     FDdmaOsGiveSema(instance->locker);
+    return err;
+}
+
+
+/**
+ * @name: FFreeRTOSDdmaSetupBDLChannel
+ * @msg: setup DDMA BDL channel before transfer
+ * @return {FError} FT_SUCCESS if setup success
+ * @param {FFreeRTOSDdma} *instance, freertos DDMA instance
+ * @param {u32} chan_id, DDMA id number
+ * @param {FFreeRTOSRequest} *request, DDMA request
+ */
+FError FFreeRTOSDdmaSetupBDLChannel(FFreeRTOSDdma *instance, u32 chan_id, const FFreeRTOSRequest *request)
+{
+    FASSERT(instance);
+    FASSERT(request);
+    FASSERT(chan_id < FDDMA_NUM_OF_CHAN);
+
+    FDdma *ctrl = &instance->ctrl;
+    FDdmaChanConfig chan_config;
+    FError err = FT_SUCCESS;
+    /* parpare channel configs */
+    chan_config.slave_id = 0U;
+    FASSERT_MSG((0 != request->mem_addr), "Invaild memory address.");
+    chan_config.ddr_addr = request->mem_addr;
+    chan_config.dev_addr = request->dev_addr;
+    chan_config.req_mode = request->is_rx ? FDDMA_CHAN_REQ_RX : FDDMA_CHAN_REQ_TX;
+    chan_config.timeout = 0xffff;
+    chan_config.trans_len = request->trans_len;
+    chan_config.first_desc_addr = request->first_desc_addr;
+    chan_config.valid_desc_num = request->valid_desc_num;
+
+    FDDMA_INFO("Channel: %d, slave id: %d, ddr: 0x%x, dev: 0x%x, req mode: %s, trans len: %d",
+               chan_id,
+               chan_config.slave_id,
+               chan_config.ddr_addr,
+               chan_config.dev_addr,
+               (FDDMA_CHAN_REQ_TX == chan_config.req_mode) ? "mem=>dev" : "dev=>mem",
+               chan_config.trans_len);
+    /* configure channel */
+    err = FDdmaChanBdlConfigure(ctrl, chan_id, &chan_config);
+    if (FDDMA_SUCCESS != err)
+    {
+        FDDMA_ERROR("Channel bind failed: 0x%x", err);
+        goto err_exit;
+    }
+    FDdmaRegisterChanEvtHandler(ctrl, chan_id, FDDMA_CHAN_EVT_REQ_DONE, request->req_done_handler, request->req_done_args);
+err_exit:
+
     return err;
 }
 
@@ -297,6 +349,42 @@ err_exit:
     FDdmaOsGiveSema(instance->locker);
     return err;
 }
+
+
+/**
+ * @name: FFreeRTOSDdmaBDLStartChannel
+ * @msg: start dma transfer
+ * @return {FError} FT_SUCCESS if start success
+ * @param {FFreeRTOSDdma} *instance, freertos DDMA instance
+ * @param {u32} chan_id, id of DDMA channel
+ */
+FError FFreeRTOSDdmaBDLStartChannel(FFreeRTOSDdma *instance, u32 chan_id)
+{
+    FASSERT(instance);
+
+    FDdma *ctrl = &instance->ctrl;
+    FError err = FT_SUCCESS;
+
+    if (FFREERTOS_DDMA_OK != err)
+    {
+        return err;
+    }
+    if (FDdmaIsChanRunning(ctrl->config.base_addr, chan_id))
+    {
+        FDDMA_ERROR("RX or TX chan is already running.");
+        goto err_exit;
+    }
+
+    /* active channel */
+    FDdmaChanActive(ctrl, chan_id);
+
+    /* start DDMA controller */
+    FDdmaStart(ctrl); 
+ 
+err_exit:
+    return err;
+}
+
 
 FError FFreeRTOSDdmaStopChannel(FFreeRTOSDdma *const instance, u32 chan_id)
 {

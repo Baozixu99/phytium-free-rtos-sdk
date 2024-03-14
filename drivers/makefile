@@ -13,6 +13,7 @@ include serial/src.mk
 include spi/src.mk
 include timer/src.mk
 include wdt/src.mk
+include i2s/src.mk
 
 CSRCS_RELATIVE_FILES := $(foreach file, $(DRIVERS_CSRCS), $(file))
 ASRCS_RELATIVE_FILES := $(foreach file, $(DRIVERS_ASRCS),$(file))

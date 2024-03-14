@@ -49,6 +49,7 @@
 /* CONFIG_TARGET_E2000S is not set */
 /* CONFIG_TARGET_FT2004 is not set */
 /* CONFIG_TARGET_D2000 is not set */
+/* CONFIG_TARGET_PD2308 is not set */
 #define CONFIG_SOC_NAME "phytiumpi"
 #define CONFIG_SOC_CORE_NUM 4
 #define CONFIG_F32BIT_MEMORY_ADDRESS 0x80000000
@@ -141,6 +142,7 @@
 /* CONFIG_USE_MEDIA is not set */
 /* CONFIG_USE_SCMI_MHU is not set */
 /* CONFIG_USE_I2S is not set */
+/* CONFIG_USE_I3C is not set */
 /* end of Drivers configuration */
 
 /* Build setup */
@@ -265,6 +267,11 @@
 
 /* CONFIG_FREERTOS_USE_MEDIA is not set */
 /* end of Freertos Media Drivers */
+
+/* Freertos I2s Drivers */
+
+/* CONFIG_FREERTOS_USE_I2S is not set */
+/* end of Freertos I2s Drivers */
 /* end of Component Configuration */
 
 /* Third-party configuration */

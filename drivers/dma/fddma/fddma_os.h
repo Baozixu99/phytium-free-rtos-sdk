@@ -69,6 +69,9 @@ typedef struct
     boolean is_rx; /* TRUE: dev ==> mem, FALSE: mem ==> dev */
     FDdmaChanEvtHandler req_done_handler; /* callback when request done */
     void *req_done_args;
+     /* BDL模式，目前只针对I2S */
+    uintptr  first_desc_addr;   /* BDL描述符列表首地址-物理地址 */
+    u32      valid_desc_num;    /* 需要使用的BDL描述符个数，从BDL描述符列表第一个描述符开始计数 */
 } FFreeRTOSRequest; /* freertos DDMA transfer request */
 /************************** Variable Definitions *****************************/
 
@@ -84,8 +87,14 @@ FError FFreeRTOSDdmaDeinit(FFreeRTOSDdma *const instance);
 /* setup DDMA channel before transfer */
 FError FFreeRTOSDdmaSetupChannel(FFreeRTOSDdma *const instance, u32 chan_id, const FFreeRTOSRequest *request);
 
+/* setup DDMA BDL channel before transfer */
+FError FFreeRTOSDdmaSetupBDLChannel(FFreeRTOSDdma *const instance, u32 chan_id, const FFreeRTOSRequest *request);
+
 /* revoke channel setup */
 FError FFreeRTOSDdmaRevokeChannel(FFreeRTOSDdma *const instance, u32 chan_id);
+
+/* set channel for bdl */
+FError FFreeRTOSDdmaBDLStartChannel(FFreeRTOSDdma *const instance, u32 chan_id);
 
 /* start DDMA transfer of channel  */
 FError FFreeRTOSDdmaStartChannel(FFreeRTOSDdma *const instance, u32 chan_id);

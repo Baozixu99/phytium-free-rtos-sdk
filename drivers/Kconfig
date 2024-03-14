@@ -119,3 +119,12 @@ menu "Freertos Media Drivers"
         prompt "Use Freertos media driver"
         default n
 endmenu
+
+menu "Freertos I2s Drivers"
+    config FREERTOS_USE_I2S
+        bool
+        prompt "Use Freertos i2s driver"
+        default n
+endmenu
+
+

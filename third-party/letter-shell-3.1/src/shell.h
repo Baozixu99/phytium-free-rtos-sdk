@@ -342,6 +342,7 @@ typedef struct shell_def
     int lastRet;                 /**< 上一条cmd的返回值 */
     //int lastResult;                                             /**< 上一条cmd的传回的值 */
     unsigned char slient; /**< 执行cmd时尽可能减少打印 */
+    unsigned int echo;   /**< 是否回显 */
 } Shell;
 
 /**

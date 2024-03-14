@@ -75,7 +75,8 @@ static void FFreeRTOSAdcInitTask(void *pvParameters)
     u32 adc_id = (u32)(uintptr)pvParameters;
 
     FError ret = FADC_SUCCESS;
-
+    /*init iomux*/
+    FIOMuxInit();
     /* set channel 0 and 1 iopad*/
 #if defined(CONFIG_TARGET_E2000)
     FIOPadSetAdcMux(adc_id, ADC_CHANNEL_USE);
@@ -241,6 +242,7 @@ static void FFreeRTOSAdcDelete(FFreeRTOSAdc *os_adc_p)
 
     /* deinit adc controller */
     FFreeRTOSAdcDeinit(os_adc_p);
+    FIOMuxDeInit();/*deinit iomux */
 
     if (read_handle)
     {

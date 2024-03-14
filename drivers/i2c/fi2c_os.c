@@ -111,7 +111,7 @@ FFreeRTOSI2c *FFreeRTOSI2cInit(u32 instance_id, u32 work_mode, u32 slave_address
     }
 
     i2c_config = *FI2cLookupConfig(0);
-    /* Setup iomux */
+
     mio_config_p = FMioLookupConfig(instance_id);
     if (NULL == mio_config_p)
     {
@@ -148,7 +148,6 @@ FFreeRTOSI2c *FFreeRTOSI2cInit(u32 instance_id, u32 work_mode, u32 slave_address
         i2c_config.irq_num = i2c_slave.config.irq_num;
         i2c_config.irq_prority = I2C_SLAVE_IRQ_PRORITY;
     }
-    FIOPadSetMioMux(i2c_config.instance_id);
 
     err = FI2cCfgInitialize(&os_i2c[instance_id].i2c_device, &i2c_config);
     if (err != FREERTOS_I2C_SUCCESS)

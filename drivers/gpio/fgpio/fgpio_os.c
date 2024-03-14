@@ -140,14 +140,7 @@ FFreeRTOSFGpio *FFreeRTOSGpioInit(u32 id, const FFreeRTOSGpioConfig *input_confi
         goto err_exit;
     }
 
-    FGpioPinId pin_of_ctrl =
-    {
-        .ctrl = ctrl->config.instance_id,
-        .port = FGPIO_PORT_A,
-        .pin = FGPIO_PIN_0
-    };
-
-    if (FGPIO_IRQ_BY_CONTROLLER == FGpioGetPinIrqSourceType(pin_of_ctrl)) /* setup for ctrl report interrupt */
+    if (FGPIO_IRQ_BY_CONTROLLER == FGpioGetPinIrqSourceType(instance->pins[FGPIO_PORT_A][FGPIO_PIN_0])) /* setup for ctrl report interrupt */
     {
         FGpioOsSetupCtrlIRQ(instance);
     }
@@ -268,7 +261,7 @@ FError FFreeRTOSSetupPin(FFreeRTOSFGpio *const instance, const FFreeRTOSGpioPinC
     if (TRUE == config->en_irq)
     {
         FGpioSetInterruptMask(pin, FALSE); /* disable pin irq */
-        if (FGPIO_IRQ_BY_PIN == FGpioGetPinIrqSourceType(pin_id)) /* setup for pin report interrupt */
+        if (FGPIO_IRQ_BY_PIN == FGpioGetPinIrqSourceType(*pin)) /* setup for pin report interrupt */
         {
             FGpioOSSetupPinIRQ(instance, pin, config);
         }

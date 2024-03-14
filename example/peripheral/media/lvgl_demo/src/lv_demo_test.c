@@ -219,8 +219,8 @@ void FFreeRTOSMediaDeviceInit(void)
     }
     for (index = start_index; index < end_index; index ++)
     {
-        os_media.dcdp_ctrl.user_config[index].width = 640;
-        os_media.dcdp_ctrl.user_config[index].height = 480;
+        os_media.dcdp_ctrl.user_config[index].width = 800;
+        os_media.dcdp_ctrl.user_config[index].height = 600;
         os_media.dcdp_ctrl.user_config[index].refresh_rate = 60;
         os_media.dcdp_ctrl.user_config[index].color_depth = 32;
         os_media.dcdp_ctrl.user_config[index].multi_mode = 0;

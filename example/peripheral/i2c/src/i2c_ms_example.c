@@ -399,7 +399,9 @@ static void I2cInitTask(void *pvParameters)
     BaseType_t xReturn = pdPASS;
 
     taskENTER_CRITICAL(); //进入临界区
-
+    /* init mio fuction */
+    FIOMuxInit();
+    
     err = FFreeRTOSI2cInitSet(FMIO1_ID, FI2C_MASTER, MASTER_SLAVE_ADDR);
     if (err != FREERTOS_I2C_SUCCESS)
     {

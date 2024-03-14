@@ -33,8 +33,8 @@
 #ifndef LV_PORT_DISP_H
 #define LV_PORT_DISP_H
 
-#define LV_HOR_RES_MAX (640)
-#define LV_VER_RES_MAX (480)
+#define LV_HOR_RES_MAX (800)
+#define LV_VER_RES_MAX (600)
 
 #include "ftypes.h"
 #include "fparameters.h"

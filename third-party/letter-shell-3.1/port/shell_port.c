@@ -46,7 +46,7 @@ void LSUserShellTaskCreate(void *args)
 {
     BaseType_t ret;
     LSSerialConfig();
-
+    shell_object.echo = 1;
     shell_object.write = LSUserShellWrite;
     shell_object.read = LSUserShellRead;
     shellInit(&shell_object, shell_buffer, 4096);

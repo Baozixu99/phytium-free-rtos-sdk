@@ -36,7 +36,7 @@ freertos_sdk_path = install_path
 print("Standalone SDK at {}".format(freertos_sdk_path))
 
 # Add standalone sdk
-standalone_sdk_v="004e73e2ee030d2d52d251ee358c6b652066e69a"
+standalone_sdk_v="cc95eb3d97c522d3c4db6c20c0acd00bdf4b2737"
 if (install_platform == windows_x64):
     standalone_path=freertos_sdk_path  + '\\standalone'
 else:
@@ -54,17 +54,17 @@ if not os.path.exists(standalone_path):
     os.system("git sparse-checkout init")
 
     # 适配 windows 环境，路径不兼容
-    os.system("git sparse-checkout set arch \
-                                       board \
-                                       common \
-                                       drivers \
-                                       standalone.mk \
-                                       lib \
-                                       doc \
-                                       third-party \
-                                       !third-party/lwip-2.1.2/ports/arch \
-                                       tools \
-                                       soc")
+    os.system("git sparse-checkout set /arch \
+                                       /board \
+                                       /common \
+                                       /drivers \
+                                       /standalone.mk \
+                                       /lib \
+                                       /doc \
+                                       /third-party \
+                                       !/third-party/lwip-2.1.2/ports/arch \
+                                       /tools \
+                                       /soc")
 
     os.system("git checkout {}".format(standalone_sdk_v))
     print('Standalone sdk download is succeed')

@@ -237,6 +237,8 @@ static void I2cReadTask(void *pvParameters)
           );
     vTaskDelay(xDelay);
     FFreeRTOSI2cDeinit(os_i2c_read_p);/*写入再读取完成后去初始化FFreeRTOSI2c主机设置*/
+    /* deinit iomux */
+    FIOMuxDeInit();
     printf("I2cReadTask is over.\r\n ");
     vTaskDelete(NULL);
 }
@@ -313,6 +315,9 @@ static void I2cWriteTask(void *pvParameters)
 static FError FFreeRTOSI2cInitSet(uint32_t id, uint32_t work_mode, uint32_t slave_address)
 {
     FError err;
+    /* init iomux */
+    FIOMuxInit();
+    
     FIOPadSetMioMux(id);
     /* init i2c controller */
     if (work_mode == FI2C_MASTER) /* 主机初始化默认使用poll模式 */

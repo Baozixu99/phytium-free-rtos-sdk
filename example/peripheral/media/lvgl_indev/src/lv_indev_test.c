@@ -13,7 +13,7 @@
  *
  * FilePath: lv_indev_test.c
  * Created Date: 2023-07-06 14:36:43
- * Last Modified: 2023-11-02 10:53:32
+ * Last Modified: 2024-02-20 15:31:05
  * Description:  This file is for config the test
  *
  * Modify History:
@@ -220,8 +220,8 @@ void FFreeRTOSMediaDeviceInit(void)
     }
     for (index = start_index; index < end_index; index ++)
     {
-        os_media.dcdp_ctrl.user_config[index].width = 640;
-        os_media.dcdp_ctrl.user_config[index].height = 480;
+        os_media.dcdp_ctrl.user_config[index].width = 800;
+        os_media.dcdp_ctrl.user_config[index].height = 600;
         os_media.dcdp_ctrl.user_config[index].refresh_rate = 60;
         os_media.dcdp_ctrl.user_config[index].color_depth = 32;
         os_media.dcdp_ctrl.user_config[index].multi_mode = 0;

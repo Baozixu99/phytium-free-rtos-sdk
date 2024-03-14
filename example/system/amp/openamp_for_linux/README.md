@@ -65,8 +65,8 @@
 - Baremetal config -> Select mem default attribute       : 提供内存属性选择
 - Remoteproc use ipi       : 使用ipi 中断模式进行提醒
 - Openamp resource address : OpenAMP 中共享资源表中地址
-- Vring tx address         : 共享发送缓冲区的起始地址，同时也是共享buffer 区域的起始地址
-- Vring rx address         : 共享接收缓冲区的起始地址
+- Vring tx address         : 共享发送缓冲区的起始地址，同时也是共享buffer 区域的起始地址(由linux分配，初始值设置全f)
+- Vring rx address         : 共享接收缓冲区的起始地址(由linux分配，初始值设置全f)
 - table of base physical address of each of the pages in the I/O region : 用于核心间提醒机制的共享内存初始点
 
 ### 2.4 输出与实验现象

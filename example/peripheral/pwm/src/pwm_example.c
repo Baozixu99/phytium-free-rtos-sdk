@@ -66,7 +66,8 @@ static void FFreeRTOSPwmInitTask(void *pvParameters)
     u32 pwm_id = (u32)(uintptr)pvParameters;
 
     FError ret = FPWM_SUCCESS;
-
+    /* init iomux */
+    FIOMuxInit();
     /* set channel 0 and 1 iopad*/
 #if defined(CONFIG_TARGET_E2000) || defined(CONFIG_TARGET_PHYTIUMPI)
     FIOPadSetPwmMux(pwm_id, 0);
@@ -166,7 +167,9 @@ static void prvOneShotTimerCallback(TimerHandle_t xTimer)
 {
     /* Output a string to show the time at which the callback was executed. */
     printf("One-shot timer callback executing, which will delete FFreeRTOSPwmChangeTask.\r\n");
-
+    /* deinit iomux */
+    FIOMuxDeInit();
+    
     FFreeRTOSPwmDelete(os_pwm_ctrl_p);
 }
 

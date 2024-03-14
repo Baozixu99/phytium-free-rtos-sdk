@@ -115,3 +115,7 @@ endif
 ifdef CONFIG_USE_MEDIA
 		BUILD_INC_PATH_DIR += $(OS_DRV_CUR_DIR)/media
 endif
+
+ifdef CONFIG_USE_I2S
+		BUILD_INC_PATH_DIR += $(OS_DRV_CUR_DIR)/i2s
+endif

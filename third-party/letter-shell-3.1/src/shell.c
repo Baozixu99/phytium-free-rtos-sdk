@@ -28,7 +28,7 @@ const char shellPasswordDefaultUser[] = SHELL_DEFAULT_USER_PASSWORD;
 const char shellDesDefaultUser[] = "default user";
 const ShellCommand shellUserDefault SECTION("shellCommand") =
 {
-    .attr.value = SHELL_CMD_PERMISSION(0)|SHELL_CMD_TYPE(SHELL_TYPE_USER),
+    .attr.value = SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_USER),
     .data.user.name = shellCmdDefaultUser,
     .data.user.password = shellPasswordDefaultUser,
     .data.user.desc = shellDesDefaultUser
@@ -85,38 +85,38 @@ enum
 };
 
 #if defined(CONFIG_TARGET_FT2004)
-#define SHELL_PLATFORM      "FT2000/4  "
+    #define SHELL_PLATFORM      "FT2000/4  "
 #elif defined(CONFIG_TARGET_D2000)
-#define SHELL_PLATFORM      "D2000  "
+    #define SHELL_PLATFORM      "D2000  "
 #elif defined(CONFIG_TARGET_E2000Q)
-#define SHELL_PLATFORM      "E2000Q  "
+    #define SHELL_PLATFORM      "E2000Q  "
 #elif defined(CONFIG_TARGET_E2000D)
-#define SHELL_PLATFORM      "E2000D  "
+    #define SHELL_PLATFORM      "E2000D  "
 #elif defined(CONFIG_TARGET_E2000S)
-#define SHELL_PLATFORM      "E2000S  "
-#elif defined(CONFIG_TARGET_PHYTIUMPI) 
-#define SHELL_PLATFORM      "PHYTIUMPI  "
+    #define SHELL_PLATFORM      "E2000S  "
+#elif defined(CONFIG_TARGET_PHYTIUMPI)
+    #define SHELL_PLATFORM      "PHYTIUMPI  "
 #else
-#define SHELL_PLATFORM      "Unkonwn  "
+    #define SHELL_PLATFORM      "Unkonwn  "
 #endif
 
 #if defined(CONFIG_TARGET_ARMV8_AARCH32)
-#define SHELL_ARCH          "Armv8-aarch32   "
+    #define SHELL_ARCH          "Armv8-aarch32   "
 #elif defined(CONFIG_TARGET_ARMV8_AARCH64)
-#define SHELL_ARCH          "Armv8-aarch64   "
+    #define SHELL_ARCH          "Armv8-aarch64   "
 #else
-#define SHELL_ARCH          "Unkonwn  "
+    #define SHELL_ARCH          "Unkonwn  "
 #endif
 
 #if defined(CONFIG_USE_BAREMETAL_AMP)
 
-#if defined(CONFIG_TARGET_AMP_MASTER)
-#define SHELL_AMP_ROLE      "Amp-Master"
-#elif defined(CONFIG_TARGET_AMP_SLAVE)
-#define SHELL_AMP_ROLE      "Amp-Slave"
-#else
-#define SHELL_AMP_ROLE      "Amp-Role-Unkonwn"
-#endif
+    #if defined(CONFIG_TARGET_AMP_MASTER)
+        #define SHELL_AMP_ROLE      "Amp-Master"
+    #elif defined(CONFIG_TARGET_AMP_SLAVE)
+        #define SHELL_AMP_ROLE      "Amp-Slave"
+    #else
+        #define SHELL_AMP_ROLE      "Amp-Role-Unkonwn"
+    #endif
 
 #endif
 
@@ -124,67 +124,67 @@ static const char *shellText[] =
 {
 #if SHELL_SHOW_INFO == 1
     [SHELL_TEXT_INFO] =
-        "\r\n"
-        " _____    _               _     _                     \r\n"
-        "|  __ \\  | |             | |   (_)                    \r\n"
-        "| |__) | | |__    _   _  | |_   _   _   _   _ __ ___  \r\n"
-        "|  ___/  | '_ \\  | | | | | __| | | | | | | | '_ ` _ \\ \r\n"
-        "| |      | | | | | |_| | | |_  | | | |_| | | | | | | |\r\n"
-        "|_|      |_| |_| \\ __, | \\__|  |_|  \\__,_| |_| |_| |_|\r\n"
-        "                   __/ |                              \r\n"  
-        "                  |___/                               \r\n" 
-        "================ Freertos Letter Shell================\r\n"
-        "Build:       "__DATE__" "__TIME__"\r\n"
-        "Version:     "SHELL_VERSION"\r\n"
-        "Platform:    "SHELL_PLATFORM""SHELL_ARCH"\r\n"
+    "\r\n"
+    " _____    _               _     _                     \r\n"
+    "|  __ \\  | |             | |   (_)                    \r\n"
+    "| |__) | | |__    _   _  | |_   _   _   _   _ __ ___  \r\n"
+    "|  ___/  | '_ \\  | | | | | __| | | | | | | | '_ ` _ \\ \r\n"
+    "| |      | | | | | |_| | | |_  | | | |_| | | | | | | |\r\n"
+    "|_|      |_| |_| \\ __, | \\__|  |_|  \\__,_| |_| |_| |_|\r\n"
+    "                   __/ |                              \r\n"
+    "                  |___/                               \r\n"
+    "================ Freertos Letter Shell================\r\n"
+    "Build:       "__DATE__" "__TIME__"\r\n"
+    "Version:     "SHELL_VERSION"\r\n"
+    "Platform:    "SHELL_PLATFORM""SHELL_ARCH"\r\n"
 #if defined(CONFIG_USE_BAREMETAL_AMP)
-        "Role:        "SHELL_AMP_ROLE"\r\n"
+    "Role:        "SHELL_AMP_ROLE"\r\n"
 #endif
-        "=======================================================\r\n",
+    "=======================================================\r\n",
 #endif
     [SHELL_TEXT_CMD_TOO_LONG] =
-        "\r\nWarning: Command is too long\r\n",
+    "\r\nWarning: Command is too long\r\n",
     [SHELL_TEXT_CMD_LIST] =
-        "\r\nCommand List:\r\n",
+    "\r\nCommand List:\r\n",
     [SHELL_TEXT_VAR_LIST] =
-        "\r\nVar List:\r\n",
+    "\r\nVar List:\r\n",
     [SHELL_TEXT_USER_LIST] =
-        "\r\nUser List:\r\n",
+    "\r\nUser List:\r\n",
     [SHELL_TEXT_KEY_LIST] =
-        "\r\nKey List:\r\n",
+    "\r\nKey List:\r\n",
     [SHELL_TEXT_CMD_NOT_FOUND] =
-        "Command not Found\r\n",
+    "Command not Found\r\n",
     [SHELL_TEXT_POINT_CANNOT_MODIFY] =
-        "can't set pointer\r\n",
+    "can't set pointer\r\n",
     [SHELL_TEXT_VAR_READ_ONLY_CANNOT_MODIFY] =
-        "can't set read only var\r\n",
+    "can't set read only var\r\n",
     [SHELL_TEXT_NOT_VAR] =
-        " is not a var\r\n",
+    " is not a var\r\n",
     [SHELL_TEXT_VAR_NOT_FOUND] =
-        "Var not Fount\r\n",
+    "Var not Fount\r\n",
     [SHELL_TEXT_HELP_HEADER] =
-        "command help of ",
+    "command help of ",
     [SHELL_TEXT_PASSWORD_HINT] =
-        "\r\nPlease input password:",
+    "\r\nPlease input password:",
     [SHELL_TEXT_PASSWORD_ERROR] =
-        "\r\npassword error\r\n",
+    "\r\npassword error\r\n",
     [SHELL_TEXT_CLEAR_CONSOLE] =
-        "\033[2J\033[1H",
+    "\033[2J\033[1H",
     [SHELL_TEXT_CLEAR_LINE] =
-        "\033[2K\r",
+    "\033[2K\r",
     [SHELL_TEXT_TYPE_CMD] =
-        "CMD ",
+    "CMD ",
     [SHELL_TEXT_TYPE_VAR] =
-        "VAR ",
+    "VAR ",
     [SHELL_TEXT_TYPE_USER] =
-        "USER",
+    "USER",
     [SHELL_TEXT_TYPE_KEY] =
-        "KEY ",
+    "KEY ",
     [SHELL_TEXT_TYPE_NONE] =
-        "NONE",
+    "NONE",
 #if SHELL_EXEC_UNDEF_FUNC == 1
     [SHELL_TEXT_PARAM_ERROR] =
-        "Parameter error\r\n",
+    "Parameter error\r\n",
 #endif
 };
 
@@ -200,7 +200,7 @@ static void shellWriteCommandLine(Shell *shell, unsigned char newline);
 static void shellWriteReturnValue(Shell *shell, int value);
 static int shellShowVar(Shell *shell, ShellCommand *command);
 static void shellSetUser(Shell *shell, const ShellCommand *user);
-ShellCommand* shellSeekCommand(Shell *shell,
+ShellCommand *shellSeekCommand(Shell *shell,
                                const char *cmd,
                                ShellCommand *base,
                                unsigned short compareLength);
@@ -231,25 +231,25 @@ void shellInit(Shell *shell, char *buffer, unsigned short size)
     }
 
 #if SHELL_USING_CMD_EXPORT == 1
-    #if defined(__CC_ARM) || (defined(__ARMCC_VERSION) && __ARMCC_VERSION >= 6000000)
-        shell->commandList.base = (ShellCommand *)(&shellCommand$$Base);
-        shell->commandList.count = ((unsigned int)(&shellCommand$$Limit)
+#if defined(__CC_ARM) || (defined(__ARMCC_VERSION) && __ARMCC_VERSION >= 6000000)
+    shell->commandList.base = (ShellCommand *)(&shellCommand$$Base);
+    shell->commandList.count = ((unsigned int)(&shellCommand$$Limit)
                                 - (unsigned int)(&shellCommand$$Base))
-                                / sizeof(ShellCommand);
+                               / sizeof(ShellCommand);
 
-    #elif defined(__ICCARM__) || defined(__ICCRX__)
-        shell->commandList.base = (ShellCommand *)(__section_begin("shellCommand"));
-        shell->commandList.count = ((unsigned int)(__section_end("shellCommand"))
+#elif defined(__ICCARM__) || defined(__ICCRX__)
+    shell->commandList.base = (ShellCommand *)(__section_begin("shellCommand"));
+    shell->commandList.count = ((unsigned int)(__section_end("shellCommand"))
                                 - (unsigned int)(__section_begin("shellCommand")))
-                                / sizeof(ShellCommand);
-    #elif defined(__GNUC__)
-        shell->commandList.base = (ShellCommand *)(&_shell_command_start);
-        shell->commandList.count = ((unsigned long)(&_shell_command_end)
+                               / sizeof(ShellCommand);
+#elif defined(__GNUC__)
+    shell->commandList.base = (ShellCommand *)(&_shell_command_start);
+    shell->commandList.count = ((unsigned long)(&_shell_command_end)
                                 - (unsigned long)(&_shell_command_start))
-                                / (unsigned long)sizeof(ShellCommand);
-    #else
-        #error not supported compiler, please use command table mode
-    #endif
+                               / (unsigned long)sizeof(ShellCommand);
+#else
+#error not supported compiler, please use command table mode
+#endif
 #else
     shell->commandList.base = (ShellCommand *)shellCommandList;
     shell->commandList.count = shellCommandCount;
@@ -288,7 +288,7 @@ static void shellAdd(Shell *shell)
  *
  * @return Shell* 当前活动shell对象
  */
-Shell* shellGetCurrent(void)
+Shell *shellGetCurrent(void)
 {
     for (short i = 0; i < SHELL_MAX_NUMBER; i++)
     {
@@ -325,7 +325,7 @@ unsigned short shellWriteString(Shell *shell, const char *string)
 {
     unsigned short count = 0;
     SHELL_ASSERT(shell->write, return 0);
-    while(*string)
+    while (*string)
     {
         shell->write(*string ++);
         count ++;
@@ -346,10 +346,10 @@ static unsigned short shellWriteCommandDesc(Shell *shell, const char *string)
 {
     unsigned short count = 0;
     SHELL_ASSERT(shell->write, return 0);
-    while(*string
-        && *string != '\r'
-        && *string != '\n'
-        && count < 36)
+    while (*string
+           && *string != '\r'
+           && *string != '\n'
+           && count < 36)
     {
         shell->write(*string ++);
         count ++;
@@ -431,12 +431,12 @@ void shellPrint(Shell *shell, char *fmt, ...)
 signed char shellCheckPermission(Shell *shell, ShellCommand *command)
 {
     return ((!command->attr.attrs.permission
-                || command->attr.attrs.type == SHELL_TYPE_USER
-                || (command->attr.attrs.permission
-                    & shell->info.user->attr.attrs.permission))
+             || command->attr.attrs.type == SHELL_TYPE_USER
+             || (command->attr.attrs.permission
+                 & shell->info.user->attr.attrs.permission))
             && (shell->status.isChecked
                 || command->attr.attrs.enableUnchecked))
-            ? 0 : -1;
+           ? 0 : -1;
 }
 
 
@@ -489,7 +489,8 @@ signed char shellToDec(int value, char *buffer)
     {
         buffer[--i] = '-';
     }
-    if (value == 0) {
+    if (value == 0)
+    {
         buffer[--i] = '0';
     }
     return 11 - i;
@@ -503,7 +504,7 @@ signed char shellToDec(int value, char *buffer)
  * @param src 源字符串
  * @return unsigned short 字符串长度
  */
-static unsigned short shellStringCopy(char *dest, char* src)
+static unsigned short shellStringCopy(char *dest, char *src)
 {
     unsigned short count = 0;
     while (*(src + count))
@@ -523,14 +524,14 @@ static unsigned short shellStringCopy(char *dest, char* src)
  * @param src 源字符串
  * @return unsigned short 匹配长度
  */
-static unsigned short shellStringCompare(char* dest, char *src)
+static unsigned short shellStringCompare(char *dest, char *src)
 {
     unsigned short match = 0;
     unsigned short i = 0;
 
-    while (*(dest +i) && *(src + i))
+    while (*(dest + i) && *(src + i))
     {
-        if (*(dest + i) != *(src +i))
+        if (*(dest + i) != *(src + i))
         {
             break;
         }
@@ -547,7 +548,7 @@ static unsigned short shellStringCompare(char* dest, char *src)
  * @param command 命令
  * @return const char* 命令名
  */
-static const char* shellGetCommandName(ShellCommand *command)
+static const char *shellGetCommandName(ShellCommand *command)
 {
     static char buffer[9];
     for (unsigned char i = 0; i < 9; i++)
@@ -580,7 +581,7 @@ static const char* shellGetCommandName(ShellCommand *command)
  * @param command 命令
  * @return const char* 命令描述
  */
-static const char* shellGetCommandDesc(ShellCommand *command)
+static const char *shellGetCommandDesc(ShellCommand *command)
 {
     if (command->attr.attrs.type <= SHELL_TYPE_CMD_FUNC)
     {
@@ -612,9 +613,11 @@ void shellListItem(Shell *shell, ShellCommand *item)
 
     spaceLength = 22 - shellWriteString(shell, shellGetCommandName(item));
     spaceLength = (spaceLength > 0) ? spaceLength : 4;
-    do {
+    do
+    {
         shellWriteByte(shell, ' ');
-    } while (--spaceLength);
+    }
+    while (--spaceLength);
     if (item->attr.attrs.type <= SHELL_TYPE_CMD_FUNC)
     {
         shellWriteString(shell, shellText[SHELL_TEXT_TYPE_CMD]);
@@ -804,7 +807,10 @@ void shellInsertByte(Shell *shell, char data)
         shell->parser.buffer[shell->parser.length++] = data;
         shell->parser.buffer[shell->parser.length] = 0;
         shell->parser.cursor++;
-        shellWriteByte(shell, data);
+        if (shell->echo)
+        {
+            shellWriteByte(shell, data);
+        }
     }
     else if (shell->parser.cursor < shell->parser.length)
     {
@@ -817,11 +823,17 @@ void shellInsertByte(Shell *shell, char data)
         shell->parser.buffer[++shell->parser.length] = 0;
         for (short i = shell->parser.cursor - 1; i < shell->parser.length; i++)
         {
-            shellWriteByte(shell, shell->parser.buffer[i]);
+            if (shell->echo)
+            {
+                shellWriteByte(shell, shell->parser.buffer[i]);
+            }
         }
         for (short i = shell->parser.length - shell->parser.cursor; i > 0; i--)
         {
-            shellWriteByte(shell, '\b');
+            if (shell->echo)
+            {
+                shellWriteByte(shell, '\b');
+            }
         }
     }
 }
@@ -959,14 +971,14 @@ static void shellRemoveParamQuotes(Shell *shell)
  * @param compareLength 匹配字符串长度
  * @return ShellCommand* 匹配到的命令
  */
-ShellCommand* shellSeekCommand(Shell *shell,
+ShellCommand *shellSeekCommand(Shell *shell,
                                const char *cmd,
                                ShellCommand *base,
                                unsigned short compareLength)
 {
     const char *name;
     unsigned short count = shell->commandList.count -
-        ((long)base - (long)shell->commandList.base) / sizeof(ShellCommand);
+                           ((long)base - (long)shell->commandList.base) / sizeof(ShellCommand);
     for (unsigned short i = 0; i < count; i++)
     {
         if (base[i].attr.attrs.type == SHELL_TYPE_KEY
@@ -1006,26 +1018,26 @@ int shellGetVarValue(Shell *shell, ShellCommand *command)
     int value = 0;
     switch (command->attr.attrs.type)
     {
-    case SHELL_TYPE_VAR_INT:
-        value = *((int *)(command->data.var.value));
-        break;
-    case SHELL_TYPE_VAR_SHORT:
-        value = *((short *)(command->data.var.value));
-        break;
-    case SHELL_TYPE_VAR_CHAR:
-        value = *((char *)(command->data.var.value));
-        break;
-    case SHELL_TYPE_VAR_STRING:
-    case SHELL_TYPE_VAR_POINT:
-        value = (long)(command->data.var.value);
-        break;
-    case SHELL_TYPE_VAR_NODE:
-        value = ((ShellNodeVarAttr *)command->data.var.value)->get ?
+        case SHELL_TYPE_VAR_INT:
+            value = *((int *)(command->data.var.value));
+            break;
+        case SHELL_TYPE_VAR_SHORT:
+            value = *((short *)(command->data.var.value));
+            break;
+        case SHELL_TYPE_VAR_CHAR:
+            value = *((char *)(command->data.var.value));
+            break;
+        case SHELL_TYPE_VAR_STRING:
+        case SHELL_TYPE_VAR_POINT:
+            value = (long)(command->data.var.value);
+            break;
+        case SHELL_TYPE_VAR_NODE:
+            value = ((ShellNodeVarAttr *)command->data.var.value)->get ?
                     ((ShellNodeVarAttr *)command->data.var.value)
-                        ->get(((ShellNodeVarAttr *)command->data.var.value)->var) : 0;
-        break;
-    default:
-        break;
+                    ->get(((ShellNodeVarAttr *)command->data.var.value)->var) : 0;
+            break;
+        default:
+            break;
     }
     return value;
 }
@@ -1049,37 +1061,37 @@ int shellSetVarValue(Shell *shell, ShellCommand *command, int value)
     {
         switch (command->attr.attrs.type)
         {
-        case SHELL_TYPE_VAR_INT:
-            *((int *)(command->data.var.value)) = value;
-            break;
-        case SHELL_TYPE_VAR_SHORT:
-            *((short *)(command->data.var.value)) = value;
-            break;
-        case SHELL_TYPE_VAR_CHAR:
-            *((char *)(command->data.var.value)) = value;
-            break;
-        case SHELL_TYPE_VAR_STRING:
-            shellStringCopy(((char *)(command->data.var.value)), (char *)(unsigned long)value);
-            break;
-        case SHELL_TYPE_VAR_POINT:
-            shellWriteString(shell, shellText[SHELL_TEXT_POINT_CANNOT_MODIFY]);
-            break;
-        case SHELL_TYPE_VAR_NODE:
-            if (((ShellNodeVarAttr *)command->data.var.value)->set)
-            {
-                if (((ShellNodeVarAttr *)command->data.var.value)->var)
+            case SHELL_TYPE_VAR_INT:
+                *((int *)(command->data.var.value)) = value;
+                break;
+            case SHELL_TYPE_VAR_SHORT:
+                *((short *)(command->data.var.value)) = value;
+                break;
+            case SHELL_TYPE_VAR_CHAR:
+                *((char *)(command->data.var.value)) = value;
+                break;
+            case SHELL_TYPE_VAR_STRING:
+                shellStringCopy(((char *)(command->data.var.value)), (char *)(unsigned long)value);
+                break;
+            case SHELL_TYPE_VAR_POINT:
+                shellWriteString(shell, shellText[SHELL_TEXT_POINT_CANNOT_MODIFY]);
+                break;
+            case SHELL_TYPE_VAR_NODE:
+                if (((ShellNodeVarAttr *)command->data.var.value)->set)
                 {
-                    ((ShellNodeVarAttr *)command->data.var.value)
+                    if (((ShellNodeVarAttr *)command->data.var.value)->var)
+                    {
+                        ((ShellNodeVarAttr *)command->data.var.value)
                         ->set(((ShellNodeVarAttr *)command->data.var.value)->var, value);
+                    }
+                    else
+                    {
+                        ((ShellNodeVarAttr *)command->data.var.value)->set(value);
+                    }
                 }
-                else
-                {
-                    ((ShellNodeVarAttr *)command->data.var.value)->set(value);
-                }
-            }
-            break;
-        default:
-            break;
+                break;
+            default:
+                break;
         }
     }
     return shellShowVar(shell, command);
@@ -1103,25 +1115,25 @@ static int shellShowVar(Shell *shell, ShellCommand *command)
 
     switch (command->attr.attrs.type)
     {
-    case SHELL_TYPE_VAR_STRING:
-        shellWriteString(shell, "\"");
-        shellWriteString(shell, (char *)(unsigned long)value);
-        shellWriteString(shell, "\"");
-        break;
-    // case SHELL_TYPE_VAR_INT:
-    // case SHELL_TYPE_VAR_SHORT:
-    // case SHELL_TYPE_VAR_CHAR:
-    // case SHELL_TYPE_VAR_POINT:
-    default:
-        shellWriteString(shell, &buffer[11 - shellToDec(value, buffer)]);
-        shellWriteString(shell, ", 0x");
-        for (short i = 0; i < 11; i++)
-        {
-            buffer[i] = '0';
-        }
-        shellToHex(value, buffer);
-        shellWriteString(shell, buffer);
-        break;
+        case SHELL_TYPE_VAR_STRING:
+            shellWriteString(shell, "\"");
+            shellWriteString(shell, (char *)(unsigned long)value);
+            shellWriteString(shell, "\"");
+            break;
+        // case SHELL_TYPE_VAR_INT:
+        // case SHELL_TYPE_VAR_SHORT:
+        // case SHELL_TYPE_VAR_CHAR:
+        // case SHELL_TYPE_VAR_POINT:
+        default:
+            shellWriteString(shell, &buffer[11 - shellToDec(value, buffer)]);
+            shellWriteString(shell, ", 0x");
+            for (short i = 0; i < 11; i++)
+            {
+                buffer[i] = '0';
+            }
+            shellToHex(value, buffer);
+            shellWriteString(shell, buffer);
+            break;
     }
 
     shellWriteString(shell, "\r\n");
@@ -1144,9 +1156,9 @@ int shellSetVar(char *name, int value)
         return 0;
     }
     ShellCommand *command = shellSeekCommand(shell,
-                                             name,
-                                             shell->commandList.base,
-                                             0);
+                            name,
+                            shell->commandList.base,
+                            0);
     if (!command)
     {
         shellWriteString(shell, shellText[SHELL_TEXT_VAR_NOT_FOUND]);
@@ -1162,8 +1174,8 @@ int shellSetVar(char *name, int value)
     return shellSetVarValue(shell, command, value);
 }
 SHELL_EXPORT_CMD(
-SHELL_CMD_PERMISSION(0)|SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC)|SHELL_CMD_DISABLE_RETURN,
-setVar, shellSetVar, set var);
+    SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN,
+    setVar, shellSetVar, set var);
 
 
 /**
@@ -1180,7 +1192,7 @@ static void shellRunCommand(Shell *shell, ShellCommand *command)
     {
         shellRemoveParamQuotes(shell);
         returnValue = command->data.cmd.function(shell->parser.paramCount,
-                                                 shell->parser.param);
+                      shell->parser.param);
         if (!command->attr.attrs.disableReturn)
         {
             shellWriteReturnValue(shell, returnValue);
@@ -1199,7 +1211,7 @@ static void shellRunCommand(Shell *shell, ShellCommand *command)
         }
     }
     else if (command->attr.attrs.type >= SHELL_TYPE_VAR_INT
-        && command->attr.attrs.type <= SHELL_TYPE_VAR_NODE)
+             && command->attr.attrs.type <= SHELL_TYPE_VAR_NODE)
     {
         shellShowVar(shell, command);
     }
@@ -1221,9 +1233,9 @@ static void shellCheckPassword(Shell *shell)
     if (strcmp(shell->parser.buffer, shell->info.user->data.user.password) == 0)
     {
         shell->status.isChecked = 1;
-    #if SHELL_SHOW_INFO == 1
+#if SHELL_SHOW_INFO == 1
         shellWriteString(shell, shellText[SHELL_TEXT_INFO]);
-    #endif
+#endif
     }
     else
     {
@@ -1245,9 +1257,9 @@ static void shellSetUser(Shell *shell, const ShellCommand *user)
     shell->info.user = user;
     shell->status.isChecked =
         ((user->data.user.password && strlen(user->data.user.password) != 0)
-            && (shell->parser.paramCount < 2
-                || strcmp(user->data.user.password, shell->parser.param[1]) != 0))
-         ? 0 : 1;
+         && (shell->parser.paramCount < 2
+             || strcmp(user->data.user.password, shell->parser.param[1]) != 0))
+        ? 0 : 1;
 
 #if SHELL_CLS_WHEN_LOGIN == 1
     shellWriteString(shell, shellText[SHELL_TEXT_CLEAR_CONSOLE]);
@@ -1270,7 +1282,9 @@ static void shellSetUser(Shell *shell, const ShellCommand *user)
 static void shellWriteReturnValue(Shell *shell, int value)
 {
     if (shell->slient && (0 == value)) //skip returen value print if 'silent' and no error
+    {
         return;
+    }
 
     char buffer[12] = "00000000000";
     shellWriteString(shell, "Return: ");
@@ -1296,8 +1310,8 @@ static void shellHistoryAdd(Shell *shell)
     shell->history.offset = 0;
     if (shell->history.number > 0
         && strcmp(shell->history.item[(shell->history.record == 0 ?
-                SHELL_HISTORY_MAX_NUMBER : shell->history.record) - 1],
-                shell->parser.buffer) == 0)
+                                       SHELL_HISTORY_MAX_NUMBER : shell->history.record) - 1],
+                  shell->parser.buffer) == 0)
     {
         return;
     }
@@ -1329,10 +1343,10 @@ static void shellHistory(Shell *shell, signed char dir)
     {
         if (shell->history.offset-- <=
             -((shell->history.number > shell->history.record) ?
-                shell->history.number : shell->history.record))
+              shell->history.number : shell->history.record))
         {
             shell->history.offset = -((shell->history.number > shell->history.record)
-                                    ? shell->history.number : shell->history.record);
+                                      ? shell->history.number : shell->history.record);
         }
     }
     else if (dir < 0)
@@ -1355,8 +1369,8 @@ static void shellHistory(Shell *shell, signed char dir)
     else
     {
         if ((shell->parser.length = shellStringCopy(shell->parser.buffer,
-                shell->history.item[(shell->history.record + SHELL_HISTORY_MAX_NUMBER
-                    + shell->history.offset) % SHELL_HISTORY_MAX_NUMBER])) == 0)
+                                    shell->history.item[(shell->history.record + SHELL_HISTORY_MAX_NUMBER
+                                            + shell->history.offset) % SHELL_HISTORY_MAX_NUMBER])) == 0)
         {
             return;
         }
@@ -1407,9 +1421,9 @@ void shellExec(Shell *shell)
         shellWriteString(shell, "\r\n");
 
         ShellCommand *command = shellSeekCommand(shell,
-                                                 shell->parser.param[0],
-                                                 shell->commandList.base,
-                                                 0);
+                                shell->parser.param[0],
+                                shell->commandList.base,
+                                0);
         if (command != NULL)
         {
             shellRunCommand(shell, command);
@@ -1462,8 +1476,8 @@ void shellRight(Shell *shell)
         shellWriteByte(shell, shell->parser.buffer[shell->parser.cursor++]);
     }
 }
-SHELL_EXPORT_KEY(SHELL_CMD_PERMISSION(0)|SHELL_CMD_ENABLE_UNCHECKED,
-0x1B5B4300, shellRight, right);
+SHELL_EXPORT_KEY(SHELL_CMD_PERMISSION(0) | SHELL_CMD_ENABLE_UNCHECKED,
+                 0x1B5B4300, shellRight, right);
 
 
 /**
@@ -1479,8 +1493,8 @@ void shellLeft(Shell *shell)
         shell->parser.cursor--;
     }
 }
-SHELL_EXPORT_KEY(SHELL_CMD_PERMISSION(0)|SHELL_CMD_ENABLE_UNCHECKED,
-0x1B5B4400, shellLeft, left);
+SHELL_EXPORT_KEY(SHELL_CMD_PERMISSION(0) | SHELL_CMD_ENABLE_UNCHECKED,
+                 0x1B5B4400, shellLeft, left);
 
 
 /**
@@ -1508,8 +1522,8 @@ void shellTab(Shell *shell)
         {
             if (shellCheckPermission(shell, &base[i]) == 0
                 && shellStringCompare(shell->parser.buffer,
-                                   (char *)shellGetCommandName(&base[i]))
-                        == shell->parser.length)
+                                      (char *)shellGetCommandName(&base[i]))
+                == shell->parser.length)
             {
                 if (matchNum != 0)
                 {
@@ -1587,10 +1601,10 @@ void shellBackspace(Shell *shell)
 {
     shellDeleteByte(shell, 1);
 }
-SHELL_EXPORT_KEY(SHELL_CMD_PERMISSION(0)|SHELL_CMD_ENABLE_UNCHECKED,
-0x08000000, shellBackspace, backspace);
-SHELL_EXPORT_KEY(SHELL_CMD_PERMISSION(0)|SHELL_CMD_ENABLE_UNCHECKED,
-0x7F000000, shellBackspace, backspace);
+SHELL_EXPORT_KEY(SHELL_CMD_PERMISSION(0) | SHELL_CMD_ENABLE_UNCHECKED,
+                 0x08000000, shellBackspace, backspace);
+SHELL_EXPORT_KEY(SHELL_CMD_PERMISSION(0) | SHELL_CMD_ENABLE_UNCHECKED,
+                 0x7F000000, shellBackspace, backspace);
 
 
 /**
@@ -1602,8 +1616,8 @@ void shellDelete(Shell *shell)
 {
     shellDeleteByte(shell, -1);
 }
-SHELL_EXPORT_KEY(SHELL_CMD_PERMISSION(0)|SHELL_CMD_ENABLE_UNCHECKED,
-0x1B5B337E, shellDelete, delete);
+SHELL_EXPORT_KEY(SHELL_CMD_PERMISSION(0) | SHELL_CMD_ENABLE_UNCHECKED,
+                 0x1B5B337E, shellDelete, delete);
 
 
 /**
@@ -1617,16 +1631,16 @@ void shellEnter(Shell *shell)
     shellWriteCommandLine(shell, 1);
 }
 #if SHELL_ENTER_LF == 1
-SHELL_EXPORT_KEY(SHELL_CMD_PERMISSION(0)|SHELL_CMD_ENABLE_UNCHECKED,
-0x0A000000, shellEnter, enter);
+SHELL_EXPORT_KEY(SHELL_CMD_PERMISSION(0) | SHELL_CMD_ENABLE_UNCHECKED,
+                 0x0A000000, shellEnter, enter);
 #endif
 #if SHELL_ENTER_CR == 1
-SHELL_EXPORT_KEY(SHELL_CMD_PERMISSION(0)|SHELL_CMD_ENABLE_UNCHECKED,
-0x0D000000, shellEnter, enter);
+SHELL_EXPORT_KEY(SHELL_CMD_PERMISSION(0) | SHELL_CMD_ENABLE_UNCHECKED,
+                 0x0D000000, shellEnter, enter);
 #endif
 #if SHELL_ENTER_CRLF == 1
-SHELL_EXPORT_KEY(SHELL_CMD_PERMISSION(0)|SHELL_CMD_ENABLE_UNCHECKED,
-0x0D0A0000, shellEnter, enter);
+SHELL_EXPORT_KEY(SHELL_CMD_PERMISSION(0) | SHELL_CMD_ENABLE_UNCHECKED,
+                 0x0D0A0000, shellEnter, enter);
 #endif
 
 /**
@@ -1646,9 +1660,9 @@ int shellHelp(int argc, char *argv[])
     else if (argc > 1)
     {
         ShellCommand *command = shellSeekCommand(shell,
-                                                 argv[1],
-                                                 shell->commandList.base,
-                                                 0);
+                                argv[1],
+                                shell->commandList.base,
+                                0);
         shellWriteString(shell, shellText[SHELL_TEXT_HELP_HEADER]);
         shellWriteString(shell, shellGetCommandName(command));
         shellWriteString(shell, "\r\n");
@@ -1659,8 +1673,8 @@ int shellHelp(int argc, char *argv[])
     return 0;
 }
 SHELL_EXPORT_CMD(
-SHELL_CMD_PERMISSION(0)|SHELL_CMD_TYPE(SHELL_TYPE_CMD_MAIN)|SHELL_CMD_DISABLE_RETURN,
-help, shellHelp, show command info\r\nhelp [cmd]);
+    SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_MAIN) | SHELL_CMD_DISABLE_RETURN,
+    help, shellHelp, show command info\r\nhelp [cmd]);
 
 /**
  * @brief shell 输入处理
@@ -1714,13 +1728,13 @@ void shellHandler(Shell *shell, char data)
             /* 对输入的字节同按键键值进行匹配 */
             if ((base[i].data.key.value & keyFilter) == shell->parser.keyValue
                 && (base[i].data.key.value & (0xFF << keyByteOffset))
-                    == (data << keyByteOffset))
+                == (data << keyByteOffset))
             {
                 shell->parser.keyValue |= data << keyByteOffset;
                 data = 0x00;
                 if (keyByteOffset == 0
                     || (base[i].data.key.value & (0xFF << (keyByteOffset - 8)))
-                        == 0x00000000)
+                    == 0x00000000)
                 {
                     if (base[i].data.key.function)
                     {
@@ -1778,7 +1792,7 @@ void shellTask(void *param)
     Shell *shell = (Shell *)param;
     char data;
 #if SHELL_TASK_WHILE == 1
-    while(1)
+    while (1)
     {
 #endif
         if (shell->read && shell->read(&data) == 0)
@@ -1803,8 +1817,8 @@ void shellUsers(void)
     }
 }
 SHELL_EXPORT_CMD(
-SHELL_CMD_PERMISSION(0)|SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC)|SHELL_CMD_DISABLE_RETURN,
-users, shellUsers, list all user);
+    SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN,
+    users, shellUsers, list all user);
 
 
 /**
@@ -1819,8 +1833,8 @@ void shellCmds(void)
     }
 }
 SHELL_EXPORT_CMD(
-SHELL_CMD_PERMISSION(0)|SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC)|SHELL_CMD_DISABLE_RETURN,
-cmds, shellCmds, list all cmd);
+    SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN,
+    cmds, shellCmds, list all cmd);
 
 
 /**
@@ -1835,8 +1849,8 @@ void shellVars(void)
     }
 }
 SHELL_EXPORT_CMD(
-SHELL_CMD_PERMISSION(0)|SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC)|SHELL_CMD_DISABLE_RETURN,
-vars, shellVars, list all var);
+    SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN,
+    vars, shellVars, list all var);
 
 
 /**
@@ -1851,8 +1865,8 @@ void shellKeys(void)
     }
 }
 SHELL_EXPORT_CMD(
-SHELL_CMD_PERMISSION(0)|SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC)|SHELL_CMD_DISABLE_RETURN,
-keys, shellKeys, list all key);
+    SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN,
+    keys, shellKeys, list all key);
 
 
 /**
@@ -1867,8 +1881,8 @@ void shellClear(void)
     }
 }
 SHELL_EXPORT_CMD(
-SHELL_CMD_PERMISSION(0)|SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC)|SHELL_CMD_DISABLE_RETURN,
-clear, shellClear, clear console);
+    SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN,
+    clear, shellClear, clear console);
 
 
 /**
@@ -1912,9 +1926,10 @@ int shellExecute(int argc, char *argv[])
     {
         int (*func)() = (int (*)())shellExtParsePara(shell, argv[1]);
         shellPrint(shell, "%08x\r\n", func);
-        ShellCommand command = {
-            .attr.value = SHELL_CMD_PERMISSION(0)|SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC)
-                          |SHELL_CMD_DISABLE_RETURN,
+        ShellCommand command =
+        {
+            .attr.value = SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC)
+            | SHELL_CMD_DISABLE_RETURN,
             .data.cmd.function = func,
         };
         return shellExtRun(shell, &command, argc - 1, &argv[1]);
@@ -1926,6 +1941,6 @@ int shellExecute(int argc, char *argv[])
     }
 }
 SHELL_EXPORT_CMD(
-SHELL_CMD_PERMISSION(0)|SHELL_CMD_TYPE(SHELL_TYPE_CMD_MAIN)|SHELL_CMD_DISABLE_RETURN,
-exec, shellExecute, execute function undefined);
+    SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_MAIN) | SHELL_CMD_DISABLE_RETURN,
+    exec, shellExecute, execute function undefined);
 #endif

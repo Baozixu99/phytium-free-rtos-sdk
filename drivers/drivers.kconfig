@@ -255,5 +255,16 @@ config USE_SCMI_MHU
         source "$(SDK_DIR)/drivers/scmi/Kconfig"
     endif
 
+config USE_I2S
+    bool
+    prompt "Use i2s"
+    default n
+    help
+        Include I2S modules and enable I2S
+
+    if USE_I2S
+        source "$(SDK_DIR)/drivers/i2s/Kconfig"
+    endif
+
 endmenu
 

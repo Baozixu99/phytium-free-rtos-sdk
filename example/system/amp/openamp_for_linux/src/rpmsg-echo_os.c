@@ -1,20 +1,20 @@
 /*
- * Copyright : (C) 2022 Phytium Information Technology, Inc. 
+ * Copyright : (C) 2024 Phytium Information Technology, Inc.
  * All Rights Reserved.
- *  
- * This program is OPEN SOURCE software: you can redistribute it and/or modify it  
- * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,  
- * either version 1.0 of the License, or (at your option) any later version. 
- *  
- * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;  
+ * 
+ * This program is OPEN SOURCE software: you can redistribute it and/or modify it
+ * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,
+ * either version 1.0 of the License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the Phytium Public License for more details. 
- *  
+ * See the Phytium Public License for more details.
+ * 
  * 
  * FilePath: rpmsg-echo_os.c
- * Date: 2022-02-25 09:12:07
- * LastEditTime: 2022-02-25 09:12:19
- * Description:  This file is for  a sample demonstration application that showcases usage of rpmsg.
+ * Created Date: 2022-02-25 09:12:07
+ * Last Modified: 2024-03-13 18:54:24
+ * Description:  This file is for This file is for a sample demonstration application that showcases usage of rpmsg.
  *               This application is meant to run on the remote CPU running freertos code.
  *               This application echoes back data that was sent to it by the master core.
  * 
@@ -22,9 +22,9 @@
  *  Ver   Who        Date         Changes
  * ----- ------     --------    --------------------------------------
  * 1.0 huanghe    2022/03/25  first commit  
- * 1.1 liusm	  2023/11/17  Adapter example for linux  
+ * 1.1 liusm	  2023/11/17  Adapter example for linux
+ * 1.2 liusm 	  2024/03/04  update example
  */
-
 
 /***************************** Include Files *********************************/
 
@@ -39,7 +39,6 @@
 #include "rsc_table.h"
 #include "FreeRTOS.h"
 #include "task.h"
-#include "shell.h"
 #include "finterrupt.h"
 #include "fpsci.h"
 #include "fdebug.h"
@@ -58,15 +57,10 @@
 #define OPENAMP_SLAVE_INFO(format, ...)  FT_DEBUG_PRINT_I(OPENAMP_SLAVE_DEBUG_TAG, format, ##__VA_ARGS__)
 #define OPENAMP_SLAVE_DEBUG(format, ...) FT_DEBUG_PRINT_D(OPENAMP_SLAVE_DEBUG_TAG, format, ##__VA_ARGS__)
 
-#ifdef CONFIG_DEBUG_CODE
-#define OPENAMP_MASTER_ADDRESS  0xe0100000
-#endif
-
 #define SHUTDOWN_MSG				0xEF56A55A
 
-static struct rpmsg_endpoint lept;
-static int shutdown_req = 0;
-
+static int shutdown_req;
+static char temp_data[RPMSG_BUFFER_SIZE];
 /************************** Function Prototypes ******************************/
 
 /*-----------------------------------------------------------------------------*
@@ -78,14 +72,19 @@ static int rpmsg_endpoint_cb(struct rpmsg_endpoint *ept, void *data, size_t len,
 	(void)src;
 	/* On reception of a shutdown we signal the application to terminate */
 	if ((*(unsigned int *)data) == SHUTDOWN_MSG) {
-		OPENAMP_SLAVE_INFO("shutdown message is received.\r\n");
+		OPENAMP_SLAVE_INFO("shutdown message is received.");
 		shutdown_req = 1;
 		return RPMSG_SUCCESS;
 	}
 
+    memset(temp_data,0,len) ;
+    memcpy(temp_data,data,len) ;
+	/* Send temp_data back to master */
+    /* 请勿直接对data指针对应的内存进行写操作，操作vring中remoteproc发送通道分配的内存，引发错误的问题*/
+	
 	/* Send data back to master */
-	if (rpmsg_send(ept, data, len) < 0)
-		OPENAMP_SLAVE_ERROR("rpmsg_send failed\r\n");
+	if (rpmsg_send(ept, temp_data, len) < 0)
+		OPENAMP_SLAVE_ERROR("rpmsg_send failed!!!\r\n");
 
 	return RPMSG_SUCCESS;
 }
@@ -93,22 +92,24 @@ static int rpmsg_endpoint_cb(struct rpmsg_endpoint *ept, void *data, size_t len,
 static void rpmsg_service_unbind(struct rpmsg_endpoint *ept)
 {
 	(void)ept;
-	OPENAMP_SLAVE_INFO("unexpected Remote endpoint destroy\r\n");
+	OPENAMP_SLAVE_INFO("unexpected Remote endpoint destroy.");
 	shutdown_req = 1;
 }
 
 /*-----------------------------------------------------------------------------*
  *  Application
  *-----------------------------------------------------------------------------*/
-int app(struct rpmsg_device *rdev, void *priv)
+int FRpmsgEchoApp(struct rpmsg_device *rdev, void *priv)
 {
 	int ret;
-
+	struct rpmsg_endpoint lept;
+	shutdown_req = 0;
+	OPENAMP_SLAVE_INFO("Try to create rpmsg endpoint.");
 	/* Initialize RPMSG framework */
-	OPENAMP_SLAVE_INFO("step7 : user to init endpoint ");
 	ret = rpmsg_create_ept(&lept, rdev, RPMSG_SERVICE_NAME, 0, RPMSG_ADDR_ANY, rpmsg_endpoint_cb, rpmsg_service_unbind);
-	if (ret) {
-		OPENAMP_SLAVE_ERROR("Failed to create endpoint. %d \r\n", ret);
+	if (ret)
+	{
+		OPENAMP_SLAVE_ERROR("Failed to create endpoint,ret = %d.\r\n", ret);
 		return -1;
 	}
 
@@ -118,7 +119,6 @@ int app(struct rpmsg_device *rdev, void *priv)
         /* we got a shutdown request, exit */
         if (shutdown_req)
 		{
-			OPENAMP_SLAVE_INFO("step8 : start to exit ");
 			break;		
 		}
 	}
@@ -136,7 +136,7 @@ int rpmsg_echo(int argc, char *argv[])
 {
 	void *platform;
 	struct rpmsg_device *rpdev;
-	int ret;
+	int ret = 0;
 
 	OPENAMP_SLAVE_INFO("openamp lib version: %s (", openamp_version());
 	OPENAMP_SLAVE_INFO("Major: %d, ", openamp_version_major());
@@ -149,29 +149,33 @@ int rpmsg_echo(int argc, char *argv[])
 	OPENAMP_SLAVE_INFO("Patch: %d)\r\n", metal_ver_patch());
 
 	/* Initialize platform */
-	OPENAMP_SLAVE_INFO("start application");
+	OPENAMP_SLAVE_INFO("start application...");
 	ret = platform_init(argc, argv, &platform);
-	if (ret) {
+	if (ret) 
+	{
 		OPENAMP_SLAVE_ERROR("Failed to initialize platform.\r\n");
+		platform_cleanup(platform);
 		ret = -1;
-	} else {
-		#ifdef CONFIG_DEBUG_CODE
-		OPENAMP_SLAVE_ERROR("CONFIG_TARGET_CPU_ID is %x \r\n",CONFIG_TARGET_CPU_ID);
-		FPsciCpuMaskOn(1<<CONFIG_TARGET_CPU_ID,(uintptr_t)OPENAMP_MASTER_ADDRESS) ;
-		#endif
-		OPENAMP_SLAVE_INFO("step3: start to init virtio device ");
-		rpdev = platform_create_rpmsg_vdev(platform, 0, VIRTIO_DEV_SLAVE, NULL, NULL);
-		if (!rpdev) {
-			OPENAMP_SLAVE_ERROR("Failed to create rpmsg virtio device.\r\n");
-			ret = -1;
-		} else {
-			app(rpdev, platform);
-			platform_release_rpmsg_vdev(rpdev, platform);
-			ret = 0;
-		}
+	} 
+	
+	rpdev = platform_create_rpmsg_vdev(platform, 0, VIRTIO_DEV_SLAVE, NULL, NULL);
+	if (!rpdev) 
+	{
+		OPENAMP_SLAVE_ERROR("Failed to create rpmsg virtio device.\r\n");
+		platform_cleanup(platform);
+		ret = -1;
 	}
 
-	OPENAMP_SLAVE_INFO("Stopping application...\r\n");
+	ret = FRpmsgEchoApp(rpdev, platform);
+	if (ret)
+	{
+		OPENAMP_SLAVE_ERROR("Failed to running echoapp.\r\n");
+		platform_cleanup(platform);
+		ret = -1;
+	}
+	
+	platform_release_rpmsg_vdev(rpdev, platform);
+	OPENAMP_SLAVE_INFO("Stopping application...");
 	platform_cleanup(platform);
 
     return ret;
@@ -202,11 +206,8 @@ int rpmsg_echo_task(void)
     
     if(ret != pdPASS)
     {
-        OPENAMP_SLAVE_ERROR("Failed to create a rpmsg_echo task ");
+        OPENAMP_SLAVE_ERROR("Failed to create a rpmsg_echo task. \r\n");
         return -1;
     }
     return 0;
 }
-
-
-SHELL_EXPORT_CMD(SHELL_CMD_TYPE(SHELL_TYPE_CMD_MAIN), rpmsg_echo_task, rpmsg_echo_task, rpmsg_echo_task);

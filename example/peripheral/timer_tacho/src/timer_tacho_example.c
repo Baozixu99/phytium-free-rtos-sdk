@@ -35,7 +35,6 @@
 #include "fcpu_info.h"
 #include "sdkconfig.h"
 #include "fdebug.h"
-#include "fio_mux.h"
 
 /* The periods assigned to the one-shot timers. */
 #define ONE_SHOT_TIMER_PERIOD       ( pdMS_TO_TICKS( 50000UL ) )
@@ -284,6 +283,8 @@ static void TachoTask(void *pvParameters)
     TachoDisableIntr(&tacho_p->ctrl);
     FFreeRTOSTimerStop(tacho_p);
     FFreeRTOSTachoDeinit(tacho_p);
+    /*deinit iomux */
+    FIOMuxDeInit();
 
 tacho_task_exit:
     printf("***TachoTask over.\r\n");
@@ -343,6 +344,8 @@ static void InitTask(void *pvParameters)
         printf("*Tacho init error.\r\n");
         goto timer_init_exit;
     }
+    /*init iomux*/
+    FIOMuxInit();
     /* set iopad mux */
     FIOPadSetTachoMux(TACHO_INSTANCE_NUM);
 

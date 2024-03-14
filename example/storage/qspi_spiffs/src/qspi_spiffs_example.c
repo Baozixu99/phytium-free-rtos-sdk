@@ -401,7 +401,7 @@ static void FFreeRTOSQspiSpiffsInitTask(void *pvParameters)
     Cast this to a qspi_id pointer. */
     u32 qspi_id = (u32)(uintptr)pvParameters;
     printf("qspi_id: %d\n", qspi_id);
-
+    FIOMuxInit();
 #if defined(CONFIG_TARGET_E2000)
     FIOPadSetQspiMux(qspi_id, FQSPI_CS_0);
     FIOPadSetQspiMux(qspi_id, FQSPI_CS_1);
@@ -560,7 +560,7 @@ BaseType_t FFreeRTOSQspiSpiffsCreate(u32 qspi_id)
 static void FFreeRTOSQspiSpiffsDelete(void)
 {
     BaseType_t xReturn = pdPASS;
-
+    FIOMuxDeInit();/*deinit iomux */
     FSpiffsDeInitialize(&instance);
 
     if (qspi_rw_handle)
