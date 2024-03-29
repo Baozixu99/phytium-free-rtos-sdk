@@ -19,6 +19,7 @@ include $(FREERTOS_SDK_DIR)/tools/makeall.mk
 USR_BOOT_DIR		?= /mnt/d/tftboot
 
 image:
+	$(MAKE) clean
 	$(MAKE) all -j
 	@cp ./$(IMAGE_OUT_NAME).elf $(USR_BOOT_DIR)/$(BOOT_IMG_NAME).elf
 ifdef CONFIG_OUTPUT_BINARY

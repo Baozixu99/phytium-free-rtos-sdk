@@ -1,3 +1,9 @@
+# Phytium FreeRTOS SDK 2024-03-29 ChangeLog
+
+Change Log since 2024-03-28
+
+- Change standalone_sdk_v, solve the problem of repeated restarts in aarch32
+
 # Phytium FreeRTOS SDK 2024-03-14 ChangeLog
 
 Change Log since 2024-03-11

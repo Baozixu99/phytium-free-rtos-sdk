@@ -13,7 +13,7 @@
  * 
  * FilePath: fi2s_os.h
  * Created Date: 2024-02-29 10:49:34
- * Last Modified: 2024-03-07 10:09:31
+ * Last Modified: 2024-03-28 11:07:07
  * Description:  This file is for providing function related definitions of i2s driver
  * 
  * Modify History:
@@ -47,7 +47,6 @@ extern "C"
 typedef struct
 {
     FI2s i2s_ctrl;
-    u32 work_mode;     /*the work mode of i2s*/
     SemaphoreHandle_t i2s_semaphore; /* i2s read and write semaphore for resource sharing */
     EventGroupHandle_t trx_event;   /* i2s TX/RX completion event */
 } FFreeRTOSI2s;

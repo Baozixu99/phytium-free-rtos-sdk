@@ -234,13 +234,11 @@ static void FFreeRTOSI2sHardWareConfig(u32 work_mode)
 
     /*设置es8336芯片*/
     FEs8336RegsProbe(); /* 寄存器默认值 */
-    err = FEs8336Startup(work_mode);
-    FASSERT_MSG(FT_SUCCESS == err, "start es8336 failed.");
-    err = FEs8336SetFormat(i2s_config.word_length, work_mode); /* 设置ES8336工作模式 */
+    FEs8336Startup();
+    err = FEs8336SetFormat(i2s_config.word_length); /* 设置ES8336工作模式 */
     FASSERT_MSG(FT_SUCCESS == err, "set es8336 failed.");
 
     /*设置i2s模块*/
-    os_i2s->i2s_ctrl.data_config.work_mode = work_mode;
     err =  FI2sClkOutDiv(&os_i2s->i2s_ctrl); /* 默认16-bits采集 */
     FASSERT_MSG(FT_SUCCESS == err, "set i2s clk failed.");
     FI2sSetHwconfig(&os_i2s->i2s_ctrl);
@@ -272,7 +270,7 @@ static void FFreeRTOSI2sHardWareConfig(u32 work_mode)
     {
         FDdmaBDLSetDesc(bdl_desc_list, &bdl_desc_config[loop]);
     }
-    if (work_mode == FI2S_CAPTURE)
+    if (work_mode == AUDIO_PCM_STREAM_CAPTURE)
     {
         rx_tx_request.slave_id = 0U;
         rx_tx_request.mem_addr = (uintptr)rx_buf;
@@ -327,7 +325,7 @@ static void FFreeRTOSI2sInitTask(void *pvParameters)
 static void FFreeRTOSI2sReceiveTask(void *pvParameters)
 {
     FError err = FT_SUCCESS;
-    u32 work_mode = FI2S_CAPTURE;
+    u32 work_mode = AUDIO_PCM_STREAM_CAPTURE;
 
     FFreeRTOSI2sHardWareConfig(work_mode);
 
@@ -356,7 +354,7 @@ static void FFreeRTOSI2sSendTask(void *pvParameters)
 {
     FFreeRTOSI2sDdmTakeSync();/*receiver task is over , send task take sync from recv and start work*/
     FError err = FT_SUCCESS;
-    u32 work_mode = FI2S_PALYBACK;
+    u32 work_mode = AUDIO_PCM_STREAM_PLAYBACK;
 
     FFreeRTOSI2sHardWareConfig(work_mode);
 
