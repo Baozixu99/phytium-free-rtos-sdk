@@ -1,3 +1,21 @@
+# Phytium FreeRTOS SDK 2024-04-08 ChangeLog
+
+## driver
+
+- solve gpio interrupt can not work
+
+# Phytium FreeRTOS SDK 2024-04-01 ChangeLog
+
+Change Log since 2024-03-29
+
+## example
+
+- solve USB XHCI_PCIE example aarch32 address out of range
+
+## driver
+
+- solve SPIM-oriented compile problem by modifying SPI-DDMA api
+
 # Phytium FreeRTOS SDK 2024-03-29 ChangeLog
 
 Change Log since 2024-03-28

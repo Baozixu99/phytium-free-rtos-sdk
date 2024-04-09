@@ -140,11 +140,6 @@ FFreeRTOSFGpio *FFreeRTOSGpioInit(u32 id, const FFreeRTOSGpioConfig *input_confi
         goto err_exit;
     }
 
-    if (FGPIO_IRQ_BY_CONTROLLER == FGpioGetPinIrqSourceType(instance->pins[FGPIO_PORT_A][FGPIO_PIN_0])) /* setup for ctrl report interrupt */
-    {
-        FGpioOsSetupCtrlIRQ(instance);
-    }
-
     FASSERT_MSG(NULL == instance->locker, "Locker exists!!!");
     FASSERT_MSG((instance->locker = xSemaphoreCreateMutex()) != NULL, "Create mutex failed!!!");
 
@@ -265,7 +260,10 @@ FError FFreeRTOSSetupPin(FFreeRTOSFGpio *const instance, const FFreeRTOSGpioPinC
         {
             FGpioOSSetupPinIRQ(instance, pin, config);
         }
-
+        else  if (FGPIO_IRQ_BY_CONTROLLER == FGpioGetPinIrqSourceType(*pin)) /* setup for ctrl report interrupt */
+        {
+            FGpioOsSetupCtrlIRQ(instance);
+        }
         FGpioRegisterInterruptCB(pin, config->irq_handler, config->irq_args, irq_one_time); /* register intr callback */
     }
 

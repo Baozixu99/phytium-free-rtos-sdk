@@ -201,7 +201,11 @@ void usb_hc_low_level_init(uint32_t id)
             }        
 
             USBPcieIrqInstall(&pcie_device, bus, device, function);
+#ifdef __aarch64__ 
             usb_base = (bar1_addr << 32U) | bar0_addr;
+#else
+            usb_base = bar0_addr;
+#endif
             FUSB_INFO("xHCI base address: 0x%lx", usb_base);
         }                
     }

@@ -334,7 +334,7 @@ FError FFreeRTOSSpimTransfer(FFreeRTOSSpim *const instance, const FFreeRTOSSpiMe
     if (instance->config.en_dma) /* dma-mode */
     {
         FSPIM_INFO("Start DMA tx: %d, rx: %d", message->tx_len, message->rx_len);
-        err = FSpimTransferDMA(ctrl, (0U != message->tx_len), (0U != message->rx_len));
+        err = FSpimTransferDMA(ctrl);
         if (FSPIM_SUCCESS != err)
         {
             FSPIM_ERROR("Spim DMA transfer failed: 0x%x", err);

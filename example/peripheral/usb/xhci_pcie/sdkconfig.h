@@ -52,7 +52,6 @@
 #define CONFIG_F64BIT_MEMORY_ADDRESS 0x2000000000
 #define CONFIG_F64BIT_MEMORY_LENGTH 0x800000000
 #define CONFIG_TARGET_E2000
-/* CONFIG_USE_SPINLOCK is not set */
 #define CONFIG_DEFAULT_DEBUG_PRINT_UART1
 /* CONFIG_DEFAULT_DEBUG_PRINT_UART0 is not set */
 /* CONFIG_DEFAULT_DEBUG_PRINT_UART2 is not set */
@@ -109,8 +108,7 @@
 #define CONFIG_USE_IOMUX
 /* CONFIG_ENABLE_IOCTRL is not set */
 #define CONFIG_ENABLE_IOPAD
-#define CONFIG_USE_SPI
-#define CONFIG_USE_FSPIM
+/* CONFIG_USE_SPI is not set */
 /* CONFIG_USE_QSPI is not set */
 #define CONFIG_USE_SERIAL
 
@@ -232,7 +230,7 @@
 
 /* Freertos Spim Drivers */
 
-#define CONFIG_FREERTOS_USE_FSPIM
+/* CONFIG_FREERTOS_USE_FSPIM is not set */
 /* end of Freertos Spim Drivers */
 
 /* Freertos DMA Drivers */
