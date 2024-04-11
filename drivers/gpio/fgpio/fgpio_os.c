@@ -220,6 +220,7 @@ FError FFreeRTOSSetupPin(FFreeRTOSFGpio *const instance, const FFreeRTOSGpioPinC
     FGpioPin *const pin = &instance->pins[pin_id.port][pin_id.pin];
     FError err = FT_SUCCESS;
     boolean irq_one_time = TRUE;
+    FGpioIrqType irq_type = config->irq_type;
 
     err = FGpioOsTakeSema(instance->locker);
     if (FFREERTOS_GPIO_OK != err)
@@ -266,7 +267,7 @@ FError FFreeRTOSSetupPin(FFreeRTOSFGpio *const instance, const FFreeRTOSGpioPinC
         }
         FGpioRegisterInterruptCB(pin, config->irq_handler, config->irq_args, irq_one_time); /* register intr callback */
     }
-
+    FGpioSetInterruptType(pin, irq_type);
 err_exit:
     FGpioOsGiveSema(instance->locker);
     return err;

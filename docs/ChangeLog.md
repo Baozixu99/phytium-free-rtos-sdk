@@ -1,4 +1,22 @@
+# Phytium FreeRTOS SDK 2024-04-10 ChangeLog
+
+Change Log since 2024-04-10
+
+## drivers
+
+- add port drivers
+
+# Phytium FreeRTOS SDK 2024-04-10 ChangeLog
+
+Change Log since 2024-04-08
+
+## driver
+
+- solve gpio interrupt can not select the type
+
 # Phytium FreeRTOS SDK 2024-04-08 ChangeLog
+
+Change Log since 2024-04-01
 
 ## driver
 

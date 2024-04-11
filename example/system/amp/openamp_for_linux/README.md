@@ -15,6 +15,7 @@
   [OpenAMP](https://github.com/OpenAMP/open-amp.git)
 - 本例程主要提供了D2000/FT2004/E2000D/E2000Q/PHYTIUMPI Linux与RTOS之间的测试例程
 - 本例程演示rpmsg用法的示例演示应用程序。此应用core0 中的程序为从机程序，core1 中的程序为主机linux程序，其目标是从核程序工作在echo 模式下，主核主动发送数据之后，从机程序会将收到的数据重新回复发送回去
+- 如果需要添加其他应用任务，则要求应用任务优先级比RpmsgEchoTask优先级（默认是4）高，否则应用任务无法执行。
 
 - 参阅《飞腾嵌入式OpenAMP技术解决方案与用户操作手册v1.0》配置好linux环境，本例程只提供编译镜像
  [手册链接](https://gitee.com/phytium_embedded/phytium-embedded-docs/tree/master/open-amp)

@@ -13,7 +13,7 @@
  * 
  * FilePath: main.c
  * Created Date: 2022-02-24 16:56:46
- * Last Modified: 2024-03-04 19:50:56
+ * Last Modified: 2024-04-11 09:36:01
  * Description:  This file is for This file is for AMP example that running rpmsg_echo_task and open scheduler
  * 
  * Modify History: 

@@ -119,3 +119,5 @@ endif
 ifdef CONFIG_USE_I2S
 		BUILD_INC_PATH_DIR += $(OS_DRV_CUR_DIR)/i2s
 endif
+
+BUILD_INC_PATH_DIR += $(OS_DRV_CUR_DIR)/port
