@@ -11,7 +11,7 @@
  * See the Phytium Public License for more details.
  *
  *
- * FilePath: cmd_gdma.c
+ * FilePath: cmd_pwm.c
  * Date: 2022-07-14 14:06:43
  * LastEditTime: 2022-07-14 14:06:43
  * Description:  This files is for gdma command interface
@@ -19,8 +19,7 @@
  * Modify History:
  *  Ver      Who           Date         Changes
  * -----    ------       --------      --------------------------------------
- *  1.0    zhugengyu     2022/7/27     init commit
- *  2.0    liqiaozhong   2024/4/22     add no letter shell mode, adapt to auto-test system
+ *  1.0    zhangyan     2024/4/23     init commit
  */
 
 /***************************** Include Files *********************************/
@@ -29,6 +28,7 @@
 #include "strto.h"
 
 #include "sdkconfig.h"
+#include "pwm_example.h"
 /************************** Constant Definitions *****************************/
 
 /************************** Variable Definitions *****************************/
@@ -41,25 +41,46 @@
 #ifdef CONFIG_USE_LETTER_SHELL
 #include "../src/shell.h"
 
-#include "gdma_memcpy.h"
-
-static void SfudCmdUsage()
+static void PwmCmdUsage(void)
 {
     printf("Usage:\r\n");
-    printf("gdma memcpy\r\n");
-    printf("-- Run GDMA memcpy example\r\n");
+    printf("pwm single_channel\r\n");
+    printf("-- run pwm single channel at controller \r\n");
+#ifdef CONFIG_FIREFLY_DEMO_BOARD
+    printf("pwm dead_band\r\n");
+    printf("-- run pwm dead band example at controller \r\n");
+    printf("pwm dual_channel\r\n");
+    printf("-- run pwm dual channel at controller \r\n");
+#endif
 }
 
-static int GdmaCmdEntry(int argc, char *argv[])
+static int PwmCmdEntry(int argc, char *argv[])
 {
     int ret = 0;
 
-    if (!strcmp(argv[1], "memcpy"))
+    if (argc < 2)
     {
-        ret = FFreeRTOSRunGdmaMemcpy();
+        PwmCmdUsage();
+        return -1;
     }
+    /* parser example input args and run example */
+    if (!strcmp(argv[1], "single_channel"))
+    {
+        ret = FFreeRTOSPwmSingleChannelTaskCreate();
+    }
+#ifdef CONFIG_FIREFLY_DEMO_BOARD
+    if (!strcmp(argv[1], "dead_band"))
+    {
+        ret = FFreeRTOSPwmDeadBandTaskCreate();
+    }
+
+    if (!strcmp(argv[1], "dual_channel"))
+    {
+        ret = FFreeRTOSPwmDualChannelTaskCreate();
+    }
+#endif
 
     return ret;
 }
-SHELL_EXPORT_CMD(SHELL_CMD_TYPE(SHELL_TYPE_CMD_MAIN), gdma, GdmaCmdEntry, test freertos gdma driver);
+SHELL_EXPORT_CMD(SHELL_CMD_TYPE(SHELL_TYPE_CMD_MAIN), pwm, PwmCmdEntry, test freertos pwm driver);
 #endif

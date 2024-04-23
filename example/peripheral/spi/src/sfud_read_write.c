@@ -175,7 +175,7 @@ write_exit:
     if (SFUD_SUCCESS != sfud_ret)
     {
         task_res = SPI_SFUD_WRITE_FAILURE;
-        xQueueSend(xQueue, &task_res, 0);;
+        xQueueSend(xQueue, &task_res, 0);
     }
     
     return sfud_ret;
@@ -238,7 +238,7 @@ read_exit:
     if (SFUD_SUCCESS != sfud_ret)
     {
         task_res = SPI_SFUD_READ_FAILURE;
-        xQueueSend(xQueue, &task_res, 0);;
+        xQueueSend(xQueue, &task_res, 0);
     }
     
     return sfud_ret;

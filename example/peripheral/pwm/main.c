@@ -22,22 +22,44 @@
  * 1.0  wangxiaodong  2022/8/24      first release
  */
 
+#include <stdio.h>
+#include "FreeRTOS.h"
+#ifdef CONFIG_USE_LETTER_SHELL
 #include "shell.h"
 #include "shell_port.h"
-#include <stdio.h>
+#else
+#include "task.h"
 #include "pwm_example.h"
+
+void PwmExampleTaskEntry()
+{
+    /* example functions */
+    FFreeRTOSPwmSingleChannelTaskCreate();
+#ifdef CONFIG_FIREFLY_DEMO_BOARD
+    FFreeRTOSPwmDeadBandTaskCreate();
+
+    FFreeRTOSPwmDualChannelTaskCreate();
+#endif
+    /* end flag */
+    printf("[test_end]\r\n");
+    vTaskDelete(NULL);
+}
+#endif
 
 int main(void)
 {
     BaseType_t ret;
-    /* test pwm*/
-    ret = FFreeRTOSPwmCreate(PWM_TEST_ID);
-    if (ret != pdPASS)
-    {
-        goto FAIL_EXIT;
-    }
-
-    ret = LSUserShellTask() ;
+#ifdef CONFIG_USE_LETTER_SHELL
+    ret = LSUserShellTask();
+#else
+    /* used in no-letter-shell mode */
+    ret = xTaskCreate((TaskFunction_t)PwmExampleTaskEntry,    /* 任务入口函数 */
+                      (const char *)"PwmExampleTaskEntry",    /* 任务名字 */
+                      (uint16_t)4096,                          /* 任务栈大小 */
+                      NULL,                                    /* 任务入口函数参数 */
+                      (UBaseType_t)5, /* 任务优先级 */
+                      NULL);                                   /* 任务句柄 */
+#endif
     if (ret != pdPASS)
     {
         goto FAIL_EXIT;

@@ -2,13 +2,19 @@
 PROJECT_DIR = $(CURDIR)
 FREERTOS_SDK_DIR = $(CURDIR)/../../..
 
-
+include $(PROJECT_DIR)/sdkconfig
 # # 设置启动镜像名
 BOOT_IMG_NAME      ?= freertos
 
 USER_CSRC := main.c
-USER_CSRC += $(wildcard  src/*.c)
-USER_CSRC += $(wildcard  ../common/*.c)
+USER_CSRC += src/cmd_pwm.c
+
+USER_CSRC += src/pwm_single_channel_example.c
+
+ifdef CONFIG_FIREFLY_DEMO_BOARD
+USER_CSRC += src/pwm_dead_band_example.c
+USER_CSRC += src/pwm_dual_channel_example.c
+endif
 			
 USER_ASRC := 
 USER_CXXSRC := 

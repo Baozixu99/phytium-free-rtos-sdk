@@ -17,18 +17,21 @@
  * Description:  This file is for task create function define
  *
  * Modify History:
- *  Ver   Who        Date         Changes
- * ----- ------     --------    --------------------------------------
- * 1.0 zhugengyu    2022/08/26   first commit
+ *  Ver      Who           Date         Changes
+ * -----    ------       --------      --------------------------------------
+ *  1.0    zhugengyu     2022/7/27     init commit
+ *  3.0    liqiaozhong   2024/4/22     add no letter shell mode, adapt to auto-test system
  */
-#ifndef  GDMA_MEMCPY_H
-#define  GDMA_MEMCPY_H
+
+#ifndef GDMA_MEMCPY_H
+#define GDMA_MEMCPY_H
+
+#include "FreeRTOS.h"
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
-
 /***************************** Include Files *********************************/
 
 /************************** Constant Definitions *****************************/

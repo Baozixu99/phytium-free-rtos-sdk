@@ -1,3 +1,19 @@
+# Phytium FreeRTOS SDK 2024-04-23 ChangeLog
+
+Change Log since 2024-04-13
+
+## example
+
+- modify pwm example, add no letter shell mode, adapt to auto-test system
+
+# Phytium FreeRTOS SDK 2024-04-22 ChangeLog
+
+Change Log since 2024-04-19
+
+## example
+
+- modify gdma example, add no letter shell mode, adapt to auto-test system
+
 # Phytium FreeRTOS SDK 2024-04-19 ChangeLog
 
 Change Log since 2024-04-19
