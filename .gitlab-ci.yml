@@ -1,0 +1,19 @@
+# Phytium Iot gitlab-ci.yml file
+
+stages:
+  - basic_stage
+
+risk_controller:
+  stage: basic_stage
+  tags:
+    - normal_runner
+  script:
+    - pwd
+    - echo "Phytium Changsha Iot Gitlab Runner is at work."
+    - echo "This job only run manually to prevent merge request from not being reviewed by Jenkins pipeline."
+    - echo "Approve merge request to start Jenkins auto compile item."
+    - sleep 10 # 这个延时是为了让操作者明确知道自己已经开启了这项操作；
+    - exit 1 # 这个任务一定会失败，目的是保护被合入的分支
+  rules: 
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: manual

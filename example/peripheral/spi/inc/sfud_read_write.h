@@ -24,6 +24,8 @@
 #ifndef  SFUD_READ_WRITE_H
 #define  SFUD_READ_WRITE_H
 
+#include "ftypes.h"
+#include "FreeRTOS.h"
 #ifdef __cplusplus
 extern "C"
 {
@@ -40,9 +42,9 @@ extern "C"
 /************************** Function Prototypes ******************************/
 
 /*****************************************************************************/
-BaseType_t FFreeRTOSSfudWrite(u32 in_chip_addr, const char *content);
-BaseType_t FFreeRTOSSfudRead(u32 in_chip_addr);
-BaseType_t FFreeRTOSSfudInit(void);
+void SfudExampleTaskEntry();
+
+void FFreeRTOSSfudWriteThenRead();
 
 #ifdef __cplusplus
 }

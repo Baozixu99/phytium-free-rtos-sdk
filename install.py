@@ -36,18 +36,18 @@ freertos_sdk_path = install_path
 print("Standalone SDK at {}".format(freertos_sdk_path))
 
 # Add standalone sdk
-standalone_sdk_v="cd15b23000d0c52968dc322b6d99025195bbf446"
+standalone_sdk_v="14741a4caf11977447d8f91fd928e23955e837de"
 if (install_platform == windows_x64):
     standalone_path=freertos_sdk_path  + '\\standalone'
 else:
     standalone_path=freertos_sdk_path  + '/standalone'
-standalone_branche="master"
+standalone_branch="master"
 standalone_remote="https://gitee.com/phytium_embedded/phytium-standalone-sdk.git"
 
 if not os.path.exists(standalone_path):
     current_path = os.getcwd()
 
-    os.system("git clone -b {} {} {}".format(standalone_branche, standalone_remote,standalone_path))
+    os.system("git clone -b {} {} {}".format(standalone_branch, standalone_remote,standalone_path))
     os.chdir(standalone_path)# 切换工作路径至standalone 路径
     os.system("git config core.sparsecheckout true")
     os.system("git config advice.detachedHead false")

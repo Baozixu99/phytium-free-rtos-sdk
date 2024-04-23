@@ -27,10 +27,11 @@
 
 #include "FreeRTOS.h"
 #include "task.h"
-
+#include "queue.h"
 #include "fdebug.h"
 #include "fsleep.h"
 #include "fkernel.h"
+#include "timers.h"
 
 #include "sfud.h"
 
@@ -44,8 +45,13 @@
 
 /************************** Variable Definitions *****************************/
 static u32 flash_addr = 0x0;
-static u8 flash_buffer[SFUD_WR_BUF_LEN];
+static u8 write_flash_buffer[SFUD_WR_BUF_LEN];
+static u8 read_flash_buffer[SFUD_WR_BUF_LEN];
+static QueueHandle_t xQueue = NULL;
+
 /***************** Macros (Inline Functions) Definitions *********************/
+#define TIMER_OUT       ( pdMS_TO_TICKS( 3000UL ) )
+
 #define FSPIM_DEBUG_TAG "SFUD-DEMO"
 #define FSPIM_ERROR(format, ...)   FT_DEBUG_PRINT_E(FSPIM_DEBUG_TAG, format, ##__VA_ARGS__)
 #define FSPIM_WARN(format, ...)    FT_DEBUG_PRINT_W(FSPIM_DEBUG_TAG, format, ##__VA_ARGS__)
@@ -55,19 +61,29 @@ static u8 flash_buffer[SFUD_WR_BUF_LEN];
 /************************** Function Prototypes ******************************/
 
 /*****************************************************************************/
-static void SfudInitTask(void *args)
+enum 
 {
+    SPI_SFUD_TEST_SUCCESS = 1,  /*SPI sufd test success*/
+    SPI_SFUD_INIT_FAILURE = 2,  /*SPI init step failure*/
+    SPI_SFUD_WRITE_FAILURE = 3, /*SPI write step failure*/
+    SPI_SFUD_READ_FAILURE = 4,  /*SPI read step failure*/                        
+};
+
+static sfud_err SpiSfudInit(void)
+{
+    int task_res = 0;
     sfud_err sfud_ret = sfud_init();
     if (SFUD_SUCCESS != sfud_ret)
     {
-        goto task_exit;
+        goto init_exit;
     }
 
     const sfud_flash *flash = sfud_get_device(SFUD_FLASH_INDEX);
     if (NULL == flash)
     {
         FSPIM_ERROR("Flash not found.");
-        goto task_exit;
+        sfud_ret = SFUD_ERR_NOT_FOUND;
+        goto init_exit;
     }
 
     /* print flash info */
@@ -87,23 +103,31 @@ static void SfudInitTask(void *args)
 
     printf("    Erase granularity: %d Bytes\r\n", flash->chip.erase_gran);
 
-task_exit:
-    vTaskDelete(NULL); /* delete task itself */
+init_exit:
+    if (SFUD_SUCCESS != sfud_ret)
+    {
+        task_res = SPI_SFUD_INIT_FAILURE;
+        xQueueSend(xQueue, &task_res, 0);
+    }
+
+    return sfud_ret;
 }
 
-static void SfudWriteTask(void *args)
+static sfud_err SpiSfudWrite(void)
 {
-    sfud_err sfud_ret;
+    sfud_err sfud_ret = SFUD_SUCCESS;
+    int task_res = 0;
     u32 in_chip_addr = flash_addr;
     const sfud_flash *flash = NULL;
     u8 status = 0;
-    u8 *write_buf = flash_buffer;
+    u8 *write_buf = write_flash_buffer;
 
     flash = sfud_get_device(SFUD_FLASH_INDEX);
     if (NULL == flash)
     {
         FSPIM_ERROR("Flash not found.");
-        goto task_exit;
+        sfud_ret = SFUD_ERR_NOT_FOUND;
+        goto write_exit;
     }
 
     /* remove flash write protect */
@@ -111,7 +135,7 @@ static void SfudWriteTask(void *args)
     if (SFUD_SUCCESS != sfud_ret)
     {
         FSPIM_ERROR("Write flash status failed.");
-        goto task_exit;
+        goto write_exit;
     }
 
     /* get flash status */
@@ -119,7 +143,7 @@ static void SfudWriteTask(void *args)
     if (SFUD_SUCCESS != sfud_ret)
     {
         FSPIM_ERROR("Read flash status failed.");
-        goto task_exit;
+        goto write_exit;
     }
     else
     {
@@ -137,33 +161,41 @@ static void SfudWriteTask(void *args)
     if (SFUD_SUCCESS != sfud_ret)
     {
         FSPIM_ERROR("Erase flash failed.");
-        goto task_exit;
+        goto write_exit;
     }
 
     sfud_ret = sfud_write(flash, in_chip_addr, SFUD_WR_BUF_LEN, write_buf);
     if (SFUD_SUCCESS != sfud_ret)
     {
         FSPIM_ERROR("Write flash failed.");
-        goto task_exit;
+        goto write_exit;
     }
 
-task_exit:
-    vTaskDelete(NULL); /* delete task itself */
+write_exit:
+    if (SFUD_SUCCESS != sfud_ret)
+    {
+        task_res = SPI_SFUD_WRITE_FAILURE;
+        xQueueSend(xQueue, &task_res, 0);;
+    }
+    
+    return sfud_ret;
 }
 
-static void SfudReadTask(void *args)
+static sfud_err SpiSfudRead(void)
 {
-    sfud_err sfud_ret;
+    sfud_err sfud_ret = SFUD_SUCCESS;
+    int task_res = 0;
     u32 in_chip_addr = flash_addr;
     const sfud_flash *flash = NULL;
     u8 status = 0;
-    u8 *read_buf = flash_buffer;
+    u8 *read_buf = read_flash_buffer;
 
     flash = sfud_get_device(SFUD_FLASH_INDEX);
     if (NULL == flash)
     {
         FSPIM_ERROR("Flash not found.");
-        goto task_exit;
+        sfud_ret = SFUD_ERR_NOT_FOUND;
+        goto read_exit;
     }
 
     /* get flash status */
@@ -171,7 +203,7 @@ static void SfudReadTask(void *args)
     if (SFUD_SUCCESS != sfud_ret)
     {
         FSPIM_ERROR("Read flash status failed.");
-        goto task_exit;
+        goto read_exit;
     }
     else
     {
@@ -184,86 +216,117 @@ static void SfudReadTask(void *args)
     if (SFUD_SUCCESS != sfud_ret)
     {
         FSPIM_ERROR("Read flash failed.");
-        goto task_exit;
+        goto read_exit;
     }
 
     taskENTER_CRITICAL(); /* no schedule when printf bulk */
+    for (u32 i = 0; i < SFUD_WR_BUF_LEN; i++)
+    {
+        if (read_buf[i] != write_flash_buffer[i])
+        {
+            FSPIM_ERROR("Read flash failed.read_buf != write_flash_buffer\r\n");
+            sfud_ret = SFUD_ERR_READ;
+            goto read_exit;
+        }
+    }
+    
     printf("Data read from flash @0x%x...\r\n", in_chip_addr);
     FtDumpHexByte(read_buf, SFUD_WR_BUF_LEN);
     taskEXIT_CRITICAL();
 
-task_exit:
-    vTaskDelete(NULL); /* delete task itself */
-}
-
-BaseType_t FFreeRTOSSfudRead(u32 in_chip_addr)
-{
-    BaseType_t xReturn = pdPASS;
-
-    printf("This is sfud read task.\r\n");
-
-    memset(flash_buffer, 0, sizeof(flash_buffer));
-    flash_addr = in_chip_addr;
-
-    taskENTER_CRITICAL(); /* no schedule when create task */
-
-    xReturn = xTaskCreate((TaskFunction_t)SfudReadTask,
-                          (const char *)"SfudReadTask",
-                          (uint16_t)2048,
-                          NULL,
-                          (UBaseType_t)configMAX_PRIORITIES - 1,
-                          NULL);
-
-    taskEXIT_CRITICAL(); /* allow schedule since task created */
-
-    return xReturn;
-}
-
-BaseType_t FFreeRTOSSfudWrite(u32 in_chip_addr, const char *content)
-{
-    BaseType_t xReturn = pdPASS;
-
-    printf("This is sfud write task.\r\n");
-
-    flash_addr = in_chip_addr;
-    if (strlen(content) + 1 > SFUD_WR_BUF_LEN)
+read_exit:
+    if (SFUD_SUCCESS != sfud_ret)
     {
-        return pdFAIL;
+        task_res = SPI_SFUD_READ_FAILURE;
+        xQueueSend(xQueue, &task_res, 0);;
+    }
+    
+    return sfud_ret;
+}
+
+static void SpiSfudWriteThenReadTask(void)
+{
+    sfud_err sfud_ret = SFUD_SUCCESS;
+    int task_res = 0;
+
+    sfud_ret = SpiSfudInit();
+    if (SFUD_SUCCESS != sfud_ret)
+    {
+        FSPIM_ERROR("Flash init failed.\r\n");
+        goto task_exit;
     }
 
-    memset(flash_buffer, 0, sizeof(flash_buffer));
-    memcpy(flash_buffer, content, strlen(content) + 1);
+    sfud_ret = SpiSfudWrite();
+    if (SFUD_SUCCESS != sfud_ret)
+    {
+        FSPIM_ERROR("Write flash failed.\r\n");
+        goto task_exit;
+    }
 
-    taskENTER_CRITICAL(); /* no schedule when create task */
+    sfud_ret = SpiSfudRead();
+    if (SFUD_SUCCESS != sfud_ret)
+    {
+        FSPIM_ERROR("Read flash failed.\r\n");
+        goto task_exit;
+    }
 
-    xReturn = xTaskCreate((TaskFunction_t)SfudWriteTask,
-                          (const char *)"SfudWriteTask",
-                          (uint16_t)2048,
-                          NULL,
-                          (UBaseType_t)configMAX_PRIORITIES - 1,
-                          NULL);
+task_exit:
+    if (sfud_ret == SFUD_SUCCESS)
+    {
+        task_res = SPI_SFUD_TEST_SUCCESS;
+        xQueueSend(xQueue, &task_res, 0);
+    }
 
-    taskEXIT_CRITICAL(); /* allow schedule since task created */
-
-    return xReturn;
+    vTaskDelete(NULL);
 }
 
-BaseType_t FFreeRTOSSfudInit(void)
+BaseType_t FFreeRTOSSfudWriteThenRead()
 {
-    BaseType_t xReturn = pdPASS;
+    BaseType_t xReturn = pdPASS;/* 定义一个创建信息返回值，默认为 pdPASS */
+    int task_res = 0;
+    flash_addr = 0x10;
+    const char *content = "write-spi-nor-flash-from-freertos-sfud";
+    if (strlen(content) + 1 > SFUD_WR_BUF_LEN)
+    {
+        FSPIM_ERROR("write content too long.\r\n");
+        goto exit;
+    }
 
-    printf("This is sfud init task.\r\n");
-
-    taskENTER_CRITICAL(); /* no schedule when create task */
-
-    xReturn = xTaskCreate((TaskFunction_t)SfudInitTask,
-                          (const char *)"SfudInitTask",
-                          (uint16_t)2048,
-                          NULL,
-                          (UBaseType_t)configMAX_PRIORITIES - 1,
+    memset(write_flash_buffer, 0, sizeof(write_flash_buffer));
+    memcpy(write_flash_buffer, content, strlen(content) + 1);
+    xQueue = xQueueCreate(1, sizeof(int));
+    if (xQueue == NULL)
+    {
+        FSPIM_ERROR("xQueue create failed.\r\n");
+        goto exit;
+    }
+    
+    taskENTER_CRITICAL(); /*进入临界区*/
+    xReturn = xTaskCreate((TaskFunction_t)SpiSfudWriteThenReadTask,  /* 任务入口函数 */
+                          (const char *)"SpiSfudWriteThenReadTask",/* 任务名字 */
+                          (uint16_t)4096,  /* 任务栈大小 */
+                          NULL,/* 任务入口函数参数 */
+                          (UBaseType_t)2,  /* 任务的优先级 */
                           NULL);
+    taskEXIT_CRITICAL(); /*退出临界区*/
+    xReturn = xQueueReceive(xQueue, &task_res, TIMER_OUT);
 
-    taskEXIT_CRITICAL(); /* allow schedule since task created */
-
-    return pdPASS;
+    if (xReturn == pdFAIL)
+    {
+        FSPIM_ERROR("xQueue receive timeout.\r\n");
+        goto exit;
+    }
+    
+exit:
+    vQueueDelete(xQueue);
+    if (task_res != SPI_SFUD_TEST_SUCCESS)
+    {
+        printf("%s@%d: Spi sfud read then write example [failure], task_res = %d\r\n", __func__, __LINE__, task_res);
+        return pdFAIL;
+    }
+    else
+    {
+        printf("%s@%d: Spi sfud read then write example [success].\r\n", __func__, __LINE__);
+        return pdTRUE;
+    }
 }

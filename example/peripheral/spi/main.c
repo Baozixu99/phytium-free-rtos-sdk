@@ -22,36 +22,38 @@
  *  1.0  zhugengyu  2022/8/26    first commit
  */
 
+#include <stdio.h>
+#include "sfud_read_write.h"
+#include "FreeRTOS.h"
+#include "task.h"
+
+#ifdef CONFIG_USE_LETTER_SHELL
 #include "shell.h"
 #include "shell_port.h"
-#include <stdio.h>
+#endif
 
 int main(void)
 {
-    BaseType_t ret;
+    BaseType_t ret = pdPASS;/* 定义一个创建信息返回值，默认为 pdPASS */
 
-    printf("Entering into main function \r\n");
-
+#ifdef CONFIG_USE_LETTER_SHELL
     ret = LSUserShellTask() ;
     if (ret != pdPASS)
     {
         goto FAIL_EXIT;
     }
+#else
 
-    /*
-        ret = FFreeRTOSSfudInit();
-        if(ret != pdPASS)
-            goto FAIL_EXIT;
+    taskENTER_CRITICAL(); /*进入临界区*/
+    ret = xTaskCreate((TaskFunction_t)SfudExampleTaskEntry,  /* 任务入口函数 */
+                          (const char *)"SfudExampleTaskEntry",/* 任务名字 */
+                          (uint16_t)4096,  /* 任务栈大小 */
+                          NULL,/* 任务入口函数参数 */
+                          (UBaseType_t)2,  /* 任务的优先级 */
+                          NULL);
+    taskEXIT_CRITICAL(); /*退出临界区*/
 
-        ret = FFreeRTOSSfudWrite(0x20, "hello-sfud");
-        if(ret != pdPASS)
-            goto FAIL_EXIT;
-
-        ret = FFreeRTOSSfudRead(0x20);
-        if(ret != pdPASS)
-            goto FAIL_EXIT;
-    */
-
+#endif
     vTaskStartScheduler(); /* 启动任务，开启调度 */
     while (1); /* 正常不会执行到这里 */
 

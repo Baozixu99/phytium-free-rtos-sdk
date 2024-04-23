@@ -6,9 +6,7 @@
 程序启动后，创建pwm初始化任务，设置pwm时钟分频、周期和占空比等；
 创建pwm占空比变化任务FFreeRTOSPwmChangeTask，用于定时变化pwm占空比；
 创建单次模式的软件定时器，回调函数为删除FFreeRTOSPwmChangeTask，去初始化pwm，删除软件定时器；
-使用E2000D/E2000Q demo板进行测试，选择pwm模块6的pwm12_dat_out作为输出，对应开发板上J30引脚7
-使用C板进行测试，选择pwm模块7的两路pwm_out，也就是pwm14和pwm15作为输出，对应开发板上J152的引脚18和引脚20；
-使用PhytiumPi进行测试，选择pwm模块2的pwm5_dat_out作为输出，对应开发板上J1引脚33
+注:E2000共有8个PWM控制器(PWM0~PWM7)，每个PWM控制器对应两路CHANNEL
 
 ## 2. 如何使用例程
 
@@ -33,6 +31,8 @@
 ### 2.1.1 E2000
 - E2000 demo板需外接逻辑分析仪或示波器测试，方法如下
 
+- 选择控制器PWM6的pwm12_dat_out(CHANNEL0)作为输出，对应开发板上J30引脚7
+
 ![e2000_pwm](./figs/e2000_pwm.png)
 
 - 上图所示为E2000 J30组引脚，将pwm_out与GND与逻辑分析仪或示波器相连即可
@@ -40,9 +40,22 @@
 ### 2.1.2 PhytiumPi
 - PhytiumPi需外接逻辑分析仪或示波器测试，方法如下
 
+- PhytiumPI:飞腾派引出多个引脚可供PWM使用
+
 ![phytiumpi_pwm](./figs/phytiumpi_pwm.png)
 
--上图为PhytiumPi J1组引脚，第33号引脚为pwm(红色标记处)输出引脚，39号引脚(蓝色标记处)为GND，将该引脚与逻辑分析仪或示波器相连即可
+PhytiumPI:飞腾派引出多个引脚可供PWM使用
+
+|   **引脚**    | **控制器与通道** |
+| :----------:  | :----------------- |
+|  J1 PIN_32    | PWM1 CHANNEL0 |
+|  J1 PIN_33    | PWM2 CHANNEL1 |
+|  J1 PIN_7     | PWM3 CHANNEL0 |
+|  J2 PIN_4     | PWM3 CHANNEL1 |
+|  J1 PIN_3     | PWM4 CHANNEL0 |
+|  J1 PIN_8     | PWM4 CHANNEL1 |
+|  J1 PIN_16    | PWM5 CHANNEL0 |
+|  J1 PIN_27    | PWM6 CHANNEL1 |
 
 ### 2.2 SDK配置方法
 
@@ -107,7 +120,9 @@ bootelf -p 0x90100000
 ![pwm_out](./figs/pwm_out.png)
 ## 3. 如何解决问题
 
-- 若不想使能死区输出，可将FFreeRTOSPwmDbSet的部分去除，只需调用FFreeRTOSPwmSet即可。
+- 如默认用例无法使用或无波形输出，请根据不同的开发板，修改`pwm_example.h`文件中`PWM_TEST_ID`和`PWM_TEST_CHANNEL`两个宏定义，确保`FIOPadSetPwmMux`引脚复用设置正确
+
+- `PWM_TEST_CHANNEL`决定死区输入源，另一个CHANNEL作为输出源。若不想使能死区输出，可将FFreeRTOSPwmDbSet的部分去除，只需调用FFreeRTOSPwmSet即  可。
 
 ## 4. 修改历史记录
 

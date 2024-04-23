@@ -40,9 +40,6 @@
 /* pwm pulse amplitude of periodic variation */
 #define PWM_PULSE_CHANGE    1000
 
-/* pwm channel use, 0/1 */
-#define PWM_CHANNEL_USE     FPWM_CHANNEL_0
-
 /* pwm primary config */
 #define PWM_DIV             500
 #define PWM_PERIOD          10000
@@ -88,7 +85,8 @@ static void FFreeRTOSPwmInitTask(void *pvParameters)
     db_cfg.db_rise_cycle = 500;
     db_cfg.db_fall_cycle = 500;
     db_cfg.db_polarity_sel = FPWM_DB_AHC;
-    db_cfg.db_in_mode = FPWM_DB_IN_MODE_PWM0;
+    /*将死区输入源设置为当前测试使用的CHANNEL*/
+    db_cfg.db_in_mode = PWM_TEST_CHANNEL == FPWM_CHANNEL_0 ? FPWM_DB_IN_MODE_PWM0 : FPWM_DB_IN_MODE_PWM1;
     db_cfg.db_out_mode = FPWM_DB_OUT_MODE_ENABLE_RISE_FALL;
     ret = FFreeRTOSPwmDbSet(os_pwm_ctrl_p, &db_cfg);
     if (FPWM_SUCCESS != ret)
@@ -106,7 +104,7 @@ static void FFreeRTOSPwmInitTask(void *pvParameters)
     pwm_cfg.pwm_mode = FPWM_OUTPUT_COMPARE;
     pwm_cfg.pwm_polarity = FPWM_POLARITY_NORMAL;
     pwm_cfg.pwm_duty_source_mode = FPWM_DUTY_CCR;
-    ret = FFreeRTOSPwmSet(os_pwm_ctrl_p, PWM_CHANNEL_USE, &pwm_cfg);
+    ret = FFreeRTOSPwmSet(os_pwm_ctrl_p, PWM_TEST_CHANNEL, &pwm_cfg);
     if (FPWM_SUCCESS != ret)
     {
         printf("FFreeRTOSPwmSet failed.\n");
@@ -124,7 +122,7 @@ static void FFreeRTOSPwmInitTask(void *pvParameters)
     printf("db_cfg.db_in_mode = %d\n", db_cfg.db_in_mode);
     printf("db_cfg.db_out_mode = %d\n", db_cfg.db_out_mode);
 
-    FFreeRTOSPwmGet(os_pwm_ctrl_p, PWM_CHANNEL_USE, &pwm_cfg);
+    FFreeRTOSPwmGet(os_pwm_ctrl_p, PWM_TEST_CHANNEL, &pwm_cfg);
     printf("FPwmVariableGet:\n");
     printf("pwm_cfg.tim_ctrl_mode = %d\n", pwm_cfg.tim_ctrl_mode);
     printf("pwm_cfg.tim_ctrl_div = %d\n", pwm_cfg.tim_ctrl_div);
@@ -134,7 +132,7 @@ static void FFreeRTOSPwmInitTask(void *pvParameters)
     printf("pwm_cfg.pwm_polarity = %d\n", pwm_cfg.pwm_polarity);
     printf("pwm_cfg.pwm_duty_source_mode = %d\n", pwm_cfg.pwm_duty_source_mode);
 
-    FFreeRTOSPwmEnable(os_pwm_ctrl_p, PWM_CHANNEL_USE, TRUE);
+    FFreeRTOSPwmEnable(os_pwm_ctrl_p, PWM_TEST_CHANNEL, TRUE);
 
     printf("FFreeRTOSPwmInitTask execute successfully.\r\n");
 
@@ -155,7 +153,7 @@ static void FFreeRTOSPwmChangeTask(void *pvParameters)
     /* As per most tasks, this task is implemented in an infinite loop. */
     for (;;)
     {
-        FFreeRTOSPwmPulseSet(os_pwm_ctrl_p, PWM_CHANNEL_USE, pwm_pulse);
+        FFreeRTOSPwmPulseSet(os_pwm_ctrl_p, PWM_TEST_CHANNEL, pwm_pulse);
 
         printf("FFreeRTOSPwmChangeTask run, pwm_pulse: %d\r\n", pwm_pulse);
         pwm_pulse = (pwm_pulse + PWM_PULSE_CHANGE) % PWM_PERIOD;
@@ -244,7 +242,7 @@ BaseType_t FFreeRTOSPwmCreate(u32 id)
 static void FFreeRTOSPwmDelete(FFreeRTOSPwm *os_pwm_p)
 {
     BaseType_t xReturn = pdPASS;
-    FFreeRTOSPwmEnable(os_pwm_p, PWM_CHANNEL_USE, FALSE);
+    FFreeRTOSPwmEnable(os_pwm_p, PWM_TEST_CHANNEL, FALSE);
     FFreeRTOSPwmDeinit(os_pwm_p);
 
     if (change_handle)

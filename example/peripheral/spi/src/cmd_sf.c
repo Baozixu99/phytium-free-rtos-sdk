@@ -22,15 +22,15 @@
  *  1.0  zhugengyu  2022/8/26    first commit
  */
 /***************************** Include Files *********************************/
+#include "sdkconfig.h"
+#include "FreeRTOS.h"
+#include "sfud_read_write.h"
 #include <string.h>
+#include "task.h"
 #include <stdio.h>
 #include "strto.h"
-#include "sdkconfig.h"
-
-#include "FreeRTOS.h"
-
+#ifdef CONFIG_USE_LETTER_SHELL
 #include "../src/shell.h"
-#include "sfud_read_write.h"
 /************************** Constant Definitions *****************************/
 
 /**************************** Type Definitions *******************************/
@@ -45,16 +45,13 @@
 static void SfudCmdUsage()
 {
     printf("Usage:\r\n");
-    printf("    sf probe\r\n");
-    printf("        -- Probe and init SPI flash\r\n");
-    printf("    sf rw <inchip-addr>\r\n");
-    printf("        -- Demo read and write by sfud\r\n");
+    printf("sf sfud_read_write\r\n");
+    printf("-- Demo read and write by sfud\r\n");
 }
 
 static int SfudCmdEntry(int argc, char *argv[])
 {
     int ret = 0;
-    static boolean inited = FALSE;
 
     if (argc < 2)
     {
@@ -62,53 +59,22 @@ static int SfudCmdEntry(int argc, char *argv[])
         return -1;
     }
 
-    if ((FALSE == inited) || (!strcmp(argv[1], "probe")))
+    if (!strcmp(argv[1], "sfud_read_write"))
     {
-        if (pdPASS != FFreeRTOSSfudInit())
-        {
-            return -2;
-        }
-
-        inited = TRUE;
-    }
-
-    if (!strcmp(argv[1], "read"))
-    {
-        u32 in_chip_addr = 0x0;
-
-        if (argc > 2)
-        {
-            in_chip_addr = (u32)simple_strtoul(argv[2], NULL, 16);
-        }
-
-        BaseType_t task_ret = FFreeRTOSSfudRead(in_chip_addr);
-        if (pdPASS != task_ret)
-        {
-            return -2;
-        }
-    }
-    else if (!strcmp(argv[1], "write"))
-    {
-        u32 in_chip_addr = 0x0;
-        const char *wr_str = "write flash by sfud";
-
-        if (argc > 2)
-        {
-            in_chip_addr = (u32)simple_strtoul(argv[2], NULL, 16);
-        }
-
-        if (argc > 3)
-        {
-            wr_str = argv[3];
-        }
-
-        BaseType_t task_ret = FFreeRTOSSfudWrite(in_chip_addr, wr_str);
-        if (pdPASS != task_ret)
-        {
-            return -2;
-        }
+        FFreeRTOSSfudWriteThenRead();
     }
 
     return 0;
 }
 SHELL_EXPORT_CMD(SHELL_CMD_TYPE(SHELL_TYPE_CMD_MAIN), sf, SfudCmdEntry, test freertos sfud);
+#endif
+
+void SfudExampleTaskEntry()
+{
+    /*Demo read and write by sfud*/
+    FFreeRTOSSfudWriteThenRead();
+
+    printf("[test_end]\r\n");
+
+    vTaskDelete(NULL);
+}

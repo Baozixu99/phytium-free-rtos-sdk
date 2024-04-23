@@ -1,3 +1,23 @@
+# Phytium FreeRTOS SDK 2024-04-19 ChangeLog
+
+Change Log since 2024-04-19
+
+## drivers
+
+- modify pwm drivers
+
+# Phytium FreeRTOS SDK 2024-04-17 ChangeLog
+
+Change Log since 2024-04-17
+
+- Refactoring peripheral spi example
+
+# Phytium FreeRTOS SDK 2024-04-15 ChangeLog
+
+Change Log since 2024-04-10
+
+- add gitlab-ci.yml file to trigger gitlab CI/CD tool
+
 # Phytium FreeRTOS SDK 2024-04-10 ChangeLog
 
 Change Log since 2024-04-10

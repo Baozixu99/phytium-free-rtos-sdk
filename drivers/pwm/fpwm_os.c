@@ -287,6 +287,7 @@ FError FFreeRTOSPwmPulseSet(FFreeRTOSPwm *os_pwm_p, u8 channel, u16 pulse)
 
     FFreeRTOSPwmConfig configuration = {0};
     configuration.pwm_cfg.pwm_pulse = pulse;
+    configuration.channel = channel;
 
     ret = FFreeRTOSPwmControl(os_pwm_p, FREERTOS_PWM_CTRL_PULSE_SET, &configuration);
     return ret;
