@@ -26,7 +26,6 @@
 #include "FreeRTOS.h"
 #include "sfud_read_write.h"
 #include <string.h>
-#include "task.h"
 #include <stdio.h>
 #include "strto.h"
 #ifdef CONFIG_USE_LETTER_SHELL
@@ -68,13 +67,3 @@ static int SfudCmdEntry(int argc, char *argv[])
 }
 SHELL_EXPORT_CMD(SHELL_CMD_TYPE(SHELL_TYPE_CMD_MAIN), sf, SfudCmdEntry, test freertos sfud);
 #endif
-
-void SfudExampleTaskEntry()
-{
-    /*Demo read and write by sfud*/
-    FFreeRTOSSfudWriteThenRead();
-
-    printf("[test_end]\r\n");
-
-    vTaskDelete(NULL);
-}

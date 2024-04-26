@@ -100,9 +100,6 @@ FError FFreeRTOSGpioDeInit(FFreeRTOSFGpio *const instance);
 /* config and setup pin */
 FError FFreeRTOSSetupPin(FFreeRTOSFGpio *const instance, const FFreeRTOSGpioPinConfig *config);
 
-/* enable/disable interrupt of pin */
-FError FFreeRTOSSetIRQ(FFreeRTOSFGpio *const instance, u32 pin, boolean en_irq);
-
 /* set output pin value */
 FError FFreeRTOSPinWrite(FFreeRTOSFGpio *const instance, u32 pin, u32 value);
 

@@ -83,24 +83,6 @@ static void ethernetif_start(struct netif *netif)
     FXmacOsStart(instance_p);
 }
 
-static void ethernetif_poll(struct netif *netif)
-{
-    struct LwipPort *lwip_port = (struct LwipPort *)(netif->state);
-    
-    if(lwip_port == NULL)
-    {
-        FXMAC_LWIP_NET_PRINT_E("%s,lwip_port is NULL\n", __FUNCTION__);
-        return;
-    }
-    FXmacOs *instance_p = (FXmacOs *)(lwip_port->state);
-    
-    if(instance_p == NULL)
-    {
-        FXMAC_LWIP_NET_PRINT_E("%s,Fxmac instance_p is NULL\n", __FUNCTION__);
-        return;
-    }
-    FXmacOsRecvHandler(instance_p);
-}
 static void ethernetif_deinit(struct netif *netif)
 {
     struct LwipPort *xmac_netif_p = (struct LwipPort *)(netif->state);
@@ -138,7 +120,7 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p)
     pbuf_header(p, -ETH_PAD_SIZE); /* drop the padding word */
 #endif
 
-    ret = FXmacOsTx(instance_p, p);
+    ret = FXmacOsTx(instance_p, (void *)p);
 
 #if ETH_PAD_SIZE
     pbuf_header(p, ETH_PAD_SIZE); /* reclaim the padding word */
@@ -154,94 +136,36 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p)
 }
 
 /*
- * low_level_input():
- *
- * Should allocate a pbuf and transfer the bytes of the incoming
- * packet from the interface into the pbuf.
- *
- */
-static struct pbuf *low_level_input(struct netif *netif)
-{
-    FXmacOs *instance_p = NULL;
-    FASSERT(netif != NULL);
-    FASSERT(netif->state != NULL);
-    struct LwipPort *xmac_netif_p = (struct LwipPort *)(netif->state);
-    FASSERT(xmac_netif_p != NULL);
-    instance_p = (FXmacOs *)(xmac_netif_p->state);
-
-    return FXmacOsRx(instance_p);
-}
-
-/*
  * ethernetif_input():
  *
  * This function should be called when a packet is ready to be read
- * from the interface. It uses the function low_level_input() that
+ * from the interface. It uses the function FXmacOsRecvHandler() that
  * should handle the actual reception of bytes from the network
  * interface.
- *
- * Returns the number of packets read (max 1 packet on success,
- * 0 if there are no packets)
  *
  */
 
 static void ethernetif_input(struct netif *netif)
 {
-    struct eth_hdr *ethhdr;
-    struct pbuf *p;
-    SYS_ARCH_DECL_PROTECT(lev);
-
-    while (1)    
+   struct LwipPort *lwip_port = (struct LwipPort *)(netif->state);
+    
+    if(lwip_port == NULL)
     {
-        /* move received packet into a new pbuf */
-        SYS_ARCH_PROTECT(lev);
-        p = low_level_input(netif);
-        SYS_ARCH_UNPROTECT(lev);
-
-        /* no packet could be read, silently ignore this */
-        if (p == NULL)
-        {
-            return;
-        }
-
-        /* points to packet payload, which starts with an Ethernet header */
-        ethhdr = p->payload;
-
-#if LINK_STATS
-        lwip_stats.link.recv++;
-#endif /* LINK_STATS */
-        switch (htons(ethhdr->type))
-        {
-            /* IP or ARP packet? */
-            case ETHTYPE_IP:
-            case ETHTYPE_ARP:
-#if LWIP_IPV6
-            /*IPv6 Packet?*/
-            case ETHTYPE_IPV6:
-#endif
-#if PPPOE_SUPPORT
-            /* PPPoE packet? */
-            case ETHTYPE_PPPOEDISC:
-            case ETHTYPE_PPPOE:
-#endif /* PPPOE_SUPPORT */
-
-                /* full packet send to tcpip_thread to process */
-                if (netif->input(p, netif) != ERR_OK)
-                {
-                    LWIP_DEBUGF(NETIF_DEBUG, ("ethernetif_input: IP input error\r\n"));
-                    pbuf_free(p);
-                    p = NULL;
-                }
-                break;
-
-            default:
-                pbuf_free(p);
-                p = NULL;
-                break;
-        }
+        FXMAC_LWIP_NET_PRINT_E("%s,lwip_port is NULL\n", __FUNCTION__);
+        return;
     }
-
-    return;
+    FXmacOs *instance_p = (FXmacOs *)(lwip_port->state);
+    
+    if(instance_p == NULL)
+    {
+        FXMAC_LWIP_NET_PRINT_E("%s,Fxmac instance_p is NULL\n", __FUNCTION__);
+        return;
+    }
+    do
+    {
+        FXMAC_WRITEREG32(instance_p->instance.config.base_address, FXMAC_IER_OFFSET,FXMAC_IXR_RXCOMPL_MASK);
+        FXmacOsRecvHandler(instance_p);
+    }while (xSemaphoreTake(lwip_port->sem_rx_data_available,0)  == pdTRUE );
 }
 
 static err_t low_level_init(struct netif *netif)
@@ -267,11 +191,8 @@ static err_t low_level_init(struct netif *netif)
         return ERR_MEM;
     }
 
-
-    sys_sem_new(&xmac_netif_p->sem_rx_data_available, 0);
-
     /* obtain config of this emac */
-    FXMAC_LWIP_NET_PRINT_I("netif->state is %p \r\n ", netif->state);
+    FXMAC_LWIP_NET_PRINT_I("netif->state is %p \r\n", netif->state);
 
     config_p = (UserConfig *)netif->state;
     xmac_phy_config.instance_id = config_p->mac_instance;
@@ -317,6 +238,7 @@ static err_t low_level_init(struct netif *netif)
     xmac_netif_p->state = (void *)instance_p;
     netif->state = (void *)xmac_netif_p; /* update state */
     instance_p->stack_pointer = xmac_netif_p;
+    instance_p->netif = (void *) netif;
 
 
     /* maximum transfer unit */
@@ -344,7 +266,6 @@ static err_t low_level_init(struct netif *netif)
     xmac_netif_p->ops.eth_input = ethernetif_input;
     xmac_netif_p->ops.eth_deinit = ethernetif_deinit;
     xmac_netif_p->ops.eth_start = ethernetif_start;
-    xmac_netif_p->ops.eth_poll= ethernetif_poll; 
     FXMAC_LWIP_NET_PRINT_I("Ready to leave netif \r\n");
     return ERR_OK;
 }

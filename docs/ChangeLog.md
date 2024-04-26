@@ -1,10 +1,74 @@
+# Phytium FreeRTOS SDK 2024-04-25 ChangeLog
+
+Change Log since 2024-04-25
+
+## example
+
+- Refactoring peripheral spi example
+
+# Phytium FreeRTOS SDK 2024-04-25 ChangeLog
+
+Change Log since 2024-04-24
+
+## example
+
+- modify qspi example, add no letter shell mode, adapt to auto-test system
+
+# Phytium FreeRTOS SDK 2024-04-25 ChangeLog
+
+Change Log since 2024-04-24
+
+## example
+
+- modify gpio example, add no letter shell mode, adapt to auto-test system
+- modify openamp readme
+
+- modify can example, add no letter shell mode, adapt to auto-test system
+
+# Phytium FreeRTOS SDK 2024-04-24 ChangeLog
+
+Change Log since 2024-04-10
+
+## drivers
+
+- modify fxmac_os.c to achieve higher iperf bandwidth when executing iperfs test
+- delete redundant variable and macro, simplified the xmac code
+
+## example
+
+- add lwip iperf example in network
+- update all network config (CONFIG_LWIP_RAW_RECVMBOX_SIZE) to solve problem : can not use ping with socket
+- update all network config (CONFIG_IP_REASS_MAX_PBUFS) to solve problem : can not ping large packets over 20000
+
+## third-party
+
+- xmac uses counting semaphores to solve ping timeout problem ,sys_countingsem_create added
+- delete ethernetif_poll and low_level_input,now ethernetif_input can handle everything
+- all example now compile ping app by default
+
+# Phytium FreeRTOS SDK 2024-04-24 ChangeLog
+
+Change Log since 2024-04-23
+
+## example
+
+- Refactoring peripheral ddma example
+
 # Phytium FreeRTOS SDK 2024-04-23 ChangeLog
 
-Change Log since 2024-04-13
+Change Log since 2024-04-22
 
 ## example
 
 - modify pwm example, add no letter shell mode, adapt to auto-test system
+
+# Phytium FreeRTOS SDK 2024-04-23 ChangeLog
+
+Change Log since 2024-04-22
+
+## example
+
+- update gdma example, fix some problem
 
 # Phytium FreeRTOS SDK 2024-04-22 ChangeLog
 

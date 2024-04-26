@@ -26,11 +26,16 @@
 
 #include "ftypes.h"
 #include "FreeRTOS.h"
+#include "sdkconfig.h"
 #ifdef __cplusplus
 extern "C"
 {
 #endif
-
+#if defined(CONFIG_E2000Q_DEMO_BOARD) || defined(CONFIG_E2000D_DEMO_BOARD)
+#define SFUD_FLASH_INDEX  SFUD_FSPIM2_INDEX
+#elif defined (CONFIG_FIREFLY_DEMO_BOARD)
+#define SFUD_FLASH_INDEX  SFUD_FSPIM0_INDEX
+#endif
 /***************************** Include Files *********************************/
 
 /************************** Constant Definitions *****************************/
@@ -42,9 +47,8 @@ extern "C"
 /************************** Function Prototypes ******************************/
 
 /*****************************************************************************/
-void SfudExampleTaskEntry();
 
-void FFreeRTOSSfudWriteThenRead();
+BaseType_t FFreeRTOSSfudWriteThenRead(void);
 
 #ifdef __cplusplus
 }

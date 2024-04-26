@@ -9,7 +9,7 @@ GPIO (General-purpose input/output)，即通用型输入输出，其引脚可以
 ## 2. 如何使用例程
 
 本例程需要用到
-- Phytium开发板（E2000）
+- Phytium开发板（E2000）或 PhytiumPi 
 - [Phytium FreeRTOS SDK](https://gitee.com/phytium_embedded/phytium-free-rtos-sdk)
 - [Phytium Standalone SDK](https://gitee.com/phytium_embedded/phytium-standalone-sdk)
 
@@ -18,19 +18,16 @@ GPIO (General-purpose input/output)，即通用型输入输出，其引脚可以
 - 杜邦线
 
 #### 2.1.1 对于E2000 D/Q Demo 板
-- 在本例程中连接 GPIO-3-A-4 和 GPIO-3-4-5，分别配置为输入引脚和输出引脚，参考 E2000 Q 数据手册可知，引脚的复用功能6为 GPIO，因此例程中会修改引脚复用，
+- 在本例程中短接 GPIO-3-A-4 和 GPIO-3-4-5,GPIO-3-4-5作为GPIO输出引脚，GPIO-3-A-4作为GPIO输入引脚，在J30位置如下图所示：
 
-- 可以使用 GPIO-3-A-4 和 GPIO-3-A-5 进行测试 ，引脚为内侧第 3 和第 5 引脚，具体情况可以参考 E2000 Q Demo板原理图
 ![](./figs/pin_connect_gpio3.jpg)
-
-- 也可以使用GPIO-4-A-11 和 GPIO-4-A-12 的引脚为外侧排第 4 和第 5 引脚，具体情况可以参考 E2000 Q Demo板原理图
-![](./figs/pin_connect_gpio4.jpg)
-
 
 
 #### 2.1.2 对于飞腾派
 - 需要用杜邦线短接GPIO3_1与GPIO3_2，分别对应飞腾派上的J1组引脚的第11号与第16号引脚
 ![](./figs/firefly_gpio_board.png)
+
+注：在上述例程中，若想使用其他GPIO进行测试，则需要在例程gpio_io_irq.c文件中修改GPIO引脚号IN_PIN_INDEX，OUT_PIN_INDEX，并重新编译烧写。
 
 ### 2.2 SDK配置方法
 
@@ -96,17 +93,18 @@ bootelf -p 0xa0100000
 
 ### 2.4 输出与实验现象
 
-- 系统进入后，创建两个任务，一个控制输出引脚电平，另一个检查输入引脚电平，同时等待中断触发
+- 系统进入后，创建gpio irq测试任务，并根据引脚设置配置输入输出引脚，等待中断触发
 
 ```
 gpio io-irq
 ```
+![io-irq](figs/pin_intr_result.png)
 
-![gpio_io_irq](./figs/gpio_io_irq.png)
-
+注：在例程中设置time out时间，当此时间内未发生中断事件，则任务会自动退出，并报超时错误。
 
 ## 3. 如何解决问题
 
+- 本例程中采用上升沿触发GPIO中断，若需要修改为下降沿触发方式，则需要将gpio_io_irq.c文件中'irq_type'修改为相应中断触发方式，上升沿触发与下降沿触发原理相同，故在此不作赘述；若需要修改为电平触发方式，应注意：在高电平或者低电平模式下，GPIO会持续触发中断，此特性在驱动中由irq_one_time决定，当值为TRUE时进入中断后关闭该引脚的中断，防止一直进入中断，当电平为FASLE时，进入电平中断后，在电平持续时间内，中断会一直触发，直到电平变化，在rtos中可能出现卡死在任务中的现象，用户可根据实际需要修改irq_one_time的值。
 
 ## 4. 修改历史记录
 

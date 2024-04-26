@@ -21,12 +21,15 @@
  * ----- ------     --------    --------------------------------------
  * 1.0   huangjin   2023/11/16  first commit
  */
-#include "shell.h"
 #include "qspi_example.h"
 #include <string.h>
 #include <stdio.h>
 #include "projdefs.h"
+#include "FreeRTOS.h"
+#include "sdkconfig.h"
 
+#ifdef CONFIG_USE_LETTER_SHELL
+#include "shell.h"
 static void CreateTasksCmdUsage(void)
 {
     printf("Usage:\r\n");
@@ -51,15 +54,15 @@ int CreateTasksCmd(int argc, char *argv[])
     }
     else if (!strcmp(argv[1], "check"))
     {
-        ret = FFreeRTOSQspiCheckTaskCreate(0);
+        ret = FFreeRTOSQspiCheckTaskCreate();
     }
     else if (!strcmp(argv[1], "polled"))
     {
-        ret = FFreeRTOSQspiPolledTaskCreate(0);
+        ret = FFreeRTOSQspiPolledTaskCreate();
     }
     else if (!strcmp(argv[1], "indirect"))
     {
-        ret = FFreeRTOSQspiIndirectTaskCreate(0);
+        ret = FFreeRTOSQspiIndirectTaskCreate();
     }
     else if (!strcmp(argv[1], "dual_flash_test"))
     {
@@ -70,10 +73,9 @@ int CreateTasksCmd(int argc, char *argv[])
         printf("Error: Invalid arguments. \r\n");
         CreateTasksCmdUsage();
     }
-    
+
     return ret;
 }
 
 SHELL_EXPORT_CMD(SHELL_CMD_TYPE(SHELL_TYPE_CMD_MAIN), qspi, CreateTasksCmd, qspi creating test);
-
-
+#endif

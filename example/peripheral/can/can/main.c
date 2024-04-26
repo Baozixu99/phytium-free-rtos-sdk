@@ -22,25 +22,57 @@
  * 1.0 wangxiaodong 2022/09/23  first commit
  */
 
+#include <stdio.h>
+#include "FreeRTOS.h"
+
+#ifdef CONFIG_USE_LETTER_SHELL
 #include "shell.h"
 #include "shell_port.h"
-#include <stdio.h>
+#else
+#include "task.h"
 #include "can_example.h"
+
+#define CAN_EXAMPLE_TASK_PRIORITY 2
+
+void CanExampleTaskEntry(void *pvParameters)
+{
+    /* example functions */
+    FFreeRTOSCreateCanIntrTestTask();
+    FFreeRTOSCreateCanPolledTestTask();
+#if defined(CONFIG_E2000D_DEMO_BOARD) || defined(CONFIG_E2000Q_DEMO_BOARD)
+    FFreeRTOSCanCreateFilterTestTask();
+#endif
+
+    /* end flag */
+    printf("[test_end]\r\n");
+    vTaskDelete(NULL);
+}
+#endif
 
 int main(void)
 {
-    BaseType_t ret;
+    BaseType_t ret = pdPASS;/* 定义一个创建信息返回值，默认为 pdPASS */
 
-    ret = LSUserShellTask() ;
+#ifdef CONFIG_USE_LETTER_SHELL
+    ret = LSUserShellTask();
+#else
+    /* used in no-letter-shell mode */
+    ret = xTaskCreate((TaskFunction_t)CanExampleTaskEntry,  /* 任务入口函数 */
+                          (const char *)"CanExampleTaskEntry",/* 任务名字 */
+                          (uint16_t)4096,  /* 任务栈大小 */
+                          NULL,/* 任务入口函数参数 */
+                          (UBaseType_t)CAN_EXAMPLE_TASK_PRIORITY,  /* 任务的优先级 */
+                          NULL);
+#endif
     if (ret != pdPASS)
     {
         goto FAIL_EXIT;
     }
-
+    
     vTaskStartScheduler(); /* 启动任务，开启调度 */
     while (1); /* 正常不会执行到这里 */
 
 FAIL_EXIT:
-    printf("failed 0x%x. \r\n", ret);
+    printf("CAN example failed in main.c, the ret value is 0x%x. \r\n", ret);
     return 0;
 }

@@ -23,13 +23,24 @@
  */
 
 #include <stdio.h>
-#include "sfud_read_write.h"
 #include "FreeRTOS.h"
-#include "task.h"
 
 #ifdef CONFIG_USE_LETTER_SHELL
 #include "shell.h"
 #include "shell_port.h"
+#else
+#include "task.h"
+#include "sfud_read_write.h"
+
+void SfudExampleTaskEntry(void)
+{
+    /*Demo read and write by sfud*/
+    FFreeRTOSSfudWriteThenRead();
+
+    printf("[test_end]\r\n");
+
+    vTaskDelete(NULL);
+}
 #endif
 
 int main(void)

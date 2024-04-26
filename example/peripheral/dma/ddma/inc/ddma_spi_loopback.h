@@ -24,6 +24,9 @@
 #ifndef  DDMA_SPI_LOOPBACK_H
 #define  DDMA_SPI_LOOPBACK_H
 
+#include "ftypes.h"
+#include "FreeRTOS.h"
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -43,6 +46,8 @@ extern "C"
 
 /*****************************************************************************/
 BaseType_t FFreeRTOSRunDDMASpiLoopback(u32 spi_id, u32 bytes);
+
+void DdmaTasksEntry(void);
 
 #ifdef __cplusplus
 }

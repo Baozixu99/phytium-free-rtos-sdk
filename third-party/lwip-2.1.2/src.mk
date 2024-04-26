@@ -21,7 +21,8 @@ ABSOLUTE_CFILES  += $(wildcard $(LWIP_RT_C_DIR)/api/*.c) \
 				$(wildcard $(LWIP_RT_C_DIR)/core/*.c) \
 				$(wildcard $(LWIP_RT_C_DIR)/core/ipv4/*.c) \
 				$(wildcard $(LWIP_RT_C_DIR)/core/ipv6/*.c) \
-				$(wildcard $(LWIP_RT_C_DIR)/apps/if/*.c)
+				$(wildcard $(LWIP_RT_C_DIR)/apps/if/*.c)  \
+				$(wildcard $(LWIP_RT_C_DIR)/apps/ping/*.c)
 
 ABSOLUTE_CFILES  += $(LWIP_RT_C_DIR)/netif/bridgeif.c \
 				$(LWIP_RT_C_DIR)/netif/bridgeif_fdb.c \
@@ -34,10 +35,6 @@ ABSOLUTE_CFILES  += $(LWIP_RT_C_DIR)/netif/bridgeif.c \
 ifdef CONFIG_USE_LWIP_APP_TFTP # src code of tftp app
 	ABSOLUTE_CFILES  += $(wildcard $(LWIP_RT_C_DIR)/apps/tftp/*.c)
 endif #CONFIG_USE_LWIP_APP_TFTP
-
-ifdef CONFIG_USE_LWIP_APP_PING # src code of ping app
-	ABSOLUTE_CFILES  += $(wildcard $(LWIP_RT_C_DIR)/apps/ping/*.c)
-endif #CONFIG_USE_LWIP_APP_PING
 
 ifdef CONFIG_USE_LWIP_APP_LWIPERF # src code of lwiperf app
 	ABSOLUTE_CFILES  += $(wildcard $(LWIP_RT_C_DIR)/apps/lwiperf/*.c)

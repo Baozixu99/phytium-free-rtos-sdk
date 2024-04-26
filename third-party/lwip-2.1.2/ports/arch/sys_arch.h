@@ -48,7 +48,7 @@ typedef xSemaphoreHandle sys_sem_t;
 typedef xSemaphoreHandle sys_mutex_t;
 typedef xQueueHandle sys_mbox_t;
 typedef xTaskHandle sys_thread_t;
-
+typedef s8_t err_t;
 typedef struct _sys_arch_state_t
 {
     // Task creation data.
@@ -61,6 +61,7 @@ typedef struct _sys_arch_state_t
 void sys_thread_delete(sys_thread_t handle);
 void sys_arch_delay(const unsigned int msec);
 
+err_t sys_countingsem_create(sys_sem_t *sem,u32 semaphore_maxcount,u32 semaphore_initialcount);
 
 sys_prot_t sys_arch_protect(void);
 void sys_arch_unprotect(sys_prot_t pval);

@@ -14,7 +14,7 @@
  * FilePath: cmd_pwm.c
  * Date: 2022-07-14 14:06:43
  * LastEditTime: 2022-07-14 14:06:43
- * Description:  This files is for gdma command interface
+ * Description:  This files is for pwm command interface
  *
  * Modify History:
  *  Ver      Who           Date         Changes

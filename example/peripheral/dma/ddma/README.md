@@ -15,10 +15,20 @@ DDMA (Device Direct Memory Access) 用于配合外设，将数据从一个内存
 
 本例程在 E2000 Demo 板 与飞腾派上完成测试，默认的内部回环模式下，无需额外接线
 
-如需要测试非内部回环模式，例如测试 E2000 D Demo 板的 SPI-2 ，测试前需要按照下图短接 SPI-2 的 RX 脚和 TX 脚，并合理修改代码
-> RX 脚是 CPU_IO (J30) 的 5 脚和 9 脚
+如需要测试非内部回环模式，修改代码：
+ddma_spi_loopback.c文件，DdmaTask函数修改spim_config.inner_loopback = FALSE。（TRUE为内部回环模式，FALSE为外部回环模式）。
+
+且接线：
+ E2000 D Demo 板的 SPI-2 ，测试前需要按照下图短接 SPI-2 的 RX 脚和 TX 脚
+> RX 脚是 CPU_IO (J30) 的 5 脚, TX 脚是 CPU_IO (J30) 的9 脚。
 
 ![](./figs/spi2_pin.jpg)
+
+Phytium Pi接线方法：杜邦线连接下图所示得19号引脚和21号引脚。
+<div align="center">
+<img src="./figs/phytiumpi.png" width="20%">
+</div>
+
 ### 2.1 硬件配置方法
 
 本例程支持的硬件平台包括
@@ -104,9 +114,15 @@ bootelf -p 0x90100000
 ```
 ddma spi-loopback
 ```
-
 ![loopback](./figs/loopback.png)
 
+- 可以自行设置传输字节大小N。[注：传输的字节数N需为4的倍数，且小于128.]
+
+```
+ddma spi-loopback [N]
+```
+
+![Alt text](./figs/loopback_64.png)
 
 ## 3. 如何解决问题
 

@@ -43,8 +43,8 @@ extern "C" {
 #define FXMAX_RX_BDSPACE_LENGTH    0x20000 /* default set 128KB*/
 #define FXMAX_TX_BDSPACE_LENGTH    0x20000 /* default set 128KB*/
 
-#define FXMAX_TX_PBUFS_LENGTH       128
-#define FXMAX_RX_PBUFS_LENGTH       128
+#define FXMAX_TX_PBUFS_LENGTH       64
+#define FXMAX_RX_PBUFS_LENGTH       64
 
 #define FXMAX_MAX_HARDWARE_ADDRESS_LENGTH 6
 
@@ -56,7 +56,6 @@ extern "C" {
 #define FXMAC_OS_CONFIG_MULTICAST_ADDRESS_FILITER  BIT(1) /* Allow multicast address filtering  */
 #define FXMAC_OS_CONFIG_COPY_ALL_FRAMES BIT(2) /* enable copy all frames */
 #define FXMAC_OS_CONFIG_CLOSE_FCS_CHECK BIT(3) /* close fcs check */
-#define FXMAC_OS_CONFIG_RX_POLL_RECV BIT(4)  /* select poll mode */
 /* Phy */
 #define FXMAC_PHY_SPEED_10M    10
 #define FXMAC_PHY_SPEED_100M    100
@@ -127,13 +126,14 @@ typedef struct
 
     struct LwipPort *stack_pointer; /* Docking data stack data structure */
     u8 hwaddr[FXMAX_MAX_HARDWARE_ADDRESS_LENGTH];
+    void * netif; /* Pointing to the netif */
 } FXmacOs;
 
 FXmacOs *FXmacOsGetInstancePointer(FXmacPhyControl *config_p);
 FError FXmacOsInit(FXmacOs *instance_p);
 FError FXmacOsConfig(FXmacOs *instance_p, int cmd, void *arg);
-void *FXmacOsRx(FXmacOs *instance_p);
-FError FXmacOsTx(FXmacOs *instance_p, void *tx_buf);
+void FXmacOsRx(FXmacOs *instance_p, void *pbuf);
+FError FXmacOsTx(FXmacOs *instance_p, void *pbuf);
 void FXmacOsStop(FXmacOs *instance_p);
 void FXmacOsStart(FXmacOs *instance_p);
 void FXmacOsRecvHandler(FXmacOs *instance_p);

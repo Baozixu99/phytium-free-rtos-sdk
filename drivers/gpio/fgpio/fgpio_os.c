@@ -20,15 +20,13 @@
  *  Ver   Who        Date         Changes
  * ----- ------     --------    --------------------------------------
  * 1.0   zhugengyu  2022/7/27   init commit
+ * 2.0   wangzq     2024/4/22     add no letter shell mode, adapt to auto-test system
  */
 /***************************** Include Files *********************************/
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-
-#include "finterrupt.h"
 #include "fdebug.h"
-#include "fsleep.h"
 #include "fcpu_info.h"
 
 #include "fgpio_os.h"
@@ -72,6 +70,13 @@ static inline void FGpioOsGiveSema(SemaphoreHandle_t locker)
     return;
 }
 
+/**
+ * @name: FGpioOsGetId
+ * @msg: get gpio ctrl, pin and port by pin index
+ * @return {*}
+ * @param {u32} pin_idx, gpio pin id
+ * @param {FGpioPinId} *pin_id, input pin instance
+ */
 static inline void FGpioOsGetId(u32 pin_idx, FGpioPinId *pin_id)
 {
     FASSERT(pin_id);
@@ -84,25 +89,23 @@ static inline void FGpioOsGetId(u32 pin_idx, FGpioPinId *pin_id)
     FGPIO_INFO("is gpio-%d-%d-%d", pin_id->ctrl, pin_id->port, pin_id->pin);
 }
 
-/* setup gpio ctrl interrupt */
-static void FGpioOsSetupCtrlIRQ(FFreeRTOSFGpio *const instance)
+/* setup gpio interrupt */
+static void FGpioOSSetupGpioIRQ(FFreeRTOSFGpio *const instance, FGpioPin *const pin, const FFreeRTOSGpioPinConfig *config)
 {
-    FGpio *ctrl = &instance->ctrl;
     u32 cpu_id;
-    u32 irq_num = ctrl->config.irq_num[0];
+    FGpio *ctrl = &instance->ctrl;
+    u32 irq_num = ctrl->config.irq_num[pin->index.pin];
 
     GetCpuId(&cpu_id);
     FGPIO_INFO("cpu_id is cpu_id %d", cpu_id);
+
     InterruptSetTargetCpus(irq_num, cpu_id);
 
     /* setup interrupt */
     InterruptSetPriority(irq_num, FFREERTOS_GPIO_IRQ_PRIORITY);
 
     /* register intr handler */
-    InterruptInstall(irq_num,
-                     FGpioInterruptHandler,
-                     ctrl,
-                     NULL);
+    InterruptInstall(irq_num, FGpioInterruptHandler, ctrl, NULL);
 
     InterruptUmask(irq_num);
 
@@ -179,29 +182,6 @@ FError FFreeRTOSGpioDeInit(FFreeRTOSFGpio *const instance)
     return err;
 }
 
-/* setup gpio pin interrupt */
-static void FGpioOSSetupPinIRQ(FFreeRTOSFGpio *const instance, FGpioPin *const pin, const FFreeRTOSGpioPinConfig *config)
-{
-    u32 cpu_id;
-    FGpio *ctrl = &instance->ctrl;
-    u32 irq_num = ctrl->config.irq_num[pin->index.pin];
-
-    GetCpuId(&cpu_id);
-    FGPIO_INFO("cpu_id is cpu_id %d", cpu_id);
-
-    InterruptSetTargetCpus(irq_num, cpu_id);
-
-    /* setup interrupt */
-    InterruptSetPriority(irq_num, FFREERTOS_GPIO_IRQ_PRIORITY);
-
-    /* register intr handler */
-    InterruptInstall(irq_num, config->irq_handler, config->irq_args, NULL);
-
-    InterruptUmask(irq_num);
-
-    return;
-}
-
 /**
  * @name: FFreeRTOSSetupPin
  * @msg: config and setup pin
@@ -214,6 +194,7 @@ FError FFreeRTOSSetupPin(FFreeRTOSFGpio *const instance, const FFreeRTOSGpioPinC
     FASSERT(instance && config);
     FGpio *ctrl = &instance->ctrl;
     FGpioPinId pin_id;
+
     FGpioOsGetId(config->pin_idx, &pin_id); /* convert pin id */
     u32 ctrl_id = ctrl->config.instance_id;
     FASSERT_MSG((ctrl_id == pin_id.ctrl), "Invalid instance for pin.");
@@ -252,54 +233,20 @@ FError FFreeRTOSSetupPin(FFreeRTOSFGpio *const instance, const FFreeRTOSGpioPinC
                (FGPIO_PORT_A == pin_id.port) ? 'a' : 'b',
                pin_id.pin,
                (FGPIO_DIR_INPUT == config->mode) ? "IN" : "OUT");
-
+    if (FGPIO_DIR_INPUT == FGpioGetDirection(pin))
+    {
+        FGpioSetInterruptMask(pin, FALSE); /* disable pin irq */
+    }
     /* setup input-pin irq */
     if (TRUE == config->en_irq)
     {
-        FGpioSetInterruptMask(pin, FALSE); /* disable pin irq */
-        if (FGPIO_IRQ_BY_PIN == FGpioGetPinIrqSourceType(*pin)) /* setup for pin report interrupt */
-        {
-            FGpioOSSetupPinIRQ(instance, pin, config);
-        }
-        else  if (FGPIO_IRQ_BY_CONTROLLER == FGpioGetPinIrqSourceType(*pin)) /* setup for ctrl report interrupt */
-        {
-            FGpioOsSetupCtrlIRQ(instance);
-        }
+        FGpioOSSetupGpioIRQ(instance, pin, config);
         FGpioRegisterInterruptCB(pin, config->irq_handler, config->irq_args, irq_one_time); /* register intr callback */
+        FGpioSetInterruptType(pin, irq_type);/*set pin irq type */
+        FGpioSetInterruptMask(pin, config->en_irq);/*enable pin irq */
     }
-    FGpioSetInterruptType(pin, irq_type);
+
 err_exit:
-    FGpioOsGiveSema(instance->locker);
-    return err;
-}
-
-/**
- * @name: FFreeRTOSSetIRQ
- * @msg: enable/disable interrupt of pin
- * @return {*}
- * @param {FFreeRTOSFGpio} *instance, freertos gpio instance
- * @param {u32} pin_idx, index of pin, use FFREERTOS_GPIO_PIN_INDEX
- * @param {boolean} en_irq, TRUE: enable interrupt, FALSE: disable
- */
-FError FFreeRTOSSetIRQ(FFreeRTOSFGpio *const instance, u32 pin_idx, boolean en_irq)
-{
-    FASSERT(instance);
-    FGpioPinId pin_id;
-    FGpioOsGetId(pin_idx, &pin_id); /* convert pin id */
-    FGpio *ctrl = &instance->ctrl;
-    u32 ctrl_id = ctrl->config.instance_id;
-    FASSERT_MSG((ctrl_id == pin_id.ctrl), "Invalid instance for pin.");
-    FGpioPin *const pin = &instance->pins[pin_id.port][pin_id.pin];
-    FError err = FT_SUCCESS;
-
-    err = FGpioOsTakeSema(instance->locker);
-    if (FFREERTOS_GPIO_OK != err)
-    {
-        return err;
-    }
-
-    FGpioSetInterruptMask(pin, en_irq);
-
     FGpioOsGiveSema(instance->locker);
     return err;
 }

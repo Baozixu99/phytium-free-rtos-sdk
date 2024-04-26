@@ -13,7 +13,7 @@
  *
  * FilePath: cmd_ddma.c
  * Date: 2022-07-14 14:06:43
- * LastEditTime: 2022-07-14 14:06:43
+ * LastEditTime: 2024-04-19 14:06:43
  * Description:  This file is for DDMA command interface.
  *
  * Modify History:
@@ -21,52 +21,64 @@
  * -----  ------       --------     --------------------------------------
  *  1.0   zhugengyu    2022/7/27    init commit
  *  1.1   liqiaozhong  2023/11/10   synchronous update with standalone sdk
+ *  2.0   liyilun      2024/4/19    add no letter shell mode, adapt to auto test system
  */
 
 /***************************** Include Files *********************************/
 #include <string.h>
 #include <stdio.h>
-#include "strto.h"
 #include "sdkconfig.h"
-
-#include "FreeRTOS.h"
-
-#include "../src/shell.h"
 #include "ddma_spi_loopback.h"
-/************************** Constant Definitions *****************************/
+#include "strto.h"
+#include "FreeRTOS.h"
+#include "task.h"
 
-/************************** Variable Definitions *****************************/
-
-/***************** Macros (Inline Functions) Definitions *********************/
-#if defined(CONFIG_TARGET_E2000D) || defined(CONFIG_TARGET_E2000Q)
+#if defined(CONFIG_E2000Q_DEMO_BOARD) || defined(CONFIG_E2000D_DEMO_BOARD)
 #define USED_SPI_ID FSPI2_ID
 #else
 #define USED_SPI_ID FSPI0_ID
 #endif
-/************************** Function Prototypes ******************************/
 
-/*****************************************************************************/
+#ifdef CONFIG_USE_LETTER_SHELL
+#include "../src/shell.h"
+
+static void DdmaCmdUsage(void)
+{
+    printf("Usage:\r\n");
+    printf("ddma spi-loopback\r\n");
+    printf("-- Run ddma spi loopback example, default transfer 32 bytes\r\n");
+    printf("ddma spi-loopback N\r\n");
+    printf("-- Run ddma spi loopback example, N is a number, N <= 128 =bytes, default transfer N bytes\r\n");
+}
+
 static int DdmaCmdEntry(int argc, char *argv[])
 {
     int ret = 0;
     u32 bytes = 32;
     u32 spi_id = USED_SPI_ID;
-
     if (!strcmp(argv[1], "spi-loopback"))
     {
         if (argc >= 3)
         {
-            spi_id = (u32)simple_strtoul(argv[2], NULL, 10);
-        }
-
-        if (argc >= 4)
-        {
-            bytes = (u32)simple_strtoul(argv[3], NULL, 10);
+            bytes = (u32)simple_strtoul(argv[2], NULL, 10);
         }
 
         ret = FFreeRTOSRunDDMASpiLoopback(spi_id, bytes);
+    }else
+    {
+        DdmaCmdUsage();
     }
 
     return ret;
 }
 SHELL_EXPORT_CMD(SHELL_CMD_TYPE(SHELL_TYPE_CMD_MAIN), ddma, DdmaCmdEntry, test freertos ddma driver);
+
+#else
+void DdmaTasksEntry(void)
+{
+    u32 bytes = 32;
+    u32 spi_id = USED_SPI_ID;
+    FFreeRTOSRunDDMASpiLoopback(spi_id, bytes);
+    vTaskDelete(NULL);
+}
+#endif

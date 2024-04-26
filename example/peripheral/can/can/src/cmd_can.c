@@ -21,25 +21,29 @@
  * ----- ------     --------    --------------------------------------
  * 1.0   huangjin   2023/10/16   first commit
  */
-#include "shell.h"
+#include "sdkconfig.h"
+#include "FreeRTOS.h"
 #include "can_example.h"
 #include <string.h>
+#include "task.h"
 #include <stdio.h>
-
+#include "strto.h"
+#ifdef CONFIG_USE_LETTER_SHELL
+#include "../src/shell.h"
 static void CreateTasksCmdUsage(void)
 {
     printf("Usage:\r\n");
-    printf(" can intr \r\n");
-    printf("    -- Create can interrupt test example now. \r\n");
-    printf(" can polled \r\n");
-    printf("    -- Create can polled test example now. \r\n");
-#if defined(CONFIG_TARGET_E2000)
-    printf(" can filter \r\n");
-    printf("    -- Create can filter test example now. \r\n");
+    printf("can intr \r\n");
+    printf("-- Create can interrupt test example now\r\n");
+    printf("can polled \r\n");
+    printf("-- Create can polled test example now\r\n");
+#if defined(CONFIG_E2000D_DEMO_BOARD) || defined(CONFIG_E2000Q_DEMO_BOARD)
+    printf("can filter \r\n");
+    printf("-- Create can filter test example now\r\n");
 #endif
 }
 
-int CreateTasksCmd(int argc, char *argv[])
+int CanCmdEntry(int argc, char *argv[])
 {
     if (argc < 2)
     {
@@ -54,7 +58,7 @@ int CreateTasksCmd(int argc, char *argv[])
     {
         FFreeRTOSCreateCanPolledTestTask();
     }
-#if defined(CONFIG_TARGET_E2000)
+#if defined(CONFIG_E2000D_DEMO_BOARD) || defined(CONFIG_E2000Q_DEMO_BOARD)
     else if (!strcmp(argv[1], "filter"))
     {
         FFreeRTOSCanCreateFilterTestTask();
@@ -69,6 +73,5 @@ int CreateTasksCmd(int argc, char *argv[])
     return 0;
 }
 
-SHELL_EXPORT_CMD(SHELL_CMD_TYPE(SHELL_TYPE_CMD_MAIN), can, CreateTasksCmd, can creating test);
-
-
+SHELL_EXPORT_CMD(SHELL_CMD_TYPE(SHELL_TYPE_CMD_MAIN), can, CanCmdEntry, test freertos can driver);
+#endif

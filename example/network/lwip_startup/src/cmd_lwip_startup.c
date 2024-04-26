@@ -13,7 +13,7 @@
  * 
  * FilePath: cmd_lwip_startup.c
  * Created Date: 2023-11-21 11:06:40
- * Last Modified: 2023-12-28 15:11:06
+ * Last Modified: 2024-04-03 15:42:24
  * Description:  This file is for lwip startup example cmd catalogue.
  * 
  * Modify History:
@@ -52,7 +52,7 @@ static void  LwipStartupExampleCheckState(void)
     switch(init_flag_mask)
     {
         case IPV4_EXAMPLE_RUNNING:
-            printf("Lwip ipv4 example is running, we need to deinitialize it first! \r\n ");
+            printf("Lwip ipv4 example is running, we need to deinitialize it first! \r\n");
             LwipIpv4TestDeinit();
             init_flag_mask=EXAMPLE_IDLE;
             break;

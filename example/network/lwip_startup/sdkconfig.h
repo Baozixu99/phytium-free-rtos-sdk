@@ -51,7 +51,6 @@
 #define CONFIG_F64BIT_MEMORY_ADDRESS 0x2000000000
 #define CONFIG_F64BIT_MEMORY_LENGTH 0x800000000
 #define CONFIG_TARGET_E2000
-/* CONFIG_USE_SPINLOCK is not set */
 #define CONFIG_DEFAULT_DEBUG_PRINT_UART1
 /* CONFIG_DEFAULT_DEBUG_PRINT_UART0 is not set */
 /* CONFIG_DEFAULT_DEBUG_PRINT_UART2 is not set */
@@ -289,7 +288,6 @@
 #define CONFIG_LWIP_FXMAC
 /* CONFIG_LWIP_FGMAC is not set */
 /* CONFIG_LWIP_FSDIF is not set */
-/* CONFIG_LWIP_RX_POLL is not set */
 /* end of LWIP Port Configuration */
 /* CONFIG_LWIP_NO_SYS is not set */
 #define CONFIG_LWIP_LOCAL_HOSTNAME "phytium"
@@ -297,7 +295,6 @@
 /* LWIP_APP */
 
 /* CONFIG_USE_LWIP_APP_LWIPERF is not set */
-/* CONFIG_USE_LWIP_APP_PING is not set */
 /* CONFIG_USE_LWIP_APP_TFTP is not set */
 /* end of LWIP_APP */
 
@@ -327,7 +324,7 @@
 #define CONFIG_LWIP_IP4_REASSEMBLY
 #define CONFIG_LWIP_IP4_FRAG
 /* CONFIG_LWIP_IP_FORWARD is not set */
-#define CONFIG_IP_REASS_MAX_PBUFS 16
+#define CONFIG_IP_REASS_MAX_PBUFS 32
 /* end of IPV4 */
 
 /* ICMP */
@@ -341,6 +338,7 @@
 
 #define CONFIG_LWIP_RAW_API_EN
 #define CONFIG_LWIP_MAX_RAW_PCBS 16
+#define CONFIG_LWIP_RAW_RECVMBOX_SIZE 6
 /* end of LWIP RAW API */
 
 /* DHCP */

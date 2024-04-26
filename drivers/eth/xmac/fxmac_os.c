@@ -29,6 +29,7 @@
 #include "fcache.h"
 #include "fxmac_bdring.h"
 #include "lwip_port.h"
+#include "netif/etharp.h"
 #include "eth_ieee_reg.h"
 #include "fcpu_info.h"
 #include "faarch.h"
@@ -134,8 +135,9 @@ static u32 IsTxSpaceAvailable(FXmacOs *instance_p)
  * @return {*}
  * @param {ethernetif} *ethernetif_p
  * @param {FXmacBdRing} *txring
+ * @param {u32} cnt
  */
-void FXmacProcessSentBds(FXmacOs *instance_p, FXmacBdRing *txring)
+void FXmacProcessSentBds(FXmacOs *instance_p, FXmacBdRing *txring, u32 cnt)
 {
     FXmacBd *txbdset;
     FXmacBd *curbdpntr;
@@ -146,67 +148,57 @@ void FXmacProcessSentBds(FXmacOs *instance_p, FXmacBdRing *txring)
     struct pbuf *p;
     u32 *temp;
 
-    while (1)
+    /* obtain processed BD's */
+    n_bds = FXmacBdRingFromHwTx(txring,cnt,&txbdset);
+    if (n_bds == 0)
     {
-        /* obtain processed BD's */
-        n_bds = FXmacBdRingFromHwTx(txring, FXMAX_TX_PBUFS_LENGTH, &txbdset);
-        if (n_bds == 0)
-        {
-            return;
-        }
-        /* free the processed BD's */
-        n_pbufs_freed = n_bds;
-        curbdpntr = txbdset;
-        while (n_pbufs_freed > 0)
-        {
-            bdindex = FXMAC_BD_TO_INDEX(txring, curbdpntr);
-            temp = (u32 *)curbdpntr;
-            *temp = 0; /* Word 0 */
-            temp++;
-            if (bdindex == (FXMAX_TX_PBUFS_LENGTH - 1))
-            {
-                *temp = 0xC0000000; /* Word 1 ,used/Wrap – marks last descriptor in transmit buffer descriptor list.*/
-            }
-            else
-            {
-                *temp = 0x80000000; /* Word 1 , Used – must be zero for GEM to read data to the transmit buffer.*/
-            }
-            DSB();
-
-            p = (struct pbuf *)instance_p->buffer.tx_pbufs_storage[bdindex];
-
-            if (p != NULL)
-            {
-                pbuf_free(p);
-            }
-            instance_p->buffer.tx_pbufs_storage[bdindex] = (uintptr)NULL;
-            curbdpntr = FXMAC_BD_RING_NEXT(txring, curbdpntr);
-            n_pbufs_freed--;
-            DSB();
-        }
-
-        status = FXmacBdRingFree(txring, n_bds, txbdset);
-        if (status != FT_SUCCESS)
-        {
-            FXMAC_OS_XMAC_PRINT_I("Failure while freeing in Tx Done ISR.");
-        }
+        return;
     }
+    /* free the processed BD's */
+    n_pbufs_freed = n_bds;
+    curbdpntr = txbdset;
+    while (n_pbufs_freed > 0)
+    {
+        bdindex = FXMAC_BD_TO_INDEX(txring, curbdpntr);
+        temp = (u32 *)curbdpntr;
+        *temp = 0; /* Word 0 */
+        temp++;
+        if (bdindex == (FXMAX_TX_PBUFS_LENGTH - 1))
+        {
+            *temp = 0xC0000000; /* Word 1 ,used/Wrap – marks last descriptor in transmit buffer descriptor list.*/
+        }
+        else
+        {
+            *temp = 0x80000000; /* Word 1 , Used – must be zero for GEM to read data to the transmit buffer.*/
+        }
+        DSB();
+
+        p = (struct pbuf *)instance_p->buffer.tx_pbufs_storage[bdindex];
+
+        if (p != NULL)
+        {
+            pbuf_free(p);
+        }
+        instance_p->buffer.tx_pbufs_storage[bdindex] = (uintptr)NULL;
+        curbdpntr = FXMAC_BD_RING_NEXT(txring, curbdpntr);
+        n_pbufs_freed--;
+        DSB();
+    }
+
+    status = FXmacBdRingFree(txring, n_bds, txbdset);
+    if (status != FT_SUCCESS)
+    {
+        FXMAC_OS_XMAC_PRINT_I("Failure while freeing in Tx Done ISR.");
+    }
+
     return;
 }
 
 void FXmacSendHandler(void *arg)
 {
     FXmacOs *instance_p;
-    FXmacBdRing *txringptr;
-    u32 regval;
-
     instance_p = (FXmacOs *)arg;
-    txringptr = &(FXMAC_GET_TXRING(instance_p->instance));
-    regval = FXMAC_READREG32(instance_p->instance.config.base_address, FXMAC_TXSR_OFFSET);
-    FXMAC_WRITEREG32(instance_p->instance.config.base_address, FXMAC_TXSR_OFFSET, regval); /* 清除中断状态位来停止中断 */
-
-    /* If Transmit done interrupt is asserted, process completed BD's */
-    FXmacProcessSentBds(instance_p, txringptr);
+    FXMAC_WRITEREG32(instance_p->instance.config.base_address, FXMAC_IDR_OFFSET, FXMAC_IXR_TXCOMPL_MASK);  /* 关闭发送完成中断 */
 }
 
 FError FXmacSgsend(FXmacOs *instance_p, struct pbuf *p)
@@ -218,11 +210,7 @@ FError FXmacSgsend(FXmacOs *instance_p, struct pbuf *p)
     FError status;
     FXmacBdRing *txring;
     u32 bdindex;
-    u32 lev;
     u32 max_fr_size;
-
-    lev = MFCPSR();
-    MTCPSR(lev | 0xC0); /* Mask IRQ and FIQ interrupts in cpsr */
 
     txring = &(FXMAC_GET_TXRING(instance_p->instance));
 
@@ -236,7 +224,6 @@ FError FXmacSgsend(FXmacOs *instance_p, struct pbuf *p)
     status = FXmacBdRingAlloc(txring, n_pbufs, &txbdset);
     if (status != FT_SUCCESS)
     {
-        MTCPSR(lev);
         FXMAC_OS_XMAC_PRINT_I("sgsend: Error allocating TxBD.");
         return ERR_GENERAL;
     }
@@ -247,7 +234,6 @@ FError FXmacSgsend(FXmacOs *instance_p, struct pbuf *p)
 
         if (instance_p->buffer.tx_pbufs_storage[bdindex])
         {
-            MTCPSR(lev);
             FXMAC_OS_XMAC_PRINT_I("txbd %p, txring->base_bd_addr %p", txbd, txring->base_bd_addr);
             FXMAC_OS_XMAC_PRINT_I("PBUFS not available bdindex is %d ", bdindex);
             FXMAC_OS_XMAC_PRINT_I("instance_p->buffer.tx_pbufs_storage[bdindex] %p ", instance_p->buffer.tx_pbufs_storage[bdindex]);
@@ -306,7 +292,6 @@ FError FXmacSgsend(FXmacOs *instance_p, struct pbuf *p)
     status = FXmacBdRingToHw(txring, n_pbufs, txbdset);
     if (status != FT_SUCCESS)
     {
-        MTCPSR(lev);
         FXMAC_OS_XMAC_PRINT_I("sgsend: Error submitting TxBD.");
         return ERR_GENERAL;
     }
@@ -316,9 +301,6 @@ FError FXmacSgsend(FXmacOs *instance_p, struct pbuf *p)
                      (FXMAC_READREG32(instance_p->instance.config.base_address,
                                       FXMAC_NWCTRL_OFFSET) |
                       FXMAC_NWCTRL_STARTTX_MASK));
-
-    MTCPSR(lev);
-
     return status;
 }
 
@@ -412,9 +394,19 @@ void FXmacRecvSemaphoreHandler(void *arg)
     
     instance_p = (FXmacOs *)arg;
     xmac_netif_p = (struct LwipPort *)instance_p->stack_pointer;
+    FXMAC_WRITEREG32(instance_p->instance.config.base_address, FXMAC_IDR_OFFSET, FXMAC_IXR_RXCOMPL_MASK); 
     sys_sem_signal(&(xmac_netif_p->sem_rx_data_available));
-    
+
 }
+
+
+/**
+ * @name: FXmacRecvHandler
+ * @msg: handle dma packets and put these packets to lwip stack to process
+ * @note: 
+ * @param {void} *arg
+*  @return {*}
+ */
 void FXmacRecvHandler(void *arg)
 {
     struct pbuf *p;
@@ -426,7 +418,7 @@ void FXmacRecvHandler(void *arg)
     u32 bdindex;
     u32 regval;
     u32 index;
-    u32 gigeversion;
+    u32 rx_queue_len ;
     FXmacOs *instance_p;
     FASSERT(arg != NULL);
 
@@ -488,8 +480,17 @@ void FXmacRecvHandler(void *arg)
         /* free up the BD's */
         FXmacBdRingFree(rxring, bd_processed, rxbdset);
         SetupRxBds(instance_p, rxring);
-    }
 
+        rx_queue_len = FXmacPqQlength(&instance_p->recv_q);
+        while (rx_queue_len)
+        {
+            /* return one packet from receive q */
+            p = (struct pbuf *)FXmacPqDequeue(&instance_p->recv_q);
+            FXmacOsRx(instance_p,(void *)p); 
+            rx_queue_len--;
+        }
+    }
+       
     return;
 }
 
@@ -524,7 +525,6 @@ FError FXmacInitDma(FXmacOs *instance_p)
     int i;
     u32 bdindex;
     volatile uintptr tempaddress;
-    u32 gigeversion;
     FXmacBd *bdtxterminate;
     FXmacBd *bdrxterminate;
     u32 *temp;
@@ -717,7 +717,6 @@ static void FreeTxRxPbufs(FXmacOs *instance_p)
 static void ResetDma(FXmacOs *instance_p)
 {
     u8 txqueuenum;
-    u32 gigeversion;
 
     FXmacBdRing *txringptr = &FXMAC_GET_TXRING(instance_p->instance);
     FXmacBdRing *rxringptr = &FXMAC_GET_RXRING(instance_p->instance);
@@ -794,7 +793,7 @@ void FXmacErrorHandler(void *arg, u8 direction, u32 error_word)
                 if (error_word & FXMAC_RXSR_RXOVR_MASK)
                 {
                     FXMAC_OS_XMAC_PRINT_I("Receive over run.");
-                    FXmacRecvHandler(instance_p);
+                    FXmacRecvHandler(arg);
                     SetupRxBds(instance_p, rxring);
                 }
                 if (error_word & FXMAC_RXSR_BUFFNA_MASK)
@@ -828,7 +827,7 @@ void FXmacErrorHandler(void *arg, u8 direction, u32 error_word)
                 if (error_word & FXMAC_TXSR_FRAMERX_MASK)
                 {
                     FXMAC_OS_XMAC_PRINT_I("Transmit collision.");
-                    FXmacProcessSentBds(instance_p, txring);
+                    FXmacProcessSentBds(instance_p, txring, FXMAX_TX_PBUFS_LENGTH);
                 }
                 break;
         }
@@ -1177,11 +1176,6 @@ FError FXmacOsInit(FXmacOs *instance_p)
         FXmacSetOptions(xmac_p, FXMAC_JUMBO_ENABLE_OPTION, 0);
     }
 
-    if (instance_p->feature & FXMAC_OS_CONFIG_RX_POLL_RECV)
-    {
-        xmac_p->mask &= (~FXMAC_IXR_RXCOMPL_MASK);
-    }
-
     if (instance_p->feature & FXMAC_OS_CONFIG_MULTICAST_ADDRESS_FILITER)
     {
         FXmacSetOptions(xmac_p, FXMAC_MULTICAST_OPTION, 0);
@@ -1232,25 +1226,61 @@ FError FXmacOsInit(FXmacOs *instance_p)
 
 /**
  * @name: FXmacOsRx
- * @msg:  void *FXmacOsRx(FXmacOs *instance_p)
- * @note:
+ * @msg: moving packets into lwip stack
+ * @note: 
  * @param {FXmacOs} *instance_p
+ * @param {void} *pbuf
  * @return {*}
  */
-void *FXmacOsRx(FXmacOs *instance_p)
+void FXmacOsRx(FXmacOs *instance_p, void *pbuf)
 {
+    
     FASSERT(instance_p != NULL);
+    FASSERT(pbuf != NULL);
+
+    struct netif *netif;
     struct pbuf *p;
+    struct eth_hdr *ethhdr;
 
-    /* see if there is data to process */
-    if (FXmacPqQlength(&instance_p->recv_q) == 0)
+    netif =  (struct netif *)instance_p->netif;
+    p = (struct pbuf *)pbuf;
+    /* points to packet payload, which starts with an Ethernet header */
+    ethhdr = p->payload;
+
+#if LINK_STATS
+    lwip_stats.link.recv++;
+#endif /* LINK_STATS */
+    switch (htons(ethhdr->type))
     {
-        return NULL;
-    }
-    /* return one packet from receive q */
-    p = (struct pbuf *)FXmacPqDequeue(&instance_p->recv_q);
+        /* IP or ARP packet? */
+        case ETHTYPE_IP:
+        case ETHTYPE_ARP:
+#if LWIP_IPV6
+        /*IPv6 Packet?*/
+        case ETHTYPE_IPV6:
+#endif
+#if PPPOE_SUPPORT
+        /* PPPoE packet? */
+        case ETHTYPE_PPPOEDISC:
+        case ETHTYPE_PPPOE:
+#endif /* PPPOE_SUPPORT */
 
-    return p;
+            /* full packet send to tcpip_thread to process */
+            if (netif->input(p, netif) != ERR_OK)
+            {
+                LWIP_DEBUGF(NETIF_DEBUG, ("ethernetif_input: IP input error\r\n"));
+                pbuf_free(p);
+                p = NULL;
+            }
+            break;
+
+        default:
+            pbuf_free(p);
+            p = NULL;
+            break;
+    }
+
+    return;
 }
 
 static FError FXmacOsOutput(FXmacOs *instance_p, struct pbuf *p)
@@ -1271,34 +1301,24 @@ static FError FXmacOsOutput(FXmacOs *instance_p, struct pbuf *p)
     return status;
 }
 
-FError FXmacOsTx(FXmacOs *instance_p, void *tx_buf)
+FError FXmacOsTx(FXmacOs *instance_p, void *pbuf)
 {
-    u32 freecnt;
-    FXmacBdRing *txring;
-    FError ret = FT_SUCCESS;
-    struct pbuf *p;
+
     FASSERT(instance_p != NULL);
-    if (tx_buf == NULL)
-    {
-        FXMAC_OS_XMAC_PRINT_E("tx_buf is null.");
-        return FREERTOS_XMAC_PARAM_ERROR;
-    }
+    FASSERT(pbuf != NULL);
 
-    p = tx_buf;
+    FXmacBdRing *txring;
+    struct pbuf *p;
+    FError ret = FT_SUCCESS;
 
-    /* check if space is available to send */
-    freecnt = IsTxSpaceAvailable(instance_p);
+    p = (struct pbuf *)pbuf;
 
-    if (freecnt <= 5)
-    {
-        txring = &(FXMAC_GET_TXRING(instance_p->instance));
-        FXmacProcessSentBds(instance_p, txring);
-    }
-
+    txring = &(FXMAC_GET_TXRING(instance_p->instance));
+    FXmacProcessSentBds(instance_p, txring,FXMAX_TX_PBUFS_LENGTH);
+ 
     if (IsTxSpaceAvailable(instance_p))
     {
-        FXmacOsOutput(instance_p, p);
-        ret = FT_SUCCESS;
+        ret = FXmacOsOutput(instance_p, p);
     }
     else
     {

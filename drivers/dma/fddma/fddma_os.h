@@ -44,6 +44,7 @@ extern "C"
 #define FFREERTOS_DDMA_SEMA_ERR             FT_CODE_ERR(ErrModPort, ErrDdma, 1)
 #define FFREERTOS_DDMA_ALREADY_INIT         FT_CODE_ERR(ErrModPort, ErrDdma, 2)
 #define FFREERTOS_DDMA_EVT_TIMEOUT          FT_CODE_ERR(ErrModPort, ErrDdma, 3)
+#define FFREERTOS_DDMA_TRANSFER_FAIL        FT_CODE_ERR(ErrModPort, ErrDdma, 4)
 
 
 #define FFREERTOS_DDMA_IRQ_PRIORITY         IRQ_PRIORITY_VALUE_12

@@ -386,6 +386,28 @@ err_t sys_sem_new(sys_sem_t *sem, u8_t count)
     return ERR_OK;
 }
 
+err_t sys_countingsem_create(sys_sem_t *sem,u32 semaphore_maxcount,u32 semaphore_initialcount)
+{
+    *sem = xSemaphoreCreateCounting(semaphore_maxcount,semaphore_initialcount);
+
+    if (*sem == NULL)
+    {
+    #if SYS_STATS
+        ++lwip_stats.sys.sem.err;
+    #endif /* SYS_STATS */
+        return ERR_MEM;
+    }
+    #if SYS_STATS
+    ++lwip_stats.sys.sem.used;
+    if (lwip_stats.sys.sem.max < lwip_stats.sys.sem.used)
+    {
+        lwip_stats.sys.sem.max = lwip_stats.sys.sem.used;
+    }
+    #endif /* SYS_STATS */
+
+    return ERR_OK;
+}
+
 /*-----------------------------------------------------------------------------------*/
 /*
   Blocks the thread while waiting for the semaphore to be

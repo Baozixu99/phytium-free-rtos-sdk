@@ -216,7 +216,7 @@ BaseType_t FFreeRTOSPwmDeadBandTaskCreate()
                           NULL);                                  /* 任务句柄 */
     if (xReturn == pdFAIL)
     {
-        FPWM_ERROR("xTaskCreate GdmaMemcpyTask failed.");
+        FPWM_ERROR("xTaskCreate FFreeRTOSPwmDeadBandTask failed.");
         goto exit;
     }
 

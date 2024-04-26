@@ -55,9 +55,10 @@
 /**************************** Type Definitions *******************************/
 enum
 {
-    GDMA_MEMCPY_SUCCESS = 1,
-    GDMA_INIT_FAILURE   = 2,
-    GDMA_MEMCPY_FAILURE = 3,              
+    GDMA_EXAMPLE_SUCCESS        = 0,
+    GDMA_EXAMPLE_UNKNOWN_STATE  = 1,
+    GDMA_EXAMPLE_INIT_FAILURE   = 2,
+    GDMA_EXAMPLE_MEMCPY_FAILURE = 3,              
 };
 /************************** Variable Definitions *****************************/
 static FFreeRTOSGdma *gdma_instance_p = NULL;
@@ -75,33 +76,34 @@ static uint8_t dst_data[GDMA_TRANS_LEN] __attribute__((aligned(GDMA_ADDR_ALIGNME
 static void GdmaMemcpyAckChanXEnd(uint32_t channel_id, void *args)
 {
     FASSERT(channel_id < FFREERTOS_GDMA_NUM_OF_CHAN);
-
     BaseType_t xhigher_priority_task_woken = pdFALSE;
-    BaseType_t x_result = pdFALSE;
 
     FGDMA_INFO("FreeRTOS ack: GDMA channel-%d transfer end.", channel_id);
 
     vTaskNotifyGiveIndexedFromISR(gdma_trans_task, gdma_trans_task_index, &xhigher_priority_task_woken);
     gdma_trans_task = NULL; /* 将目标任务句柄清空，防止产生不必要的通知 */
     portYIELD_FROM_ISR(xhigher_priority_task_woken); /* 如果中断触发了更高优先级的任务，确保更高优先级的任务尽快执行 */
-
-    return;
 }
 
-static int GdmaInit(void)
+static FError GdmaInit(void)
 {   
-    int task_res = GDMA_MEMCPY_SUCCESS;
+    FError err = FFREERTOS_GDMA_OK;
 
     gdma_instance_p = FFreeRTOSGdmaInit(FGDMA_CONTROLLER_ID);
 
-    return task_res;
+    if (gdma_instance_p == NULL)
+    {
+        err = FFREERTOS_GDMA_COMMON_ERR;
+    }
+
+    FGDMA_INFO("%s return with err: %d", __func__, err);
+    return err;
 }
 
-static int GdmaMemcpy(void)
+static FError GdmaMemcpy(void)
 {
-    int task_res = GDMA_MEMCPY_SUCCESS;
-    uint32_t notify_result;
     FError err = FFREERTOS_GDMA_OK;
+    uint32_t notify_result;
     const TickType_t max_block_time = pdMS_TO_TICKS(3000UL);
 
     /* os channel config set */
@@ -111,7 +113,7 @@ static int GdmaMemcpy(void)
     os_channel_config.trans_length = GDMA_TRANS_LEN;
 
     err = FFreeRTOSGdmaChanConfigure(gdma_instance_p, GDMA_CHANNEL_ID, &os_channel_config);
-    if (FFREERTOS_GDMA_OK != err)
+    if (err != FFREERTOS_GDMA_OK)
     {
         FGDMA_ERROR("FFreeRTOSGdmaChanConfigure() failed.");
         goto memcpy_exit;
@@ -133,8 +135,8 @@ static int GdmaMemcpy(void)
     notify_result = ulTaskNotifyTakeIndexed(gdma_trans_task_index, pdTRUE, max_block_time); /* wait to be notified that the transmission is complete */
     if (notify_result != 1)
     {
-        err = FFREERTOS_GDMA_MEMCPY_FAIL;
-        FGDMA_ERROR("Wait GDMA finish timeout.");
+        err = FFREERTOS_GDMA_SEMA_ERR;
+        FGDMA_ERROR("Wait GDMA finish notify_result timeout.");
         goto memcpy_exit;
     }
 
@@ -146,42 +148,49 @@ static int GdmaMemcpy(void)
         FtDumpHexByte((const uint8_t *)src_data, min((size_t)GDMA_TRANS_LEN, (size_t)64U));
         printf("dst buf...\r\n");
         FtDumpHexByte((const uint8_t *)dst_data, min((size_t)GDMA_TRANS_LEN, (size_t)64U));
-        taskEXIT_CRITICAL();
+        taskEXIT_CRITICAL(); 
     }
     else
     {
+        err = FFREERTOS_GDMA_COMMON_ERR;
         FGDMA_ERROR("src != dst, GDMA memcpy failed.");
         goto memcpy_exit;
     }
 
 memcpy_exit:
-    if (FFREERTOS_GDMA_OK != FFreeRTOSGdmaChanStop(gdma_instance_p, GDMA_CHANNEL_ID))
+    if (FFreeRTOSGdmaChanStop(gdma_instance_p, GDMA_CHANNEL_ID) != FFREERTOS_GDMA_OK)
     {
         FGDMA_ERROR("FFreeRTOSGdmaChanStop() failed.");
+        err = FFREERTOS_GDMA_COMMON_ERR;
     }
 
-    if (FFREERTOS_GDMA_OK != FFreeRTOSGdmaChanDeconfigure(gdma_instance_p, GDMA_CHANNEL_ID))
+    if (FFreeRTOSGdmaChanDeconfigure(gdma_instance_p, GDMA_CHANNEL_ID) != FFREERTOS_GDMA_OK)
     {
         FGDMA_ERROR("FFreeRTOSGdmaChanDeconfigure() failed.");
+        err = FFREERTOS_GDMA_COMMON_ERR;
     }
 
-    return task_res;
+    FGDMA_INFO("%s return with err: %d", __func__, err);
+    return err;
 }
 
 static void GdmaMemcpyTask()
 {
-    int task_res = GDMA_MEMCPY_SUCCESS;
+    FError err = FFREERTOS_GDMA_OK;
+    int task_res = GDMA_EXAMPLE_SUCCESS;
 
-    task_res = GdmaInit();
-    if (task_res != GDMA_MEMCPY_SUCCESS)
+    err = GdmaInit();
+    if (err != FFREERTOS_GDMA_OK)
     {
+        task_res = GDMA_EXAMPLE_INIT_FAILURE;
         FGDMA_ERROR("GdmaInit() failed.");
         goto task_exit;
     }
 
-    task_res = GdmaMemcpy();
-    if (task_res != GDMA_MEMCPY_SUCCESS)
+    err = GdmaMemcpy();
+    if (err != FFREERTOS_GDMA_OK)
     {
+        task_res = GDMA_EXAMPLE_MEMCPY_FAILURE;
         FGDMA_ERROR("GdmaMemcpy() failed.");
         goto task_exit;
     }
@@ -192,10 +201,10 @@ task_exit:
     vTaskDelete(NULL);
 }
 
-BaseType_t FFreeRTOSRunGdmaMemcpy(void)
+int FFreeRTOSGdmaMemcpy(void)
 {
     BaseType_t xReturn = pdPASS; /* 定义一个创建信息返回值，默认为 pdPASS */
-    int task_res = 0;
+    int task_res = GDMA_EXAMPLE_UNKNOWN_STATE;
 
     xQueue = xQueueCreate(1, sizeof(int)); /* 创建消息队列 */
     if (xQueue == NULL)
@@ -229,14 +238,14 @@ BaseType_t FFreeRTOSRunGdmaMemcpy(void)
         vQueueDelete(xQueue);
     }
 
-    if (task_res != GDMA_MEMCPY_SUCCESS)
+    if (task_res != GDMA_EXAMPLE_SUCCESS)
     {
         printf("%s@%d: GDMA memcpy example [failure], task_res = %d\r\n", __func__, __LINE__, task_res);
-        return pdFAIL;
+        return task_res;
     }
     else
     {
         printf("%s@%d: GDMA memcpy example [success].\r\n", __func__, __LINE__);
-        return pdTRUE;
+        return task_res;
     }
 }

@@ -257,7 +257,7 @@ static err_t low_level_init(struct netif *netif)
     }
 
     /* obtain config of this emac */
-    ETHNETIF_DEBUG_I("netif->state is %p \r\n ", netif->state);
+    ETHNETIF_DEBUG_I("netif->state is %p \r\n", netif->state);
 
     config_p = (UserConfig *)netif->state;
     gmac_phy_config.instance_id = config_p->mac_instance;

@@ -29,6 +29,11 @@
 #include "strto.h"
 
 #include "sdkconfig.h"
+#ifdef CONFIG_USE_LETTER_SHELL
+#include "../src/shell.h"
+
+#include "gdma_memcpy.h"
+#endif
 /************************** Constant Definitions *****************************/
 
 /************************** Variable Definitions *****************************/
@@ -39,11 +44,7 @@
 
 /*****************************************************************************/
 #ifdef CONFIG_USE_LETTER_SHELL
-#include "../src/shell.h"
-
-#include "gdma_memcpy.h"
-
-static void SfudCmdUsage()
+static void GdmaCmdUsage()
 {
     printf("Usage:\r\n");
     printf("gdma memcpy\r\n");
@@ -54,9 +55,15 @@ static int GdmaCmdEntry(int argc, char *argv[])
 {
     int ret = 0;
 
+    if (argc < 2)
+    {
+        GdmaCmdUsage();
+        return -1;
+    }
+
     if (!strcmp(argv[1], "memcpy"))
     {
-        ret = FFreeRTOSRunGdmaMemcpy();
+        ret = FFreeRTOSGdmaMemcpy();
     }
 
     return ret;

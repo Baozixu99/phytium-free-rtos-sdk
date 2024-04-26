@@ -20,130 +20,91 @@
  *  Ver   Who           Date           Changes
  * ----- ------       --------      --------------------------------------
  * 1.0   huangjin     2023/11/20    first release
+ * 1.1   zhangyan       2024/4/18     add no letter shell mode, adapt to auto-test system
  */
 #include <string.h>
 #include "FreeRTOSConfig.h"
 #include "FreeRTOS.h"
 #include "task.h"
-#include "fqspi.h"
-#include "fqspi_flash.h"
 #include "fqspi_os.h"
-#include "timers.h"
 #include "qspi_example.h"
+#include "fqspi_flash.h"
 #include "sdkconfig.h"
 #include "fio_mux.h"
 
+#define FQSPI_DEBUG_TAG "QSPI_DUAL_FLASH_TEST"
+#define FQSPI_ERROR(format, ...) FT_DEBUG_PRINT_E(FQSPI_DEBUG_TAG, format, ##__VA_ARGS__)
+#define FQSPI_WARN(format, ...) FT_DEBUG_PRINT_W(FQSPI_DEBUG_TAG, format, ##__VA_ARGS__)
+#define FQSPI_INFO(format, ...) FT_DEBUG_PRINT_I(FQSPI_DEBUG_TAG, format, ##__VA_ARGS__)
+#define FQSPI_DEBUG(format, ...) FT_DEBUG_PRINT_D(FQSPI_DEBUG_TAG, format, ##__VA_ARGS__)
+
 /* write and read task delay in milliseconds */
-#define TASK_DELAY_MS   1000UL
-
-static xTaskHandle read_handle;
-static xTaskHandle write_handle;
-
+#define TASK_DELAY_MS 1000UL
+#define TIMER_OUT (pdMS_TO_TICKS(5000UL))
 /* Offset 1M from flash maximum capacity*/
-#define FLASH_WR_OFFSET SZ_1M 
+#define FLASH_WR_OFFSET SZ_1M
 /* write and read start address */
-static u32 flash_wr_start = 0 ; 
+static u32 flash_wr_start = 0;
 
-/* write and read cs channel */
-#define QSPI_CS_CHANNEL 0
-
-#define DAT_LENGTH  64
+#define DAT_LENGTH 64
 static u8 rd_buf[DAT_LENGTH] = {0};
 static u8 wr_buf[DAT_LENGTH] = {0};
 
-/* test task number */
-#define READ_WRITE_TASK_NUM 3
-static xSemaphoreHandle xCountingSemaphore;
-static xSemaphoreHandle xCtrlSemaphore;
-
+enum
+{
+    QSPI_TEST_SUCCESS = 0,
+    QSPI_TEST_UNKNOWN = 1,
+    QSPI_INIT_FAILURE = 2,
+    QSPI_WRITE_FAILURE = 3,
+    QSPI_READ_FAILURE = 4,
+};
+static QueueHandle_t xQueue = NULL;
 static FFreeRTOSQspi *os_qspi_ctrl_p = NULL;
 
-static FFreeRTOSQspiMessage message = {0};
-
-static void FFreeRTOSQspiDelete(void *pvParameters);
-static void QspiReadTask(void *pvParameters);
-static void QspiWriteTask(void *pvParameters);
-
-static void QspiInitTask(void *pvParameters)
+static FError QspiRead(int channel)
 {
-    BaseType_t xReturn = pdPASS;/* 定义一个创建信息返回值，默认为 pdPASS */
-
-    for (int i = 0; i < READ_WRITE_TASK_NUM; i++)
-    {
-        xSemaphoreGive(xCountingSemaphore);
-    }
-
-    xReturn = xTaskCreate((TaskFunction_t)QspiWriteTask,  /* 任务入口函数 */
-                        (const char *)"QspiWriteTask",/* 任务名字 */
-                        (uint16_t)1024,  /* 任务栈大小 */
-                        (void *)pvParameters,/* 任务入口函数参数 */
-                        (UBaseType_t)configMAX_PRIORITIES - 1, /* 任务的优先级 */
-                        (TaskHandle_t *)&write_handle); /* 任务控制 */
-    
-    xReturn = xTaskCreate((TaskFunction_t)QspiReadTask,  /* 任务入口函数 */
-                          (const char *)"QspiReadTask",/* 任务名字 */
-                          (uint16_t)1024,  /* 任务栈大小 */
-                          (void *)pvParameters,/* 任务入口函数参数 */
-                          (UBaseType_t)configMAX_PRIORITIES - 1, /* 任务的优先级 */
-                          (TaskHandle_t *)&read_handle); /* 任务控制 */
-
-    xReturn = xTaskCreate((TaskFunction_t)FFreeRTOSQspiDelete,  /* 任务入口函数 */
-                          (const char *)"QspiDeleteTask",/* 任务名字 */
-                          (uint16_t)1024,  /* 任务栈大小 */
-                          (void *)pvParameters,/* 任务入口函数参数 */
-                          (UBaseType_t)configMAX_PRIORITIES - 1, /* 任务的优先级 */
-                          NULL); /* 任务控制 */
-    if (xReturn != pdPASS)
-    {
-        goto qspi_init_exit;
-    }
-
-qspi_init_exit:
-    vTaskDelete(NULL);
-}
-
-static void QspiReadTask(void *pvParameters)
-{
-    int channel = (int)(uintptr)pvParameters;
     const TickType_t xDelay = pdMS_TO_TICKS(TASK_DELAY_MS);
     FError ret = FQSPI_SUCCESS;
+    int i = 0;
+    FFreeRTOSQspiMessage message;
+    memset(&message, 0, sizeof(message));
 
-    xSemaphoreTake(xCountingSemaphore, portMAX_DELAY);
-
-    /* As per most tasks, this task is implemented in an infinite loop. */
-    for (;;)
+    printf("CSN%d QspiReadTask is running\r\n", channel);
+    message.read_buf = rd_buf;
+    message.length = DAT_LENGTH;
+    message.addr = flash_wr_start;
+    message.cmd = FQSPI_FLASH_CMD_READ;
+    message.cs = channel;
+    ret = FFreeRTOSQspiTransfer(os_qspi_ctrl_p, &message);
+    if (FQSPI_SUCCESS != ret)
     {
-        /* Print out the name of this task. */
-        printf("CSN%d QspiReadTask is running\r\n", channel);
-
-        message.read_buf = rd_buf;
-        message.length = DAT_LENGTH;
-        message.addr = flash_wr_start;
-        message.cmd = FQSPI_FLASH_CMD_READ;
-        message.cs = channel;
-        ret = FFreeRTOSQspiTransfer(os_qspi_ctrl_p, &message);
-        if (FQSPI_SUCCESS != ret)
-        {
-            printf("QspiReadTask FFreeRTOSQspiTransfer failed, return value: 0x%x\r\n", ret);
-        }
-        taskENTER_CRITICAL(); //进入临界区
-        FtDumpHexByte(rd_buf, DAT_LENGTH);
-        taskEXIT_CRITICAL(); //退出临界区
-
-        /* Delay for a period.  This time a call to vTaskDelay() is used which
-        places the task into the Blocked state until the delay period has
-        expired.  The parameter takes a time specified in 'ticks', and the
-        pdMS_TO_TICKS() macro is used (where the xDelay constant is
-        declared) to convert TASK_DELAY_MS milliseconds into an equivalent time in
-        ticks. */
-        vTaskDelay(xDelay);
+        FQSPI_ERROR("QspiReadTask FFreeRTOSQspiTransfer failed, return value: 0x%x\r\n", ret);
+        return ret;
     }
+    FtDumpHexByte(rd_buf, DAT_LENGTH);
+
+    for (i = 0; i < DAT_LENGTH; i++)
+    {
+        if (rd_buf[i] != wr_buf[i])
+        {
+            FQSPI_ERROR("The read and write data is inconsistent.\r\n");
+            ret = FQSPI_INVAL_PARAM;
+            return ret;
+        }
+    }
+
+    return ret;
 }
 
-static void QspiWriteTask(void *pvParameters)
+static FError QspiWrite(int channel)
 {
+    FError ret = FQSPI_SUCCESS;
     char *pcTaskName;
-    int channel = (int)(uintptr)pvParameters;
+    const TickType_t xDelay = pdMS_TO_TICKS(TASK_DELAY_MS);
+    int i = 0;
+    FFreeRTOSQspiMessage message;
+    memset(&message, 0, sizeof(message));
+
     if (channel == 0)
     {
         pcTaskName = "CSN0 write content successfully";
@@ -153,137 +114,147 @@ static void QspiWriteTask(void *pvParameters)
         pcTaskName = "CSN1 write content successfully";
     }
 
-    const TickType_t xDelay = pdMS_TO_TICKS(TASK_DELAY_MS);
-    int i = 0;
-    FError ret = FQSPI_SUCCESS;
+    printf("CSN%d QspiWrite is running\r\n", channel);
 
-    xSemaphoreTake(xCountingSemaphore, portMAX_DELAY);
-
-    /* As per most tasks, this task is implemented in an infinite loop. */
-    for (;;)
+    /*set the write buffer content*/
+    u8 len = strlen(pcTaskName) + 1;
+    memcpy(&wr_buf, pcTaskName, len);
+    message.addr = flash_wr_start;
+    message.cmd = FQSPI_FLASH_CMD_SE;
+    message.cs = channel;
+    ret = FFreeRTOSQspiTransfer(os_qspi_ctrl_p, &message);
+    if (FQSPI_SUCCESS != ret)
     {
-        /* Print out the name of this task. */
-        printf("CSN%d QspiWriteTask is running\r\n", channel);
-        
-        /*set the write buffer content*/
-        u8 len = strlen(pcTaskName) + 1;
-        memcpy(&wr_buf, pcTaskName, len);
-
-        message.addr = flash_wr_start;
-        message.cmd = FQSPI_FLASH_CMD_SE;
-        message.cs = channel;
-        ret = FFreeRTOSQspiTransfer(os_qspi_ctrl_p, &message);
-        if (FQSPI_SUCCESS != ret)
-        {
-            printf("QspiWriteTask FFreeRTOSQspiTransfer failed, return value: 0x%x\r\n", ret);
-        }
-
-        message.write_buf = wr_buf;
-        message.length = DAT_LENGTH;
-        message.addr = flash_wr_start;
-        message.cmd = FQSPI_FLASH_CMD_PP;
-        message.cs = channel;
-        ret = FFreeRTOSQspiTransfer(os_qspi_ctrl_p, &message);
-        if (FQSPI_SUCCESS != ret)
-        {
-            printf("QspiWriteTask FFreeRTOSQspiTransfer failed, return value: 0x%x\r\n", ret);
-        }
-
-        /* Delay for a period.  This time a call to vTaskDelay() is used which
-        places the task into the Blocked state until the delay period has
-        expired.  The parameter takes a time specified in 'ticks', and the
-        pdMS_TO_TICKS() macro is used (where the xDelay constant is
-        declared) to convert TASK_DELAY_MS milliseconds into an equivalent time in
-        ticks. */
-        vTaskDelay(xDelay);
+        FQSPI_ERROR("FFreeRTOSQspiTransfer failed, return value: 0x%x\r\n", ret);
+        return ret;
     }
+    message.write_buf = wr_buf;
+    message.length = DAT_LENGTH;
+    message.addr = flash_wr_start;
+    message.cmd = FQSPI_FLASH_CMD_PP;
+    message.cs = channel;
+    ret = FFreeRTOSQspiTransfer(os_qspi_ctrl_p, &message);
+    if (FQSPI_SUCCESS != ret)
+    {
+        FQSPI_ERROR("FFreeRTOSQspiTransfer failed, return value: 0x%x\r\n", ret);
+        return ret;
+    }
+
+    return ret;
 }
 
-BaseType_t FFreeRTOSQspiDualFlashTaskCreate(void)
+static FError QspiInit(void)
 {
-    BaseType_t xReturn = pdPASS;/* 定义一个创建信息返回值，默认为 pdPASS */
-    memset(&message, 0, sizeof(message));
+    FError ret = FQSPI_SUCCESS;
 
-    xCountingSemaphore = xSemaphoreCreateCounting(READ_WRITE_TASK_NUM, 0);
-    if (xCountingSemaphore == NULL)
-    {
-        printf("FFreeRTOSWdtCreate xCountingSemaphore create failed.\r\n");
-        return pdFAIL;
-    }
-
-    xCtrlSemaphore = xSemaphoreCreateBinary();
-    if (xCtrlSemaphore != NULL)
-    {
-        xSemaphoreGive(xCtrlSemaphore);
-    }
-
-#if defined(CONFIG_TARGET_E2000)
     /*init iomux*/
     FIOMuxInit();
-    FIOPadSetQspiMux(FQSPI0_ID, FQSPI_CS_0);
-    FIOPadSetQspiMux(FQSPI0_ID, FQSPI_CS_1);
-#endif
+    FIOPadSetQspiMux(QSPI_TEST_ID, FQSPI_CS_0);
+    FIOPadSetQspiMux(QSPI_TEST_ID, FQSPI_CS_1);
 
     /* init qspi controller */
-    os_qspi_ctrl_p = FFreeRTOSQspiInit(FQSPI0_ID);
+    os_qspi_ctrl_p = FFreeRTOSQspiInit(QSPI_TEST_ID);
     flash_wr_start = os_qspi_ctrl_p->qspi_ctrl.flash_size - FLASH_WR_OFFSET;
     if (os_qspi_ctrl_p == NULL)
     {
-        printf("FFreeRTOSWdtInit failed.\n");
+        FQSPI_ERROR("FFreeRTOSQspiInit failed.\n");
+        ret = FQSPI_INVAL_PARAM;
     }
 
-    taskENTER_CRITICAL(); /*进入临界区*/
-    /* qspi 通道0 */
-    xSemaphoreTake(xCtrlSemaphore, portMAX_DELAY);
-    xReturn = xTaskCreate((TaskFunction_t)QspiInitTask,  /* 任务入口函数 */
-                          (const char *)"QspiInitTask0",  /* 任务名字 */
-                          (uint16_t)1024,  /* 任务栈大小 */
-                          (void *)0,  /* 任务入口函数参数 */
-                          (UBaseType_t)2,  /* 任务的优先级 */
-                          NULL);
-    /* qspi 通道1 */
-    xSemaphoreTake(xCtrlSemaphore, portMAX_DELAY);
-    xReturn = xTaskCreate((TaskFunction_t)QspiInitTask,  /* 任务入口函数 */
-                          (const char *)"QspiInitTask1",  /* 任务名字 */
-                          (uint16_t)1024,  /* 任务栈大小 */
-                          (void *)1,  /* 任务入口函数参数 */
-                          (UBaseType_t)2,  /* 任务的优先级 */
-                          NULL);
-    taskEXIT_CRITICAL(); /*退出临界区*/
-
-    return xReturn;
+    return ret;
 }
 
-static void FFreeRTOSQspiDelete(void *pvParameters)
+static void FFreeRTOSQspiDelete(void)
 {
-    xSemaphoreTake(xCountingSemaphore, portMAX_DELAY);
-
     BaseType_t xReturn = pdPASS;
 
-    if (read_handle)
+    FIOMuxDeInit();
+    FFreeRTOSQspiDeinit(os_qspi_ctrl_p);
+}
+
+static void FFreeRTOSQspiDualFlashTask(void)
+{
+    FError ret = FQSPI_SUCCESS;
+    int task_res = QSPI_TEST_SUCCESS;
+
+    ret = QspiInit();
+    if (FQSPI_SUCCESS != ret)
     {
-        vTaskDelete(read_handle);
-        printf("Delete QspiReadTask successfully.\r\n");
+        FQSPI_ERROR("Flash init failed.\r\n");
+        task_res = QSPI_INIT_FAILURE;
+        goto task_exit;
     }
 
-    if (write_handle)
+    for (int i = FQSPI_CS_0; i < 2; i++)
     {
-        vTaskDelete(write_handle);
-        printf("Delete QspiWriteTask successfully.\r\n");
+        ret = QspiWrite(i);
+        if (FQSPI_SUCCESS != ret)
+        {
+            FQSPI_ERROR("CSN%d Flash write failed.\r\n", i);
+            task_res = QSPI_WRITE_FAILURE;
+            goto task_exit;
+        }
+
+        ret = QspiRead(i);
+        if (FQSPI_SUCCESS != ret)
+        {
+            FQSPI_ERROR("CSN%d Flash read failed.\r\n", i);
+            task_res = QSPI_READ_FAILURE;
+            goto task_exit;
+        }
     }
 
-    xSemaphoreGive(xCtrlSemaphore);
+task_exit:
+    xQueueSend(xQueue, &task_res, 0);
 
-    if ((int)(uintptr)pvParameters == 1)
-    {
-        /* 删除信号量 */
-        vSemaphoreDelete(xCountingSemaphore);
-        vSemaphoreDelete(xCtrlSemaphore);
-        /* 去初始化 */
-        FIOMuxDeInit();
-        FFreeRTOSQspiDeinit(os_qspi_ctrl_p);
-    }
-    
-    printf("Delete QspiDeleteTask successfully.\r\n");
     vTaskDelete(NULL);
+}
+BaseType_t FFreeRTOSQspiDualFlashTaskCreate(void)
+{
+    BaseType_t xReturn = pdPASS; /* 定义一个创建信息返回值，默认为 pdPASS */
+    int task_res = QSPI_TEST_UNKNOWN;
+
+    xQueue = xQueueCreate(1, sizeof(int));
+    if (xQueue == NULL)
+    {
+        FQSPI_ERROR("xQueue create failed.\r\n");
+        goto exit;
+    }
+
+    taskENTER_CRITICAL();                                             /*进入临界区*/
+    xReturn = xTaskCreate((TaskFunction_t)FFreeRTOSQspiDualFlashTask, /* 任务入口函数 */
+                          (const char *)"FFreeRTOSQspiDualFlashTask", /* 任务名字 */
+                          (uint16_t)1024,                             /* 任务栈大小 */
+                          NULL,                                          /* 任务入口函数参数 */
+                          (UBaseType_t)configMAX_PRIORITIES - 1,      /* 任务的优先级 */
+                          NULL);                                      /* 任务控制 */
+    taskEXIT_CRITICAL();                                              /*退出临界区*/
+
+    if (xReturn == pdFAIL)
+    {
+        FQSPI_ERROR("xTaskCreate FFreeRTOSQspiDualFlashTask failed.");
+        goto exit;
+    }
+
+    xReturn = xQueueReceive(xQueue, &task_res, TIMER_OUT);
+
+    if (xReturn == pdFAIL)
+    {
+        FQSPI_ERROR("xQueue receive timeout.\r\n");
+        goto exit;
+    }
+
+exit:
+    vQueueDelete(xQueue);
+    FFreeRTOSQspiDelete();
+    if (task_res != QSPI_TEST_SUCCESS)
+    {
+        printf("%s@%d: Qspi dual flash example [failure], task_res = %d\r\n", __func__, __LINE__, task_res);
+        return pdFAIL;
+    }
+    else
+    {
+        printf("%s@%d: Qspi dual flash example [success].\r\n", __func__, __LINE__);
+        return pdTRUE;
+    }
 }

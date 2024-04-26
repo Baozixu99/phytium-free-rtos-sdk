@@ -31,11 +31,13 @@ extern "C"
 {
 #endif
 
+#define QSPI_TEST_ID FQSPI0_ID
+
 /* qspi read and write test */
-BaseType_t FFreeRTOSQspiPolledTaskCreate(u32 id);
-BaseType_t FFreeRTOSQspiCheckTaskCreate(u32 id);
+BaseType_t FFreeRTOSQspiPolledTaskCreate(void);
+BaseType_t FFreeRTOSQspiCheckTaskCreate(void);
 BaseType_t FFreeRTOSQspiDualFlashTaskCreate(void);
-BaseType_t FFreeRTOSQspiIndirectTaskCreate(u32 id);
+BaseType_t FFreeRTOSQspiIndirectTaskCreate(void);
 
 #ifdef __cplusplus
 }

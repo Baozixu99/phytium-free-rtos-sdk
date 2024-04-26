@@ -65,7 +65,9 @@ E2000D上使用的Nor Flash介质型号是GD25Q128，容量为16MB;
 ![hardware](./figs/hardware.png)
 
 - 本例程适配了GD25、S25FS256、BOYA的Nor-Flash芯片，如使用其他型号，需自行参考适配
+- PhytiumPi，若未安装qspi-flash芯片插槽，请自行安装
 
+![phytiumpi_hardware](./figs/phytiumpi_hardware.png)
 ### 2.2 SDK配置方法
 
 本例程需要，

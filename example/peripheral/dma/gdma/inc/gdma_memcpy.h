@@ -43,7 +43,7 @@ extern "C"
 /************************** Function Prototypes ******************************/
 
 /*****************************************************************************/
-BaseType_t FFreeRTOSRunGdmaMemcpy(void);
+int FFreeRTOSGdmaMemcpy(void);
 
 #ifdef __cplusplus
 }

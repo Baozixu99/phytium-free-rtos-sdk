@@ -123,28 +123,19 @@ bootelf -p 0x90100000
 
 - 输入 ``can intr``，启动can中断模式发送接收测试例子，测试完标准帧和扩展帧后自动删除任务
 
-![intr_stid](./figs/intr_stid.png)
-......
-![intr_exid](./figs/intr_exid.png)
+![intr_stid](./figs/can_intr.png)
 
 - 输入 ``can polled``，启动can轮询模式发送接收测试例子，测试完标准帧和扩展帧后自动删除任务
 
-![polled_stid](./figs/polled_stid.png)
-......
-![polled_exid](./figs/polled_exid.png)
+![polled_stid](./figs/can_polled.png)
 
 - 输入 ``can filter``，启动can id滤波功能测试例子，测试1只接收id=0x0F的帧，测试2接收帧id&mask(mask=0x03，结果为0表示比较，为1表示忽略)，比较接收id和接收id&maskid(maskid=0x0F)的结果。全部匹配则接收否则滤除。
-滤波测试例子1
-![filter1](./figs/filter1.png)
-......
-![filter1_success](./figs/filter1_success.png)
-滤波测试例子2
-![filter2](./figs/filter2.png)
-......
-![filter2_success](./figs/filter2_success.png)
+
+![filter1](./figs/can_filter.png)
 
 ## 3. 如何解决问题
 
 - 使用can0和can1进行回环测试时，需要将can0和can1的H和L信号线分别进行短接
+- ft2004和d2000不支持id过滤功能的描述
 
 ## 4. 修改历史记录

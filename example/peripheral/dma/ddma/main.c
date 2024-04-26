@@ -13,31 +13,47 @@
  *
  * FilePath: main.c
  * Date: 2022-06-17 08:17:59
- * LastEditTime: 2022-06-17 08:17:59
+ * LastEditTime: 2024-04-19 08:17:59
  * Description:  This file is for DDMA example that running shell task and open scheduler.
  *
  * Modify History:
  *  Ver   Who       Date        Changes
  * ----- ------     --------    --------------------------------------
  * 1.0 zhugengyu    2022/08/26  first commit
+ * 2.0 liyilun      2024/4/19   add no letter shell mode, adapt to auto test system
  */
 
+#include <stdio.h>
+#include "FreeRTOS.h"
+#include "task.h"
+#include"ddma_spi_loopback.h"
+
+#ifdef CONFIG_USE_LETTER_SHELL
 #include "shell.h"
 #include "shell_port.h"
-#include <stdio.h>
+#endif
 
 int main(void)
 {
     BaseType_t ret;
 
+#ifdef CONFIG_USE_LETTER_SHELL
     ret = LSUserShellTask() ;
     if (ret != pdPASS)
     {
         goto FAIL_EXIT;
     }
+#else
 
-    /* ret = FFreeRTOSRunDDMASpiLoopback(2U, 32U); */
-
+    taskENTER_CRITICAL();
+    ret = xTaskCreate((TaskFunction_t)DdmaTasksEntry,
+                        (const char *)"DdmaTaskEntry",
+                        (uint16_t)4096,
+                        NULL,
+                        (UBaseType_t)2,
+                        NULL);
+    taskEXIT_CRITICAL();
+#endif
     vTaskStartScheduler(); /* 启动任务，开启调度 */
     while (1); /* 正常不会执行到这里 */
 

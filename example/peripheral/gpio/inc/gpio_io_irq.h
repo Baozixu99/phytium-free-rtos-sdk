@@ -24,6 +24,8 @@
 #ifndef  GPIO_IO_IRQ_H
 #define  GPIO_IO_IRQ_H
 
+#include "FreeRTOS.h"
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -40,8 +42,7 @@ extern "C"
 /************************** Function Prototypes ******************************/
 
 /*****************************************************************************/
-BaseType_t FFreeRTOSRunGpioIOIrq(u32 out_pin_idx, u32 in_pin_idx);
-
+BaseType_t FFreeRTOSRunGpioIrq(void);
 #ifdef __cplusplus
 }
 #endif

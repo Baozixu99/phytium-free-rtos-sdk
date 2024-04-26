@@ -210,7 +210,7 @@ BaseType_t FFreeRTOSPwmDualChannelTaskCreate()
                           NULL);                                  /* 任务句柄 */
     if (xReturn == pdFAIL)
     {
-        FPWM_ERROR("xTaskCreate GdmaMemcpyTask failed.");
+        FPWM_ERROR("xTaskCreate FFreeRTOSPwmDualChannelTask failed.");
         goto exit;
     }
 

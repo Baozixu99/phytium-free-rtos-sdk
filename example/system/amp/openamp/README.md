@@ -31,10 +31,10 @@
 - 创建流程以及参考文档
 
 remoteproc-design:
-   [remoteproc-design](../../../../../third-party/openamp/docs/remoteproc-design.md)
+   [remoteproc-design](../../../../standalone/third-party/openamp/docs/remoteproc-design.md)
 
 rpmsg-design:
-   [rpmsg-design](../../../../../third-party/openamp/docs/rpmsg-design.md)
+   [rpmsg-design](../../../../standalone/third-party/openamp/docs/rpmsg-design.md)
 
 OpenAMP回调与中断通知机制:
    ![OpenAMP回调与中断通知机制](./figs/OpenAMP回调与中断通知机制.svg)

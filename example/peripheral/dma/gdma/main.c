@@ -42,7 +42,7 @@
 void GdmaExampleTaskEntry()
 {
     /* example functions */
-    FFreeRTOSRunGdmaMemcpy();
+    FFreeRTOSGdmaMemcpy();
 
     /* end flag */
     printf("[test_end]\r\n");
@@ -75,5 +75,5 @@ int main(void)
 
 FAIL_EXIT:
     printf("GDMA example failed in main.c, the ret value is 0x%x. \r\n", ret);
-    return 0;
+    return -2;
 }
