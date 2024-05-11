@@ -13,14 +13,16 @@
  * 
  * FilePath: lwip_iperf_client_example.c
  * Created Date: 2023-10-18 14:30:04
- * Last Modified: 2023-12-29 14:31:20
+ * Last Modified: 2024-04-29 15:21:41
  * Description:  This file is for lwip iperf client example function implementation.
  * 
  * Modify History:
  *  Ver      Who         Date               Changes
  * -----  ----------   --------  ---------------------------------
  *  1.0   liuzhihong  2023/10/18          first release
+ *  2.0   liuzhihong  2024/04/28   add no letter shell mode, adapt to auto-test system
  */
+
 #include <string.h>
 #include <stdio.h>
 #include "strto.h"
@@ -58,7 +60,14 @@ const ip_addr_t remote= IPADDR4_INIT_BYTES(192,168,4,50);
 		.config.phy_duplex = LWIP_PORT_FULL_DUPLEX, \
 		.config.capability = LWIP_PORT_MODE_NAIVE, 
 
-
+#define TIMER_OUT (pdMS_TO_TICKS(5000UL))
+enum
+{
+    LWIP_IPERF_CLIENT_EXAMPLE_SUCCESS = 0,
+    LWIP_IPERF_CLIENT_EXAMPLE_UNKNOWN_STATE = 1,
+    LWIP_IPERF_CLIENT_EXAMPLE_INIT_FAILURE = 2,
+};
+static QueueHandle_t xQueue = NULL;
 
 typedef struct
 {
@@ -109,9 +118,9 @@ static void SetIP(ip_addr_t* ipaddr,ip_addr_t* gw,ip_addr_t* netmask,u32 mac_id)
 
 }
 
-int LwipIperfClientInitTask(void)
+void LwipIperfClientTestTask(void)
 {
-    FError ret = FT_SUCCESS;
+    int task_res = LWIP_IPERF_CLIENT_EXAMPLE_SUCCESS;
     /* mac init */
     for (int i = 0; i < MAC_NUM; i++)
     {
@@ -121,7 +130,7 @@ int LwipIperfClientInitTask(void)
         board_mac_config[i].lwip_mac_config.name[0] = ETH_NAME_PREFIX;
         itoa(board_mac_config[i].lwip_mac_config.mac_instance, &(board_mac_config[i].lwip_mac_config.name[1]), 10);
 
-         /* mac ip addr set: char* -> ip_addr_t */
+        /* mac ip addr set: char* -> ip_addr_t */
         SetIP(&ipaddr,&gw,&netmask,i);
     /* ******************************************************************* */
 
@@ -130,7 +139,8 @@ int LwipIperfClientInitTask(void)
         if (!LwipPortAdd(netif_p, &ipaddr, &netmask, &gw, board_mac_config[i].mac_address, (UserConfig *)&board_mac_config[i]))
         {
             printf("Error adding N/W interface %d.\n\r",board_mac_config[i].lwip_mac_config.mac_instance);
-            return ERR_GENERAL;
+            task_res = LWIP_IPERF_CLIENT_EXAMPLE_INIT_FAILURE;
+            goto task_exit;
         }
         printf("LwipPortAdd mac_instance %d is over.\n\r",board_mac_config[i].lwip_mac_config.mac_instance);
 
@@ -164,36 +174,64 @@ int LwipIperfClientInitTask(void)
     else
     {   
         printf("Start iperf client test failed !!! \r\n");
-        return ERR_GENERAL;
+        task_res = LWIP_IPERF_CLIENT_EXAMPLE_INIT_FAILURE;
+        goto task_exit;
     }     
-  
 
-    if (ret == FT_SUCCESS)
-    {
-        printf("%s@%d: Lwip iperf example success !!! \r\n", __func__, __LINE__);
-        printf("[system_example_pass]\r\n");
-    }
-    else
-    {
-        printf("%s@%d: Lwip iperf example failed !!!, ret = %d \r\n", __func__, __LINE__, ret);
-    }
+task_exit:
+    xQueueSend(xQueue, &task_res, 0);
 
     vTaskDelete(NULL);
-    return 0;
 }
 
 
-void LwipIperfClientCreate(void)
+int FFreeRTOSLwipIperfClientTaskCreate(void)
 {
-    BaseType_t ret;
-    ret = xTaskCreate((TaskFunction_t)LwipIperfClientInitTask, /* 任务入口函数 */
-                      (const char *)"LwipIperfClientInitTask", /* 任务名字 */
-                      (uint16_t)2048,                 /* 任务栈大小 */
+    BaseType_t xReturn = pdPASS; /* 定义一个创建信息返回值，默认为 pdPASS */
+    int task_res = LWIP_IPERF_CLIENT_EXAMPLE_UNKNOWN_STATE;
+
+    xQueue = xQueueCreate(1, sizeof(int)); /* 创建消息队列 */
+    if (xQueue == NULL)
+    {
+        printf("xQueue create failed.\r\n");
+        goto exit;
+    }
+    
+    xReturn = xTaskCreate((TaskFunction_t)LwipIperfClientTestTask, /* 任务入口函数 */
+                      (const char *)"LwipIperfClientTestTask", /* 任务名字 */
+                      (uint16_t)4096,                 /* 任务栈大小 */
                         NULL,                   /* 任务入口函数参数 */
                       (UBaseType_t)configMAX_PRIORITIES - 1, /* 任务的优先级 */
                       NULL);                          /* 任务控制块指针 */
+    if (xReturn == pdFAIL)
+    {
+        printf("xTaskCreate LwipIpv4InitTask failed.\r\n");
+        goto exit;
+    }
 
-    FASSERT_MSG(ret == pdPASS, "LwipTestCreate Task creation is failed");
+    xReturn = xQueueReceive(xQueue, &task_res, TIMER_OUT);
+    if (xReturn == pdFAIL)
+    {
+        printf("xQueue receive timeout.\r\n");
+        goto exit;
+    }
+
+exit:
+    if (xQueue != NULL)
+    {
+        vQueueDelete(xQueue);
+    }
+
+    if (task_res != LWIP_IPERF_CLIENT_EXAMPLE_SUCCESS)
+    {
+        printf("%s@%d: Lwip iperf client example [failure], task_res = %d\r\n", __func__, __LINE__, task_res);
+        return task_res;
+    }
+    else
+    {
+        printf("%s@%d: Lwip iperf client example [success].\r\n", __func__, __LINE__);
+        return task_res;
+    }
 }
 
 void LwipIperfClientDeinit(void)

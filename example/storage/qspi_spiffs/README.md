@@ -18,8 +18,8 @@
 - 3. 支持的 Flash 容量不能超过 128 MB
 - 4. 不支持坏块检测和坏块处理
 
-本例程通过Freertos下的SPIFFS测试，验证了QSPI Nor-flash文件系统的基本功能，如文件系统格式化，文件的创建、读写、删除和枚举等，例程在FT2000/4上测试通过，使用的Nor Flash介质型号是GD25LQ256E，容量为32MB;
-E2000D上使用的Nor Flash介质型号是GD25LQ128E，容量为16MB;
+本例程通过Freertos下的SPIFFS测试，验证了QSPI Nor-flash文件系统的基本功能，如文件系统格式化，文件的创建、读写、删除和枚举等，例程在E2000D DEMO上测试通过，使用的Nor Flash介质型号是GD25LQ128E，容量为16MB;
+FT2000/4上使用的Nor Flash介质型号是GD25LQ256E，容量为32MB;
 
 ## 2. 如何使用例程
 
@@ -42,6 +42,10 @@ E2000D上使用的Nor Flash介质型号是GD25LQ128E，容量为16MB;
 - 本例程适配了GD25Q256、GD25Q128、GD25Q64、S25FS256的Nor-Flash芯片，如使用其他型号，需自行参考适配
 
 ![hardware](./figs/hardware.png)
+
+- PhytiumPi，若未安装qspi-flash芯片插槽，请自行安装
+
+![phytiumpi_hardware](./figs/phytiumpi_hardware.png)
 
 ### 2.2 SDK配置方法
 
@@ -98,19 +102,12 @@ bootelf -p 0x90100000
 
 ><font size="1">描述输入输出情况，列出存在哪些输出，对应的输出是什么（建议附录相关现象图片）</font><br />
 
-程序启动后，依次创建Init、WriteRead任务，创建单次模式软件定时器用于删除任务，Init任务会首先初始化并挂载qspi flash的部分区域（可通过FSPIFFS_IF_FORMAT选择是否进行格式化操作），随后创建一个文件，然后释放信号量通知WriteRead任务开始执行;
+程序启动后，依次创建Init、WriteRead任务，Init任务会首先初始化并挂载qspi flash的部分区域（可通过FSPIFFS_IF_FORMAT选择是否进行格式化操作），随后创建一个文件，然后WriteRead任务开始执行;
 
-- init完成，挂载文件系统完成，创建测试文件
+- init完成，挂载文件系统完成，创建测试文件，进行写数据和读数据
 
-![init](./figs/init.png)
+![qspi_spiffs_test_result](./figs/qspi_spiffs_test_result.png)
 
-- 读写任务周期性执行
-
-![wr](./figs/wr.png)
-
-- 软件定时器触发，删除读写任务
-
-![delete](./figs/delete.png)
 
 ## 3. 如何解决问题
 

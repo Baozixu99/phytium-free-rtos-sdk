@@ -20,307 +20,229 @@
  *  Ver      Who            Date           Changes
  * -----   ------         --------     --------------------------------------
  *  1.0   wangxiaodong    2022/8/9      first release
+ *  2.0   liqiaozhong     2024/4/22     add no letter shell mode, adapt to auto-test system
  */
+
 #include <string.h>
+
 #include "FreeRTOSConfig.h"
 #include "FreeRTOS.h"
 #include "task.h"
 #include "queue.h"
-#include "timers.h"
+
 #include "fparameters.h"
 #include "fgeneric_timer.h"
-#include "fwdt.h"
+#include "fdebug.h"
+
 #include "fwdt_os.h"
 #include "fcpu_info.h"
-#include "wdt_example.h"
 
-/* The periods assigned to the one-shot timers. */
-#define ONE_SHOT_TIMER_PERIOD       ( pdMS_TO_TICKS( 15000UL ) )
-#define AUTO_RELOAD_TIMER_PERIOD    ( pdMS_TO_TICKS( 1000UL ) )
+#define FWDT_DEBUG_TAG "WDT-EXAMPLE"
+#define FWDT_ERROR(format, ...)   FT_DEBUG_PRINT_E(FWDT_DEBUG_TAG, format, ##__VA_ARGS__)
+#define FWDT_WARN(format, ...)    FT_DEBUG_PRINT_W(FWDT_DEBUG_TAG, format, ##__VA_ARGS__)
+#define FWDT_INFO(format, ...)    FT_DEBUG_PRINT_I(FWDT_DEBUG_TAG, format, ##__VA_ARGS__)
+#define FWDT_DEBUG(format, ...)   FT_DEBUG_PRINT_D(FWDT_DEBUG_TAG, format, ##__VA_ARGS__)
 
-/* watchdog timeout value in seconds */
-#define WDT_TIMEOUT 4
+/* user-define */
+#define WDT_CONTROLLER_ID           FWDT0_ID
+#define WDT_FEED_TIMES              3 /* 喂狗操作次数 */  
+#define WDT_ONCE_TIMEOUT            3 /* watchdog timeout value in seconds */
+#define WDT_FEED_PERIOD             (pdMS_TO_TICKS(15000UL)) /* 喂狗操作最长执行时间，设置时需要考虑WDT_FEED_TIMES与WDT_ONCE_TIMEOUT */
+#define WDT_FEED_TASK_PRIORITY      3
+#define WDT_EXAMPLE_TIMEOUT         (WDT_FEED_PERIOD + (pdMS_TO_TICKS(3000UL))) /* 用例最长执行时间 */
 
-/* watchdog feed period */
-#define WDT_FEED_PERIOD             ( pdMS_TO_TICKS( 3000UL ))
-
-/* test task number */
-#define READ_WRITE_TASK_NUM 2
-static xSemaphoreHandle xCountingSemaphore;
-
-static xTaskHandle queue_receive_handle;
-static xTaskHandle feed_handle;
-static TimerHandle_t xOneShotTimer;
-static TimerHandle_t xAutoReloadTimer;
-
-/* Declare a variable of type QueueHandle_t.  This is used to store the queue
-that is accessed by all three tasks. */
-static QueueHandle_t xQueue;
+enum
+{
+    WDT_EXAMPLE_SUCCESS = 0,
+    WDT_EXAMPLE_UNKNOWN_STATE,
+    WDT_EXAMPLE_INIT_FAILURE,
+    WDT_EXAMPLE_FEED_FAILURE,             
+};
 
 static FFreeRTOSWdt *os_wdt_ctrl_p;
-
-typedef struct
-{
-    u32 count;
-    FWdtCtrl *ctrl;
-} FWdtQueueData;
-
-static void FFreeRTOSWdtDelete(FFreeRTOSWdt *os_wdt_p);
+static u32 wdt_feed_count = 0; /* 记录喂狗次数 */
+static QueueHandle_t xQueue = NULL;
+static TaskHandle_t wdt_feed_task = NULL;
+const UBaseType_t wdt_feed_task_index = 0; /* the index must set to 0 */
 
 static void FFreeRTOSWdtInterruptHandler(s32 vector, void *param)
 {
     FASSERT(param != NULL);
-    static FWdtQueueData xSendStructure;
+    FWdtCtrl *wdt_ctrl_p_irq = (FWdtCtrl *)param;
+    BaseType_t xhigher_priority_task_woken = pdFALSE;
+    u32 second = 0;
 
-    portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
-
-    xSendStructure.ctrl = (FWdtCtrl *)param;
-    xSendStructure.count++;
-
-    FWdtRefresh(xSendStructure.ctrl);
-
-    printf("FFreeRTOSWdtInterruptHandler has been run %d times \r\n", xSendStructure.count);
-
-    xQueueSendToBackFromISR(xQueue, &xSendStructure, &xHigherPriorityTaskWoken);
-
-    /* never call taskYIELD() form ISR! */
-    portEND_SWITCHING_ISR(xHigherPriorityTaskWoken);
-
+    if (wdt_feed_count >= WDT_FEED_TIMES)
+    {
+        FWdtRefresh(wdt_ctrl_p_irq);
+        vTaskNotifyGiveIndexedFromISR(wdt_feed_task, wdt_feed_task_index, &xhigher_priority_task_woken);
+        printf("Receive WDT timeout intr and try to return.\r\n");
+        portYIELD_FROM_ISR(xhigher_priority_task_woken); /* 如果中断触发了更高优先级的任务，确保更高优先级的任务尽快执行 */
+    }
+    else
+    {
+        FWdtRefresh(wdt_ctrl_p_irq);
+        second = GenericTimerRead(GENERIC_TIMER_ID0) / GenericTimerFrequecy();
+        printf("Receive WDT timeout intr and refresh it, count: %d, second: %d\r\n", wdt_feed_count, second);
+        wdt_feed_count ++;
+    }
 }
 
-static void FFreeRTOSWdtInitTask(void *pvParameters)
+static FError WdtExampleInit(void)
 {
-    /* The wdt_id to use is passed in via the parameter.
-    Cast this to a wdt_id pointer. */
-    u32 wdt_id = (u32)(uintptr)pvParameters;
-    u32 timeout = WDT_TIMEOUT;
-    u32 cpu_id = 0;
-
+    FError ret = FWDT_SUCCESS;
+    
     /* init wdt controller */
-    os_wdt_ctrl_p = FFreeRTOSWdtInit(wdt_id);
+    os_wdt_ctrl_p = FFreeRTOSWdtInit(WDT_CONTROLLER_ID);
     if (os_wdt_ctrl_p == NULL)
     {
-        printf("FFreeRTOSWdtInit failed.\n");
+        ret = FREERTOS_WDT_INIT_ERROR;
+        FWDT_ERROR("FFreeRTOSWdtInit() error.");
         goto wdt_init_exit;
     }
-    /* set wdt timeout value */
-    FFreeRTOSWdtControl(os_wdt_ctrl_p, FREERTOS_WDT_CTRL_SET_TIMEOUT, &timeout);
-
-    /* start wdt controller */
-    FFreeRTOSWdtControl(os_wdt_ctrl_p, FREERTOS_WDT_CTRL_START, NULL);
 
     /* set wdt timeout interrupt handler */
+    u32 cpu_id = 0;
     FWdtCtrl *pctrl = &os_wdt_ctrl_p->wdt_ctrl;
     FWdtConfig *pconfig = &os_wdt_ctrl_p->wdt_ctrl.config;
     GetCpuId(&cpu_id);
+    printf("WDT_CONTROLLER_ID: %d, pconfig->irq_num: %ld\r\n", WDT_CONTROLLER_ID, pconfig->irq_num);
     InterruptSetTargetCpus(pconfig->irq_num, cpu_id);
+
     /* interrupt init */
     InterruptSetPriority(pconfig->irq_num, pconfig->irq_prority);
     InterruptInstall(pconfig->irq_num, FFreeRTOSWdtInterruptHandler, pctrl, pconfig->instance_name);
     InterruptUmask(pconfig->irq_num);
 
-    printf("FFreeRTOSWdtInitTask execute successfully.\r\n");
+wdt_init_exit:
+    FWDT_INFO("%s return with ret: %d", __func__, ret);
+    return ret;
+}
 
-    for (int i = 0; i < READ_WRITE_TASK_NUM; i++)
+static FError WdtExampleFeed(void)
+{
+    FError ret = FWDT_SUCCESS;
+    uint32_t notify_result;
+    u32 wdt_timeout = WDT_ONCE_TIMEOUT; /* 为了传入地址，重新赋值 */
+    const TickType_t max_block_time = WDT_FEED_PERIOD;
+
+    /* set wdt timeout value */
+    ret = FFreeRTOSWdtControl(os_wdt_ctrl_p, FREERTOS_WDT_CTRL_SET_TIMEOUT, &wdt_timeout);
+    if (ret != FWDT_SUCCESS)
     {
-        xSemaphoreGive(xCountingSemaphore);
+        FWDT_ERROR("FFreeRTOSWdtControl SET_TIMEOUT error.");
+        goto wdt_feed_exit;
     }
 
-wdt_init_exit:
+    wdt_feed_task = xTaskGetCurrentTaskHandle();
+
+    /* start wdt controller */
+    ret = FFreeRTOSWdtControl(os_wdt_ctrl_p, FREERTOS_WDT_CTRL_START, NULL);
+    if (ret != FWDT_SUCCESS)
+    {
+        FWDT_ERROR("FFreeRTOSWdtControl CTRL_START error.");
+        goto wdt_feed_exit;
+    }
+
+    notify_result = ulTaskNotifyTakeIndexed(wdt_feed_task_index, pdTRUE, max_block_time); /* 等待喂狗完毕后产生的超时中断 */
+    if (notify_result != 1)
+    {
+        ret = FREERTOS_WDT_SEM_ERROR;
+        FWDT_ERROR("Wait WDT finish notify_result timeout.");
+        goto wdt_feed_exit;
+    }
+
+    ret = FFreeRTOSWdtControl(os_wdt_ctrl_p, FREERTOS_WDT_CTRL_STOP, NULL);
+    if (ret != FWDT_SUCCESS)
+    {
+        FWDT_ERROR("FFreeRTOSWdtControl CTRL_STOP error.");
+        goto wdt_feed_exit;
+    }
+    
+
+wdt_feed_exit:
+    FWDT_INFO("%s return with ret: %d", __func__, ret);
+    return ret;
+}
+
+static void WdtExampleTask()
+{
+    FError ret = FWDT_SUCCESS;
+    int task_res = WDT_EXAMPLE_SUCCESS;
+
+    ret = WdtExampleInit();
+    if (ret != FWDT_SUCCESS)
+    {
+        task_res = WDT_EXAMPLE_INIT_FAILURE;
+        FWDT_ERROR("WdtExampleInit() failed.");
+        goto task_exit;
+    }
+
+    ret = WdtExampleFeed(); /* 尝试喂几次狗，如果没有出现系统自动复位的现象，则说明喂狗成功，最后等待超时中断产生后退出 */
+    if (ret != FWDT_SUCCESS)
+    {
+        task_res = WDT_EXAMPLE_FEED_FAILURE;
+        FWDT_ERROR("WdtExampleFeed() failed.");
+        goto task_exit;
+    }
+
+task_exit:
+    if (os_wdt_ctrl_p != NULL)
+    {
+        FFreeRTOSWdtDeinit(os_wdt_ctrl_p);
+    }
+
+    xQueueSend(xQueue, &task_res, 0);
+
     vTaskDelete(NULL);
 }
 
-static void FFreeRTOSWdtQueueReceiveTask(void)
+
+int FFreeRTOSWdtCreate(void)
 {
-    xSemaphoreTake(xCountingSemaphore, portMAX_DELAY);
+    BaseType_t xReturn = pdPASS; /* 定义一个创建信息返回值，默认为 pdPASS */
+    int task_res = WDT_EXAMPLE_UNKNOWN_STATE;
 
-    static FWdtQueueData xReceiveStructure;
-
-    /* As per most tasks, this task is implemented in an infinite loop. */
-    for (;;)
-    {
-        xQueueReceive(xQueue, &xReceiveStructure, portMAX_DELAY);
-        u32 seconds = GenericTimerRead(GENERIC_TIMER_ID0) / GenericTimerFrequecy();
-        vPrintf("FFreeRTOSWdtQueueReceiveTask run, count = %d, time seconds: %d\r\n", xReceiveStructure.count, seconds);
-    }
-}
-
-static void FFreeRTOSWdtFeedTask(void *pvParameters)
-{
-    xSemaphoreTake(xCountingSemaphore, portMAX_DELAY);
-
-    /* As per most tasks, this task is implemented in an infinite loop. */
-    for (;;)
-    {
-        FFreeRTOSWdtControl(os_wdt_ctrl_p, FREERTOS_WDT_CTRL_KEEPALIVE, NULL);
-        u32 seconds = GenericTimerRead(GENERIC_TIMER_ID0) / GenericTimerFrequecy();
-        vPrintf("FFreeRTOSWdtFeedTask run, time seconds: %d\r\n", seconds);
-        vTaskDelay(WDT_FEED_PERIOD);
-    }
-}
-
-static void prvOneShotTimerCallback(TimerHandle_t xTimer)
-{
-    /* Output a string to show the time at which the callback was executed. */
-    vPrintf("One-shot timer callback executing, will delete FFreeRTOSWdtFeedTask.\r\n");
-
-    /* The count of the number of times this software timer has expired is
-    stored in the timer's ID.  Obtain the ID, increment it, then save it as the
-    new ID value.  The ID is a void pointer, so is cast to a uint32_t. */
-
-    if (feed_handle)
-    {
-        vTaskDelete(feed_handle);
-        vPrintf("Delete FFreeRTOSWdtFeedTask success.\r\n");
-    }
-
-}
-
-static void prvAutoReloadTimerCallback(TimerHandle_t xTimer)
-{
-    /* Output a string to show the time at which the callback was executed. */
-    static u32 count = 0;
-    u32 time_left = 0;
-
-    count++;
-    /* The count of the number of times this software timer has expired is
-    stored in the timer's ID.  Obtain the ID, increment it, then save it as the
-    new ID value.  The ID is a void pointer, so is cast to a uint32_t. */
-
-    if (count >= 30)
-    {
-        vPrintf("Auto-reload callback executing, Delete FFreeRTOSWdtQueueReceiveTask and software timer.\r\n");
-        FFreeRTOSWdtDelete(os_wdt_ctrl_p);
-    }
-}
-
-BaseType_t FFreeRTOSWdtCreate(u32 id)
-{
-    BaseType_t xReturn = pdPASS;/* 定义一个创建信息返回值，默认为 pdPASS */
-    BaseType_t xTimer1Started = pdPASS;
-    BaseType_t xTimer2Started = pdPASS;
-    u32 wdt_id = id;
-    /* The queue is created to hold a maximum of 3 structures of type xData. */
-    xQueue = xQueueCreate(3, sizeof(FWdtQueueData));
+    xQueue = xQueueCreate(1, sizeof(int)); /* 创建消息队列 */
     if (xQueue == NULL)
     {
-        printf("FFreeRTOSWdtCreate FWdtQueueData create failed.\r\n");
-        return pdFAIL;
+        FWDT_ERROR("xQueue create failed.");
+        goto exit;
     }
 
-    xCountingSemaphore = xSemaphoreCreateCounting(READ_WRITE_TASK_NUM, 0);
-    if (xCountingSemaphore == NULL)
+    xReturn = xTaskCreate((TaskFunction_t)WdtExampleTask,         /* 任务入口函数 */
+                          (const char *)"WdtExampleTask",         /* 任务名字 */
+                          (uint16_t)4096,                         /* 任务栈大小 */
+                          NULL,                                   /* 任务入口函数参数 */
+                          (UBaseType_t)WDT_FEED_TASK_PRIORITY,    /* 任务优先级 */
+                          NULL);                                  /* 任务句柄 */
+    if (xReturn == pdFAIL)
     {
-        printf("FFreeRTOSWdtCreate xCountingSemaphore create failed.\r\n");
-        return pdFAIL;
+        FWDT_ERROR("xTaskCreate WdtExampleTask failed.");
+        goto exit;
     }
 
-    taskENTER_CRITICAL(); //进入临界区
-    /* wdt init task */
-    xReturn = xTaskCreate((TaskFunction_t)FFreeRTOSWdtInitTask,  /* 任务入口函数 */
-                          (const char *)"FFreeRTOSWdtInitTask",/* 任务名字 */
-                          (uint16_t)1024,  /* 任务栈大小 */
-                          (void *)(uintptr)id,/* 任务入口函数参数 */
-                          (UBaseType_t)1,  /* 任务的优先级 */
-                          NULL); /* 任务控制 */
-
-    /* 看门狗后半段的处理任务，等待处理超时中断触发后的发送的消息队列 */
-    xReturn = xTaskCreate((TaskFunction_t)FFreeRTOSWdtQueueReceiveTask,  /* 任务入口函数 */
-                          (const char *)"FFreeRTOSWdtQueueReceiveTask",/* 任务名字 */
-                          (uint16_t)1024,  /* 任务栈大小 */
-                          NULL,/* 任务入口函数参数 */
-                          (UBaseType_t)configMAX_PRIORITIES - 1, /* 任务的优先级 */
-                          (TaskHandle_t *)&queue_receive_handle); /* 任务控制 */
-
-    /* 主动喂狗任务，周期比看门狗的超时时间短 */
-    xReturn = xTaskCreate((TaskFunction_t)FFreeRTOSWdtFeedTask,  /* 任务入口函数 */
-                          (const char *)"FFreeRTOSWdtFeedTask",/* 任务名字 */
-                          (uint16_t)1024,  /* 任务栈大小 */
-                          NULL,/* 任务入口函数参数 */
-                          (UBaseType_t)configMAX_PRIORITIES - 1, /* 任务的优先级 */
-                          (TaskHandle_t *)&feed_handle); /* 任务控制 */
-
-    /* Create the one shot software timer, storing the handle to the created
-    software timer in xOneShotTimer. */
-    xOneShotTimer = xTimerCreate("OneShot Software Timer",       /* Text name for the software timer - not used by FreeRTOS. */
-                                 ONE_SHOT_TIMER_PERIOD,        /* The software timer's period in ticks. */
-                                 pdFALSE,                      /* Setting uxAutoRealod to pdFALSE creates a one-shot software timer. */
-                                 0,                            /* This example use the timer id. */
-                                 prvOneShotTimerCallback);     /* The callback function to be used by the software timer being created. */
-
-    /* Create the auto-reload, storing the handle to the created timer in
-    xAutoReloadTimer. */
-    xAutoReloadTimer = xTimerCreate("Auto-reload Timer",         /* Text name for the software timer - not used by FreeRTOS. */
-                                    AUTO_RELOAD_TIMER_PERIOD,     /* The software timer's period in ticks. */
-                                    pdTRUE,                       /* Set uxAutoRealod to pdTRUE to create an auto-reload timer. */
-                                    0,                            /* This example use the timer id. */
-                                    prvAutoReloadTimerCallback);  /* The callback function to be used by the software timer being created. */
-
-    /* Check the timers were created. */
-    if ((xOneShotTimer != NULL) && (xAutoReloadTimer != NULL))
+    xReturn = xQueueReceive(xQueue, &task_res, WDT_EXAMPLE_TIMEOUT);
+    if (xReturn == pdFAIL)
     {
-        /* Start the software timers, using a block time of 0 (no block time).
-        The scheduler has not been started yet so any block time specified here
-        would be ignored anyway. */
-        xTimer1Started = xTimerStart(xOneShotTimer, 0);
-        xTimer2Started = xTimerStart(xAutoReloadTimer, 0);
+        FWDT_ERROR("xQueue receive timeout.");
+        goto exit;
+    }
 
-        /* The implementation of xTimerStart() uses the timer command queue, and
-        xTimerStart() will fail if the timer command queue gets full.  The timer
-        service task does not get created until the scheduler is started, so all
-        commands sent to the command queue will stay in the queue until after
-        the scheduler has been started.  Check both calls to xTimerStart()
-        passed. */
-        if ((xTimer1Started != pdPASS) || (xTimer2Started != pdPASS))
-        {
-            vPrintf("CreateSoftwareTimerTasks xTimerStart failed.\r\n");
-        }
+exit:
+    if (xQueue != NULL)
+    {
+        vQueueDelete(xQueue);
+    }
+
+    if (task_res != WDT_EXAMPLE_SUCCESS)
+    {
+        printf("%s@%d: WDT feed example [failure], task_res = %d\r\n", __func__, __LINE__, task_res);
+        return task_res;
     }
     else
     {
-        vPrintf("CreateSoftwareTimerTasks xTimerCreate failed.\r\n");
-    }
-
-    taskEXIT_CRITICAL(); //退出临界区
-
-    return xReturn;
-}
-
-static void FFreeRTOSWdtDelete(FFreeRTOSWdt *os_wdt_p)
-{
-    BaseType_t xReturn = pdPASS;
-    FFreeRTOSWdtControl(os_wdt_p, FREERTOS_WDT_CTRL_STOP, NULL);
-    FFreeRTOSWdtDeinit(os_wdt_p);
-    if (queue_receive_handle)
-    {
-        vTaskDelete(queue_receive_handle);
-        vPrintf("Delete FFreeRTOSWdtQueueReceiveTask success.\r\n");
-    }
-
-    /* delete queue */
-    vQueueDelete(xQueue);
-
-    /* delete count sem */
-    vSemaphoreDelete(xCountingSemaphore);
-
-    /* delete timer */
-    xReturn = xTimerDelete(xOneShotTimer, 0);
-    if (xReturn != pdPASS)
-    {
-        vPrintf("Delete OneShot Software Timer failed.\r\n");
-    }
-    else
-    {
-        vPrintf("Delete OneShot Software Timer success.\r\n");
-    }
-
-    xReturn = xTimerDelete(xAutoReloadTimer, 0);
-    if (xReturn != pdPASS)
-    {
-        vPrintf("Delete AutoReload Software Timer failed.\r\n");
-    }
-    else
-    {
-        vPrintf("Delete AutoReload Software Timer success.\r\n");
+        printf("%s@%d: WDT feed example [success].\r\n", __func__, __LINE__);
+        return task_res;
     }
 }

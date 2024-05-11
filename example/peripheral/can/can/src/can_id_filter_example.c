@@ -29,7 +29,6 @@
 #include "FreeRTOSConfig.h"
 #include "FreeRTOS.h"
 #include "task.h"
-#include "timers.h"
 #include "fcan.h"
 #include "fcan_os.h"
 #include "fcpu_info.h"
@@ -55,8 +54,8 @@ enum
 };
 
 /* can frame config */
-#define CanFilterMode1 1
-#define CanFilterMode2 2
+#define CAN_FILTER_MODE_1 1
+#define CAN_FILTER_MODE_2 2
 #define FCAN_SEND_LENGTH 8
 #define FCAN_FILTER_MODE1_ID 0x0F
 #define FCAN_FILTER_MODE1_MASK 0x00
@@ -86,8 +85,6 @@ static FFreeRTOSCan *os_can_ctrl_p[FCAN_NUM];
 
 static FCanFrame send_frame[FCAN_NUM];
 static FCanFrame recv_frame[FCAN_NUM];
-
-static u32 recv_count[FCAN_NUM] = {0};
 
 static FError FFreeRTOSCanSendThenRecvData(int mode);
 static FError FFreeRTOSCanRecvData(int mode, FCanQueueData * xReceiveStructure);
@@ -386,6 +383,7 @@ static FError FFreeRTOSCanRecvData(int mode, FCanQueueData * xReceiveStructure)
     FError ret = FCAN_SUCCESS;
     FFreeRTOSCan *os_can_p;
     u32 instance_id = FCAN0_ID;
+    static u32 recv_count[FCAN_NUM] = {0};
 
     os_can_p = xReceiveStructure->os_can_p;
     instance_id = os_can_p->can_ctrl.config.instance_id;
@@ -407,12 +405,12 @@ static FError FFreeRTOSCanRecvData(int mode, FCanQueueData * xReceiveStructure)
         }
         FCAN_TEST_DEBUG("The frame id:0x%02x was receved successfully.", recv_frame[instance_id].canid);
 
-        if ( (mode == CanFilterMode1) && (recv_frame[instance_id].canid == FCAN_FILTER_MODE1_ID) )
+        if ( (mode == CAN_FILTER_MODE_1) && (recv_frame[instance_id].canid == FCAN_FILTER_MODE1_ID) )
         {
             printf("can%d -> can%d: Filter mode1 test completed.\r\n", FCAN1_ID - instance_id, instance_id);
             return ret;
         }
-        else if ( (mode == CanFilterMode2) && ((recv_frame[instance_id].canid & FCAN_FILTER_MODE2_ID) == FCAN_FILTER_MODE2_ID) )
+        else if ( (mode == CAN_FILTER_MODE_2) && ((recv_frame[instance_id].canid & FCAN_FILTER_MODE2_ID) == FCAN_FILTER_MODE2_ID) )
         {
             recv_count[instance_id]++;
             if ( recv_count[instance_id] == FCAN_FILTER_MODE2_CNT )
@@ -421,6 +419,13 @@ static FError FFreeRTOSCanRecvData(int mode, FCanQueueData * xReceiveStructure)
                 recv_count[instance_id] = 0;
                 return ret;
             }
+        }
+        else
+        {
+            /* 过滤失败 */
+            FCAN_TEST_ERROR("can%d recv id 0x%02x should not be received!!!", instance_id, recv_frame[instance_id].canid);
+            ret = CAN_DATA_FAILURE;
+            return ret;            
         }
     }
 
@@ -444,7 +449,7 @@ BaseType_t FFreeRTOSCanCreateFilterTestTask(void)
     xReturn = xTaskCreate((TaskFunction_t)FFreeRTOSCanFilterTask,         /* 任务入口函数 */
                           (const char *)"FFreeRTOSCanFilterMode1Task", /* 任务名字 */
                           (uint16_t)1024,                                 /* 任务栈大小 */
-                          (void *)CanFilterMode1,                                      /* 任务入口函数参数 */
+                          (void *)CAN_FILTER_MODE_1,                                      /* 任务入口函数参数 */
                           (UBaseType_t)CAN_FILTER_TASK_PRIORITY,          /* 任务的优先级 */
                           NULL);                                          /* 任务控制 */
     if (xReturn == pdFAIL)
@@ -464,7 +469,7 @@ BaseType_t FFreeRTOSCanCreateFilterTestTask(void)
     xReturn = xTaskCreate((TaskFunction_t)FFreeRTOSCanFilterTask,         /* 任务入口函数 */
                           (const char *)"FFreeRTOSCanFilterMode2Task", /* 任务名字 */
                           (uint16_t)1024,                                 /* 任务栈大小 */
-                          (void *)CanFilterMode2,                                      /* 任务入口函数参数 */
+                          (void *)CAN_FILTER_MODE_2,                                      /* 任务入口函数参数 */
                           (UBaseType_t)CAN_FILTER_TASK_PRIORITY,          /* 任务的优先级 */
                           NULL);                                          /* 任务控制 */
     if (xReturn == pdFAIL)

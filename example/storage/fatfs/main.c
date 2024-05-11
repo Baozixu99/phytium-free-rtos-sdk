@@ -23,14 +23,18 @@
  */
 
 #include <stdio.h>
-#include "shell.h"
-#include "shell_port.h"
-#include "fatfs_examples.h"
 #include "sdkconfig.h"
-
+#include "FreeRTOS.h"
+#include "task.h"
+#include "fatfs_examples.h"
 #if defined(CONFIG_FATFS_SDMMC_FSDIF_TF) || defined(CONFIG_FATFS_SDMMC_FSDIF_EMMC)
 #include "fsdif_timing.h"
 #include "fsl_sdmmc.h"
+#endif
+
+#if defined CONFIG_USE_LETTER_SHELL
+#include "shell.h"
+#include "shell_port.h"
 #endif
 
 int main(void)
@@ -42,13 +46,25 @@ int main(void)
     SDMMC_OSAInit();
 #endif
 
-    ret = FFreeRTOSFatfsTest();
-
+#if defined CONFIG_USE_LETTER_SHELL
     ret = LSUserShellTask() ;
     if (ret != pdPASS)
     {
         goto FAIL_EXIT;
     }
+#else
+    ret = xTaskCreate((TaskFunction_t)FatfsExampleEntry,
+                        (const char *)"FatfsExampleEntry",
+                        (uint16_t)4096,
+                        NULL,
+                        (UBaseType_t)2,
+                        NULL);
+    
+    if (ret != pdPASS)
+    {
+        goto FAIL_EXIT;
+    }
+#endif
 
     vTaskStartScheduler(); /* 启动任务，开启调度 */
     while (1); /* 正常不会执行到这里 */

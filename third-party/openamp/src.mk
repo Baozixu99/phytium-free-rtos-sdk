@@ -6,7 +6,7 @@ ifdef CONFIG_USE_FREERTOS
 
 endif
 
-OPENAMP_C_DIR = $(SDK_DIR)/third-party/openamp
+OPENAMP_C_DIR = $(abspath $(SDK_DIR)/third-party/openamp)
 
 ABSOLUTE_CFILES += $(wildcard $(OPENAMP_C_DIR)/lib/*.c \
 						$(OPENAMP_C_DIR)/lib/remoteproc/*.c \

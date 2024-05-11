@@ -13,48 +13,39 @@
  *
  * FilePath: interrupt_cmd.c
  * Date: 2022-06-17 10:41:45
- * LastEditTime: 2022-06-17 10:41:45
+ * LastEditTime: 2024-05-06 10:41:45
  * Description:  This file is for interrupt command interface
  *
  * Modify History:
  *  Ver   Who       Date        Changes
  * ----- ------     --------    --------------------------------------
  * 1.0 wangxiaodong 2022/08/09  first commit
+ * 1.1 huangjin     2024/05/06  add no letter shell mode, adapt to auto-test system
  */
-#include "shell.h"
-#include <string.h>
-#include <stdio.h>
+#include "sdkconfig.h"
+#include "FreeRTOS.h"
 #include "feature_interrupt.h"
-
-typedef enum
-{
-    BINARY_SEM_TASK_INDEX = 0,
-    COUNT_SEM_TASK_INDEX = 1,
-    QUEUE_TASK_INDEX = 2,
-
-    INTR_FEATURE_LENGTH
-} FreeRtosIntrFeatureSelect;
+#include <string.h>
+#include "task.h"
+#include <stdio.h>
+#include "strto.h"
+#ifdef CONFIG_USE_LETTER_SHELL
+#include "../src/shell.h"
 
 static void CreateIntrCmdUsage(void)
 {
     printf("Usage:\r\n");
-    printf(" intr bin_cre \r\n");
-    printf("    -- Create intr binary sem tasks now.\r\n");
-    printf(" intr bin_del \r\n");
-    printf("    -- Del intr binary sem tasks now.\r\n");
-    printf(" intr count_cre \r\n");
-    printf("    -- Create counting sem tasks now.\r\n");
-    printf(" intr count_del \r\n");
-    printf("    -- Del counting sem tasks now.\r\n");
-    printf(" intr queue_cre \r\n");
-    printf("    -- Create queue tasks now.\r\n");
-    printf(" intr queue_del \r\n");
-    printf("    -- Del queue tasks now.\r\n");
+    printf("intr bin_cre \r\n");
+    printf("-- Create intr binary sem tasks now.\r\n");
+    printf("intr count_cre \r\n");
+    printf("-- Create counting sem tasks now.\r\n");
+    printf("intr queue_cre \r\n");
+    printf("-- Create queue tasks now.\r\n");
 }
 
 int CreateIntrCmd(int argc, char *argv[])
 {
-    static int create_flg[INTR_FEATURE_LENGTH] = {0}; /* 1 is tasks has been created*/
+    int ret = 0;
 
     if (argc < 2)
     {
@@ -64,84 +55,23 @@ int CreateIntrCmd(int argc, char *argv[])
 
     if (!strcmp(argv[1], "bin_cre"))
     {
-        if (create_flg[BINARY_SEM_TASK_INDEX]  == 0)
-        {
-            CreateBinarySemTasks();
-            create_flg[BINARY_SEM_TASK_INDEX] = 1;
-        }
-        else
-        {
-            printf("Please use bin_del cmd first. \r\n");
-        }
-    }
-    else if (!strcmp(argv[1], "bin_del"))
-    {
-        if (create_flg[BINARY_SEM_TASK_INDEX]  == 1)
-        {
-            DeleteBinarySemTasks();
-            create_flg[BINARY_SEM_TASK_INDEX]  = 0;
-        }
-        else
-        {
-            printf("Please use bin_cre cmd first. \r\n");
-        }
+        ret = CreateBinarySemTasks();
     }
     else if (!strcmp(argv[1], "count_cre"))
     {
-        if (create_flg[COUNT_SEM_TASK_INDEX]  == 0)
-        {
-            CreateCountSemTasks();
-            create_flg[COUNT_SEM_TASK_INDEX] = 1;
-        }
-        else
-        {
-            printf("Please use count_del cmd first. \r\n");
-        }
-    }
-    else if (!strcmp(argv[1], "count_del"))
-    {
-        if (create_flg[COUNT_SEM_TASK_INDEX]  == 1)
-        {
-            DeleteCountSemTasks();
-            create_flg[COUNT_SEM_TASK_INDEX]  = 0;
-        }
-        else
-        {
-            printf("Please use count_cre cmd first. \r\n");
-        }
+        ret = CreateCountSemTasks();
     }
     else if (!strcmp(argv[1], "queue_cre"))
     {
-        if (create_flg[QUEUE_TASK_INDEX]  == 0)
-        {
-            CreateQueueTasks();
-            create_flg[QUEUE_TASK_INDEX] = 1;
-        }
-        else
-        {
-            printf("Please use queue_del cmd first. \r\n");
-        }
-    }
-    else if (!strcmp(argv[1], "queue_del"))
-    {
-        if (create_flg[QUEUE_TASK_INDEX]  == 1)
-        {
-            DeleteQueueTasks();
-            create_flg[QUEUE_TASK_INDEX]  = 0;
-        }
-        else
-        {
-            printf("Please use queue_cre cmd first. \r\n");
-        }
+        ret = CreateQueueTasks();
     }
     else
     {
         printf("Error: Invalid arguments. \r\n");
         CreateIntrCmdUsage();
     }
-    return 0;
+    return ret;
 }
 
 SHELL_EXPORT_CMD(SHELL_CMD_TYPE(SHELL_TYPE_CMD_MAIN), intr, CreateIntrCmd, intr task test);
-
-
+#endif

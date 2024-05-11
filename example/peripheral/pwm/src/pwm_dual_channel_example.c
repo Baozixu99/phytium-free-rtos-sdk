@@ -40,6 +40,7 @@
 /* pwm pulse change period */
 #define PWM_CHANGE_PERIOD           (pdMS_TO_TICKS(500UL))
 #define TIMER_OUT                   (pdMS_TO_TICKS(10000UL))
+#define PWM_DUAL_CHANNEL_TEST_TASK_PRIORITY 3
 /* pwm pulse amplitude of periodic variation */
 #define PWM_PULSE_CHANGE    1000
 
@@ -206,7 +207,7 @@ BaseType_t FFreeRTOSPwmDualChannelTaskCreate()
                           (const char *)"FFreeRTOSPwmDualChannelTask",         /* 任务名字 */
                           (uint16_t)4096,                         /* 任务栈大小 */
                           NULL,                                   /* 任务入口函数参数 */
-                          (UBaseType_t)2, /* 任务优先级 */
+                          (UBaseType_t)PWM_DUAL_CHANNEL_TEST_TASK_PRIORITY, /* 任务优先级 */
                           NULL);                                  /* 任务句柄 */
     if (xReturn == pdFAIL)
     {

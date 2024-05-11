@@ -38,6 +38,7 @@
 #define FQSPI_INFO(format, ...) FT_DEBUG_PRINT_I(FQSPI_DEBUG_TAG, format, ##__VA_ARGS__)
 #define FQSPI_DEBUG(format, ...) FT_DEBUG_PRINT_D(FQSPI_DEBUG_TAG, format, ##__VA_ARGS__)
 
+#define QSPI_FLASH_CONNECT_TEST_TASK_PRIORITY 3
 #define TIMER_OUT (pdMS_TO_TICKS(5000UL))
 enum
 {
@@ -99,7 +100,7 @@ BaseType_t FFreeRTOSQspiCheckTaskCreate(void)
                           (const char *)"QspiConnectCheckTask", /* 任务名字 */
                           (uint16_t)1024,                       /* 任务栈大小 */
                           NULL,
-                          (UBaseType_t)2, /* 任务的优先级 */
+                          (UBaseType_t)QSPI_FLASH_CONNECT_TEST_TASK_PRIORITY, /* 任务的优先级 */
                           NULL);
     taskEXIT_CRITICAL(); /*退出临界区*/
     if (xReturn == pdFAIL)

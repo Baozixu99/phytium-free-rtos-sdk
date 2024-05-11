@@ -1,18 +1,25 @@
 # posix base on freertos
 
-## 1. 例程介绍
-
-本例程示范了freertos环境下posix的使用方法。
 POSIX (Portable Operating System Interface) 是定义了操作系统 API 的标准，主要用于通用操作系统，例如 Linux、UNIX 等。
 通过在freertos上增加posix适配层，使得在 freertos 上开发的应用程序能够以 posix 的风格编写和移植。
-- [FreeRTOS-Plus-POSIX](https://www.freertos.org/FreeRTOS-Plus/FreeRTOS_Plus_POSIX/index.html)
+请参考[FreeRTOS官方网站](https://www.freertos.org/FreeRTOS-Plus/FreeRTOS_Plus_POSIX/index.html)
+
+## 1. 例程介绍
+
+posix测试用例 (posix_example.c)
+- 创建POSIXDemoTask测试任务，在POSIXDemoTask中首先创建4个消息队列，4个prvWorkerThread线程，1个prvDispatcherThread线程
+- 每个prvWorkerThread用来等待接收1个消息队列中传递来的消息
+- 在prvDispatcherThread线程中，首先循环向4个消息队列发送100次`eWORKER_CTRL_MSG_CONTINUE`消息，4个prvWorkerThread线程依次接收到发来的消息
+- prvDispatcherThread线程发送`eWORKER_CTRL_MSG_EXIT`，4个prvWorkerThread线程依次接收到该消息后终止返回
+- prvDispatcherThread线程终止返回
+- POSIXDemoTask任务检测到所有创建的线程均已终止，测试结束
 
 ## 2. 如何使用例程
 
 本例程需要用到
 
 - Phytium开发板（FT2000-4/D2000/E2000D/E2000Q/PHYTIUMPI）
-- [Phytium freeRTOS SDK](https://gitee.com/phytium_embedded/phytium-free-rtos-sdk)
+- [Phytium FreeRTOS SDK](https://gitee.com/phytium_embedded/phytium-free-rtos-sdk)
 - [Phytium standalone SDK](https://gitee.com/phytium_embedded/phytium-standalone-sdk)
 
 ### 2.1 硬件配置方法
@@ -104,9 +111,6 @@ bootelf -p 0x90100000
 ### 2.4 输出与实验现象
 
 - 系统进入后，输入 ``posix``查看指令说明
-
-- 输入 ``posix thread``，启动线程的创建和等待测试
-![posix_thread](./figs/posix_thread.png)
 
 - 输入 ``posix demo``，启动线程间的数据收发测试
 ![posix_demo](./figs/posix_demo.png)

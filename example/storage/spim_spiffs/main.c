@@ -21,29 +21,35 @@
  *  Ver     Who      Date         Changes
  * -----   ------  --------   --------------------------------------
  * 1.0 liqiaozhong 2022/11/2  first commit
+ * 2.0  liyilun     2024/04/25 add no letter shell mode, adapt to auto test system
  */
 
+#include <stdio.h>
+#include "FreeRTOS.h"
+#include "task.h"
+#include "spim_spiffs_example.h"
+
+#ifdef CONFIG_USE_LETTER_SHELL
 #include "shell.h"
 #include "shell_port.h"
-#include <stdio.h>
-#include "spim_spiffs_example.h"
-#if defined(CONFIG_TARGET_E2000D)||defined(CONFIG_TARGET_E2000Q)
-#define SPIM_TEST_ID  FSPI2_ID
-#elif defined(CONFIG_TARGET_PHYTIUMPI)
-#define SPIM_TEST_ID  FSPI0_ID
 #endif
+
 int main(void)
 {
     BaseType_t ret;
-
-    ret = FFreeRTOSSpimSpiffsCreate(SPIM_TEST_ID);
-    if(ret != pdPASS)
-        goto FAIL_EXIT;
-
+#ifdef CONFIG_USE_LETTER_SHELL
     ret = LSUserShellTask() ;
     if(ret != pdPASS)
         goto FAIL_EXIT;
+#else
 
+    ret = xTaskCreate((TaskFunction_t)SpimSpiffsExampleEntry,
+                    (const char *)"SpimSpiffsExampleEntry",
+                    (uint16_t)4096,
+                    NULL,
+                    (UBaseType_t)2,
+                    NULL);
+#endif
     vTaskStartScheduler(); /* 启动任务，开启调度 */   
     while (1); /* 正常不会执行到这里 */
     

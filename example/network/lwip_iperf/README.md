@@ -119,17 +119,33 @@ lwip iperfc
 ```
 
 ![iperf_client_example_result](./fig/iperf_client_example.png)
+![iperf_client_test_result](./fig/iperf_client_test.png)
 #### 2.4.2 网卡iperf server测试例程 (lwip_iperf_server_example.c)
 ```
 lwip iperfs
 ```
 
 ![iperf_server_example_result](./fig/iperf_server_example.png)
-
+![iperf_server_test_result](./fig/iperf_server_test.png)
 
 ## 3. 如何解决问题
 
 ><font size="1">主要记录使用例程中可能会遇到的问题，给出相应的解决方案</font><br />
+
+- Q: 如何静态配置开发板的ip地址？
+- A: ipv4地址在board_mac_config静态变量中修改如下成员变量即可：
+
+```
+      .ipaddr="192.168.4.10",
+      .gw="192.168.4.1",
+      .netmask="255.255.255.0",
+```
+
+- A: ipv6地址在board_mac_config静态变量中修改如下成员变量即可：
+
+```
+      .mac_address={0x98, 0x0e, 0x24, 0x00, 0x11, 0x1},
+```
 
 ## 4. 修改历史记录
 

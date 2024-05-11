@@ -13,7 +13,7 @@ FreeRTOS 从 V8.2.0 版本开始提供任务通知这个功能，每个任务都
 
 本例程需要用到
 - Phytium开发板（FT2000-4/D2000/E2000D/E2000Q/PHYTIUMPI）
-- [Phytium freeRTOS SDK](https://gitee.com/phytium_embedded/phytium-free-rtos-sdk)
+- [Phytium FreeRTOS SDK](https://gitee.com/phytium_embedded/phytium-free-rtos-sdk)
 - [Phytium standalone SDK](https://gitee.com/phytium_embedded/phytium-standalone-sdk)
 ### 2.1 硬件配置方法
 
@@ -82,9 +82,13 @@ bootelf -p 0x90100000
 
 - 系统进入后，输入```notify```查看指令说明
 - 输入```notify true_cre```，启动ulTaskNotifyTake pdTRUE测试
-- 输入```notify true_del```，删除ulTaskNotifyTake pdTRUE测试
+
+![true_cre](./figs/true_cre.png)
+
 - 输入```notify false_cre```，启动ulTaskNotifyTake pdFALSE测试
-- 输入```notify false_del```，删除ulTaskNotifyTake pdFALSE测试
+
+![false_cre](./figs/false_cre.png)
+
 - 测试任务能够能正常创建和删除，输入```ps```查看任务状态正常，即测试正常
 
 ![](./pic/task_notify.png)

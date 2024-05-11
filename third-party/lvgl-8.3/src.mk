@@ -1,7 +1,7 @@
 
 ifdef CONFIG_USE_LVGL
 
-LVGL_C_DIR = $(SDK_DIR)/third-party/lvgl-8.3
+LVGL_C_DIR = $(abspath $(SDK_DIR)/third-party/lvgl-8.3)
 
 ABSOLUTE_CFILES +=$(wildcard $(LVGL_C_DIR)/src/core/*.c) \
 				$(wildcard $(LVGL_C_DIR)/src/draw/*.c) \

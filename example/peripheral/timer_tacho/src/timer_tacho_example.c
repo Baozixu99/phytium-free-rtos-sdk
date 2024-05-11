@@ -36,32 +36,59 @@
 #include "sdkconfig.h"
 #include "fdebug.h"
 
-/* The periods assigned to the one-shot timers. */
-#define ONE_SHOT_TIMER_PERIOD       ( pdMS_TO_TICKS( 50000UL ) )
 
+/************************** Constant Definitions *****************************/
+#ifdef CONFIG_FIREFLY_DEMO_BOARD
+    #define TACHO_INSTANCE_NUM 3U
+#else
+    #define TACHO_INSTANCE_NUM 12U
+#endif
+
+#define TIMER_TACHO_TEST_TASK_PRIORITY  3
+
+static QueueHandle_t xQueue = NULL;
+static boolean is_running = FALSE;
+/* The periods assigned to time out */
+#define TIMER_OUT                  (pdMS_TO_TICKS(50000UL))
 #define TIMER_IRQ_PRIORITY 0xb
 #define TACHO_IRQ_PRIORITY 0xc
 #define TIMER_INSTANCE_NUM 0U
-
-#ifdef CONFIG_TARGET_PHYTIUMPI
-#define TACHO_INSTANCE_NUM 3U
-#else
-#define TACHO_INSTANCE_NUM 12U
-#endif
-
 /* write and read task delay in milliseconds */
 #define TASK_DELAY_MS   2000UL
-
-static xTaskHandle timer_handle;
-static xTaskHandle tacho_handle;
-static xTaskHandle cap_handle;
-static xTaskHandle init_handle;
-
+/**************************** Type Definitions *******************************/
+enum
+{
+    TIMER_TACHO_TEST_SUCCESS = 0,
+    TIMER_TACHO_TEST_UNKNOWN = 1,
+    TIMER_TACHO_INIT_ERROR   = 2,
+    TIMER_TACHO_TEST_ERROR = 3,
+};
+/************************** Variable Definitions *****************************/
 static FFreeRTOSTimerTacho *os_timer_ctrl;
 static FFreeRTOSTimerTacho *os_tacho_ctrl;
 
 volatile int timerflag = 0;
 volatile int tachoflag = 0;
+/***************** Macros (Inline Functions) Definitions *********************/
+#define FTIMER_TACHO_DEBUG_TAG "TIMER-TACHO"
+#define FTIMER_TACHO_ERROR(format, ...) FT_DEBUG_PRINT_E(FTIMER_TACHO_DEBUG_TAG, format, ##__VA_ARGS__)
+#define FTIMER_TACHO_WARN(format, ...)  FT_DEBUG_PRINT_W(FTIMER_TACHO_DEBUG_TAG, format, ##__VA_ARGS__)
+#define FTIMER_TACHO_INFO(format, ...)  FT_DEBUG_PRINT_I(FTIMER_TACHO_DEBUG_TAG, format, ##__VA_ARGS__)
+#define FTIMER_TACHO_DEBUG(format, ...) FT_DEBUG_PRINT_D(FTIMER_TACHO_DEBUG_TAG, format, ##__VA_ARGS__)
+
+
+/*exit the timer tacho  example task and deinit the gpio */
+static void TimerTachoExit(void)
+{
+    printf("Exiting...\r\n");
+    /* deinit iomux */
+    FIOMuxDeInit();
+    FFreeRTOSTachoDeinit(os_tacho_ctrl);
+    os_tacho_ctrl = NULL;
+    FFreeRTOSTimerDeinit(os_timer_ctrl);
+    os_timer_ctrl = NULL;
+    is_running = FALSE;
+}
 
 /***** timer intr and handler******/
 /**
@@ -219,130 +246,95 @@ void TachoEnableIntr(FTimerTachoCtrl *instance_p)
     return;
 }
 
-static void TimerTask(void *pvParameters)
+/*tacho test function*/
+static FError TachoTest(void)
 {
+    FError ret = FT_SUCCESS;
+    u32 rpm;
     TickType_t xDelay = pdMS_TO_TICKS(TASK_DELAY_MS);
-    FError ret = FREERTOS_TIMER_TACHO_SUCCESS;
-    FFreeRTOSTimerTacho *timer_p = (FFreeRTOSTimerTacho *)pvParameters;
-    vTaskDelay(xDelay);
-    printf("\r\n*****TimerTask is running...\r\n");
-
-    TimerEnableIntr(&os_timer_ctrl->ctrl);
-    ret = FFreeRTOSTimerStart(timer_p);
-    if (ret != FREERTOS_TIMER_TACHO_SUCCESS)
-    {
-        printf("TimerTask Start failed.\r\n");
-        return;
-    }
-
-    xDelay = pdMS_TO_TICKS(10000);/*delay 10s*/
-    vTaskDelay(xDelay);
-
-    ret = FFreeRTOSTimerStop(timer_p);
-    if (ret != FREERTOS_TIMER_TACHO_SUCCESS)
-    {
-        printf("TimerTask Stop failed.\r\n");
-        return;
-    }
-
-    /* disable timer irq */
-    TimerDisableIntr(&os_timer_ctrl->ctrl);
-    FFreeRTOSTimerDeinit(timer_p);
-    printf("***TimerTask is over.\r\n");
-    vTaskDelete(NULL);
-}
-
-static void TachoTask(void *pvParameters)
-{
-    const TickType_t xDelay = pdMS_TO_TICKS(TASK_DELAY_MS);
-    FFreeRTOSTimerTacho *tacho_p = (FFreeRTOSTimerTacho *)pvParameters;
-    FError ret = FREERTOS_TIMER_TACHO_SUCCESS;
     vTaskDelay(xDelay);
     printf("\r\n*****TachoTask is running...\r\n");
+    TachoEnableIntr(&os_tacho_ctrl->ctrl);
+    ret = FFreeRTOSTimerStart(os_tacho_ctrl);
 
-    TachoEnableIntr(&tacho_p->ctrl);
-    ret = FFreeRTOSTimerStart(tacho_p);
-    u32 rpm;
     vTaskDelay(100);/*等待采样周期完成*/
-    if (ret != FREERTOS_TIMER_TACHO_SUCCESS)
+    if (ret != FT_SUCCESS)
     {
-        printf("Tacho start failed.\r\n");
-        return;
+        ret = TIMER_TACHO_TEST_ERROR;
+        goto exit;
     }
     for (size_t i = 0; i < 5; i++)
     {
-        ret = FFreeRTOSTachoGetRPM(tacho_p, &rpm);
-        if (ret != FREERTOS_TIMER_TACHO_SUCCESS)
+        ret = FFreeRTOSTachoGetRPM(os_tacho_ctrl, &rpm);
+        if (ret != FT_SUCCESS)
         {
             printf("TachoTask Stop failed.\r\n");
-            return;
+            goto exit;
         }
         printf("***GET_RPM:%d.\r\n", rpm);
         vTaskDelay(xDelay);/*Collect every 2 seconds*/
     }
-    TachoDisableIntr(&tacho_p->ctrl);
-    FFreeRTOSTimerStop(tacho_p);
-    FFreeRTOSTachoDeinit(tacho_p);
-    /*deinit iomux */
-    FIOMuxDeInit();
 
-tacho_task_exit:
-    printf("***TachoTask over.\r\n");
-    vTaskDelete(NULL);
-}
-
-static void captask(void *pvParameters)
-{
-    const TickType_t xDelay = pdMS_TO_TICKS(TASK_DELAY_MS);
-    FFreeRTOSTimerTacho *cap_p = (FFreeRTOSTimerTacho *)pvParameters;
-    FError ret = FREERTOS_TIMER_TACHO_SUCCESS;
-    vTaskDelay(pdMS_TO_TICKS(1));
-
-    printf("\r\n*****TimerCapTask is running...\r\n");
-
-    TachoEnableIntr(&cap_p->ctrl);
-    ret = FFreeRTOSTimerStart(cap_p);
-    if (ret != FREERTOS_TIMER_TACHO_SUCCESS)
-    {
-        printf("Tacho start failed.\r\n");
-        goto tacho_task_exit;
-    }
-    for (size_t i = 0; i < 5; i++)
-    {
-        printf("Get id %d CaptureCnt is :%d.\r\n", cap_p->ctrl.config.id, FFreeRTOSTachoGetCNT(cap_p));
-        vTaskDelay(pdMS_TO_TICKS(1));
-    }
+exit:
     /* disable tacho irq */
-    TachoDisableIntr(&cap_p->ctrl);
-    FFreeRTOSTimerStop(cap_p);
-    FFreeRTOSTachoDeinit(cap_p);
-
-tacho_task_exit:
-    printf("TimerCapTask is over.\r\n");
-    vTaskDelete(NULL);
+    TachoDisableIntr(&os_tacho_ctrl->ctrl);
+    /* disable tacho */
+    FFreeRTOSTachoDeinit(os_tacho_ctrl);
+    return ret;
 }
 
-static void InitTask(void *pvParameters)
+/*timer test function*/
+static FError TimerTest(void)
 {
-    BaseType_t xReturn = pdPASS;
-    /* init timers controller */
+    FError ret = FT_SUCCESS;
+    TickType_t xDelay = pdMS_TO_TICKS(TASK_DELAY_MS);
+    vTaskDelay(xDelay);
+    printf("\r\n*****TimerTask is running...\r\n");
 
+    TimerEnableIntr(&os_timer_ctrl->ctrl);
+    ret = FFreeRTOSTimerStart(os_timer_ctrl);
+    if (ret != FT_SUCCESS)
+    {
+        ret = TIMER_TACHO_TEST_ERROR;
+        goto exit;
+    }
+    xDelay = pdMS_TO_TICKS(10000);/*delay 10s*/
+    vTaskDelay(xDelay);
+    ret = FFreeRTOSTimerStop(os_timer_ctrl);
+    if (ret != FT_SUCCESS)
+    {
+        ret = TIMER_TACHO_TEST_ERROR;
+        goto exit;
+    }
+
+exit:
+    /* disable timer irq */
+    TimerDisableIntr(&os_timer_ctrl->ctrl);
+    /* disable timer  */
+    FFreeRTOSTimerDeinit(os_timer_ctrl);
+    return ret;
+}
+
+/*timer init function*/
+static FError TimerInit(void)
+{
+    FError ret = FT_SUCCESS;
     os_timer_ctrl = FFreeRTOSTimerInit(TIMER_INSTANCE_NUM, FTIMER_CYC_CMP, 2000000);/* 2000000 us = 2 s */
+
     if (os_timer_ctrl == NULL)
     {
-        printf("*Timer init error.\r\n");
-        goto timer_init_exit;
+        ret = TIMER_TACHO_INIT_ERROR;
+        goto exit;
     }
     FTimerRegisterEvtCallback(&os_timer_ctrl->ctrl, FTIMER_EVENT_CYC_CMP, CycCmpIntrHandler);
     FTimerRegisterEvtCallback(&os_timer_ctrl->ctrl, FTIMER_EVENT_ONCE_CMP, OnceCmpIntrHandler);
     FTimerRegisterEvtCallback(&os_timer_ctrl->ctrl, FTIMER_EVENT_ROLL_OVER, RolloverIntrHandler);
-
     /*init mode: FTIMER_WORK_MODE_CAPTURE or FTIMER_WORK_MODE_TACHO */
     os_tacho_ctrl = FFreeRTOSTachoInit(TACHO_INSTANCE_NUM, FTIMER_WORK_MODE_TACHO);
-    if (os_timer_ctrl == NULL)
+    if (os_tacho_ctrl == NULL)
     {
-        printf("*Tacho init error.\r\n");
-        goto timer_init_exit;
+        ret = TIMER_TACHO_INIT_ERROR;
+        goto exit;
     }
     /*init iomux*/
     FIOMuxInit();
@@ -353,25 +345,42 @@ static void InitTask(void *pvParameters)
     FTimerRegisterEvtCallback(&os_tacho_ctrl->ctrl, FTACHO_EVENT_UNDER, TachUnderIntrHandler);
     FTimerRegisterEvtCallback(&os_tacho_ctrl->ctrl, FTACHO_EVENT_CAPTURE, CapIntrHandler);
 
-    taskENTER_CRITICAL(); //进入临界区
-    xReturn = xTaskCreate((TaskFunction_t)TimerTask,             /* 任务入口函数 */
-                          (const char *)"TimerTask",             /* 任务名字 */
-                          (uint16_t)1024,                        /* 任务栈大小 */
-                          (void *)os_timer_ctrl,                 /* 任务入口函数参数 */
-                          (UBaseType_t)configMAX_PRIORITIES - 1, /* 任务的优先级 */
-                          (TaskHandle_t *)&timer_handle);        /* 任务控制 */
-    FASSERT_MSG(xReturn == pdPASS, "TimerTask create is failed.");
+exit:
+    return ret;
+}
 
-    xReturn = xTaskCreate((TaskFunction_t)TachoTask, /* 任务入口函数 */
-                          (const char *)"TachoTask",/* 任务名字 */
-                          (uint16_t)1024, /* 任务栈大小 */
-                          (void *)os_tacho_ctrl,/* 任务入口函数参数 */
-                          (UBaseType_t)configMAX_PRIORITIES - 2, /* 任务的优先级 */
-                          (TaskHandle_t *)&tacho_handle); /* 任务控制 */
-    FASSERT_MSG(xReturn == pdPASS, "TachoTask create is failed.");
+/*timer tacho test task*/
+static void TimerTachoTask(void)
+{
+    int task_res = TIMER_TACHO_TEST_SUCCESS;
+    FError ret = FT_SUCCESS;
+    ret = TimerInit();
 
-    taskEXIT_CRITICAL(); //退出临界区
-timer_init_exit:
+    if (ret != FT_SUCCESS)
+    {
+        FTIMER_TACHO_ERROR("TimerTachoTask failed.");
+        task_res = TIMER_TACHO_INIT_ERROR;
+        goto task_exit;
+    }
+    /* create timer test */
+    ret = TimerTest();
+    if (ret != FT_SUCCESS)
+    {
+        FTIMER_TACHO_ERROR("TimerTest failed.");
+        task_res = TIMER_TACHO_TEST_ERROR;
+        goto task_exit;
+    }
+    /* create tacho test */
+    ret = TachoTest();
+    if (ret != FT_SUCCESS)
+    {
+        FTIMER_TACHO_ERROR("TachoTest failed.");
+        task_res = TIMER_TACHO_TEST_ERROR;
+        goto task_exit;
+    }
+
+task_exit:
+    xQueueSend(xQueue, &task_res, 0);
     vTaskDelete(NULL);
 }
 
@@ -379,20 +388,54 @@ BaseType_t FFreeRTOSTimerTachoCreate(void)
 {
     BaseType_t xReturn = pdPASS;/* 定义一个创建信息返回值，默认为 pdPASS */
 
-    taskENTER_CRITICAL(); //进入临界区
-
+    int task_res = TIMER_TACHO_TEST_UNKNOWN;
+    if (is_running)
+    {
+        FTIMER_TACHO_ERROR("The task is running.");
+        return pdPASS;
+    }
+    is_running = TRUE;
     /* init timers controller */
+    xQueue = xQueueCreate(1, sizeof(int)); /* create queue for task communication */
+    if (xQueue == NULL)
+    {
+        FTIMER_TACHO_ERROR("xQueue create failed.");
+        goto exit;
+    }
 
-    xReturn = xTaskCreate((TaskFunction_t)InitTask,  /* 任务入口函数 */
-                          (const char *)"InitTask",/* 任务名字 */
+    xReturn = xTaskCreate((TaskFunction_t)TimerTachoTask,  /* 任务入口函数 */
+                          (const char *)"TimerTachoTask",/* 任务名字 */
                           (uint16_t)1024,  /* 任务栈大小 */
                           (void *)NULL,/* 任务入口函数参数 */
-                          (UBaseType_t)configMAX_PRIORITIES - 1, /* 任务的优先级 */
-                          (TaskHandle_t *)&init_handle); /* 任务控制 */
-    FASSERT_MSG(xReturn == pdPASS, "TachoTask create is failed.");
+                          (UBaseType_t)TIMER_TACHO_TEST_TASK_PRIORITY, /* 任务的优先级 */
+                          NULL);                                  /* 任务句柄 */
+    if (xReturn == pdFAIL)
+    {
+        FTIMER_TACHO_ERROR("xTaskCreate TimerTachoTask failed.");
+        goto exit;
+    }
+    xReturn = xQueueReceive(xQueue, &task_res, TIMER_OUT);
+    if (xReturn == pdFAIL)
+    {
+        FTIMER_TACHO_ERROR("xQueue receive timeout.");
+        goto exit;
+    }
 
-    taskEXIT_CRITICAL(); //退出临界区
+exit:
+    if (xQueue != NULL)
+    {
+        vQueueDelete(xQueue);
+    }
 
-    return xReturn;
+    if (task_res != TIMER_TACHO_TEST_SUCCESS)
+    {
+        printf("%s@%d: Timer tacho example [failure], task_res = %d\r\n", __func__, __LINE__, task_res);
+        return pdFAIL;
+    }
+    else
+    {
+        printf("%s@%d: Timer tacho example [success].\r\n", __func__, __LINE__);
+        return pdTRUE;
+    }
 }
 

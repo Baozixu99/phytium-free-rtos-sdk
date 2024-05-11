@@ -20,20 +20,19 @@
  *  Ver   Who  Date   Changes
  * ----- ------  -------- --------------------------------------
  * 1.0 wangxiaodong 2023/02/25  first commit
+ * 1.1  zhangyan     2024/4/29    add no letter shell mode, adapt to auto-test system
  */
-
 
 #ifndef NESTED_INTERRUPT_H
 #define NESTED_INTERRUPT_H
 
+#include"FreeRTOS.h"
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
-/* interrupt task */
-void CreateNestedTasks(void);
-void DeleteNestedTasks(void);
+BaseType_t FFreeRTOSNestedIntrTaskCreate(void);
 
 #ifdef __cplusplus
 }

@@ -25,19 +25,17 @@
 
 #ifndef FEATURE_EVENTGROUP_H
 #define FEATURE_EVENTGROUP_H
-
+#include "FreeRTOS.h"
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
 /* task notify use true */
-void CreateNotifyTakeTrueTasks(void);
-void DeleteNotifyTakeTrueTasks(void);
+BaseType_t CreateNotifyTakeTrueTasks(void);
 
 /* task notify use false */
-void CreateNotifyTakeFalseTasks(void);
-void DeleteNotifyTakeFalseTasks(void);
+BaseType_t CreateNotifyTakeFalseTasks(void);
 
 #ifdef __cplusplus
 }

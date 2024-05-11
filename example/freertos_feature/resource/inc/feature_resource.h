@@ -13,13 +13,14 @@
  *
  * FilePath: feature_resource.h
  * Date: 2022-06-17 10:42:40
- * LastEditTime: 2022-06-17 10:42:40
+ * LastEditTime: 2024-05-07 10:42:40
  * Description:  This file is for task function define
  *
  * Modify History:
  *  Ver   Who  Date   Changes
  * ----- ------  -------- --------------------------------------
  * 1.0 wangxiaodong 2022/08/09  first commit
+ * 1.1 huangjin     2024/05/07  add no letter shell mode, adapt to auto-test system
  */
 
 #ifndef FEATURE_RESOURCE_H
@@ -31,12 +32,9 @@ extern "C"
 #endif
 
 /* mutex task */
-void CreateResourceTasks(void);
-void DeleteResourceTasks(void);
-
+int CreateResourceTasks(void);
 /* gatekeeper task */
-void CreateGatekeeperTasks(void);
-void DeleteGatekeeperTasks(void);
+int CreateGatekeeperTasks(void);
 
 #ifdef __cplusplus
 }

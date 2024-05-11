@@ -9,7 +9,7 @@
 
 本例程需要用到
 - Phytium开发板（FT2000-4/D2000/E2000D/E2000Q/E2000Q/PhytiumPi）
-- [Phytium freeRTOS SDK](https://gitee.com/phytium_embedded/phytium-free-rtos-sdk)
+- [Phytium FreeRTOS SDK](https://gitee.com/phytium_embedded/phytium-free-rtos-sdk)
 - [Phytium standalone SDK](https://gitee.com/phytium_embedded/phytium-standalone-sdk)
 ### 2.1 硬件配置方法
 
@@ -78,17 +78,14 @@ bootelf -p 0x90100000
 
 - 系统进入后，输入```intr```查看指令说明
 - 输入```intr bin_cre```，启动二进制信号量任务测试
-- 输入```intr bin_del```，删除二进制信号量任务测试
 
 ![bin](./figs/intr_bin.png)
 
 - 输入```intr count_cre```，启动计数信号量任务测试
-- 输入```intr count_del```，删除计数信号量任务测试
 
 ![count](./figs/intr_count.png)
 
 - 输入```intr queue_cre```，启动在中断服务程序中使用queue测试
-- 输入```intr queue_del```，删除在中断服务程序中使用queue测试
 
 ![queue](./figs/intr_queue.png)
 

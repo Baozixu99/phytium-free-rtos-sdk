@@ -25,16 +25,13 @@
 
 #ifndef ATOMIC_EXAMPLE_H
 #define ATOMIC_EXAMPLE_H
-
+#include "FreeRTOS.h"
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
-/* atomic task */
-void CreateAtomicTasks(void);
-void DeleteAtomicTasks(void);
-
+BaseType_t FFreeRTOSAtomicTaskCreate(void);
 #ifdef __cplusplus
 }
 #endif

@@ -13,13 +13,14 @@
  * 
  * FilePath: lwip_ipv4_example.c
  * Created Date: 2023-11-21 11:12:04
- * Last Modified: 2023-12-28 15:12:06
+ * Last Modified: 2024-04-26 15:53:23
  * Description:  This file is for lwip ipv4 example function implementation.
  * 
  * Modify History:
  *  Ver      Who         Date               Changes
  * -----  ----------   --------  ---------------------------------
  *  1.0   liuzhihong   2023/12/26          first release
+ *  2.0   liuzhihong   2024/4/26   add no letter shell mode, adapt to auto-test system
  */
 
 #include <string.h>
@@ -55,8 +56,15 @@
 		.config.phy_speed = LWIP_PORT_SPEED_1000M,         \
 		.config.phy_duplex = LWIP_PORT_FULL_DUPLEX, \
 		.config.capability = LWIP_PORT_MODE_NAIVE, 
-
-
+        
+#define TIMER_OUT (pdMS_TO_TICKS(5000UL))
+enum
+{
+    LWIP_IPV4_EXAMPLE_SUCCESS = 0,
+    LWIP_IPV4_EXAMPLE_UNKNOWN_STATE = 1,
+    LWIP_IPV4_EXAMPLE_INIT_FAILURE = 2,
+};
+static QueueHandle_t xQueue = NULL;
 
 typedef struct
 {
@@ -107,9 +115,9 @@ static void SetIP(ip_addr_t* ipaddr,ip_addr_t* gw,ip_addr_t* netmask,u32 mac_id)
 
 }
  
-int LwipIpv4InitTask(void)
+void LwipIpv4InitTask(void)
 {
-    FError ret = FT_SUCCESS;
+    int task_res = LWIP_IPV4_EXAMPLE_SUCCESS;
     /* mac init */
     for (int i = 0; i < MAC_NUM; i++)
     {
@@ -128,7 +136,8 @@ int LwipIpv4InitTask(void)
         if (!LwipPortAdd(netif_p, &ipaddr, &netmask, &gw, board_mac_config[i].mac_address, (UserConfig *)&board_mac_config[i]))
         {
             printf("Error adding N/W interface %d.\n\r",board_mac_config[i].lwip_mac_config.mac_instance);
-            return ERR_GENERAL;
+            task_res = LWIP_IPV4_EXAMPLE_INIT_FAILURE;
+            goto task_exit;
         }
         printf("LwipPortAdd mac_instance %d is over.\n\r",board_mac_config[i].lwip_mac_config.mac_instance);
 
@@ -150,34 +159,61 @@ int LwipIpv4InitTask(void)
         }
        
     }
-    
     printf("Network setup complete.\n");
 
-    if (ret == FT_SUCCESS)
-    {
-        printf("%s@%d: Lwip ipv4 example success !!! \r\n", __func__, __LINE__);
-        printf("[system_example_pass]\r\n");
-    }
-    else
-    {
-        printf("%s@%d: Lwip ipv4 example failed !!!, ret = %d \r\n", __func__, __LINE__, ret);
-    }
+task_exit:
+    xQueueSend(xQueue, &task_res, 0);
 
     vTaskDelete(NULL);
-    return 0;
 }
 
-void LwipIpv4TestCreate(void)
+int FFreeRTOSLwipIpv4TaskCreate(void)
 {
-    BaseType_t ret;
-    ret = xTaskCreate((TaskFunction_t)LwipIpv4InitTask, /* 任务入口函数 */
+    BaseType_t xReturn = pdPASS; /* 定义一个创建信息返回值，默认为 pdPASS */
+    int task_res = LWIP_IPV4_EXAMPLE_UNKNOWN_STATE;
+
+    xQueue = xQueueCreate(1, sizeof(int)); /* 创建消息队列 */
+    if (xQueue == NULL)
+    {
+        printf("xQueue create failed.\r\n");
+        goto exit;
+    }
+    
+    xReturn = xTaskCreate((TaskFunction_t)LwipIpv4InitTask, /* 任务入口函数 */
                       (const char *)"LwipIpv4InitTask", /* 任务名字 */
                       (uint16_t)4096,                 /* 任务栈大小 */
                         NULL,                   /* 任务入口函数参数 */
                       (UBaseType_t)configMAX_PRIORITIES - 1, /* 任务的优先级 */
                       NULL);                          /* 任务控制块指针 */
+    if (xReturn == pdFAIL)
+    {
+        printf("xTaskCreate LwipIpv4InitTask failed.\r\n");
+        goto exit;
+    }
 
-    FASSERT_MSG(ret == pdPASS, "LwipTestCreate Task creation is failed");
+    xReturn = xQueueReceive(xQueue, &task_res, TIMER_OUT);
+    if (xReturn == pdFAIL)
+    {
+        printf("xQueue receive timeout.\r\n");
+        goto exit;
+    }
+
+exit:
+    if (xQueue != NULL)
+    {
+        vQueueDelete(xQueue);
+    }
+
+    if (task_res != LWIP_IPV4_EXAMPLE_SUCCESS)
+    {
+        printf("%s@%d: Lwip ipv4 example [failure], task_res = %d\r\n", __func__, __LINE__, task_res);
+        return task_res;
+    }
+    else
+    {
+        printf("%s@%d: Lwip ipv4 example [success].\r\n", __func__, __LINE__);
+        return task_res;
+    }
 }
 
 void LwipIpv4TestDeinit(void)

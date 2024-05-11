@@ -15,7 +15,7 @@ endif
 # 	CSRCS_RELATIVE_FILES += $(wildcard port/fsata_pcie/*.c)
 # endif
 
-FATFS_RT_C_DIR = $(SDK_DIR)/third-party/fatfs-0.1.4
+FATFS_RT_C_DIR =  $(abspath $(SDK_DIR)/third-party/fatfs-0.1.4)
 
 ABSOLUTE_CFILES += $(wildcard $(FATFS_RT_C_DIR)/utils/*.c)
 ABSOLUTE_CFILES += $(wildcard $(FATFS_RT_C_DIR)/port/*.c)

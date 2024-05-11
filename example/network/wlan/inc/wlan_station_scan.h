@@ -38,8 +38,9 @@ extern "C"
 /***************** Macros (Inline Functions) Definitions *********************/
 
 /************************** Function Prototypes ******************************/
-BaseType_t FFreeRTOSWlanStationScanInit(void);
+BaseType_t FFreeRTOSWlanStationScanTaskCreate(void);
 
+void WlanExampleEntry(void);
 /*****************************************************************************/
 
 #ifdef __cplusplus

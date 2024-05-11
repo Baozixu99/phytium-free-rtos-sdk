@@ -26,20 +26,17 @@
 #ifndef FEATURE_QUEUE_H
 #define FEATURE_QUEUE_H
 
+#include "FreeRTOS.h"
+
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
 /* queue task */
-void CreateIntTasks(void);
-void DeleteIntTasks(void);
-
-void CreateStructTasks(void);
-void DeleteStructTasks(void);
-
-void CreateQueueSetTasks(void);
-void DeleteQueueSetTasks(void);
+BaseType_t CreateIntTasks(void);
+BaseType_t CreateStructTasks(void);
+BaseType_t CreateQueueSetTasks(void);
 
 #ifdef __cplusplus
 }

@@ -19,19 +19,18 @@
  * Modify History:
  *  Ver   Who       Date        Changes
  * ----- ------     --------    --------------------------------------
- * 1.0   Wangzq       2024/02/29  first commit
+ * 1.0   Wangzq      2024/02/29  first commit
+ * 2.0   Wangzq      2024/4/22   add no letter shell mode, adapt to auto-test system
  */
 
+#include <stdio.h>
 #include <string.h>
-#include "FreeRTOSConfig.h"
+
 #include "FreeRTOS.h"
 #include "task.h"
-#include "timers.h"
-#include "fcpu_info.h"
+
+#include "fdebug.h"
 #include "fio_mux.h"
-#include "fassert.h"
-#include"fparameters.h"
-#include"fparameters_comm.h"
 #include "fmemory_pool.h"
 #include "ferror_code.h"
 #include "fcache.h"
@@ -39,74 +38,57 @@
 #include "fi2s_os.h"
 #include "fddma_os.h"
 #include "fddma.h"
-#include "fddma_hw.h"
 #include "fddma_bdl.h"
 #include "fes8336.h"
 #include "fi2s.h"
 #include "fi2s_hw.h"
 /************************** Constant Definitions *****************************/
-/* write and read task handle */
-static xTaskHandle i2s_init_handle;
-static xTaskHandle i2s_deinit_handle;
-static xTaskHandle i2s_Trans_handle;
-static xTaskHandle i2s_receive_handle;
-static TimerHandle_t exit_timer = NULL;
-static QueueHandle_t sync = NULL;
-
 static FFreeRTOSI2s *os_i2s = NULL;
 static FFreeRTOSDdma *ddma = NULL;
 static FFreeRTOSDdmaConfig ddma_config;
 static FDdmaChanIndex rx_chan_id = FDDMA_CHAN_1;
 static FDdmaChanIndex tx_chan_id = FDDMA_CHAN_0;
 static EventGroupHandle_t chan_evt = NULL;
-static FFreeRTOSRequest rx_tx_request = {0};
-static FDdmaBdlDesc *bdl_desc_list_g;
+static FFreeRTOSRequest rx_request = {0};
+static FFreeRTOSRequest tx_request = {0};
 
 static FMemp memp;
 static u8 memp_buf[SZ_4M] = {0};
-static u32 trans_num  = 0; /*已经传输完成的BDL数量*/
-#define CHAN_REQ_DONE(chan)    (0x1 << chan) /* if signal, chan req finished */
 
-/************************** user config *****************************/
-static FDdmaBdlDescConfig bdl_desc_config[4096];/*bdl_desc_config []根据TX_RX_BUF_LEN设置*/
-static u32 per_buffer = 16384;
-#define TX_RX_BUF_LEN         4096* 16384
-static u32 rx_buf = 0xa0000000;
-static u8 tx_buf[TX_RX_BUF_LEN] __attribute__((aligned(FDDMA_DDR_ADDR_ALIGMENT))) = {0};
-static FI2sData i2s_config =
+static boolean is_running = FALSE;
+static QueueHandle_t xQueue = NULL;
+#define CHAN_REQ_DONE(chan)    (0x1 << chan) /* if signal, chan req finished */
+#define I2S_TEST_TASK_PRIORITY  3
+/**************************** Type Definitions *******************************/
+enum
 {
-    .word_length = FI2S_WORLD_LENGTH_16,
-    .data_length = 16,
-    .sample_rate = FI2S_SAMPLE_RATE_CD,
+    I2S_TRANS_TEST_SUCCESS = 0,
+    I2S_TRANS_TEST_UNKNOWN = 1,
+    I2S_INIT_ERROR   = 2,
+    I2S_RECEIVE_ERROR = 3,
+    I2S_PLAYBACK_ERROR = 4,
 };
 
+/************************** user config *****************************/
+static FDdmaBdlDescConfig bdl_desc_config[100];/*bdl_desc_config []根据TX_RX_BUF_LEN设置，随buffer数更改*/
+static FDdmaBdlDesc *bdl_desc_list_g;
+#define  per_buffer  16384/*录制时每个buffer的大小，单位字节*/
+#define TX_RX_BUF_LEN         100* 16384/*录制时总buffer的大小，一共10个buff,单位字节*/
+static u32 data_buf = 0xa0000000;
 /***************** Macros (Inline Functions) Definitions *********************/
-#define FI2S_DEBUG_TAG "FI2S-OS"
+#define FI2S_DEBUG_TAG "FI2S-TRANS"
 #define FI2S_ERROR(format, ...) FT_DEBUG_PRINT_E(FI2S_DEBUG_TAG, format, ##__VA_ARGS__)
 #define FI2S_WARN(format, ...)  FT_DEBUG_PRINT_W(FI2S_DEBUG_TAG, format, ##__VA_ARGS__)
 #define FI2S_INFO(format, ...)  FT_DEBUG_PRINT_I(FI2S_DEBUG_TAG, format, ##__VA_ARGS__)
 #define FI2S_DEBUG(format, ...) FT_DEBUG_PRINT_D(FI2S_DEBUG_TAG, format, ##__VA_ARGS__)
 
 /************************** Function Prototypes ******************************/
-static void FFreeRTOSI2sDeinitTask(void *args)
+static void FFreeRTOSI2sDeinit(void)
 {
-    FError err = FT_SUCCESS;
-
-    if (i2s_init_handle) /* stop and delete init task */
-    {
-        vTaskDelete(i2s_init_handle);
-        i2s_init_handle = NULL;
-    }
-    if (i2s_Trans_handle) /* stop and delete send task */
-    {
-        vTaskDelete(i2s_Trans_handle);
-        i2s_Trans_handle = NULL;
-    }
-    if (i2s_receive_handle) /* stop and delete recv task */
-    {
-        vTaskDelete(i2s_receive_handle);
-        i2s_receive_handle = NULL;
-    }
+    printf("Exiting...\r\n");
+    /* deinit iomux */
+    FIOMuxDeInit();
+    FError ret = TRUE;
     if (ddma)
     {
         if (FT_SUCCESS != FFreeRTOSDdmaRevokeChannel(ddma, rx_chan_id))
@@ -117,8 +99,8 @@ static void FFreeRTOSI2sDeinitTask(void *args)
         {
             FI2S_ERROR("Delete TX channel failed.");
         }
-        err = FFreeRTOSDdmaDeinit(ddma);
-        if (FT_SUCCESS != err)
+        ret = FFreeRTOSDdmaDeinit(ddma);
+        if (FT_SUCCESS != ret)
         {
             FI2S_ERROR("deinit ddma failed.");
         }
@@ -126,8 +108,8 @@ static void FFreeRTOSI2sDeinitTask(void *args)
     }
     if (os_i2s)
     {
-        err = FFreeRTOSI2SDeinit(os_i2s);
-        if (FT_SUCCESS != err)
+        ret = FFreeRTOSI2SDeinit(os_i2s);
+        if (FT_SUCCESS != ret)
         {
             FI2S_ERROR("deinit i2s failed.");
         }
@@ -138,11 +120,7 @@ static void FFreeRTOSI2sDeinitTask(void *args)
         vEventGroupDelete(chan_evt);
         chan_evt = NULL;
     }
-    if (sync)
-    {
-        vQueueDelete(sync);
-        sync = NULL;
-    }
+    is_running = FALSE;
     FMempFree(&memp, bdl_desc_list_g);
     FI2S_DEBUG("exit all task and deinit.");
 }
@@ -168,45 +146,17 @@ static void DdmaI2sAckDMADone(FDdmaChanIrq *const chan_irq_info_p, void *arg)
     return;
 }
 
-
-static inline boolean FFreeRTOSI2sDdmaGiveSync()
+static FError I2sWaitTransferDone(void)
 {
-    boolean data = TRUE;
-    FASSERT_MSG((NULL != sync), "Sync not exists.");
-    if (pdFALSE == xQueueSend(sync, &data, portMAX_DELAY))
-    {
-        FI2S_ERROR("Failed to give locker.");
-        return FALSE;
-    }
-    return TRUE;
-}
-
-static inline void FFreeRTOSI2sDdmTakeSync()
-{
-    boolean data = FALSE;
-    FASSERT_MSG((NULL != sync), "Sync not exists.");
-    if (pdFALSE == xQueueReceive(sync, &data, portMAX_DELAY))
-    {
-        FI2S_ERROR("Failed to give locker.");
-    }
-    return;
-}
-
-static boolean FFreeRTOSI2sWaitDmaEnd(void)
-{
-    boolean ok = TRUE;
+    boolean ret = TRUE;
     EventBits_t ev;
+    static u32 wait_timeout = pdMS_TO_TICKS(100000UL);/*等待超时时间，单位ms，请确保等待超时时间大于录制时间*/
     u32 wait_bits = CHAN_REQ_DONE(rx_chan_id) | CHAN_REQ_DONE(tx_chan_id);
-
-    ev = xEventGroupWaitBits(chan_evt, wait_bits, pdTRUE, pdFALSE, portMAX_DELAY);
+    ev = xEventGroupWaitBits(chan_evt, wait_bits, pdTRUE, pdFALSE, wait_timeout);
     if ((ev & wait_bits) != 0U)
     {
-        FI2S_INFO("DDMA transfer success.");
-        trans_num ++ ;
-        if (trans_num >= TX_RX_BUF_LEN / per_buffer) /*已经传输完成的数目，传输完一个bdl产生一次中断*/
-        {
-            return ok ;
-        }
+        ret = FT_SUCCESS;
+        FI2S_INFO("transfer success *********\r\n");
     }
     else
     {
@@ -222,220 +172,252 @@ static boolean FFreeRTOSI2sWaitDmaEnd(void)
         {
             FI2S_ERROR("Both TX and RX timeout.");
         }
-        ok = FALSE;
     }
-
-    return FALSE;
+    return ret;
 }
 
-static void FFreeRTOSI2sHardWareConfig(u32 work_mode)
+/*I2s playback function*/
+static FError I2sPlayback(void)
 {
-    FError err = FT_SUCCESS;
-
-    /*设置es8336芯片*/
-    FEs8336RegsProbe(); /* 寄存器默认值 */
+    FError ret = FT_SUCCESS;
     FEs8336Startup();
-    err = FEs8336SetFormat(i2s_config.word_length); /* 设置ES8336工作模式 */
-    FASSERT_MSG(FT_SUCCESS == err, "set es8336 failed.");
+    ret = FFreeRTOSDdmaBDLStartChannel(ddma, tx_chan_id);
+    if (ret != FT_SUCCESS)
+    {
+        FI2S_ERROR("Ddma set config failed.");
+        goto exit;
+    }
+exit:
+    return ret;
+}
 
-    /*设置i2s模块*/
-    err =  FI2sClkOutDiv(&os_i2s->i2s_ctrl); /* 默认16-bits采集 */
-    FASSERT_MSG(FT_SUCCESS == err, "set i2s clk failed.");
-    FI2sSetHwconfig(&os_i2s->i2s_ctrl);
-    FI2sTxRxEnable(&os_i2s->i2s_ctrl, TRUE); /* 模块使能 */
+/*I2s receive function*/
+static FError I2sReceive(void)
+{
+    FError ret = FT_SUCCESS;
+    FEs8336Startup();
+    FFreeRTOSDdmaBDLStartChannel(ddma, rx_chan_id);
+    if (ret != FT_SUCCESS)
+    {
+        FI2S_ERROR("Ddma set config failed.");
+        goto exit;
+    }
+exit:
+    return ret;
+}
 
+static FError DdmaInit(void)
+{
+    FError ret = FT_SUCCESS;
+    /*初始化ddma*/
+    ddma = FFreeRTOSDdmaInit(FDDMA2_I2S_ID, &ddma_config); /* init DDMA */
+    if (ddma == NULL)
+    {
+        FI2S_ERROR("Init i2s failed.");
+        return FI2S_ERR_CONFIG_SET_FAILED;
+        goto exit;
+    }
     /*ddma bdl配置*/
+
     fsize_t bdl_num = TX_RX_BUF_LEN / per_buffer;
-    err = FMempInit(&memp, memp_buf, memp_buf + sizeof(memp_buf));
-    FCacheDCacheFlushRange((uintptr)rx_buf, TX_RX_BUF_LEN);
+    ret = FMempInit(&memp, memp_buf, memp_buf + sizeof(memp_buf));
+    FCacheDCacheFlushRange((uintptr)data_buf, TX_RX_BUF_LEN);
 
     for (u32 chan = FDDMA_CHAN_0; chan < FDDMA_NUM_OF_CHAN; chan++) /* 清除中断 */
     {
         FDdmaClearChanIrq(ddma->ctrl.config.base_addr, chan, ddma->ctrl.config.caps);
         u32 status = FDdmaReadReg(ddma->ctrl.config.base_addr, FDDMA_STA_OFFSET);
+
     }
     /* set BDL descriptors */
     for (fsize_t loop = 0; loop < bdl_num; loop++)
     {
         bdl_desc_config[loop].current_desc_num = loop;
-        bdl_desc_config[loop].src_addr = (uintptr)(rx_buf + per_buffer * loop);
+        bdl_desc_config[loop].src_addr = (uintptr)(data_buf + per_buffer * loop);
         bdl_desc_config[loop].trans_length = per_buffer;
-        bdl_desc_config[loop].ioc = TRUE;
+        bdl_desc_config[loop].ioc = FALSE;
     }
-    FDdmaBdlDesc *bdl_desc_list = FMempMallocAlign(&memp, bdl_num * sizeof(FDdmaBdlDesc), FDDMA_BDL_ADDR_ALIGMENT);
-    memset(bdl_desc_list, 0, bdl_num * sizeof(FDdmaBdlDesc));
-    bdl_desc_list_g = bdl_desc_list;
+    bdl_desc_config[bdl_num - 1].ioc = TRUE;
+    bdl_desc_list_g = FMempMallocAlign(&memp, bdl_num * sizeof(FDdmaBdlDesc), FDDMA_BDL_ADDR_ALIGMENT);
+    memset(bdl_desc_list_g, 0, bdl_num * sizeof(FDdmaBdlDesc));
     /* set BDL descriptor list with descriptor configs */
     for (fsize_t loop = 0; loop <  bdl_num; loop++)
     {
-        FDdmaBDLSetDesc(bdl_desc_list, &bdl_desc_config[loop]);
+        FDdmaBDLSetDesc(bdl_desc_list_g, &bdl_desc_config[loop]);
     }
-    if (work_mode == AUDIO_PCM_STREAM_CAPTURE)
+    rx_request.slave_id = 0U;
+    rx_request.mem_addr = (uintptr)data_buf;
+    rx_request.dev_addr = os_i2s->i2s_ctrl.config.base_addr + FI2S_RXDMA;
+    rx_request.trans_len = TX_RX_BUF_LEN;
+    rx_request.is_rx = TRUE;
+    rx_request.req_done_handler = DdmaI2sAckDMADone;
+    rx_request.req_done_args = NULL;
+    rx_request.first_desc_addr = (uintptr)bdl_desc_list_g;
+    rx_request.valid_desc_num = bdl_num;
+    ret = FFreeRTOSDdmaSetupBDLChannel(ddma, rx_chan_id, &rx_request);
+
+    if (ret != FT_SUCCESS)
     {
-        rx_tx_request.slave_id = 0U;
-        rx_tx_request.mem_addr = (uintptr)rx_buf;
-        rx_tx_request.dev_addr = os_i2s->i2s_ctrl.config.base_addr + FI2S_RXDMA;
-        rx_tx_request.trans_len = TX_RX_BUF_LEN;
-        rx_tx_request.is_rx = TRUE;
-        rx_tx_request.req_done_handler = DdmaI2sAckDMADone;
-        rx_tx_request.req_done_args = NULL;
-        rx_tx_request.first_desc_addr = (uintptr)bdl_desc_list;
-        rx_tx_request.valid_desc_num = bdl_num;
-        err = FFreeRTOSDdmaSetupBDLChannel(ddma, rx_chan_id, &rx_tx_request);
-        FFreeRTOSDdmaBDLStartChannel(ddma, rx_chan_id);
+        FI2S_ERROR("Ddma set config failed.");
+        goto exit;
     }
-    else
+    tx_request.slave_id = 0U;
+    tx_request.mem_addr = (uintptr)data_buf;
+    tx_request.dev_addr = os_i2s->i2s_ctrl.config.base_addr + FI2S_TXDMA;
+    tx_request.trans_len = TX_RX_BUF_LEN;
+    tx_request.is_rx = FALSE;
+    tx_request.req_done_handler = DdmaI2sAckDMADone;
+    tx_request.req_done_args = NULL;
+    tx_request.first_desc_addr = (uintptr)bdl_desc_list_g;
+    tx_request.valid_desc_num = bdl_num;
+    ret = FFreeRTOSDdmaSetupBDLChannel(ddma, tx_chan_id, &tx_request);
+
+    if (ret != FT_SUCCESS)
     {
-        rx_tx_request.slave_id = 0U;
-        rx_tx_request.mem_addr = (uintptr)(void *)rx_buf;
-        rx_tx_request.dev_addr = os_i2s->i2s_ctrl.config.base_addr + FI2S_TXDMA;
-        rx_tx_request.trans_len = TX_RX_BUF_LEN;
-        rx_tx_request.is_rx = FALSE;
-        rx_tx_request.req_done_handler = DdmaI2sAckDMADone;
-        rx_tx_request.req_done_args = NULL;
-        rx_tx_request.first_desc_addr = (uintptr)bdl_desc_list;
-        rx_tx_request.valid_desc_num = bdl_num;
-        err = FFreeRTOSDdmaSetupBDLChannel(ddma, tx_chan_id, &rx_tx_request);
-        FFreeRTOSDdmaBDLStartChannel(ddma, tx_chan_id);
+        FI2S_ERROR("Ddma set config failed.");
+        goto exit;
     }
+exit:
+    return ret;
 }
 
-static void FFreeRTOSI2sInitTask(void *pvParameters)
+/*I2s trans init function*/
+static FError I2sInit(void)
 {
-    FError err = FT_SUCCESS;
-    const u32 i2s_id = FI2S0_ID;/* 默认使用I2S-0 */
-    const u32 ddma_id = FDDMA2_I2S_ID; /* I2S所绑定的DDMA默认是DDMA-2 */
-
+    FError ret = FT_SUCCESS;
     /*先初始化es8336*/
     FIOMuxInit();
     FIOPadSetI2sMux();
-    err = FEs8336Init(); /* es8336初始化，I2C slave设置 */
-    FASSERT_MSG(FT_SUCCESS == err, "Init es8336 failed.");
+    ret = FEs8336Init(); /* es8336初始化，I2C slave设置 */
+    if (ret != FT_SUCCESS)
+    {
+        FI2S_ERROR("Init es8336 failed.");
+        goto exit;
+    }
+    FEs8336RegsProbe(); /* 寄存器默认值 */
 
-    /*初始化i2s*/
-    os_i2s = FFreeRTOSI2sInit(i2s_id);
-    FASSERT_MSG(os_i2s, "Init i2s failed.");
+    ret = FEs8336SetFormat(FI2S_WORLD_LENGTH_16); /* 设置ES8336工作模式 */
+    if (ret != FT_SUCCESS)
+    {
+        FI2S_ERROR("Init es8336 failed.");
+        goto exit;
+    }
 
-    /*初始化ddma*/
-    ddma = FFreeRTOSDdmaInit(ddma_id, &ddma_config); /* init DDMA */
-    FASSERT_MSG(ddma, "Init DDMA failed.");
+    os_i2s = FFreeRTOSI2sInit(FI2S0_ID);
+    if (os_i2s == NULL)
+    {
+        FI2S_ERROR("Init i2s failed.");
+        return FI2S_ERR_CONFIG_SET_FAILED;
+        goto exit;
+    }
+    os_i2s->i2s_ctrl.data_config.sample_rate = FI2S_SAMPLE_RATE_CD;
+    os_i2s->i2s_ctrl.data_config.word_length = FI2S_WORLD_LENGTH_16;
+    /*设置i2s模块*/
+    FFreeRTOSSetupI2S(os_i2s);
+exit:
+    return ret;
+}
+
+static void FFreeRTOSI2sTransTask(void)
+{
+    int task_res = I2S_TRANS_TEST_SUCCESS;
+    FError ret = FT_SUCCESS;
+
+    ret = I2sInit();
+    if (ret != FT_SUCCESS)
+    {
+        FI2S_ERROR("I2sInitFunction failed.");
+        task_res = I2S_INIT_ERROR;
+        goto task_exit;
+    }
+    ret = DdmaInit();
+    if (ret != FT_SUCCESS)
+    {
+        FI2S_ERROR("I2sInitFunction failed.");
+        task_res = I2S_INIT_ERROR;
+        goto task_exit;
+    }
+    ret = I2sReceive();
+    if (ret != FT_SUCCESS)
+    {
+        FI2S_ERROR("I2sReceive failed.");
+        task_res = I2S_RECEIVE_ERROR;
+        goto task_exit;
+    }
+    I2sWaitTransferDone();/*等待接收完成，之后开始发送*/
+    if (ret != FT_SUCCESS)
+    {
+        FI2S_ERROR("I2sWaitRxDone failed.");
+        goto task_exit;
+    }
+
+    ret = I2sPlayback();/*开始发送*/
+    if (ret != FT_SUCCESS)
+    {
+        FI2S_ERROR("I2sPlayback failed.");
+        task_res = I2S_PLAYBACK_ERROR;
+        goto task_exit;
+    }
+    I2sWaitTransferDone();/*等待发送完成*/
+
+task_exit:
+    xQueueSend(xQueue, &task_res, 0);
     vTaskDelete(NULL);
 }
 
-static void FFreeRTOSI2sReceiveTask(void *pvParameters)
+BaseType_t FFreeRTOSRunI2sExample(void)
 {
-    FError err = FT_SUCCESS;
-    u32 work_mode = AUDIO_PCM_STREAM_CAPTURE;
-
-    FFreeRTOSI2sHardWareConfig(work_mode);
-
-    for (;;)
-    {
-        printf("...Waiting for recv data...\r\n");
-        /* block recv task until RX done */
-        if (!FFreeRTOSI2sWaitDmaEnd())
-        {
-            continue;
-        }
-        if ((FFREERTOS_DDMA_OK != FFreeRTOSDdmaStopChannel(ddma, tx_chan_id)) ||
-            (FFREERTOS_DDMA_OK != FFreeRTOSDdmaStopChannel(ddma, rx_chan_id)))
-        {
-            FI2S_ERROR("Stop DDMA transfer failed.");
-            continue;
-        }
-        trans_num = 0;
-        FFreeRTOSI2sDdmaGiveSync(); /* recv finish, give send sync and allow sending */
-        FFreeRTOSDdmaStop(ddma);
-        vTaskDelete(NULL);
-    }
-}
-
-static void FFreeRTOSI2sSendTask(void *pvParameters)
-{
-    FFreeRTOSI2sDdmTakeSync();/*receiver task is over , send task take sync from recv and start work*/
-    FError err = FT_SUCCESS;
-    u32 work_mode = AUDIO_PCM_STREAM_PLAYBACK;
-
-    FFreeRTOSI2sHardWareConfig(work_mode);
-
-    for (;;)
-    {
-        printf("...Waiting for send data...\r\n");
-        /* block send task until send done */
-        if (!FFreeRTOSI2sWaitDmaEnd())
-        {
-            continue;
-        }
-        if ((FFREERTOS_DDMA_OK != FFreeRTOSDdmaStopChannel(ddma, tx_chan_id)) ||
-            (FFREERTOS_DDMA_OK != FFreeRTOSDdmaStopChannel(ddma, rx_chan_id)))
-        {
-            FI2S_ERROR("Stop DDMA transfer failed.");
-            continue;
-        }
-        trans_num = 0;
-        FFreeRTOSDdmaStop(ddma);
-        vTaskDelete(NULL);
-    }
-}
-
-BaseType_t FFreeRTOSI2sInitCreate(void)
-{
-    BaseType_t xReturn = pdPASS;/* 定义一个创建信息返回值，默认为 pdPASS */
-
+    BaseType_t xReturn = pdPASS; /*  pdPASS */
+    int task_res = I2S_TRANS_TEST_UNKNOWN;
     FASSERT_MSG(NULL == chan_evt, "Event group exists.");
     FASSERT_MSG((chan_evt = xEventGroupCreate()) != NULL, "Create event group failed.");
-    FASSERT_MSG(NULL == sync, "Sync exists.");
-    FASSERT_MSG((sync = xQueueCreate(1, sizeof(boolean))) != NULL, "Create sync failed.");
+    xQueue = xQueueCreate(1, sizeof(int)); /* create queue for task communication */
+    if (is_running)
+    {
+        FI2S_ERROR("The task is running.");
+        return pdPASS;
+    }
 
-    taskENTER_CRITICAL(); /* no schedule when create task */
+    is_running = TRUE;
 
-    xReturn = xTaskCreate((TaskFunction_t)FFreeRTOSI2sInitTask,  /* 任务入口函数 */
-                          (const char *)"FFreeRTOSI2sInitTask",/* 任务名字 */
-                          (uint16_t)4096,  /* 任务栈大小 */
-                          (void *)NULL,/* 任务入口函数参数 */
-                          (UBaseType_t)configMAX_PRIORITIES - 2,  /* 任务的优先级 */
-                          (TaskHandle_t *)&i2s_init_handle); /* 任务控制 */
-    FASSERT_MSG(xReturn == pdPASS, "I2sInitTask creation is failed.");
 
-    xReturn = xTaskCreate((TaskFunction_t)FFreeRTOSI2sSendTask,  /* task entry */
-                          (const char *)"FFreeRTOSI2sSendTask",/* task name */
-                          (uint16_t)4096,  /* task stack size in words */
-                          NULL, /* task params */
-                          (UBaseType_t)configMAX_PRIORITIES - 4,  /* task priority */
-                          (TaskHandle_t *)&i2s_Trans_handle); /* task handler */
+    if (xQueue == NULL)
+    {
+        FI2S_ERROR("xQueue create failed.");
+        goto exit;
+    }
+    xReturn = xTaskCreate((TaskFunction_t)FFreeRTOSI2sTransTask,         /* 任务入口函数 */
+                          (const char *)"FFreeRTOSI2sTransTask",         /* 任务名字 */
+                          (uint16_t)4096,                         /* 任务栈大小 */
+                          NULL,                                   /* 任务入口函数参数 */
+                          (UBaseType_t)I2S_TEST_TASK_PRIORITY, /* 任务优先级 */
+                          NULL);                                  /* 任务句柄 */
+    if (xReturn == pdFAIL)
+    {
+        FI2S_ERROR("xTaskCreate I2s trans task failed.");
+        goto exit;
+    }
+    xReturn = xQueueReceive(xQueue, &task_res, portMAX_DELAY);
+    if (xReturn == pdFAIL)
+    {
+        FI2S_ERROR("xQueue receive timeout.");
+        goto exit;
+    }
 
-    FASSERT_MSG(pdPASS == xReturn, "Create task failed.");
-
-    xReturn = xTaskCreate((TaskFunction_t)FFreeRTOSI2sReceiveTask,  /* task entry */
-                          (const char *)"FFreeRTOSI2sReceiveTask",/* task name */
-                          (uint16_t)4096,  /* task stack size in words */
-                          NULL, /* task params */
-                          (UBaseType_t)configMAX_PRIORITIES - 3,  /* task priority */
-                          (TaskHandle_t *)&i2s_receive_handle); /* task handler */
-
-    FASSERT_MSG(pdPASS == xReturn, "Create task failed.");
-
-    taskEXIT_CRITICAL(); /* allow schedule since task created */
-
-    return xReturn;
-}
-
-BaseType_t FFreeRTOSI2sDeInitCreate(void)
-{
-    BaseType_t xReturn = pdPASS;/* 定义一个创建信息返回值，默认为 pdPASS */
-
-    taskENTER_CRITICAL(); /* no schedule when create task */
-
-    xReturn = xTaskCreate((TaskFunction_t)FFreeRTOSI2sDeinitTask,  /* task entry */
-                          (const char *)"FFreeRTOSI2sDeinitTask",/* task name */
-                          (uint16_t)4096,  /* task stack size in words */
-                          NULL, /* task params */
-                          (UBaseType_t)configMAX_PRIORITIES - 3,  /* task priority */
-                          (TaskHandle_t *)&i2s_deinit_handle); /* task handler */
-
-    FASSERT_MSG(pdPASS == xReturn, "Create task failed.");
-
-    taskEXIT_CRITICAL(); /* allow schedule since task created */
-
-    return xReturn;
+exit:
+    if (xQueue != NULL)
+    {
+        vQueueDelete(xQueue);
+    }
+    FFreeRTOSI2sDeinit();
+    if (task_res != I2S_TRANS_TEST_SUCCESS)
+    {
+        printf("%s@%d: I2s trans example [failure], task_res = %d\r\n", __func__, __LINE__, task_res);
+        return pdFAIL;
+    }
+    else
+    {
+        printf("%s@%d: I2s trans example [success].\r\n", __func__, __LINE__);
+        return pdTRUE;
+    }
 }

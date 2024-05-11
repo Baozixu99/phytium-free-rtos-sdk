@@ -17,40 +17,34 @@
  * Description:  This file is for eventgroup command interface
  *
  * Modify History:
- *  Ver   Who       Date        Changes
- * ----- ------     --------    --------------------------------------
- * 1.0 wangxiaodong 2022/08/09  first commit
+ *  Ver      Who           Date         Changes
+ * -----    ------       --------      --------------------------------------
+ *  1.0   wangxiaodong   2022/8/9      first commit
+ *  2.0   liqiaozhong    2024/5/6      add no letter shell mode, adapt to auto-test system
  */
 
-#include "shell.h"
 #include <string.h>
 #include <stdio.h>
-#include "feature_eventgroup.h"
 
-typedef enum
-{
-    MANAGE_TASK_INDEX = 0,
-    SYNC_TASK_INDEX = 1,
-    EVENTGROUP_FEATURE_LENGTH
-} FreeRtosEventgroupFeatureSelect;
+#include "sdkconfig.h"
+
+#ifdef CONFIG_USE_LETTER_SHELL
+#include "../src/shell.h"
+
+#include "feature_eventgroup.h"
 
 static void EventTasksCmdUsage(void)
 {
-    printf("Usage:\r\n");
-    printf(" event manage_cre \r\n");
-    printf("    -- Create manage tasks now.\r\n");
-    printf(" event manage_del \r\n");
-    printf("    -- Del manage tasks now.\r\n");
-    printf(" event sync_cre \r\n");
-    printf("    -- Create sync tasks now.\r\n");
-    printf(" event sync_del \r\n");
-    printf("    -- Del sync tasks now.\r\n");
-
+    printf("Usage: \r\n");
+    printf("event manage_example \r\n");
+    printf("-- Create manage tasks. \r\n");
+    printf("event sync_example \r\n");
+    printf("-- Create sync tasks. \r\n");
 }
 
 int CreateEventCmd(int argc, char *argv[])
 {
-    static int create_flg[EVENTGROUP_FEATURE_LENGTH] = {0}; /* 1 is tasks has been created*/
+    int ret = 0;
 
     if (argc < 2)
     {
@@ -58,62 +52,22 @@ int CreateEventCmd(int argc, char *argv[])
         return -1;
     }
 
-    if (!strcmp(argv[1], "manage_cre"))
+    if (!strcmp(argv[1], "manage_example"))
     {
-        if (create_flg[MANAGE_TASK_INDEX] == 0)
-        {
-            CreateManagementTasks();
-            create_flg[MANAGE_TASK_INDEX] = 1;
-        }
-        else
-        {
-            printf("Please use manage_del cmd first. \r\n");
-        }
+        ret = CreateManagementTasks();
     }
-    else if (!strcmp(argv[1], "manage_del"))
+    else if (!strcmp(argv[1], "sync_example"))
     {
-        if (create_flg[MANAGE_TASK_INDEX] == 1)
-        {
-            DeleteManagementTasks();
-            create_flg[MANAGE_TASK_INDEX]  = 0;
-        }
-        else
-        {
-            printf("Please use manage_cre cmd first. \r\n");
-        }
-    }
-    else if (!strcmp(argv[1], "sync_cre"))
-    {
-        if (create_flg[SYNC_TASK_INDEX] == 0)
-        {
-            CreateSyncTasks();
-            create_flg[SYNC_TASK_INDEX] = 1;
-        }
-        else
-        {
-            printf("Please use sync_del cmd first. \r\n");
-        }
-    }
-    else if (!strcmp(argv[1], "sync_del"))
-    {
-        if (create_flg[SYNC_TASK_INDEX] == 1)
-        {
-            DeleteSyncTasks();
-            create_flg[SYNC_TASK_INDEX]  = 0;
-        }
-        else
-        {
-            printf("Please use sync_cre cmd first. \r\n");
-        }
+        ret = CreateSyncTasks();   
     }
     else
     {
         printf("Error: Invalid arguments. \r\n");
         EventTasksCmdUsage();
     }
-    return 0;
+
+    return ret;
 }
 
 SHELL_EXPORT_CMD(SHELL_CMD_TYPE(SHELL_TYPE_CMD_MAIN), event, CreateEventCmd, event group creating test);
-
-
+#endif

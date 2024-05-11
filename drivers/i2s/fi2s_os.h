@@ -13,7 +13,7 @@
  * 
  * FilePath: fi2s_os.h
  * Created Date: 2024-02-29 10:49:34
- * Last Modified: 2024-03-28 11:07:07
+ * Last Modified: 2024-04-26 14:54:58
  * Description:  This file is for providing function related definitions of i2s driver
  * 
  * Modify History:
@@ -53,6 +53,9 @@ typedef struct
 
 /*init the i2s and return the i2s instance*/
 FFreeRTOSI2s *FFreeRTOSI2sInit(u32 id);
+
+/*setup the i2s */
+FError FFreeRTOSSetupI2S(FFreeRTOSI2s *os_i2s_p);
 
 /*deinit the i2s */
 FError FFreeRTOSI2SDeinit(FFreeRTOSI2s *os_i2s_p);

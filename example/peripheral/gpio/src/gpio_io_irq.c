@@ -36,8 +36,8 @@
 #include "gpio_io_irq.h"
 /************************** Constant Definitions *****************************/
 #if defined(CONFIG_E2000D_DEMO_BOARD) || defined(CONFIG_E2000Q_DEMO_BOARD)
-    #define IN_PIN_INDEX FFREERTOS_GPIO_PIN_INDEX(3, 0, 5)  /* GPIO 3-A-5 */
-    #define OUT_PIN_INDEX FFREERTOS_GPIO_PIN_INDEX(3, 0, 4)
+    #define IN_PIN_INDEX FFREERTOS_GPIO_PIN_INDEX(4, 0, 11) /* GPIO 4-A-11 */
+    #define OUT_PIN_INDEX FFREERTOS_GPIO_PIN_INDEX(4, 0, 12)
 #endif
 
 #ifdef CONFIG_FIREFLY_DEMO_BOARD

@@ -38,6 +38,7 @@ extern "C"
 
 /* freertos wdt error */
 #define FREERTOS_WDT_SEM_ERROR    FT_CODE_ERR(ErrModBsp, ErrBspWdt, 10)
+#define FREERTOS_WDT_INIT_ERROR    FT_CODE_ERR(ErrModBsp, ErrBspWdt, 11)
 
 /* freertos wdt interrupt priority */
 #define FREERTOS_WDT_IRQ_PRIORITY IRQ_PRIORITY_VALUE_12

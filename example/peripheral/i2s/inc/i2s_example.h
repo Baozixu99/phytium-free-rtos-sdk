@@ -26,16 +26,14 @@
 #ifndef I2S_EXAMPLE_H
 #define I2S_EXAMPLE_H
 
-#include "fi2s_os.h"
+#include "FreeRTOS.h"
+
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 /*init i2s task*/
-BaseType_t FFreeRTOSI2sInitCreate(void);
-
-/*deinit i2s task*/
-BaseType_t FFreeRTOSI2sDeInitCreate(void);
+BaseType_t FFreeRTOSRunI2sExample(void);
 
 #ifdef __cplusplus
 }

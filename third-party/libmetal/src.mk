@@ -15,9 +15,9 @@ ifdef CONFIG_USE_FREERTOS
 
 endif
 
-LIBMETAL_DIR = $(SDK_DIR)/third-party/libmetal
+LIBMETAL_DIR = $(abspath $(SDK_DIR)/third-party/libmetal)
 
-ABSOLUTE_CFILES +=$(wildcard $(LIBMETAL_DIR)/metal/*.c) 
+ABSOLUTE_CFILES +=$(wildcard $(LIBMETAL_DIR)/metal/*.c)
 
 
 endif #CONFIG_USE_LIBMETAL

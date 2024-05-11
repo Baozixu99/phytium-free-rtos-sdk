@@ -8,8 +8,10 @@ that receives from the queue does.
 #include "FreeRTOS.h"
 #include "task.h"
 #include "queue.h"
+#include "event_groups.h"
 
 #define TASK_STACK_SIZE         2048
+#define TIMER_OUT (pdMS_TO_TICKS(5000UL))
 
 static xTaskHandle xtask1_handle;
 static xTaskHandle xtask2_handle;
@@ -26,53 +28,10 @@ static void vReceiverTask(void *pvParameters);
 that is accessed by all three tasks. */
 static QueueHandle_t xQueue;
 
-void CreateIntTasks(void)
-{
-    /* The queue is created to hold a maximum of 5 int values. */
-    xQueue = xQueueCreate(5, sizeof(int));
+static EventGroupHandle_t xEventGroup;
+#define FIRST_SENDER_TASK_BIT  ( 1UL << 0UL ) /* Event bit 0, which is set by a task. */
+#define SECOND_SENDER_TASK_BIT ( 1UL << 1UL ) /* Event bit 1, which is set by a task. */
 
-    if (xQueue != NULL)
-    {
-        /* Create two instances of the task that will write to the queue.  The
-        parameter is used to pass the value that the task should write to the queue,
-        so one task will continuously write 100 to the queue while the other task
-        will continuously write 200 to the queue.  Both tasks are created at
-        priority 1. */
-        xTaskCreate(vSenderTask, "Queue Sender1", TASK_STACK_SIZE, (void *) 100, 2, &xtask1_handle);
-        xTaskCreate(vSenderTask, "Queue Sender2", TASK_STACK_SIZE, (void *) 200, 2, &xtask2_handle);
-
-        /* Create the task that will read from the queue.  The task is created with
-        priority 2, so above the priority of the sender tasks. */
-        xTaskCreate(vReceiverTask, "Queue Receiver", TASK_STACK_SIZE, NULL, 3, &xtask3_handle);
-
-    }
-    else
-    {
-        /* The queue could not be created. */
-    }
-
-}
-
-void DeleteIntTasks(void)
-{
-    if (xtask1_handle)
-    {
-        vTaskDelete(xtask1_handle);
-        vPrintString("Int Sender 1 deletion \r\n");
-    }
-
-    if (xtask2_handle)
-    {
-        vTaskDelete(xtask2_handle);
-        vPrintString("Int Sender 2 deletion \r\n");
-    }
-
-    if (xtask3_handle)
-    {
-        vTaskDelete(xtask3_handle);
-        vPrintString("Int Receiver deletion \r\n");
-    }
-}
 /*-----------------------------------------------------------*/
 
 static void vSenderTask(void *pvParameters)
@@ -108,7 +67,7 @@ static void vSenderTask(void *pvParameters)
             vPrintString("Could not send to the queue.\r\n");
         }
 
-        vTaskDelay(3000);
+        vTaskDelay(500);
     }
 }
 /*-----------------------------------------------------------*/
@@ -118,7 +77,6 @@ static void vReceiverTask(void *pvParameters)
     /* Declare the variable that will hold the values received from the queue. */
     int32_t lReceivedValue;
     BaseType_t xStatus;
-    const TickType_t xTicksToWait = pdMS_TO_TICKS(5000UL);
 
     /* This task is also defined within an infinite loop. */
     for (;;)
@@ -141,21 +99,90 @@ static void vReceiverTask(void *pvParameters)
         the last parameter is the block time – the maximum amount of time that the
         task should remain in the Blocked state to wait for data to be available should
         the queue already be empty. */
-        xStatus = xQueueReceive(xQueue, &lReceivedValue, xTicksToWait);
+        xStatus = xQueueReceive(xQueue, &lReceivedValue, portMAX_DELAY);
 
         if (xStatus == pdPASS)
         {
-            /* Data was successfully received from the queue, print out the received
-            value. */
-            vPrintStringAndNumber("Received = ", lReceivedValue);
+            if (lReceivedValue == 100)
+            {
+                vTaskDelete(xtask1_handle);
+                vPrintStringAndNumber("Received From Sender 1 = ", lReceivedValue);
+                xEventGroupSetBits(xEventGroup, FIRST_SENDER_TASK_BIT);
+            }
+            else if (lReceivedValue == 200)
+            {
+                vTaskDelete(xtask2_handle);
+                vPrintStringAndNumber("Received From Sender 2 = ", lReceivedValue);
+                xEventGroupSetBits(xEventGroup, SECOND_SENDER_TASK_BIT);
+            }
         }
-        else
+    }
+}
+
+void DeleteIntTasks(void)
+{
+    if (xtask3_handle)
+    {
+        vTaskDelete(xtask3_handle);
+        vPrintString("Int Receiver deletion.");
+    }
+}
+
+BaseType_t CreateIntTasks(void)
+{
+    BaseType_t ret;
+    EventBits_t xEventGroupValue;
+    const EventBits_t xBitsToWaitFor = (FIRST_SENDER_TASK_BIT | SECOND_SENDER_TASK_BIT);
+
+    xEventGroup = xEventGroupCreate();
+    /* The queue is created to hold a maximum of 5 int values. */
+    xQueue = xQueueCreate(5, sizeof(int));
+
+    if (xQueue != NULL)
+    {
+        /* Create two instances of the task that will write to the queue.  The
+        parameter is used to pass the value that the task should write to the queue,
+        so one task will continuously write 100 to the queue while the other task
+        will continuously write 200 to the queue.  Both tasks are created at
+        priority 1. */
+        ret = xTaskCreate(vSenderTask, "Queue Sender1", TASK_STACK_SIZE, (void *) 100, 2, &xtask1_handle);
+        if (ret != pdPASS)
         {
-            /* We did not receive anything from the queue even after waiting for 100ms.
-            This must be an error as the sending tasks are free running and will be
-            continuously writing to the queue. */
-            vPrintString("Could not receive from the queue.\r\n");
+            xtask1_handle = NULL;
+            vPrintStringAndNumber("Sender 1 creation failed: ", ret);
+            goto exit;
+        }
+        ret = xTaskCreate(vSenderTask, "Queue Sender2", TASK_STACK_SIZE, (void *) 200, 2, &xtask2_handle);
+        if (ret != pdPASS)
+        {
+            xtask2_handle = NULL;
+            vPrintStringAndNumber("Sender 2 creation failed: ", ret);
+            goto exit;
+        }
+        /* Create the task that will read from the queue.  The task is created with
+        priority 2, so above the priority of the sender tasks. */
+        ret = xTaskCreate(vReceiverTask, "Queue Receiver", TASK_STACK_SIZE, NULL, 3, &xtask3_handle);
+        if (ret != pdPASS)
+        {
+            xtask3_handle = NULL;
+            vPrintStringAndNumber("Receiver creation failed: ", ret);
+            goto exit;
         }
 
+    }
+    /* Block to wait for event bits to become set within the event group. */
+    xEventGroupValue = xEventGroupWaitBits(xEventGroup, xBitsToWaitFor, pdTRUE, pdTRUE, TIMER_OUT);
+
+exit:
+    DeleteIntTasks();
+    if (xEventGroupValue != xBitsToWaitFor)
+    {
+        vPrintf("%s@%d: Queue int send then recv example [failure].\r\n", __func__, __LINE__);
+        return pdFAIL;
+    }
+    else
+    {
+        vPrintf("%s@%d: Queue int send then recv example [success].\r\n", __func__, __LINE__);
+        return pdTRUE;
     }
 }

@@ -20,56 +20,49 @@
  *  Ver       Who            Date                 Changes
  * -----    ------         --------     --------------------------------------
  * 1.0      Wangzq           2024/02/29        first commit
+ * 1.1      wzq              2024/04/25        add shell support
  */
 /***************************** Include Files *********************************/
 #include <string.h>
 #include <stdio.h>
 #include "strto.h"
 #include "sdkconfig.h"
-#include "FreeRTOS.h"
-#include "shell.h"
-#include "fi2s_os.h"
-#include "i2s_example.h"
 
+#include "FreeRTOS.h"
+
+#ifdef CONFIG_USE_LETTER_SHELL
+#include "../src/shell.h"
+#include "i2s_example.h"
 /************************** Function Prototypes ******************************/
 
 static void FI2sExampleUsage()
 {
     printf("Usage:\r\n");
-    printf("    i2s init\r\n");
-    printf("        -- init the i2s and set some config.\r\n");
-    printf("    i2s deinit\r\n");
-    printf("        -- deinit the i2s .\r\n");
+    printf("i2s example\r\n");
+    printf("-- demo to test i2s transfer.\r\n");
 }
 
 static int I2sCmdEntry(int argc, char *argv[])
 {
     int ret = 0;
+
     if (argc < 2)
     {
         FI2sExampleUsage();
         return -1;
     }
-    else if (!strcmp(argv[1], "init"))
+    else if (!strcmp(argv[1], "example"))
     {
-        ret = FFreeRTOSI2sInitCreate();
-        if (ret != pdPASS)
-        {
-            printf("FFreeRTOSI2sInitCreate error :0x%x!\n",ret);
-            return ret;
-        }
+        ret = FFreeRTOSRunI2sExample();
+
+        return ret;
+
     }
-        else if (!strcmp(argv[1], "deinit"))
-    {
-        ret = FFreeRTOSI2sDeInitCreate();
-        if (ret != pdPASS)
-        {
-            printf("FFreeRTOSI2sDeInitCreate error :0x%x!\n",ret);
-            return ret;
-        }
-    }
+    
 
     return ret;
 }
 
 SHELL_EXPORT_CMD(SHELL_CMD_TYPE(SHELL_TYPE_CMD_MAIN), i2s, I2sCmdEntry, test freertos i2s driver);
+
+#endif /* CONFIG_USE_LETTER_SHELL */

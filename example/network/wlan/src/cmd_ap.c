@@ -21,6 +21,7 @@
  * ----- ------     --------    --------------------------------------
  *  1.0  zhugengyu  2022/8/26    first commit
  */
+
 /***************************** Include Files *********************************/
 #include <string.h>
 #include <stdio.h>
@@ -28,7 +29,9 @@
 #include "sdkconfig.h"
 
 #include "FreeRTOS.h"
+#include "wlan_common.h"
 
+#ifdef CONFIG_USE_LETTER_SHELL
 #include "../src/shell.h"
 #include "wlan_ap_config.h"
 /************************** Constant Definitions *****************************/
@@ -69,4 +72,8 @@ static int APCmdEntry(int argc, char *argv[])
 
     return 0;
 }
+
 SHELL_EXPORT_CMD(SHELL_CMD_TYPE(SHELL_TYPE_CMD_MAIN), wlan_ap, APCmdEntry, wireless ap functions);
+
+#endif
+

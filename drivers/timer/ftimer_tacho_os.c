@@ -60,105 +60,7 @@ static FFreeRTOSTimerTacho os_timer_tacho[38] = {0};
 
 /************************** Variable Definitions *****************************/
 
-typedef struct
-{
-    u32     id;             /* id of tacho */
-    boolean work_mode;      /*tacho or capture*/
-    boolean bits32;         /*otherwise 64 bit*/
-    boolean restart_mode;    /*otherwise free-run*/
-    u8      edge_mode;      /* rising falling or double edge*/
-    u8      jitter_level;       /* anti_jitter_number 0~3 */
-    u32     plus_num;  /* plus_num of period to calculate rpm */
-} FFreeRTOSTachoConfigs;
-
-typedef struct
-{
-    u32     id;             /* id of timer */
-    boolean bits32;         /*otherwise 64 bit*/
-    boolean restartmode;    /*otherwise free-run*/
-    boolean cyc_cmp;         /*otherwise once cmp*/
-    boolean clear_cnt;       /*otherwise not clear*/
-    boolean forceload;      /*otherwise not force-load*/
-    u32 startcnt;           /*start cnt num*/
-    u32 cmptick32;          /*32bit cnt num*/
-    u64 cmptick64;          /*64bit cnt num*/
-} FFreeRTOSTimerConfigs;
-
-static FFreeRTOSTimerConfigs timercfg;
-static FFreeRTOSTachoConfigs tachocfg;
-
 /************************** Function Prototypes ******************************/
-
-/**
- * @name: FTimerCfgInit
- * @msg: 加载转换后配置项，并完成初始化操作，定时器处于就绪状态
- * @return {FError} 驱动初始化的错误码信息，FTIMER_TACHO_SUCCESS 表示初始化成功，其它返回值表示初始化失败
- * @param {TimerTestConfigs} *timercfg_p 可操作的配置参数结构体
- */
-static FError FTimerCfgInit(const FFreeRTOSTimerConfigs *timercfg_p, FTimerTachoCtrl *timer)
-{
-    FASSERT(timercfg_p);
-    FASSERT(timer);
-    FError ret = FREERTOS_TIMER_TACHO_SUCCESS;
-
-    FTimerTachoConfig *pconfig = &timer->config;
-
-    FTimerGetDefConfig(timercfg_p->id, pconfig);
-
-    if (timercfg_p->restartmode)
-    {
-        pconfig->timer_mode = FTIMER_RESTART;
-    }
-    else
-    {
-        pconfig->timer_mode = FTIMER_FREE_RUN;
-    }
-
-    if (timercfg_p->bits32)
-    {
-        pconfig->timer_bits = FTIMER_32_BITS;
-    }
-    else
-    {
-        pconfig->timer_bits = FTIMER_64_BITS;
-    }
-
-    if (timercfg_p->cyc_cmp)
-    {
-        pconfig->cmp_type = FTIMER_CYC_CMP;
-    }
-    else
-    {
-        pconfig->cmp_type = FTIMER_ONCE_CMP;
-    }
-
-    ret = FTimerInit(timer, pconfig);
-    if (FREERTOS_TIMER_TACHO_SUCCESS != ret)
-    {
-        return ret;
-    }
-
-    /*将时间参数us装换成计时器的ticks，我们设置StartTick，将CmpTick设置为最大*/
-    ret = FTimerSetStartVal(timer, timercfg.startcnt);
-    if (FREERTOS_TIMER_TACHO_SUCCESS != ret)
-    {
-        return ret;
-    }
-
-    if (timercfg_p->bits32)
-    {
-        ret |= FTimerSetPeriod32(timer, timercfg.cmptick32);
-    }
-    else
-    {
-        ret |= FTimerSetPeriod64(timer, timercfg.cmptick64);
-    }
-
-    FTIMER_OS_INFO("Timer Init finished.");
-
-    return ret;
-}
-
 /**
  * @name: FTimerFunctionInit
  * @msg:  timer init.
@@ -171,36 +73,55 @@ FFreeRTOSTimerTacho *FFreeRTOSTimerInit(u32 id, boolean timer_mode, u64 times)
 {
     FASSERT_MSG(id < FTIMER_NUM, "Invalid timer id.");
     FASSERT_MSG(FT_COMPONENT_IS_READY != os_timer_tacho[id].ctrl.isready, "timer_tacho ready.");
+    FError ret = FREERTOS_TIMER_TACHO_SUCCESS;
+    u64 cnttick = 0;
+    u32 startcnt = 0;
     FFreeRTOSTimerTacho *instance = &os_timer_tacho[id];
-
+     
+    FTimerTachoCtrl *timer = &instance->ctrl;
     FASSERT(FT_COMPONENT_IS_READY != os_timer_tacho[id].ctrl.isready);
     FASSERT((instance->locker = xSemaphoreCreateMutex()) != NULL);
 
-    u64 cnttick = 0;
-    FTimerTachoCtrl *timer = &instance->ctrl;
-    timercfg.id = id;
-    timercfg.cyc_cmp = timer_mode;
+    FTimerTachoConfig *timercfg = &timer->config;
+    memset(timer, 0, sizeof(timer));
+        /* tacho  */
+    FTimerGetDefConfig(id, timercfg);
+    timercfg->id = id;
+    timercfg->cmp_type = timer_mode;
+    timercfg->timer_mode = FTIMER_RESTART;
+
     cnttick = US2TICKS(times);
     FTIMER_OS_INFO("\n***cnttick:%llu.", cnttick);
     if (cnttick > 0xffffffff)
     {
-        timercfg.bits32 = FALSE;
-        timercfg.startcnt = MAX_64_VAL - cnttick;
+        timercfg->timer_bits = FTIMER_64_BITS;
+        startcnt = MAX_64_VAL - cnttick;
     }
     else
     {
-        timercfg.bits32 = TRUE;
-        timercfg.startcnt = MAX_32_VAL - cnttick;
+        timercfg->timer_bits = FTIMER_32_BITS;
+        startcnt = MAX_32_VAL - cnttick;
     }
-    /* Set CmpTick max value ,that we can easy to trigger RolloverIntr. */
-    timercfg.cmptick32 = MAX_32_VAL;
-    timercfg.cmptick64 = MAX_64_VAL;
+    ret = FTimerInit(timer, timercfg);
 
-    if (FREERTOS_TIMER_TACHO_SUCCESS != FTimerCfgInit(&timercfg, timer))
+    if (timercfg->timer_bits == FTIMER_32_BITS)
     {
-        FTIMER_OS_ERROR("Timer config init failed.");
+        ret |= FTimerSetPeriod32(timer, MAX_32_VAL);
+    }
+    else
+    {
+        ret |= FTimerSetPeriod64(timer, MAX_64_VAL);
+    }
+
+
+  /*将时间参数us装换成计时器的ticks，我们设置StartTick，将CmpTick设置为最大*/
+    ret = FTimerSetStartVal(timer,startcnt);
+        if (FREERTOS_TIMER_TACHO_SUCCESS != ret)
+    {
         return NULL;
     }
+        FTIMER_OS_INFO("Timer Init finished.");
+
     return (&os_timer_tacho[id]);
 }
 
@@ -231,7 +152,6 @@ FError FFreeRTOSTimerStart(FFreeRTOSTimerTacho *os_timer_p)
     }
     return ret;
 }
-
 
 /**
  * @name: FFreeRTOSTimerStop
@@ -292,92 +212,6 @@ void FFreeRTOSTimerDebug(FFreeRTOSTimerTacho *os_timer_p)
 /**********************************************************************************************************/
 
 /**
- * @name: FTachoCfgInit
- * @msg: 添加配置
- * @return {*}
- * @param {FFreeRTOSTachoConfigs} *tachocfg_p
- * @param {FTimerTachoCtrl} *tacho
- */
-static FError FTachoCfgInit(const FFreeRTOSTachoConfigs *tachocfg_p, FTimerTachoCtrl *tacho)
-{
-    FASSERT(tachocfg_p);
-    FASSERT(tacho);
-    FError ret = FREERTOS_TIMER_TACHO_SUCCESS;
-
-    FTimerTachoConfig *pconfig = &tacho->config;
-    memset(tacho, 0, sizeof(tacho));
-    /* tacho  */
-    FTachoGetDefConfig(tachocfg_p->id, pconfig);
-
-    if (tachocfg_p->work_mode == FTIMER_WORK_MODE_TACHO)
-    {
-        pconfig->work_mode = FTIMER_WORK_MODE_TACHO;
-
-        if (tachocfg_p->bits32 == FTIMER_32_BITS)
-        {
-            pconfig->timer_bits = FTIMER_32_BITS;
-        }
-        else
-        {
-            pconfig->timer_bits = FTIMER_64_BITS;
-        }
-
-        if (tachocfg_p->restart_mode)
-        {
-            pconfig->timer_mode = FTIMER_RESTART;
-        }
-        else
-        {
-            pconfig->timer_mode = FTIMER_FREE_RUN;
-        }
-    }
-    else
-    {
-        pconfig->work_mode = FTIMER_WORK_MODE_CAPTURE;
-        pconfig->captue_cnt = 0x7f;/* 边沿检测计数默认值 */
-    }
-
-    if (tachocfg_p->edge_mode == FTACHO_RISING_EDGE)
-    {
-        pconfig->edge_mode = FTACHO_RISING_EDGE;
-    }
-    else if (tachocfg_p->edge_mode == FTACHO_FALLING_EDGE)
-    {
-        pconfig->edge_mode = FTACHO_FALLING_EDGE;
-    }
-    else
-    {
-        pconfig->edge_mode = FTACHO_DOUBLE_EDGE;
-    }
-
-    switch (tachocfg_p->jitter_level)
-    {
-        case FTACHO_JITTER_LEVEL0:
-            pconfig->jitter_level = FTACHO_JITTER_LEVEL0;
-            break;
-        case FTACHO_JITTER_LEVEL1:
-            pconfig->jitter_level = FTACHO_JITTER_LEVEL1;
-            break;
-        case FTACHO_JITTER_LEVEL2:
-            pconfig->jitter_level = FTACHO_JITTER_LEVEL2;
-            break;
-        case FTACHO_JITTER_LEVEL3:
-            pconfig->jitter_level = FTACHO_JITTER_LEVEL3;
-            break;
-        default:
-            pconfig->jitter_level = FTACHO_JITTER_LEVEL0;
-            break;
-    }
-
-    if (tachocfg_p->plus_num != 0)
-    {
-        pconfig->plus_num = tachocfg_p->plus_num;
-    }
-
-    ret = FTachoInit(tacho, pconfig);
-}
-
-/**
  * @name: FFreeRTOSTachoInit
  * @msg: tacho or capture init function
  * @return {*}
@@ -392,37 +226,30 @@ FFreeRTOSTimerTacho *FFreeRTOSTachoInit(u32 id, boolean tacho_mode)
     FFreeRTOSTimerTacho *instance = &os_timer_tacho[id];
     FTimerTachoCtrl *tacho = &os_timer_tacho[id].ctrl;
 
+    FTimerTachoConfig *tachocfg = &tacho->config;
+    memset(tacho, 0, sizeof(tacho));
+    /* tacho  */
+    FTachoGetDefConfig(id, tachocfg);
+
     FASSERT((instance->locker = xSemaphoreCreateMutex()) != NULL);
 
     FError ret = FREERTOS_TIMER_TACHO_SUCCESS;
-    tachocfg.id = id;
-    tachocfg.edge_mode = FTACHO_RISING_EDGE;/* Not open operation interface for cmd */
-    tachocfg.jitter_level = FTACHO_JITTER_LEVEL0;/* Not open operation interface for cmd */
-    tachocfg.bits32 = FTIMER_32_BITS;/* Use capture mode, Not open operation interface for cmd.*/
-    tachocfg.restart_mode = FTIMER_RESTART;/* Use capture mode, Not open operation interface for cmd.*/
-    tachocfg.plus_num = TACHO_PERIOD;
-    if (tacho_mode == FTIMER_WORK_MODE_TACHO)
-    {
-        tachocfg.work_mode = FTIMER_WORK_MODE_TACHO;
-    }
-    else
-    {
-        tachocfg.work_mode = FTIMER_WORK_MODE_CAPTURE;
-    }
-
-    ret = FTachoCfgInit(&tachocfg, tacho);
-    if (ret != FREERTOS_TIMER_TACHO_SUCCESS)
-    {
-        FTACHO_OS_ERROR("Tacho config init failed.");
-        return NULL;
-    }
+    tachocfg->id = id;
+    tachocfg->work_mode = FTIMER_WORK_MODE_TACHO;
+    tachocfg->edge_mode = FTACHO_RISING_EDGE;/* Not open operation interface for cmd */
+    tachocfg->jitter_level = FTACHO_JITTER_LEVEL0;/* Not open operation interface for cmd */
+    tachocfg->timer_bits  = FTIMER_32_BITS;/* Use capture mode, Not open operation interface for cmd.*/
+    tachocfg->timer_mode  = FTIMER_RESTART;/* Use capture mode, Not open operation interface for cmd.*/
+    tachocfg->plus_num = TACHO_PERIOD;
 
     if (tacho_mode == FTIMER_WORK_MODE_TACHO)
     {
         /* Not open operation interface for cmd */
         FTachoSetOverLimit(tacho, TACHO_MAX);
         FTachoSetUnderLimit(tacho, TACHO_MIN);
+        tachocfg->captue_cnt = 0x7f;/* 边沿检测计数默认值 */
     }
+    ret = FTachoInit(tacho, tachocfg);
 
     return (&os_timer_tacho[id]);
 }

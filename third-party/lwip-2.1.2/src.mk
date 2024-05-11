@@ -14,7 +14,7 @@ ifdef CONFIG_USE_FREERTOS
 endif
 
 
-LWIP_RT_C_DIR = $(SDK_DIR)/third-party/lwip-2.1.2
+LWIP_RT_C_DIR = $(abspath $(SDK_DIR)/third-party/lwip-2.1.2)
 
 # src code of lwip
 ABSOLUTE_CFILES  += $(wildcard $(LWIP_RT_C_DIR)/api/*.c) \

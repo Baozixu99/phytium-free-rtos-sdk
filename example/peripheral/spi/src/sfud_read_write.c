@@ -44,7 +44,7 @@ static QueueHandle_t xQueue = NULL;
 
 /***************** Macros (Inline Functions) Definitions *********************/
 #define TIMER_OUT       ( pdMS_TO_TICKS( 3000UL ) )
-
+#define SFUD_WR_TEST_TASK_PRIORITY 3
 #define FSPIM_DEBUG_TAG "SFUD-DEMO"
 #define FSPIM_ERROR(format, ...)   FT_DEBUG_PRINT_E(FSPIM_DEBUG_TAG, format, ##__VA_ARGS__)
 #define FSPIM_WARN(format, ...)    FT_DEBUG_PRINT_W(FSPIM_DEBUG_TAG, format, ##__VA_ARGS__)
@@ -261,7 +261,7 @@ BaseType_t FFreeRTOSSfudWriteThenRead(void)
                           (const char *)"SpiSfudWriteThenReadTask",/* 任务名字 */
                           (uint16_t)4096,  /* 任务栈大小 */
                           NULL,/* 任务入口函数参数 */
-                          (UBaseType_t)2,  /* 任务的优先级 */
+                          (UBaseType_t)SFUD_WR_TEST_TASK_PRIORITY,  /* 任务的优先级 */
                           NULL);
     if (xReturn == pdFAIL)
     {

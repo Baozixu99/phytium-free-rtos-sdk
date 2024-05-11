@@ -25,13 +25,15 @@
 #ifndef QSPI_SPIFFS_EXAMPLE_H
 #define QSPI_SPIFFS_EXAMPLE_H
 
+#include "portmacro.h"
+
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
 /* qspi spiffs read and write test */
-BaseType_t FFreeRTOSQspiSpiffsCreate(u32 qspi_id);
+int FFreeRTOSQspiSpiffsCreate(void);
 
 
 #ifdef __cplusplus

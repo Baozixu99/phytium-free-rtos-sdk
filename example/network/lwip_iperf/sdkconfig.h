@@ -154,8 +154,9 @@
 /* Optimization options */
 
 /* CONFIG_DEBUG_NOOPT is not set */
-/* CONFIG_DEBUG_CUSTOMOPT is not set */
-#define CONFIG_DEBUG_FULLOPT
+#define CONFIG_DEBUG_CUSTOMOPT
+/* CONFIG_DEBUG_FULLOPT is not set */
+#define CONFIG_DEBUG_OPTLEVEL "-O2"
 #define CONFIG_DEBUG_OPT_UNUSED_SECTIONS
 #define CONFIG_DEBUG_LINK_MAP
 /* CONFIG_CCACHE is not set */

@@ -20,8 +20,8 @@ USER_BOOT_IMAGE    ?= openamp_device_core
 
 # 完成编译
 image:
-	$(MAKE) clean
-	$(MAKE) all -j
+	$(MAKE) -s clean
+	$(MAKE) -s all -j
 	@cp ./$(IMAGE_OUT_NAME).elf $(USR_BOOT_DIR)/$(USER_BOOT_IMAGE).elf
 ifdef CONFIG_OUTPUT_BINARY
 	@cp ./$(IMAGE_OUT_NAME).bin $(USR_BOOT_DIR)/$(USER_BOOT_IMAGE).bin

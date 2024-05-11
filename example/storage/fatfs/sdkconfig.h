@@ -4,8 +4,8 @@
 /* Project Configuration */
 
 #define CONFIG_FATFS_BASIC_TEST
-/* CONFIG_FATFS_SPEED_TEST is not set */
-/* CONFIG_FATFS_CYCLE_TEST is not set */
+#define CONFIG_FATFS_SPEED_TEST
+#define CONFIG_FATFS_CYCLE_TEST
 /* end of Project Configuration */
 #define CONFIG_USE_FREERTOS
 
@@ -36,7 +36,7 @@
 /* end of Compiler configuration */
 #define CONFIG_USE_CACHE
 #define CONFIG_USE_MMU
-/* CONFIG_BOOT_WITH_FLUSH_CACHE is not set */
+#define CONFIG_BOOT_WITH_FLUSH_CACHE
 /* CONFIG_MMU_DEBUG_PRINTS is not set */
 /* end of Arm architecture configuration */
 /* end of Arch configuration */
@@ -57,7 +57,6 @@
 #define CONFIG_F64BIT_MEMORY_ADDRESS 0x2000000000
 #define CONFIG_F64BIT_MEMORY_LENGTH 0x800000000
 #define CONFIG_TARGET_E2000
-/* CONFIG_USE_SPINLOCK is not set */
 #define CONFIG_DEFAULT_DEBUG_PRINT_UART1
 /* CONFIG_DEFAULT_DEBUG_PRINT_UART0 is not set */
 /* CONFIG_DEFAULT_DEBUG_PRINT_UART2 is not set */
@@ -304,19 +303,11 @@
 #define CONFIG_FATFS_RAM_DISK_SIZE_MB 500
 #define CONFIG_FATFS_RAM_DISK_SECTOR_SIZE_BYTE 512
 /* end of RAM Disk Configuration */
-#define CONFIG_FATFS_SDMMC
-#define CONFIG_FATFS_SDMMC_FSDIF_TF
-#define CONFIG_FATFS_SDMMC_FSDIF_EMMC
-#define CONFIG_FATFS_SDMMC_PARTITION 1
+/* CONFIG_FATFS_SDMMC_FSDIF_TF is not set */
+/* CONFIG_FATFS_SDMMC_FSDIF_EMMC is not set */
 /* CONFIG_FATFS_SDMMC_FSDMMC_TF is not set */
-#define CONFIG_FATFS_SATA_DISK
-
-/* SATA Disk Configuration */
-
-/* CONFIG_FATFS_FSATA is not set */
-/* CONFIG_FATFS_FSATA_PCIE is not set */
-/* end of SATA Disk Configuration */
-#define CONFIG_FATFS_USB
+/* CONFIG_FATFS_SATA_DISK is not set */
+/* CONFIG_FATFS_USB is not set */
 #define CONFIG_FATFS_VOLUME_COUNT 10
 /* CONFIG_FATFS_LFN_NONE is not set */
 #define CONFIG_FATFS_LFN_HEAP
@@ -333,21 +324,7 @@
 /* CONFIG_USE_LITTLE_FS is not set */
 /* CONFIG_USE_LVGL is not set */
 /* CONFIG_USE_FREEMODBUS is not set */
-#define CONFIG_USE_CHERRY_USB
-
-/* CherryUSB Configuration */
-
-#define CONFIG_CHERRY_USB_PORT_XHCI
-/* CONFIG_CHERRY_USB_PORT_PHYTIUM_OTG is not set */
-#define CONFIG_CHERRYUSB_HOST
-/* CONFIG_CHERRYUSB_DEVICE is not set */
-#define CONFIG_CHERRY_USB_HOST_HUB
-#define CONFIG_CHERRY_USB_HOST_MSC
-/* CONFIG_CHERRY_USB_HOST_HID is not set */
-/* CONFIG_CHERRY_USB_HOST_VEDIO is not set */
-/* CONFIG_CHERRY_USB_HOST_CDC is not set */
-/* CONFIG_CHERRY_USB_HOST_RNDIS_WIRELESS is not set */
-/* end of CherryUSB Configuration */
+/* CONFIG_USE_CHERRY_USB is not set */
 #define CONFIG_USE_FSL_SDMMC
 
 /* FSL Sdmmc configuration */

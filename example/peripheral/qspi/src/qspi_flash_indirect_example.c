@@ -44,6 +44,7 @@
 /* write and read cs channel */
 #define QSPI_CS_CHANNEL 0
 #define TIMER_OUT (pdMS_TO_TICKS(5000UL))
+#define QSPI_FLASH_INDIRECT_TEST_TASK_PRIORITY 3
 #define DAT_LENGTH 64
 static u8 rd_buf[DAT_LENGTH] = {0};
 static u8 wr_buf[DAT_LENGTH] = {0};
@@ -224,7 +225,7 @@ BaseType_t FFreeRTOSQspiIndirectTaskCreate(void)
                           (const char *)"FFreeRTOSQspiIndirectTask", /* 任务名字 */
                           (uint16_t)1024,                            /* 任务栈大小 */
                           NULL,                                      /* 任务入口函数参数 */
-                          (UBaseType_t)configMAX_PRIORITIES - 1,     /* 任务的优先级 */
+                          (UBaseType_t)QSPI_FLASH_INDIRECT_TEST_TASK_PRIORITY,     /* 任务的优先级 */
                           NULL);
     taskEXIT_CRITICAL(); /*退出临界区*/
     if (xReturn == pdFAIL)
@@ -253,6 +254,4 @@ exit:
         printf("%s@%d: Qspi flash indirect example [success].\r\n", __func__, __LINE__);
         return pdTRUE;
     }
-
-    return xReturn;
 }

@@ -10,7 +10,7 @@ ifdef CONFIG_USE_SFUD
 		CSRCS_RELATIVE_FILES += $(wildcard ports/fqspi/*.c)
 	endif
 
-SFUD_RT_C_DIR = $(SDK_DIR)/third-party/sfud-1.1.0
+SFUD_RT_C_DIR = $(abspath $(SDK_DIR)/third-party/sfud-1.1.0)
 
 ABSOLUTE_CFILES += $(wildcard $(SFUD_RT_C_DIR)/src/*.c)
 				

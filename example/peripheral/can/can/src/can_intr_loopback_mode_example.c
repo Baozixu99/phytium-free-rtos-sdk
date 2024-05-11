@@ -28,7 +28,6 @@
 #include "FreeRTOSConfig.h"
 #include "FreeRTOS.h"
 #include "task.h"
-#include "timers.h"
 #include "fcan.h"
 #include "fcan_os.h"
 #include "fcpu_info.h"
@@ -78,8 +77,6 @@ static FFreeRTOSCan *os_can_ctrl_p[FCAN_NUM];
 
 static FCanFrame send_frame[FCAN_NUM];
 static FCanFrame recv_frame[FCAN_NUM];
-
-static u32 recv_count[FCAN_NUM] = {0};
 
 static FError FFreeRTOSCanSendThenRecvData(int ide);
 static FError FFreeRTOSCanRecvData(FCanQueueData * xReceiveStructure);
@@ -308,7 +305,7 @@ static FError FFreeRTOSCanSendThenRecvData(int ide)
 {
     FError ret = FCAN_SUCCESS;
     u32 instance_id = FCAN0_ID;
-    u32 count = 0;
+    u32 count[FCAN_NUM] = {0};
     BaseType_t xReturn = pdPASS;
     FCanQueueData xReceiveStructure;
 
@@ -319,12 +316,12 @@ static FError FFreeRTOSCanSendThenRecvData(int ide)
             send_frame[instance_id].candlc = FCAN_SEND_LENGTH;
             if (ide == EXTEND_FRAME)
             {
-                send_frame[instance_id].canid = FCAN_SEND_EXID + count;
+                send_frame[instance_id].canid = FCAN_SEND_EXID + count[instance_id];
                 send_frame[instance_id].canid |= CAN_EFF_FLAG;
             }  
             else
             {
-                send_frame[instance_id].canid = FCAN_SEND_STID + count; 
+                send_frame[instance_id].canid = FCAN_SEND_STID + count[instance_id]; 
                 send_frame[instance_id].canid &= CAN_SFF_MASK;
             }
 
@@ -339,11 +336,7 @@ static FError FFreeRTOSCanSendThenRecvData(int ide)
                 ret = FCAN_INVAL_PARAM;
                 return ret;
             }
-            else
-            {
-                FCAN_TEST_DEBUG("can%d send id is 0x%02x.", instance_id, send_frame[instance_id].canid);
-            }
-            count++;
+            count[instance_id]++;
 
             /* wait recv interrupt */
             xReturn = xQueueReceive(xQueue_irq, &xReceiveStructure, TIMER_OUT);
@@ -371,6 +364,7 @@ static FError FFreeRTOSCanRecvData(FCanQueueData * xReceiveStructure)
     FError ret = FCAN_SUCCESS;
     FFreeRTOSCan *os_can_p;
     u32 instance_id = FCAN0_ID;
+    static u32 recv_count[FCAN_NUM] = {0};
 
     os_can_p = xReceiveStructure->os_can_p;
     instance_id = os_can_p->can_ctrl.config.instance_id;
@@ -390,8 +384,8 @@ static FError FFreeRTOSCanRecvData(FCanQueueData * xReceiveStructure)
                 return ret;
             }
         }
-        FCAN_TEST_DEBUG("count%d = %d: can%d recv is equal to can%d send!!!", instance_id, recv_count[instance_id], instance_id, FCAN1_ID - instance_id);
         recv_count[instance_id]++;
+        FCAN_TEST_DEBUG("count%d = %d: can%d recv is equal to can%d send!!!", instance_id, recv_count[instance_id], instance_id, FCAN1_ID - instance_id);
     }
     if (recv_count[instance_id] == FCAN_SEND_CNT)
     {

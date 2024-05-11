@@ -232,7 +232,7 @@ int FFreeRTOSGdmaMemcpy(void)
         goto exit;
     }
 
-    exit:
+exit:
     if (xQueue != NULL)
     {
         vQueueDelete(xQueue);

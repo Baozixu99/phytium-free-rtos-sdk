@@ -42,7 +42,7 @@
 /* write and read task delay in milliseconds */
 #define TASK_DELAY_MS 1000UL
 #define TIMER_OUT (pdMS_TO_TICKS(5000UL))
-
+#define QSPI_POLLED_TEST_TASK_PRIORITY 3
 /* Offset 1M from flash maximum capacity*/
 #define FLASH_WR_OFFSET SZ_1M
 /* write and read start address */
@@ -222,7 +222,7 @@ BaseType_t FFreeRTOSQspiPolledTaskCreate(void)
                           (const char *)"FFreeRTOSQspiPolledTask", /* 任务名字 */
                           (uint16_t)1024,                          /* 任务栈大小 */
                           NULL,                                       /* 任务入口函数参数 */
-                          (UBaseType_t)configMAX_PRIORITIES - 1,   /* 任务的优先级 */
+                          (UBaseType_t)QSPI_POLLED_TEST_TASK_PRIORITY,   /* 任务的优先级 */
                           NULL);                                   /* 任务控制 */
     taskEXIT_CRITICAL();                                           /*退出临界区*/
     if (xReturn == pdFAIL)

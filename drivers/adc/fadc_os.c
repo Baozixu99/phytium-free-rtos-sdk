@@ -56,7 +56,7 @@ static FFreeRTOSAdc os_adc[FADC_NUM] = {0};
 
 /**
  * @name: FFreeRTOSAdcControl
- * @msg:  control freeRTOS adc instance
+ * @msg:  control FreeRTOS adc instance
  * @param {FFreeRTOSAdc} *os_adc_p, pointer to os adc instance
  * @param {int} cmd, control cmd
  * @param {void} *args, pointer to control cmd arguments
@@ -132,7 +132,7 @@ static FError FFreeRTOSAdcControl(FFreeRTOSAdc *os_adc_p, int cmd, void *arg)
 
 /**
  * @name: FFreeRTOSAdcSet
- * @msg:  set freeRTOS adc channel config, include div, mode
+ * @msg:  set FreeRTOS adc channel config, include div, mode
  * @param {FFreeRTOSAdc} *os_adc_p, pointer to os adc instance
  * @param {FAdcConvertConfig} *adc_cfg_p, adc config parameters
  * @return err code information, FADC_SUCCESS indicates success，others indicates failed
@@ -203,7 +203,7 @@ static FError FFreeRTOSAdcChannelThresholdSet(FFreeRTOSAdc *os_adc_p, FAdcChanne
 
 /**
  * @name: FFreeRTOSAdcEnable
- * @msg:  enable or disable freeRTOS adc channel output
+ * @msg:  enable or disable FreeRTOS adc channel output
  * @param {FFreeRTOSAdc} *os_adc_p, pointer to os adc instance
  * @param {FAdcChannel} channel, adc channel
  * @param {boolean} state, TRUE-enable, FALSE-disable
@@ -267,7 +267,7 @@ static FError FFreeRTOSAdcInterruptEnable(FFreeRTOSAdc *os_adc_p, FAdcChannel ch
 
 /**
  * @name: FFreeRTOSAdcInit
- * @msg:  init freeRTOS adc instance, include init adc and create mutex
+ * @msg:  init FreeRTOS adc instance, include init adc and create mutex
  * @param {u32} instance_id, adc instance id
  * @return {FFreeRTOSAdc *} pointer to os adc instance
  */
@@ -288,7 +288,7 @@ FFreeRTOSAdc *FFreeRTOSAdcInit(u32 instance_id)
 
 /**
  * @name: FFreeRTOSAdcDeinit
- * @msg:  deinit freeRTOS adc instance, include stop adc, deinit adc and delete mutex
+ * @msg:  deinit FreeRTOS adc instance, include stop adc, deinit adc and delete mutex
  * @param {FFreeRTOSAdc} *os_adc_p, pointer to os adc instance
  * @return err code information, FADC_SUCCESS indicates success，others indicates failed
  */

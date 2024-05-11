@@ -21,6 +21,8 @@
  * ----- ------     --------    --------------------------------------
  *  1.0  zhugengyu  2023/10/19    first commit
  */
+
+
 /***************************** Include Files *********************************/
 #include <stdio.h>
 #include <string.h>
@@ -35,6 +37,7 @@
 
 #include "wlan_common.h"
 #include "wlan_ap_config.h"
+#ifdef CONFIG_USE_LETTER_SHELL
 /************************** Constant Definitions *****************************/
 /* Parameters that apply to AP mode only */
 #ifndef WIFI_AP_CHANNEL
@@ -233,7 +236,6 @@ static void StartAP(void *arg)
     /* Credentials from last time have been found. The board will attempt to
         * connect to this network as a client */
     printf("[i] AP SSID: %s, Password: %s, Security: %s\r\n", ssid, password, security);
-
     memset(g_board_state.ssid, 0U, sizeof(g_board_state.ssid));
     memset(g_board_state.password, 0U, sizeof(g_board_state.password));
     memset(g_board_state.security, 0U, sizeof(g_board_state.security));
@@ -298,6 +300,8 @@ task_exit:
 BaseType_t FFreeRTOSStartAP(void)
 {
     /* Create the main Task */
+    FWlanStopAP();
+    FWlanDeinit();
     if (xTaskCreate(StartAP, 
                     "StartAP", 
                     4096, 
@@ -311,3 +315,4 @@ BaseType_t FFreeRTOSStartAP(void)
 
     return pdPASS;
 }
+#endif

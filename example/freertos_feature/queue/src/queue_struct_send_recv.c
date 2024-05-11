@@ -6,8 +6,10 @@ has a lower priority than the sending tasks. Also, the queue is used to pass str
 #include "FreeRTOS.h"
 #include "task.h"
 #include "queue.h"
+#include "event_groups.h"
 
 #define TASK_STACK_SIZE         2048
+#define TIMER_OUT (pdMS_TO_TICKS(5000UL))
 
 #define mainSENDER_1 0
 #define mainSENDER_2 1
@@ -27,6 +29,10 @@ static const xData xStructsToSend[2] =
     {1, mainSENDER_1},/* Used by Sender1. */
     {2, mainSENDER_2} /* Used by Sender2. */
 };
+
+static EventGroupHandle_t xEventGroup;
+#define FIRST_SENDER_TASK_BIT  ( 1UL << 0UL ) /* Event bit 0, which is set by a task. */
+#define SECOND_SENDER_TASK_BIT ( 1UL << 1UL ) /* Event bit 1, which is set by a task. */
 
 /* Declare a variable of type QueueHandle_t.  This is used to store the queue
 that is accessed by all three tasks. */
@@ -62,7 +68,7 @@ static void vSenderTask(void *pvParameters)
             vPrintString("Could not send to the queue!\n");
         }
 
-        vTaskDelay(5000);
+        vTaskDelay(500);
     }
 }
 
@@ -103,70 +109,77 @@ static void vReceiverTask(void *pvParameters)
         {
             if (xReceivedStructure.ucSource == mainSENDER_1)
             {
+                vTaskDelete(xtask1_handle);
                 vPrintStringAndNumber("Received From Sender 1 = ", xReceivedStructure.ucValue);
+                xEventGroupSetBits(xEventGroup, FIRST_SENDER_TASK_BIT);
             }
-            else
+            else if (xReceivedStructure.ucSource == mainSENDER_2)
             {
+                vTaskDelete(xtask2_handle);
                 vPrintStringAndNumber("Received From Sender 2 = ", xReceivedStructure.ucValue);
+                xEventGroupSetBits(xEventGroup, SECOND_SENDER_TASK_BIT);
             }
-        }
-        else
-        {
-            /* We did not receive anything from the queue.  This must be an error
-            as this task should only run when the queue is full. */
-            vPrintString("Could not receive from the queue!\n");
         }
     }
 }
 
-void CreateStructTasks(void)
+static void DeleteStructTasks(void)
+{
+    if (xtask3_handle)
+    {
+        vTaskDelete(xtask3_handle);
+        vPrintString("Struct Receiver deletion.");
+    }
+}
+
+BaseType_t CreateStructTasks(void)
 {
     BaseType_t ret;
+    EventBits_t xEventGroupValue;
+    const EventBits_t xBitsToWaitFor = (FIRST_SENDER_TASK_BIT | SECOND_SENDER_TASK_BIT);
 
+    xEventGroup = xEventGroupCreate();
     /* The queue is created to hold a maximum of 3 structures of type xData. */
     xQueue = xQueueCreate(3, sizeof(xData));
     if (xQueue != NULL)
     {
-        ret = xTaskCreate(vReceiverTask, "Struct Receiver", TASK_STACK_SIZE, NULL, 2, &xtask1_handle);
+        ret = xTaskCreate(vSenderTask, "Struct Sender 1", TASK_STACK_SIZE, (void *) & (xStructsToSend[0]), 2, &xtask1_handle);
         if (ret != pdPASS)
         {
             xtask1_handle = NULL;
-            vPrintStringAndNumber("Receiver creation failed: ", ret);
+            vPrintStringAndNumber("Sender 1 creation failed: ", ret);
+            goto exit;
         }
 
-        ret = xTaskCreate(vSenderTask, "Struct Sender 1", TASK_STACK_SIZE, (void *) & (xStructsToSend[0]), 2, &xtask2_handle);
+        ret = xTaskCreate(vSenderTask, "Struct Sender 2", TASK_STACK_SIZE, (void *) & (xStructsToSend[1]), 2, &xtask2_handle);
         if (ret != pdPASS)
         {
             xtask2_handle = NULL;
-            vPrintStringAndNumber("Sender 1 creation failed: ", ret);
+            vPrintStringAndNumber("Sender 2 creation failed: ", ret);
+            goto exit;
         }
-
-        ret = xTaskCreate(vSenderTask, "Struct Sender 2", TASK_STACK_SIZE, (void *) & (xStructsToSend[1]), 2, &xtask3_handle);
+        ret = xTaskCreate(vReceiverTask, "Struct Receiver", TASK_STACK_SIZE, NULL, 3, &xtask3_handle);
         if (ret != pdPASS)
         {
             xtask3_handle = NULL;
-            vPrintStringAndNumber("Sender 2 creation failed: ", ret);
+            vPrintStringAndNumber("Receiver creation failed: ", ret);
+            goto exit;
         }
     }
-}
+    /* Block to wait for event bits to become set within the event group. */
+    xEventGroupValue = xEventGroupWaitBits(xEventGroup, xBitsToWaitFor, pdTRUE, pdTRUE, TIMER_OUT);
 
-void DeleteStructTasks(void)
-{
-    if (xtask1_handle)
+exit:
+    DeleteStructTasks();
+
+    if (xEventGroupValue != xBitsToWaitFor)
     {
-        vTaskDelete(xtask1_handle);
-        vPrintString("Struct Receiver deletion \r\n");
+        vPrintf("%s@%d: Queue struct send then recv example [failure].\r\n", __func__, __LINE__);
+        return pdFAIL;
     }
-
-    if (xtask2_handle)
+    else
     {
-        vTaskDelete(xtask2_handle);
-        vPrintString("Struct Sender 1 deletion \r\n");
-    }
-
-    if (xtask3_handle)
-    {
-        vTaskDelete(xtask3_handle);
-        vPrintString("Struct Sender 2 deletion \r\n");
+        vPrintf("%s@%d: Queue struct send then recv example [success].\r\n", __func__, __LINE__);
+        return pdTRUE;
     }
 }

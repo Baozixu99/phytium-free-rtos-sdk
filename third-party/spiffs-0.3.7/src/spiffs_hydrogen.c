@@ -235,7 +235,7 @@ spiffs_file SPIFFS_open(spiffs *fs, const char *path, spiffs_flags flags, spiffs
 
   if (res == SPIFFS_OK &&
       (flags & (SPIFFS_O_CREAT | SPIFFS_O_EXCL)) == (SPIFFS_O_CREAT | SPIFFS_O_EXCL)) {
-    // creat and excl and file exists - fail
+    // create and excl and file exists - fail
     res = SPIFFS_ERR_FILE_EXISTS;
     spiffs_fd_return(fs, fd->file_nbr);
     SPIFFS_API_CHECK_RES_UNLOCK(fs, res);

@@ -44,7 +44,7 @@ static FFreeRTOSPwm os_pwm[FPWM_NUM] = {0};
 
 /**
  * @name: FFreeRTOSPwmInit
- * @msg:  init freeRTOS pwm instance, include init pwm and create mutex
+ * @msg:  init FreeRTOS pwm instance, include init pwm and create mutex
  * @param {u32} instance_id, pwm instance id
  * @return {FFreeRTOSPwm *} pointer to os pwm instance
  */
@@ -66,7 +66,7 @@ FFreeRTOSPwm *FFreeRTOSPwmInit(u32 instance_id)
 
 /**
  * @name: FFreeRTOSPwmDeinit
- * @msg:  deinit freeRTOS pwm instance, include stop pwm, deinit pwm and delete mutex
+ * @msg:  deinit FreeRTOS pwm instance, include stop pwm, deinit pwm and delete mutex
  * @param {FFreeRTOSPwm} *os_pwm_p, pointer to os pwm instance
  * @return err code information, FPWM_SUCCESS indicates success，others indicates failed
  */
@@ -84,7 +84,7 @@ FError FFreeRTOSPwmDeinit(FFreeRTOSPwm *os_pwm_p)
 
 /**
  * @name: FFreeRTOSPwmControl
- * @msg:  control freeRTOS pwm instance
+ * @msg:  control FreeRTOS pwm instance
  * @param {FFreeRTOSPwm} *os_pwm_p, pointer to os pwm instance
  * @param {int} cmd, control cmd
  * @param {void} *args, pointer to control cmd arguments
@@ -152,7 +152,7 @@ static FError FFreeRTOSPwmControl(FFreeRTOSPwm *os_pwm_p, int cmd, void *arg)
 
 /**
  * @name: FFreeRTOSPwmSet
- * @msg:  set freeRTOS pwm channel config, include div, period and pulse.
+ * @msg:  set FreeRTOS pwm channel config, include div, period and pulse.
  * @param {FFreeRTOSPwm} *os_pwm_p, pointer to os pwm instance
  * @param {u8} channel, pwm channel
  * @param {FPwmVariableConfig} pwm_cfg_p, pwm config parameters, include mode and duty
@@ -174,7 +174,7 @@ FError FFreeRTOSPwmSet(FFreeRTOSPwm *os_pwm_p, u8 channel, FPwmVariableConfig *p
 
 /**
  * @name: FFreeRTOSPwmGet
- * @msg:  get freeRTOS pwm channel config, include div, period and pulse.
+ * @msg:  get FreeRTOS pwm channel config, include div, period and pulse.
  * @param {FFreeRTOSPwm} *os_pwm_p, pointer to os pwm instance
  * @param {u8} channel, pwm channel
  * @param {FPwmVariableConfig} *pwm_cfg_p, pwm config parameters, include mode and duty
@@ -200,7 +200,7 @@ FError FFreeRTOSPwmGet(FFreeRTOSPwm *os_pwm_p, u8 channel, FPwmVariableConfig *p
 
 /**
  * @name: FFreeRTOSPwmEnable
- * @msg:  enable or disable freeRTOS pwm channel output
+ * @msg:  enable or disable FreeRTOS pwm channel output
  * @param {FFreeRTOSPwm} *os_pwm_p, pointer to os pwm instance
  * @param {u8} channel, pwm channel
  * @param {boolean} state, TRUE-enable, FALSE-disable
@@ -272,7 +272,7 @@ FError FFreeRTOSPwmDbGet(FFreeRTOSPwm *os_pwm_p, FPwmDbVariableConfig *db_cfg_p)
 
 /**
  * @name: FFreeRTOSPwmPulseSet
- * @msg:  set freeRTOS pwm channel pulse.
+ * @msg:  set FreeRTOS pwm channel pulse.
  * @param {FFreeRTOSPwm} *os_pwm_p, pointer to os pwm instance
  * @param {u8} channel, pwm channel
  * @param {u16} pulse, pwm pulse to set

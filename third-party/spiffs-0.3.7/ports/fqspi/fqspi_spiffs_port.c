@@ -180,6 +180,7 @@ int FSpiffsQspiInitialize(FSpiffs *const instance)
 void FSpiffsQspiDeInitialize(FSpiffs *const instance)
 {
     memset(instance, 0, sizeof(FSpiffs));
+    flash_instance = NULL;
     is_sfud_ready = FALSE;
     return;
 }

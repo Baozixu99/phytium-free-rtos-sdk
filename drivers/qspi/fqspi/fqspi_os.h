@@ -59,10 +59,10 @@ typedef struct
     xSemaphoreHandle wr_semaphore; /*!< qspi read and write semaphore for resource sharing */
 } FFreeRTOSQspi;
 
-/* init freeRTOS qspi instance */
+/* init FreeRTOS qspi instance */
 FFreeRTOSQspi *FFreeRTOSQspiInit(u32 instance_id);
 
-/* deinit freeRTOS qspi instance */
+/* deinit FreeRTOS qspi instance */
 void FFreeRTOSQspiDeinit(FFreeRTOSQspi *os_qspi_p);
 
 /* tranfer qspi mesage */

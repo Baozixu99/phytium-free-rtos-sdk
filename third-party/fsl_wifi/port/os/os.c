@@ -121,7 +121,7 @@ void os_thread_sleep(uint32_t ticks)
 void os_thread_self_complete(os_thread_t *thandle)
 {
     /* Suspend self until someone calls delete. This is required because in
-     * freeRTOS, main functions of a thread cannot return.
+     * FreeRTOS, main functions of a thread cannot return.
      */
     if (thandle != NULL)
     {

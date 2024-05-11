@@ -62,13 +62,11 @@ static void SdioMW8801PowerUp(void)
 {
     gpio_config = *FGpioLookupConfig(FGPIO4_ID);
     (void)FGpioCfgInitialize(&gpio, &gpio_config);
-
+    
     PDn_index.ctrl = FGPIO4_ID;
     PDn_index.port = FGPIO_PORT_A;
     PDn_index.pin  = FGPIO_PIN_11;
-
     FIOPadSetGpioMux(PDn_index.ctrl, (u32)PDn_index.pin);
-
     (void)FGpioPinInitialize(&gpio, &PDn, PDn_index);
     (void)FGpioSetDirection(&PDn, FGPIO_DIR_OUTPUT);
 
@@ -86,12 +84,9 @@ static void SdioMW8801PowerUp(void)
 void BOARD_WIFI_BT_Config(void *host, sdio_int_t cardInt)
 {
     sdmmc_sdio_t *sdio_host = (sdmmc_sdio_t *)host;
-
-    SdioMW8801PowerUp();
-
     FSdifTimingInit();
+    SdioMW8801PowerUp();
     SDMMC_OSAInit();
-
     memset(&s_inst_config, 0, sizeof(s_inst_config));
     memset(sdio_host, 0, sizeof(*sdio_host));
 
@@ -110,7 +105,6 @@ void BOARD_WIFI_BT_Config(void *host, sdio_int_t cardInt)
     s_inst_config.sdioCardIntArg = NULL;
 
     FIOPadSetSdMux(s_inst_config.hostId);
-
     if (kStatus_Success != SDIO_CfgInitialize(sdio_host, &s_inst_config))
     {
         PRINTF("Config SDIO failed !!! \r\n");

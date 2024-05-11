@@ -17,9 +17,10 @@
  * Description:  This file is for task function define
  *
  * Modify History:
- *  Ver   Who       Date        Changes
- * ----- ------     --------    --------------------------------------
- * 1.0 wangxiaodong 2022/08/09  first commit
+ *  Ver      Who           Date         Changes
+ * -----    ------       --------      --------------------------------------
+ *  1.0   wangxiaodong   2022/8/9      first commit
+ *  2.0   liqiaozhong    2024/5/6      add no letter shell mode, adapt to auto-test system
  */
 
 
@@ -32,12 +33,10 @@ extern "C"
 #endif
 
 /* event group Management task */
-void CreateManagementTasks(void);
-void DeleteManagementTasks(void);
+int CreateManagementTasks(void);
 
 /* event group Synchronization task */
-void CreateSyncTasks(void);
-void DeleteSyncTasks(void);
+int CreateSyncTasks(void);
 
 #ifdef __cplusplus
 }

@@ -3,10 +3,10 @@
 .PHONY: all clean boot menuconfig_driver_core menuconfig_device_core 
 
 clean_driver_core:
-	$(MAKE) -C ./driver_core clean
+	$(MAKE) -s -C ./driver_core clean
 
 clean_device_core:
-	$(MAKE) -C ./device_core clean
+	$(MAKE) -s -C ./device_core clean
 
 clean: clean_driver_core clean_device_core
 
@@ -57,8 +57,8 @@ menuconfig_device_core:
 	$(MAKE) -C ./device_core menuconfig
 
 image:
-	$(MAKE) -C ./driver_core image
-	$(MAKE) -C ./device_core image
+	$(MAKE) -s -C ./driver_core image
+	$(MAKE) -s -C ./device_core image
 
 backupconfig:
 	$(MAKE) -C ./driver_core backup_kconfig

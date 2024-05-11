@@ -10,11 +10,26 @@ Re-writing vPrintString() to use a gatekeeper task.
 #include "task.h"
 #include "queue.h"
 
-#define TASK_STACK_SIZE     1024
+#define TASK_STACK_SIZE                 1024
+#define QUEUE_LENGTH                    1
+#define PRINT_QUEUE_LENGTH              5
+#define PRINT_1_TASK_PARAM              (void *)0
+#define PRINT_2_TASK_PARAM              (void *)1
+#define PRINT_1_TASK_PRIORITY           3
+#define PRINT_2_TASK_PRIORITY           4
+#define PRINT_GATEKEEPER_TASK_PRIORITY  1
+#define PRINT_TIMES                     4
+#define GATEKEEPER_RECV_TIMES           10
+#define GATEKEEPER_EXAMPLE_TIMEOUT      pdMS_TO_TICKS(30000U)
+#define GATEKEEPER_RECV_TIMEOUT         pdMS_TO_TICKS(3000U)
 
-static xTaskHandle xtask1_handle;
-static xTaskHandle xtask2_handle;
-static xTaskHandle xtask3_handle;
+enum
+{
+    GATEKEEPER_EXAMPLE_SUCCESS = 0,
+    GATEKEEPER_EXAMPLE_UNKNOWN_STATE,
+    GATEKEEPER_EXAMPLE_QUEUE_CREATE_FAILURE,
+    GATEKEEPER_EXAMPLE_FAILURE,          
+};
 
 static char *pcStringsToPrint[] =
 {
@@ -23,28 +38,52 @@ static char *pcStringsToPrint[] =
     "Gatekeep Message printed from the tick hook #####\n"
 };
 
-xQueueHandle xPrintQueue;
+static xQueueHandle xPrintQueue;
+static QueueHandle_t xQueue = NULL;
 
 static void prvStdioGatekeeperTask(void *pvParameters)
 {
+    int task_res = GATEKEEPER_EXAMPLE_UNKNOWN_STATE;
+    BaseType_t xReturn = pdPASS;
+    int iRecvTimes = 0;
     char *pcMessageToPrint;
     for (;;)
     {
-        xQueueReceive(xPrintQueue, &pcMessageToPrint, portMAX_DELAY);
+        xQueueReceive(xPrintQueue, &pcMessageToPrint, GATEKEEPER_RECV_TIMEOUT);
+        if (xReturn == pdFAIL)
+        {
+            vPrintString("xPrintQueue receive timeout.");
+            break;
+        }
+        else
+        {
+            iRecvTimes++;
+        }
         printf( "%s", pcMessageToPrint );
+        if (iRecvTimes == GATEKEEPER_RECV_TIMES)
+        {
+            task_res = GATEKEEPER_EXAMPLE_SUCCESS;
+            xQueueSend(xQueue, &task_res, 0);
+            break;  
+        }
     }
+
+    vTaskDelete(NULL);
 }
 
 static void prvPrintTask(void *pvParameters)
 {
     int iIndexToString;
     iIndexToString = (int)(uintptr)pvParameters;
+    const TickType_t xDelay = pdMS_TO_TICKS(1000UL);
 
-    for (;;)
+    for (int loop = 0; loop < PRINT_TIMES; loop++)
     {
         xQueueSendToBack(xPrintQueue, &(pcStringsToPrint[iIndexToString]), 0);
-        vTaskDelay(5000);
+        vTaskDelay(xDelay);
     }
+
+    vTaskDelete(NULL);
 }
 
 void vApplicationTickHook(void)
@@ -60,40 +99,64 @@ void vApplicationTickHook(void)
     {
         xQueueSendToFrontFromISR(xPrintQueue,
                                  &(pcStringsToPrint[2]),
-                                 &xHigherPriorityTaskWoken); // not needed
+                                 &xHigherPriorityTaskWoken); /* not needed */
         iCount = 0;
     }
 }
 
-void CreateGatekeeperTasks(void)
+int CreateGatekeeperTasks(void)
 {
-    xPrintQueue = xQueueCreate(5, sizeof(char *));
+    BaseType_t xReturn = pdPASS; /* 定义一个创建信息返回值，默认为 pdPASS */
+    int task_res = GATEKEEPER_EXAMPLE_UNKNOWN_STATE;
+
+    xQueue = xQueueCreate(QUEUE_LENGTH, sizeof(int)); /* 创建消息队列 */
+    if (xQueue == NULL)
+    {
+        vPrintString("xQueue create failed.");
+        task_res = GATEKEEPER_EXAMPLE_QUEUE_CREATE_FAILURE;
+        goto exit;
+    }
+
+    xPrintQueue = xQueueCreate(PRINT_QUEUE_LENGTH, sizeof(char *));
+    if (xPrintQueue == NULL)
+    {
+        vPrintString("xPrintQueue create failed.");
+        task_res = GATEKEEPER_EXAMPLE_QUEUE_CREATE_FAILURE;
+        goto exit;
+    }
+    else
+    {
+        xTaskCreate(prvPrintTask, "Gatekeeper Print1", TASK_STACK_SIZE, PRINT_1_TASK_PARAM, PRINT_1_TASK_PRIORITY, NULL);
+        xTaskCreate(prvPrintTask, "Gatekeeper Print2", TASK_STACK_SIZE, PRINT_2_TASK_PARAM, PRINT_2_TASK_PRIORITY, NULL);
+        xTaskCreate(prvStdioGatekeeperTask, "Gatekeeper", TASK_STACK_SIZE, NULL, PRINT_GATEKEEPER_TASK_PRIORITY, NULL);
+    }
+
+    xReturn = xQueueReceive(xQueue, &task_res, GATEKEEPER_EXAMPLE_TIMEOUT);
+    if (xReturn == pdFAIL)
+    {
+        vPrintString("xQueue receive timeout.");
+        goto exit;
+    }
+
+exit:
+    if (xQueue != NULL)
+    {
+        vQueueDelete(xQueue);
+    }
 
     if (xPrintQueue != NULL)
     {
-        xTaskCreate(prvPrintTask, "Gatekeeper Print1", TASK_STACK_SIZE, (void *)0, 1, &xtask1_handle);
-        xTaskCreate(prvPrintTask, "Gatekeeper Print2", TASK_STACK_SIZE, (void *)1, 2, &xtask2_handle);
-        xTaskCreate(prvStdioGatekeeperTask, "Gatekeeper", TASK_STACK_SIZE, NULL, 0, &xtask3_handle);
-    }
-}
-
-void DeleteGatekeeperTasks(void)
-{
-    if (xtask1_handle)
-    {
-        vTaskDelete(xtask1_handle);
-        vPrintString("Gatekeeper Print1 deletion \r\n");
+        vQueueDelete(xPrintQueue);
     }
 
-    if (xtask2_handle)
+    if (task_res != GATEKEEPER_EXAMPLE_SUCCESS)
     {
-        vTaskDelete(xtask2_handle);
-        vPrintString("Gatekeeper Print2 deletion \r\n");
+        vPrintString("Resource Gatekeeper feature example [failure]");
+        return task_res;
     }
-
-    if (xtask3_handle)
+    else
     {
-        vTaskDelete(xtask3_handle);
-        vPrintString("Gatekeeper deletion \r\n");
+        vPrintString("Resource Gatekeeper feature example [success].");
+        return task_res;
     }
 }

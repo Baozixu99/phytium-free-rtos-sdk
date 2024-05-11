@@ -24,36 +24,28 @@
 
 #include <string.h>
 #include <stdio.h>
-#include "shell.h"
 #include "posix_example.h"
+#include "sdkconfig.h"
 
+#ifdef CONFIG_USE_LETTER_SHELL
+#include "shell.h"
 static void CreatePosixCmdUsage(void)
 {
     printf("Usage:\r\n");
-    printf(" posix thread \r\n");
-    printf("    -- Create posix thread test now.\r\n");
     printf(" posix demo \r\n");
     printf("    -- Create posix test now.\r\n");
 }
 
 int CreatePosixCmd(int argc, char *argv[])
 {
-    static int create_flg = 0; /* 1 is tasks has been created*/
-
     if (argc < 2)
     {
         CreatePosixCmdUsage();
         return -1;
     }
-
     if (!strcmp(argv[1], "demo"))
-    { 
-        CreatePOSIXDemoTasks(); 
-    }
-
-    if (!strcmp(argv[1], "thread"))
     {
-        CreateThreadDemoTasks();
+        CreatePOSIXDemoTasks();
     }
 
     else
@@ -63,7 +55,5 @@ int CreatePosixCmd(int argc, char *argv[])
     }
     return 0;
 }
-
 SHELL_EXPORT_CMD(SHELL_CMD_TYPE(SHELL_TYPE_CMD_MAIN), posix, CreatePosixCmd, posix task test);
-
-
+#endif

@@ -22,19 +22,48 @@
  * 1.0 wangxiaodong 2022/06/20  first commit
  */
 
+#include <stdio.h>
+#include "FreeRTOS.h"
+
+#ifdef CONFIG_USE_LETTER_SHELL
 #include "shell.h"
 #include "shell_port.h"
-#include <stdio.h>
+#else
+#include "task.h"
+#include "feature_queue.h"
+void QueueExampleTaskEntry(void)
+{
+    CreateIntTasks();   
+    CreateStructTasks();    
+    CreateQueueSetTasks();  
+
+    printf("[test_end]\r\n");
+    vTaskDelete(NULL);
+}
+#endif
 
 int main(void)
 {
     BaseType_t ret;
 
+#ifdef CONFIG_USE_LETTER_SHELL
     ret = LSUserShellTask() ;
     if (ret != pdPASS)
     {
         goto FAIL_EXIT;
     }
+#else
+
+    taskENTER_CRITICAL(); /*进入临界区*/
+    ret = xTaskCreate((TaskFunction_t)QueueExampleTaskEntry,  /* 任务入口函数 */
+                          (const char *)"QueueExampleTaskEntry",/* 任务名字 */
+                          (uint16_t)4096,  /* 任务栈大小 */
+                          NULL,/* 任务入口函数参数 */
+                          (UBaseType_t)8,  /* 任务的优先级 */
+                          NULL);
+    taskEXIT_CRITICAL(); /*退出临界区*/
+
+#endif
 
     vTaskStartScheduler(); /* 启动任务，开启调度 */
     while (1); /* 正常不会执行到这里 */

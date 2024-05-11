@@ -46,7 +46,7 @@ static FFreeRTOSCan os_can[FCAN_NUM] = {0};
 
 /**
  * @name: FFreeRTOSCanInit
- * @msg:  init freeRTOS can instance, include init can and create mutex
+ * @msg:  init FreeRTOS can instance, include init can and create mutex
  * @param {u32} instance_id, can instance id
  * @return {FFreeRTOSCan *} pointer to os can instance
  */
@@ -67,7 +67,7 @@ FFreeRTOSCan *FFreeRTOSCanInit(u32 instance_id)
 
 /**
  * @name: FFreeRTOSCanDeinit
- * @msg:  deinit freeRTOS can instance, include stop can, deinit can and delete mutex
+ * @msg:  deinit FreeRTOS can instance, include stop can, deinit can and delete mutex
  * @param {FFreeRTOSCan} *os_can_p, pointer to os can instance
  * @return err code information, FCAN_SUCCESS indicates success，others indicates failed
  */
@@ -85,7 +85,7 @@ FError FFreeRTOSCanDeinit(FFreeRTOSCan *os_can_p)
 
 /**
  * @name: FFreeRTOSCanControl
- * @msg:  control freeRTOS can instance
+ * @msg:  control FreeRTOS can instance
  * @param {FFreeRTOSCan} *os_can_p, pointer to os can instance
  * @param {int} cmd, control cmd
  * @param {void} *args, pointer to control cmd arguments

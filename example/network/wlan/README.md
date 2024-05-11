@@ -93,6 +93,8 @@ bootelf -p 0x90100000
 
 ### 2.4 输出与实验现象
 
+> 非letter shell模式下仅支持wifi扫描功能测试。
+
 #### 2.4.1 Station 模式连接 AP 热点
 
 - 准备一个 AP 热点，例如路由器或者手机热点，本例程 中用小米手机产生一个 AP 热点供开发板连接
@@ -159,3 +161,5 @@ wlan_ap start
 ><font size="1">记录例程的重大修改记录，标明修改发生的版本号 </font><br />
 
 - v1.2.1 首次合入
+
+- v2.0.0 增加非letter shell模式；增加wlan deinit过程。

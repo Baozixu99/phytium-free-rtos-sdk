@@ -20,26 +20,25 @@
  *  Ver   Who       Date        Changes
  * ----- ------     --------    --------------------------------------
  * 1.0 wangxiaodong 2023/06/25 first commit
+ * 1.1  zhangyan     2024/4/29    add no letter shell mode, adapt to auto-test system
  */
 
 #include <string.h>
 #include <stdio.h>
-#include "shell.h"
 #include "atomic_example.h"
+#include "sdkconfig.h"
 
+#ifdef CONFIG_USE_LETTER_SHELL
+#include "shell.h"
 static void CreateAtomicCmdUsage(void)
 {
     printf("Usage:\r\n");
     printf(" atomic cre \r\n");
     printf("    -- Create atomic test task now.\r\n");
-    printf(" atomic del \r\n");
-    printf("    -- Del atomic test task now.\r\n");
 }
 
 int CreateAtomicCmd(int argc, char *argv[])
 {
-    static int create_flg = 0; /* 1 is tasks has been created*/
-
     if (argc < 2)
     {
         CreateAtomicCmdUsage();
@@ -48,27 +47,7 @@ int CreateAtomicCmd(int argc, char *argv[])
 
     if (!strcmp(argv[1], "cre"))
     {
-        if (create_flg == 0)
-        {
-            CreateAtomicTasks();
-            create_flg = 1;
-        }
-        else
-        {
-            printf("Please use atomic del cmd first. \r\n");
-        }
-    }
-    else if (!strcmp(argv[1], "del"))
-    {
-        if (create_flg  == 1)
-        {
-            DeleteAtomicTasks();
-            create_flg  = 0;
-        }
-        else
-        {
-            printf("Please use atomic cre cmd first. \r\n");
-        }
+        FFreeRTOSAtomicTaskCreate();
     }
     else
     {
@@ -79,5 +58,4 @@ int CreateAtomicCmd(int argc, char *argv[])
 }
 
 SHELL_EXPORT_CMD(SHELL_CMD_TYPE(SHELL_TYPE_CMD_MAIN), atomic, CreateAtomicCmd, atomic task test);
-
-
+#endif

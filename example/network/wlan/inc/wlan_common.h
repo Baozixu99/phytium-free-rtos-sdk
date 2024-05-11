@@ -99,6 +99,12 @@ typedef enum
 FWlanRetStatus FWlanInit(void);
 
 /**
+* @brief  Stop and deinit Wi-Fi driver and WPL layer.
+*/
+void FWlanDeinit(void);
+
+
+/**
  * @brief  Start Wi-Fi driver and register an application link state callback.
  *         Set WPL layer state to WLAN_STATE_STARTED.
  *         FWlanStart should be called only after FWlanInit was successfully performed.

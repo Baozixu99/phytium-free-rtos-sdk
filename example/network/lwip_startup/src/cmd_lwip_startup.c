@@ -13,13 +13,14 @@
  * 
  * FilePath: cmd_lwip_startup.c
  * Created Date: 2023-11-21 11:06:40
- * Last Modified: 2024-04-03 15:42:24
+ * Last Modified: 2024-04-26 15:52:43
  * Description:  This file is for lwip startup example cmd catalogue.
  * 
  * Modify History:
  *  Ver      Who         Date               Changes
  * -----  ----------   --------  ---------------------------------
  *  1.0   liuzhihong   2023/12/26          first release
+ *  2.0   liuzhihong   2024/4/26   add no letter shell mode, adapt to auto-test system
  */
 
 #include <stdio.h>
@@ -99,19 +100,19 @@ static int LwipStartupExampleEntry(int argc, char *argv[])
     if (!strcmp(argv[1], "ipv4"))
     {
         LwipStartupExampleCheckState();
-        ret = LwipIpv4TestCreate();
+        ret = FFreeRTOSLwipIpv4TaskCreate();
         init_flag_mask = IPV4_EXAMPLE_RUNNING;       
     }
     else if (!strcmp(argv[1], "ipv6"))
     {
         LwipStartupExampleCheckState();
-        ret = LwipIpv6TestCreate();
+        ret = FFreeRTOSLwipIpv6TaskCreate();
         init_flag_mask = IPV6_EXAMPLE_RUNNING;
     }
     else if (!strcmp(argv[1], "dhcp"))
     {
         LwipStartupExampleCheckState();
-        ret = LwipDhcpTestCreate();
+        ret = FFreeRTOSLwipDhcpTaskCreate();
         init_flag_mask = DHCP_EXAMPLE_RUNNING;
     }
 

@@ -20,6 +20,7 @@
  *  Ver      Who         Date               Changes
  * -----  ----------   --------  ---------------------------------
  *  1.0   liuzhihong  2023/10/16          first release
+ *  2.0   liuzhihong  2024/04/28   add no letter shell mode, adapt to auto-test system
  */
 
 #ifndef  LWIP_IPERF_SERVER_EXAMPLE_H
@@ -43,7 +44,7 @@ extern "C"
 
 /************************** Function Prototypes ******************************/
 /* entry function for lwip iperf server example */
-int LwipIperfServerCreate(void);
+int FFreeRTOSLwipIperfServerTaskCreate(void);
 void LwipIperfServerDeinit(void);
 
 #ifdef __cplusplus

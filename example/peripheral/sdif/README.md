@@ -26,22 +26,19 @@ SD卡的通信依赖三种数据格式：命令包，响应包，数据包，控
 
 - E2000D
 - E2000Q
-- PHYTIUMPI
 
 对应的配置项是，
 
 - CONFIG_TARGET_E2000D
 - CONFIG_TARGET_E2000Q
-- CONFIG_TARGET_PHYTIUMPI
 
-本例程在 E2000-测试板B上完成测试，在测试板B上，SD-0控制器连接TF卡，SD-1控制器连接eMMC
+本例程在 E2000 DEMO 板上完成测试，DOMO板上 SD-1控制器连接TF卡，SD-0控制器连接eMMC
 
 ### 2.2 SDK配置方法
 
 本例程需要，
 
 - 使能Shell
-- 使能SPI
 - 使能SDMMC
 
 对应的配置项是，
@@ -53,11 +50,11 @@ SD卡的通信依赖三种数据格式：命令包，响应包，数据包，控
 本例子已经提供好具体的编译指令，以下进行介绍:
 - make load_e2000q_aarch64  将预设64bit e2000q 下的配置加载至工程中
 - make load_e2000q_aarch32  将预设32bit e2000q 下的配置加载至工程中
-- make 将目录下的工程进行编译
-- make clean  将目录下的工程进行清理
-- make image   将目录下的工程进行编译，并将生成的elf 复制到目标地址
-- make menuconfig   配置目录下的参数变量
-- make backup_kconfig 将目录下的sdkconfig 备份到./configs下
+- make                      将目录下的工程进行编译
+- make clean                将目录下的工程进行清理
+- make image                将目录下的工程进行编译，并将生成的elf 复制到目标地址
+- make menuconfig           配置目录下的参数变量
+- make backup_kconfig       将目录下的sdkconfig 备份到./configs下
 
 具体使用方法为:
 - 在当前目录下
@@ -108,7 +105,7 @@ bootelf -p 0xa0100000
 
 ### 2.4 输出与实验现象
 
-- 系统进入后，创建任务初始化tf卡，循环读写Tf卡中第3~6块的内容
+- 系统进入后，创建任务初始化tf卡，读写Tf卡中第0到3块的内容
 
 ```
 sd tf
@@ -116,8 +113,7 @@ sd tf
 
 ![tf](./figs/tf_wr.png)
 
-- 系统进入后，创建任务初始化eMMC，循环读写eMMC中第7~9块的内容
->注意：飞腾派上没有emmc，无法使用下面的命令
+- 系统进入后，创建任务初始化eMMC，读写eMMC中第0到3块的内容
 
 ```
 sd emmc
@@ -127,8 +123,7 @@ sd emmc
 
 ## 3. 如何解决问题
 
-Q: 飞腾派上使用例程
-A： 飞腾派上没有emmc，作为外插的sd口连接控制器0，由于 tf 卡中存储了固件和文件系统，此例程的读写可能会损害启动文件，不建议直接使用此例程，关于 tf 卡的使用可以参考 storage 中的 fatfs 例程使用特定分区内的文件系统
-
+Q: 在飞腾派上使用例程
+A：部分版本的飞腾派上没有emmc，作为外插的sd口连接控制器0，由于 tf 卡中存储了固件和文件系统，此例程的读写可能会损害启动文件，不建议直接使用此例程，关于 tf 卡的使用可以参考 storage 中的 fatfs 例程使用特定分区内的文件系统
 
 ## 4. 修改历史记录

@@ -9,7 +9,7 @@
 使用B板进行测试，选择can0和can1回环；
 
 CANFD中断模式回环测试例程 (canfd_intr_loopback_mode_example.c)
-- 初始化CAN0，CAN1基本配置,仲裁域波特率和数据域波特率配置为 1M/S+2M/S,设置滤波器，初始化中断函数
+- 初始化CAN0，CAN1基本配置,仲裁域波特率和数据域波特率配置为 1M/S+1M/S,设置滤波器，初始化中断函数
 - 中断触发CAN0发送，CAN1接收，循环收发标准帧。并比对发送帧和接收帧是否相同
 - 中断触发CAN1发送，CAN0接收，循环收发标准帧。并比对发送帧和接收帧是否相同
 - 中断触发CAN0发送，CAN1接收，循环收发扩展帧。并比对发送帧和接收帧是否相同
@@ -25,11 +25,11 @@ CANFD轮询模式回环测试例程 (canfd_polled_loopback_mode_example.c)
 - 以上收发测试完成后，去初始化CAN0,CAN1，删除发送接收任务
 
 CANFD过滤功能测试例程 (canfd_id_filter_example.c)
-- 初始化CAN0,CAN1基本配置,仲裁域波特率和数据域波特率配置为 1M/S+2M/S
-- 过滤模式1配置为只可接收id为0x0F的帧
+- 初始化CAN0,CAN1基本配置,仲裁域波特率和数据域波特率配置为 1M/S+4M/S
+- 过滤模式1配置列表模式，只可接收id为0x0F的帧
 - CAN0向CAN1发送id为（0x00~0x0F）的标准帧，CAN1成功接收id=0x0F的帧，表示成功过滤除0x0F以外的所有帧
 - CAN1向CAN0发送id为（0x00~0x0F）的标准帧，CAN0成功接收id=0x0F的帧，表示成功过滤除0x0F以外的所有帧
-- 过滤模式2配置为比较较高的两位，忽略较低的两位
+- 过滤模式2配置为掩码模式，只可接收BIT3和BIT2都为1的帧(FCAN_FILTER_MODE2_MASK = 0x03)
 - CAN0向CAN1发送id为（0x00~0x0F）的标准帧，CAN1成功接收id=0x0C、0x0D、 0x0E、0x0F的帧
 - CAN1向CAN0发送id为（0x00~0x0F）的标准帧，CAN0成功接收id=0x0C、0x0D、 0x0E、0x0F的帧
 - 以上收发测试完成后，去初始化CAN0,CAN1，删除发送接收任务
@@ -38,7 +38,7 @@ CANFD过滤功能测试例程 (canfd_id_filter_example.c)
 
 本例程需要用到
 - Phytium开发板（E2000D/E2000Q）
-- [Phytium freeRTOS SDK](https://gitee.com/phytium_embedded/phytium-free-rtos-sdk)
+- [Phytium FreeRTOS SDK](https://gitee.com/phytium_embedded/phytium-free-rtos-sdk)
 - [Phytium standalone SDK](https://gitee.com/phytium_embedded/phytium-standalone-sdk)
 ### 2.1 硬件配置方法
 
@@ -110,29 +110,20 @@ bootelf -p 0x90100000
 
 - 输入```canfd intr```，启动canfd中断模式发送接收测试例子，测试完标准帧和扩展帧后自动删除任务
 
-![intr_stid](./figs/intr_stid.png)
-......
-![intr_exid](./figs/intr_exid.png)
+![canfd_intr](./figs/canfd_intr.png)
 
 - 输入```canfd polled```，启动canfd轮询模式发送接收测试例子，测试完标准帧和扩展帧后自动删除任务
 
-![polled_stid](./figs/polled_stid.png)
-......
-![polled_exid](./figs/polled_exid.png)
+![canfd_polled](./figs/canfd_polled.png)
 
 - 输入```canfd filter```，启动canfd id滤波功能测试例子，测试1只接收id=0x0F的帧，测试2接收帧id&mask(mask=0x03，结果为0表示比较，为1表示忽略)，比较接收id和接收id&maskid(maskid=0x0F)的结果。全部匹配则接收否则滤除。
-滤波测试例子1
-![filter1](./figs/filter1.png)
-......
-![filter1_success](./figs/filter1_success.png)
-滤波测试例子2
-![filter2](./figs/filter2.png)
-......
-![filter2_success](./figs/filter2_success.png)
+
+![canfd_filter](./figs/canfd_filter.png)
 
 ## 3. 如何解决问题
 
 - 使用can0和can1进行回环测试时，需要将can0和can1的H和L信号线分别进行短接
+- FT2000/4和D2000和PhytiumPi不支持canfd功能的描述
 
 ## 4. 修改历史记录
 

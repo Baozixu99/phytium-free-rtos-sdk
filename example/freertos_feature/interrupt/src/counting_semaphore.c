@@ -8,10 +8,10 @@
 #include "finterrupt.h"
 #include "fcpu_info.h"
 
-static xTaskHandle xtask1_handle;
-static xTaskHandle xtask2_handle;
-
 #define TASK_STACK_SIZE         1024
+#define PERIODIC_TASK_PRIORITY  3
+#define SEM_TAKE_TASK_PRIORITY  4
+#define COUNT_SEM_EXAMPLE_TIMEOUT pdMS_TO_TICKS(10000U)
 
 /* The interrupt number to use for the software interrupt generation.  This
 could be any unused number.  In this case the first chip level (non system)
@@ -26,6 +26,15 @@ numeric values represent low priority values, which can be confusing as it is
 counter intuitive. */
 #define INTERRUPT_PRIORITY  IRQ_PRIORITY_VALUE_12
 
+enum
+{
+    COUNT_SEM_EXAMPLE_SUCCESS = 0,
+    COUNT_SEM_EXAMPLE_UNKNOWN_STATE,
+    COUNT_SEM_EXAMPLE_FAILURE,          
+};
+
+static QueueHandle_t xQueue = NULL;
+
 /* Macro to force an interrupt. */
 static void vTriggerInterrupt(void);
 
@@ -35,24 +44,37 @@ xSemaphoreHandle xCountingSemaphore;
 
 static void vPeriodicTask(void *pvParameters)
 {
-    for (;;)
+    int task_res = COUNT_SEM_EXAMPLE_UNKNOWN_STATE;
+
+    vTaskDelay(500 / portTICK_RATE_MS);
+    printf("Count Periodic task - About to generate an interrupt.\n");
+    vTriggerInterrupt();
+    printf("Count Periodic task - Interrupt generated.\n");
+
+    if (uxSemaphoreGetCount(xCountingSemaphore) == 0)
     {
-        vTaskDelay(5000 / portTICK_RATE_MS);
-        printf("Count Periodic task - About to generate an interrupt.\n");
-        vTriggerInterrupt();
-        printf("Count Periodic task - Interrupt generated.\n\n");
+        task_res = COUNT_SEM_EXAMPLE_SUCCESS;
+        xQueueSend(xQueue, &task_res, 0);
     }
+    
+    vTaskDelete(NULL);
 }
 
 static void vSemTakeTask(void *pvParameters)
 {
     xSemaphoreTake(xCountingSemaphore, 0);
-
     for (;;)
     {
         xSemaphoreTake(xCountingSemaphore, portMAX_DELAY);
         printf("Count Handler task - Processing event, sem_count: %d\n", uxSemaphoreGetCount(xCountingSemaphore));
+        
+        if (uxSemaphoreGetCount(xCountingSemaphore) == 0)
+        {
+            break;
+        }
     }
+
+    vTaskDelete(NULL);
 }
 
 static void vInterruptHandler(s32 vector, void *param)
@@ -66,13 +88,11 @@ static void vInterruptHandler(s32 vector, void *param)
 
     /* never call taskYIELD() form ISR! */
     portEND_SWITCHING_ISR(xHigherPriorityTaskWoken);
-
 }
 
 static void prvSetupSoftwareInterrupt(void)
 {
     GetCpuId(&cpu_id);
-    vPrintf("cpu_id is %d \r\n", cpu_id);
 
     InterruptSetPriority(INTERRUPT_ID, INTERRUPT_PRIORITY);
 
@@ -89,31 +109,49 @@ static void vTriggerInterrupt(void)
 }
 
 
-void CreateCountSemTasks(void)
+int CreateCountSemTasks(void)
 {
+    BaseType_t xReturn = pdPASS; /* 定义一个创建信息返回值，默认为 pdPASS */
+    int task_res = COUNT_SEM_EXAMPLE_UNKNOWN_STATE;
+
+    xQueue = xQueueCreate(1, sizeof(int)); /* 创建消息队列 */
+    if (xQueue == NULL)
+    {
+        vPrintString("xQueue create failed.");
+        goto exit;
+    }
+
     xCountingSemaphore = xSemaphoreCreateCounting(10, 0);
 
     if (xCountingSemaphore != NULL)
     {
         prvSetupSoftwareInterrupt();
 
-        xTaskCreate(vSemTakeTask,  "CountHandler",  TASK_STACK_SIZE, NULL, 3, &xtask1_handle);
-        xTaskCreate(vPeriodicTask, "CountPeriodic", TASK_STACK_SIZE, NULL, 1, &xtask2_handle);
+        xTaskCreate(vSemTakeTask,  "CountHandler",  TASK_STACK_SIZE, NULL, SEM_TAKE_TASK_PRIORITY, NULL);
+        xTaskCreate(vPeriodicTask, "CountPeriodic", TASK_STACK_SIZE, NULL, PERIODIC_TASK_PRIORITY, NULL);
     }
-}
 
-void DeleteCountSemTasks(void)
-{
-    if (xtask1_handle)
+    xReturn = xQueueReceive(xQueue, &task_res, COUNT_SEM_EXAMPLE_TIMEOUT);
+    if (xReturn == pdFAIL)
     {
-        vTaskDelete(xtask1_handle);
-        printf("Count Handler deletion \r\n");
+        vPrintString("xQueue receive timeout.");
+        goto exit;
     }
 
-    if (xtask2_handle)
+exit:
+    if (xQueue != NULL)
     {
-        vTaskDelete(xtask2_handle);
-        printf("Count Periodic deletion \r\n");
+        vQueueDelete(xQueue);
     }
 
+    if (task_res != COUNT_SEM_EXAMPLE_SUCCESS)
+    {
+        vPrintString("Count semaphore feature example [failure]");
+        return task_res;
+    }
+    else
+    {
+        vPrintString("Count semaphore feature example [success].");
+        return task_res;
+    }
 }

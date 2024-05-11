@@ -20,32 +20,24 @@
  *  Ver   Who       Date        Changes
  * ----- ------     --------    --------------------------------------
  * 1.0 wangxiaodong 2023/02/25 first commit
+ * 1.1  zhangyan     2024/4/29    add no letter shell mode, adapt to auto-test system
  */
-#include "shell.h"
 #include <string.h>
 #include <stdio.h>
 #include "nested_interrupt.h"
+#include "sdkconfig.h"
 
-typedef enum
-{
-    NEST_TASK_INDEX = 0,
-
-    INTR_TASK_LENGTH
-} FreeRtosNestIntrSelect;
-
+#ifdef CONFIG_USE_LETTER_SHELL
+#include "shell.h"
 static void CreateNestIntrCmdUsage(void)
 {
     printf("Usage:\r\n");
     printf(" nest cre \r\n");
     printf("    -- Create nest tasks now.\r\n");
-    printf(" nest del \r\n");
-    printf("    -- Del nest tasks now.\r\n");
 }
 
 int CreateNestIntrCmd(int argc, char *argv[])
 {
-    static int create_flg[INTR_TASK_LENGTH] = {0}; /* 1 is tasks has been created*/
-
     if (argc < 2)
     {
         CreateNestIntrCmdUsage();
@@ -54,27 +46,7 @@ int CreateNestIntrCmd(int argc, char *argv[])
 
     if (!strcmp(argv[1], "cre"))
     {
-        if (create_flg[NEST_TASK_INDEX]  == 0)
-        {
-            CreateNestedTasks();
-            create_flg[NEST_TASK_INDEX] = 1;
-        }
-        else
-        {
-            printf("Please use nest del cmd first. \r\n");
-        }
-    }
-    else if (!strcmp(argv[1], "del"))
-    {
-        if (create_flg[NEST_TASK_INDEX]  == 1)
-        {
-            DeleteNestedTasks();
-            create_flg[NEST_TASK_INDEX]  = 0;
-        }
-        else
-        {
-            printf("Please use nest cre cmd first. \r\n");
-        }
+        FFreeRTOSNestedIntrTaskCreate();
     }
     else
     {
@@ -85,5 +57,6 @@ int CreateNestIntrCmd(int argc, char *argv[])
 }
 
 SHELL_EXPORT_CMD(SHELL_CMD_TYPE(SHELL_TYPE_CMD_MAIN), nest, CreateNestIntrCmd, nest interrupt task test);
+#endif
 
 

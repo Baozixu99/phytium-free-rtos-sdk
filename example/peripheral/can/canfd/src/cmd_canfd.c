@@ -20,26 +20,32 @@
  *  Ver   Who       Date        Changes
  * ----- ------     --------    --------------------------------------
  * 1.0   huangjin   2023/10/20   first commit
+ * 2.0   huangjin   2024/04/25   add no letter shell mode, adapt to auto-test system
  */
-#include "shell.h"
-#include "canfd_intr_loopback_mode_example.h"
-#include "canfd_polled_loopback_mode_example copy.h"
-#include "canfd_id_filter_example.h"
+#include "sdkconfig.h"
+#include "FreeRTOS.h"
+#include "canfd_example.h"
 #include <string.h>
+#include "task.h"
 #include <stdio.h>
+#include "strto.h"
 
+#ifdef CONFIG_USE_LETTER_SHELL
+#include "../src/shell.h"
 static void CreateTasksCmdUsage(void)
 {
     printf("Usage:\r\n");
-    printf(" canfd intr \r\n");
-    printf("    -- Create canfd interrupt test example now. \r\n");
-    printf(" canfd polled \r\n");
-    printf("    -- Create canfd polled test example now. \r\n");
-    printf(" canfd filter \r\n");
-    printf("    -- Create canfd filter test example now. \r\n");
+    printf("canfd intr \r\n");
+    printf("-- Create canfd interrupt test example now. \r\n");
+    printf("canfd polled \r\n");
+    printf("-- Create canfd polled test example now. \r\n");
+#if defined(CONFIG_E2000D_DEMO_BOARD) || defined(CONFIG_E2000Q_DEMO_BOARD)
+    printf("canfd filter \r\n");
+    printf("-- Create canfd filter test example now. \r\n");
+#endif
 }
 
-int CreateTasksCmd(int argc, char *argv[])
+int CanfdCmdEntry(int argc, char *argv[])
 {
     if (argc < 2)
     {
@@ -54,10 +60,12 @@ int CreateTasksCmd(int argc, char *argv[])
     {
         FFreeRTOSCreateCanfdPolledTestTask();
     }
+#if defined(CONFIG_E2000D_DEMO_BOARD) || defined(CONFIG_E2000Q_DEMO_BOARD)
     else if (!strcmp(argv[1], "filter"))
     {
         FFreeRTOSCanfdCreateFilterTestTask();
     }
+#endif
     else
     {
         printf("Error: Invalid arguments. \r\n");
@@ -67,6 +75,5 @@ int CreateTasksCmd(int argc, char *argv[])
     return 0;
 }
 
-SHELL_EXPORT_CMD(SHELL_CMD_TYPE(SHELL_TYPE_CMD_MAIN), canfd, CreateTasksCmd, canfd creating test);
-
-
+SHELL_EXPORT_CMD(SHELL_CMD_TYPE(SHELL_TYPE_CMD_MAIN), canfd, CanfdCmdEntry, test freertos canfd driver);
+#endif

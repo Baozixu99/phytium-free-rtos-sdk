@@ -24,17 +24,39 @@
 #include <stdio.h>
 #include <string.h>
 #include "FreeRTOS.h"
-#include "task.h"
 #include "ftypes.h"
+
+#ifdef CONFIG_USE_LETTER_SHELL
 #include "shell.h"
 #include "shell_port.h"
+#else
+#include "task.h"
+#include "posix_example.h"
+#define FREERTOS_POSIX_EXAMPLE_TASK_PRIORITY 2
+void FFreeRTOSPosixExampleTaskEntry()
+{
+    CreatePOSIXDemoTasks();
+
+    printf("[test_end]\r\n");
+
+    vTaskDelete(NULL);
+}
+#endif
 
 int main()
 {
-    printf("Hello main func,FT Date: %s, Time: %s\n", __DATE__, __TIME__);
     BaseType_t xReturn = pdPASS;
 
+#ifdef CONFIG_USE_LETTER_SHELL
     xReturn = LSUserShellTask();
+#else                                 
+    xReturn = xTaskCreate((TaskFunction_t)FFreeRTOSPosixExampleTaskEntry, /* 任务入口函数 */
+                      (const char *)"FFreeRTOSPosixExampleTaskEntry", /* 任务名字 */
+                      (uint16_t)4096,                       /* 任务栈大小 */
+                      NULL,                                 /* 任务入口函数参数 */
+                      (UBaseType_t)FREERTOS_POSIX_EXAMPLE_TASK_PRIORITY,                       /* 任务的优先级 */
+                      NULL);
+#endif
     if (xReturn != pdPASS)
     {
         goto FAIL_EXIT;

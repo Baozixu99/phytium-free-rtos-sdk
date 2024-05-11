@@ -287,7 +287,7 @@ FError FFreeRTOSGdmaChanConfigure(FFreeRTOSGdma *const instance_p,
         }
         channel_first_desc_addr[channel_id] = first_desc_addr;
 
-        /* creat BDL descriptor list */
+        /* create BDL descriptor list */
         FGdmaBdlDescConfig bdl_desc_config[channel_config.valid_desc_num];
         s32 pre_desc_trans_len = os_channel_config_p->trans_length / channel_config.valid_desc_num;
         for (s32 loop = 0; loop < channel_config.valid_desc_num; loop++)

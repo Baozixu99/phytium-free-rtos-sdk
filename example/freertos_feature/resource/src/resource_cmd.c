@@ -13,43 +13,37 @@
  *
  * FilePath: resource_cmd.c
  * Date: 2022-06-17 10:41:45
- * LastEditTime: 2022-06-17 10:41:45
+ * LastEditTime: 2024-05-07 10:41:45
  * Description:  This file is for resource command interface
  *
  * Modify History:
  *  Ver   Who       Date        Changes
  * ----- ------     --------    --------------------------------------
  * 1.0 wangxiaodong 2022/08/09  first commit
+ * 1.1 huangjin     2024/05/07  add no letter shell mode, adapt to auto-test system
  */
-#include "shell.h"
+#include "sdkconfig.h"
+#include "FreeRTOS.h"
 #include "feature_resource.h"
 #include <string.h>
+#include "task.h"
 #include <stdio.h>
-
-typedef enum
-{
-    MUTEX_TASK_INDEX = 0,
-    GATEKEEPER_TEST_INDEX = 1,
-    RESOURCE_FEATURE_LENGTH
-} FreeRtosResourceFeatureSelect;
+#include "strto.h"
+#ifdef CONFIG_USE_LETTER_SHELL
+#include "../src/shell.h"
 
 static void ResourceTasksCmdUsage(void)
 {
     printf("Usage:\r\n");
-    printf(" resource mutex_cre \r\n");
-    printf("    -- Create mutex tasks now. \r\n");
-    printf(" resource mutex_del \r\n");
-    printf("    -- Del mutex tasks now. \r\n");
-    printf(" resource gate_cre \r\n");
-    printf("    -- Create gatekeeper tasks now. \r\n");
-    printf(" resource gate_del \r\n");
-    printf("    -- Del gatekeeper tasks now. \r\n");
-
+    printf("resource mutex_cre \r\n");
+    printf("-- Create mutex tasks now. \r\n");
+    printf("resource gate_cre \r\n");
+    printf("-- Create gatekeeper tasks now. \r\n");
 }
 
 int ResourceTasksCmd(int argc, char *argv[])
 {
-    static int create_flg[RESOURCE_FEATURE_LENGTH] = {0}; /* 1 is tasks has been created*/
+    int ret = 0;
 
     if (argc < 2)
     {
@@ -59,51 +53,11 @@ int ResourceTasksCmd(int argc, char *argv[])
 
     if (!strcmp(argv[1], "mutex_cre"))
     {
-        if (create_flg[MUTEX_TASK_INDEX]  == 0)
-        {
-            CreateResourceTasks();
-            create_flg[MUTEX_TASK_INDEX] = 1;
-        }
-        else
-        {
-            printf("Please use mutex_del cmd first. \r\n");
-        }
-    }
-    else if (!strcmp(argv[1], "mutex_del"))
-    {
-        if (create_flg[MUTEX_TASK_INDEX]  == 1)
-        {
-            DeleteResourceTasks();
-            create_flg[MUTEX_TASK_INDEX]  = 0;
-        }
-        else
-        {
-            printf("Please use mutex_cre cmd first. \r\n");
-        }
+        ret = CreateResourceTasks();
     }
     else if (!strcmp(argv[1], "gate_cre"))
     {
-        if (create_flg[GATEKEEPER_TEST_INDEX]  == 0)
-        {
-            CreateGatekeeperTasks();
-            create_flg[GATEKEEPER_TEST_INDEX] = 1;
-        }
-        else
-        {
-            printf("Please use gate_del cmd first. \r\n");
-        }
-    }
-    else if (!strcmp(argv[1], "gate_del"))
-    {
-        if (create_flg[GATEKEEPER_TEST_INDEX]  == 1)
-        {
-            DeleteGatekeeperTasks();
-            create_flg[GATEKEEPER_TEST_INDEX]  = 0;
-        }
-        else
-        {
-            printf("Please use gate_cre cmd first. \r\n");
-        }
+        ret = CreateGatekeeperTasks();
     }
     else
     {
@@ -114,5 +68,4 @@ int ResourceTasksCmd(int argc, char *argv[])
 }
 
 SHELL_EXPORT_CMD(SHELL_CMD_TYPE(SHELL_TYPE_CMD_MAIN), resource, ResourceTasksCmd, Resource Management test);
-
-
+#endif

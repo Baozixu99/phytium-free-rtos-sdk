@@ -13,13 +13,14 @@
  * 
  * FilePath: cmd_lwip_iperf.c
  * Created Date: 2023-10-16 15:16:18
- * Last Modified: 2024-04-10 17:34:09
+ * Last Modified: 2024-04-28 10:31:08
  * Description:  This file is for lwip iperf example cmd catalogue.
  * 
  * Modify History:
  *  Ver      Who         Date               Changes
  * -----  ----------   --------  ---------------------------------
  *  1.0   liuzhihong  2023/10/16          first release
+ *  2.0   liuzhihong  2024/04/28   add no letter shell mode, adapt to auto-test system
  */
 
 #include <stdio.h>
@@ -93,13 +94,13 @@ static int LwipIperfExampleEntry(int argc, char *argv[])
     if (!strcmp(argv[1], "iperfc"))
     {
         LwipIperfExampleCheckState();
-        ret = LwipIperfClientCreate();
+        ret = FFreeRTOSLwipIperfClientTaskCreate();
         init_flag_mask = CLIENT_EXAMPLE_RUNNING;       
     }
     else if (!strcmp(argv[1], "iperfs"))
     {
         LwipIperfExampleCheckState();
-        ret = LwipIperfServerCreate();
+        ret = FFreeRTOSLwipIperfServerTaskCreate();
         init_flag_mask = SERVER_EXAMPLE_RUNNING;       
     }
 

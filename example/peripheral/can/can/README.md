@@ -42,7 +42,7 @@ CAN过滤功能测试例程 (can_id_filter_example.c)
 本例程需要用到
 
 - Phytium开发板（E2000D/E2000Q/D2000/FT2000-4）
-- [Phytium freeRTOS SDK](https://gitee.com/phytium_embedded/phytium-free-rtos-sdk)
+- [Phytium FreeRTOS SDK](https://gitee.com/phytium_embedded/phytium-free-rtos-sdk)
 - [Phytium standalone SDK](https://gitee.com/phytium_embedded/phytium-standalone-sdk)
 
 ### 2.1 硬件配置方法
@@ -136,6 +136,7 @@ bootelf -p 0x90100000
 ## 3. 如何解决问题
 
 - 使用can0和can1进行回环测试时，需要将can0和can1的H和L信号线分别进行短接
-- ft2004和d2000不支持id过滤功能的描述
+- FT2000/4和D2000不支持id过滤功能的描述
+- PhytiumPi不支持can功能的描述
 
 ## 4. 修改历史记录

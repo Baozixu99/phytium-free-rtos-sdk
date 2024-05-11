@@ -1,3 +1,181 @@
+# Phytium FreeRTOS SDK 2024-05-10 ChangeLog
+
+Change Log since 2024-05-10
+
+## example
+
+- modify i2c example readme and cmd
+
+# Phytium FreeRTOS SDK 2024-05-09 ChangeLog
+
+Change Log since 2024-05-09
+
+## example
+
+- modify freertos feature resource example, add no letter shell mode, adapt to auto-test system
+
+# Phytium FreeRTOS SDK 2024-05-09 ChangeLog
+
+Change Log since 2024-05-09
+
+## example
+
+- modify software_timer example, add no letter shell mode, adapt to auto-test system
+
+# Phytium FreeRTOS SDK 2024-05-09 ChangeLog
+
+Change Log since 2024-05-08
+
+## example
+
+- modify wlan example, add no letter shell mode, adapt to auto-test system
+
+## third-party
+
+- repair iomux init bug
+
+# Phytium FreeRTOS SDK 2024-05-08 ChangeLog
+
+Change Log since 2024-05-07
+
+## example
+
+- modify task_notify example, add no letter shell mode, adapt to auto-test system
+
+# Phytium FreeRTOS SDK 2024-05-07 ChangeLog
+
+Change Log since 2024-05-06
+
+## example
+
+- modify freertos feature queue example, add no letter shell mode, adapt to auto-test system
+
+# Phytium FreeRTOS SDK 2024-05-07 ChangeLog
+
+Change Log since 2024-05-06
+
+## example
+
+- modify event group example, add no letter shell mode, adapt to auto-test system
+
+# Phytium FreeRTOS SDK 2024-05-06 ChangeLog
+
+Change Log since 2024-05-06
+
+## example
+
+- modify freertos feature interrupt example, add no letter shell mode, adapt to auto-test system
+
+# Phytium FreeRTOS SDK 2024-05-06 ChangeLog
+
+Change Log since 2024-04-30
+
+## example
+
+- modify fatfs example, add no letter shell mode, adapt to auto-test system
+
+# Phytium FreeRTOS SDK 2024-04-30 ChangeLog
+
+Change Log since 2024-04-30
+
+## example
+
+- modify posix example, add no letter shell mode, adapt to auto-test system
+
+# Phytium FreeRTOS SDK 2024-04-30 ChangeLog
+
+Change Log since 2024-04-30
+
+## example
+
+- modify tacho and timer example, add no letter shell mode, adapt to auto-test system
+
+# Phytium FreeRTOS SDK 2024-04-30 ChangeLog
+
+Change Log since 2024-04-30
+
+## example
+
+- modify atomic example, add no letter shell mode, adapt to auto-test system
+- modify nested_interrupt example, add no letter shell mode, adapt to auto-test system
+
+# Phytium FreeRTOS SDK 2024-04-29 ChangeLog
+
+Change Log since 2024-04-29
+
+## example
+
+- modify lwip_startup example, add no letter shell mode, adapt to auto-test system
+- modify lwip_iperf example, add no letter shell mode, adapt to auto-test system
+
+# Phytium FreeRTOS SDK 2024-04-29 ChangeLog
+
+Change Log since 2024-04-29
+
+## example
+
+- modify wdt example, add no letter shell mode, adapt to auto-test system
+
+# Phytium FreeRTOS SDK 2024-04-29 ChangeLog
+
+Change Log since 2024-04-28
+
+## example
+
+- Refactoring peripheral i2s example
+
+# Phytium FreeRTOS SDK 2024-04-29 ChangeLog
+
+Change Log since 2024-04-26
+
+## example
+
+- modify i2c example, add no letter shell mode, adapt to auto-test system
+
+# Phytium FreeRTOS SDK 2024-04-28 ChangeLog
+
+Change Log since 2024-04-26
+
+## example
+
+- modify qspi_spiffs example, add no letter shell mode, adapt to auto-test system
+
+# Phytium FreeRTOS SDK 2024-04-26 ChangeLog
+
+Change Log since 2024-04-26
+
+## example
+
+- modify spiffs example, add no letter shell mode, adapt to auto-test system
+
+## third party
+
+- repair spiffs deinit bug
+
+# Phytium FreeRTOS SDK 2024-04-26 ChangeLog
+
+Change Log since 2024-04-25
+
+## tools
+
+- Unified rtos and standalone compilation printing information
+
+# Phytium FreeRTOS SDK 2024-04-26 ChangeLog
+
+Change Log since 2024-04-25
+
+## example
+
+- Refactoring peripheral sdif example
+
+# Phytium FreeRTOS SDK 2024-04-26 ChangeLog
+
+Change Log since 2024-04-25
+
+## example
+
+- Refactoring peripheral canfd example
+
 # Phytium FreeRTOS SDK 2024-04-25 ChangeLog
 
 Change Log since 2024-04-25

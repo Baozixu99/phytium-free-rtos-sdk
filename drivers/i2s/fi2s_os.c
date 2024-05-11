@@ -13,7 +13,7 @@
  *
  * FilePath: fi2s_os.c
  * Created Date: 2024-02-29 10:49:34
- * Last Modified: 2024-03-07 10:09:12
+ * Last Modified: 2024-04-26 15:11:27
  * Description:  This file is for i2s driver
  *
  * Modify History:
@@ -31,13 +31,10 @@
 #include "fparameters.h"
 #include "fparameters_comm.h"
 #include "fdebug.h"
-#include "fio_mux.h"
-#include "fmio_hw.h"
-#include "fmio.h"
+#include "fassert.h"
 #include "ferror_code.h"
 
 #include "fi2s_os.h"
-
 /************************** Variable Definitions *****************************/
 static FFreeRTOSI2s i2s;
 /***************** Macros (Inline Functions) Definitions *********************/
@@ -62,7 +59,6 @@ static void FFreeRTOSI2SSetupInterrupt(FI2s *ctrl)
     FError err = FFREERTOS_I2S_SUCCESS;
 
     GetCpuId(&cpu_id);
-    vPrintf("cpu_id is %d \r\n", cpu_id);
     InterruptSetTargetCpus(config->irq_num, cpu_id);
     /* umask i2s irq */
     InterruptSetPriority(config->irq_num, config->irq_prority);
@@ -105,12 +101,33 @@ err_exit:
 }
 
 /**
+ * @name: FFreeRTOSSetupI2S
+ * @msg:  set the i2s controller to work
+ * @param {FFreeRTOSI2s} *os_i2s_p, the instance of i2s
+ * @return Null
+ */
+FError FFreeRTOSSetupI2S(FFreeRTOSI2s *os_i2s_p)
+{
+    FASSERT(os_i2s_p);
+    FI2s *ctrl = &os_i2s_p->i2s_ctrl;
+    FError err = FT_SUCCESS;
+    err =  FI2sClkOutDiv(ctrl); /* 默认16-bits采集 */
+    if (FT_SUCCESS != err)
+    {
+        FI2S_ERROR("Set i2s failed, err: 0x%x!!!", err);
+        return err;
+    }
+    FI2sSetHwconfig(ctrl);
+    FI2sTxRxEnable(ctrl, TRUE);
+    return err;
+}
+
+/**
  * @name: FFreeRTOSI2SDeinit
  * @msg: 去初始化i2s控制器
  * @param {FFreeRTOSI2s} *os_i2s_p, the instance of i2s
  * @return Null
  */
-
 FError FFreeRTOSI2SDeinit(FFreeRTOSI2s *os_i2s_p)
 {
     FASSERT(os_i2s_p);

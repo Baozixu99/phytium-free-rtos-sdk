@@ -14,19 +14,19 @@
  * FilePath: canfd_polled_loopback_mode_example.c
  * Date: 2023-10-11 11:13:48
  * LastEditTime: 2023-10-20 11:13:48
- * Description:  This file is for CANFD task implementations 
+ * Description:  This file is for canfd polled loopback mode example task implementations 
  *
  * Modify History:
  *  Ver   Who       Date        Changes
  * ----- ------     --------    --------------------------------------
  * 1.0   huangjin   2023/10/7   first commit
+ * 2.0   huangjin   2024/04/25  add no letter shell mode, adapt to auto-test system
  */
 #include <string.h>
 #include <stdio.h>
 #include "FreeRTOSConfig.h"
 #include "FreeRTOS.h"
 #include "task.h"
-#include "timers.h"
 #include "fcan.h"
 #include "fcan_os.h"
 #include "fcpu_info.h"
@@ -40,12 +40,24 @@
 #define FCAN_TEST_WARN(format, ...) FT_DEBUG_PRINT_W(FCAN_TEST_DEBUG_TAG, format, ##__VA_ARGS__)
 #define FCAN_TEST_ERROR(format, ...) FT_DEBUG_PRINT_E(FCAN_TEST_DEBUG_TAG, format, ##__VA_ARGS__)
 
+enum 
+{
+    CANFD_TEST_SUCCESS = 0,  /*Can intr loopback mode test success*/
+    CANFD_INIT_FAILURE = 1,  /*Can init step failure */
+    CANFD_SEND_FAILURE = 2,  /*Can send step failure */
+    CANFD_RECV_FAILURE = 3,  /*Can recv step failure */
+    CANFD_DATA_FAILURE = 4,  /*Can data is not equal */     
+    CANFD_UNKNOWN_STATE = 5, /*Can example unknown state */                     
+};
+
 /* canfd frame config */
+#define CANFD_ENABLE TRUE
 #define FCAN_SEND_STID 0x000007FDU
 #define FCAN_SEND_EXID 0x1FFFFFFDU
 #define FCAN_SEND_LENGTH 16
-#define FCAN_SEND_STID_MAX 0x000007FFU
-#define FCAN_SEND_EXID_MAX 0x1FFFFFFFU
+#define FCAN_SEND_CNT 3
+#define TIMER_OUT ( pdMS_TO_TICKS( 3000UL ) )
+#define CANFD_POLLED_TASK_PRIORITY 3
 
 /* canfd send period */
 #define CAN_SEND_PERIOD             ( pdMS_TO_TICKS( 100UL ))
@@ -55,22 +67,16 @@
 #define DATA_BAUD_RATE 2000000
 
 /* Declare a variable of type QueueHandle_t.  This is used to store the queue that is accessed by all three tasks. */
-static QueueHandle_t xQueue;
-
-static xSemaphoreHandle test_semaphore;
-
-static xTaskHandle send_handle;
-static xTaskHandle recv_handle;
+static QueueHandle_t xQueue_task;
 
 static FFreeRTOSCan *os_can_ctrl_p[FCAN_NUM];
 
 static FCanFrame send_frame[FCAN_NUM];
 static FCanFrame recv_frame[FCAN_NUM];
 
-static void FFreeRTOSCanfdSendTask(void *pvParameters);
-static void FFreeRTOSCanfdRecvTask(void *pvParameters);
+static FError FFreeRTOSCanfdSendThenRecvData(int ide);
+static FError FFreeRTOSCanfdRecvData(u32 instance_id);
 static void FFreeRTOSCanDelete(void);
-
 
 static FError FFreeRTOSCanBaudrateSet(FFreeRTOSCan *os_can_p)
 {
@@ -104,7 +110,6 @@ static FError FFreeRTOSCanBaudrateSet(FFreeRTOSCan *os_can_p)
     return ret;
 }
 
-
 static FError FFreeRTOSCanIdMaskSet(FFreeRTOSCan *os_can_p, int frame_type)
 {
     FError ret = FCAN_SUCCESS;
@@ -131,242 +136,264 @@ static FError FFreeRTOSCanIdMaskSet(FFreeRTOSCan *os_can_p, int frame_type)
     return ret;
 }
 
-static void FFreeRTOSCanfdInitTask(void *pvParameters)
+static FError CanInit(int ide)
 {
-    FError ret = FCAN_SUCCESS;
-    BaseType_t xReturn = pdPASS;
     u32 instance_id = FCAN0_ID;
+    FError init_ret = FCAN_FAILURE;
     u32 tran_mode = FCAN_PROBE_NORMAL_MODE;
-    boolean use_canfd = TRUE;
-
-    /* The queue is created to hold a maximum of 32 structures of type u32 instance_id . */
-    xQueue = xQueueCreate(32, sizeof(u32));
-    if (xQueue == NULL)
-    {
-        printf("FFreeRTOSCreateCanPolledTestTask FCanQueueData create failed.\r\n");
-    }
 
     /*init iomux*/
     FIOMuxInit();
 
-    for (instance_id = FCAN0_ID; instance_id < FCAN_NUM; instance_id++)
+    for (instance_id = FCAN0_ID; instance_id <= FCAN1_ID; instance_id++)
     {
         FIOPadSetCanMux(instance_id);
 
-        /* init canfd controller */
+        /* init can controller */
         os_can_ctrl_p[instance_id] = FFreeRTOSCanInit(instance_id);
         if (os_can_ctrl_p[instance_id] == NULL)
         {
-            printf("FFreeRTOSCanInit %d failed!!!\r\n", instance_id);
-            goto canfd_init_exit;
+            FCAN_TEST_ERROR("FFreeRTOSCanInit %d failed!!!", instance_id);
+            return init_ret;
         }
 
         /* enable canfd */
-        ret = FFreeRTOSCanControl(os_can_ctrl_p[instance_id], FREERTOS_CAN_CTRL_FD_ENABLE, (void *)use_canfd);
-        if (FCAN_SUCCESS != ret)
+        init_ret = FFreeRTOSCanControl(os_can_ctrl_p[instance_id], FREERTOS_CAN_CTRL_FD_ENABLE, (void *)CANFD_ENABLE);
+        if (FCAN_SUCCESS != init_ret)
         {
             FCAN_TEST_ERROR("FFreeRTOSCanControl FREERTOS_CAN_CTRL_FD_ENABLE failed.");
-            goto canfd_init_exit;
+            return init_ret;
         }
 
-        /* set canfd baudrate */
-        ret = FFreeRTOSCanBaudrateSet(os_can_ctrl_p[instance_id]);
-        if (FCAN_SUCCESS != ret)
+        /* set can baudrate */
+        init_ret = FFreeRTOSCanBaudrateSet(os_can_ctrl_p[instance_id]);
+        if (FCAN_SUCCESS != init_ret)
         {
-            printf("FFreeRTOSCanInit FFreeRTOSCanBaudrateSet failed!!!\r\n");
-            goto canfd_init_exit;
+            FCAN_TEST_ERROR("FFreeRTOSCanInit FFreeRTOSCanBaudrateSet failed!!!");
+            return init_ret;
         }
 
-        /* set canfd id mask */
-        ret = FFreeRTOSCanIdMaskSet(os_can_ctrl_p[instance_id], ((int)(uintptr)pvParameters));
-        if (FCAN_SUCCESS != ret)
+        /* set can id mask */
+        init_ret = FFreeRTOSCanIdMaskSet(os_can_ctrl_p[instance_id], ide);
+        if (FCAN_SUCCESS != init_ret)
         {
-            printf("FFreeRTOSCanInit FFreeRTOSCanIdMaskSet failed!!!\r\n");
-            goto canfd_init_exit;
+            FCAN_TEST_ERROR("FFreeRTOSCanInit FFreeRTOSCanIdMaskSet failed!!!");
+            return init_ret;
         }
 
         /* Identifier mask enable */
-        ret = FFreeRTOSCanControl(os_can_ctrl_p[instance_id], FREERTOS_CAN_CTRL_ID_MASK_ENABLE, NULL);
-        if (FCAN_SUCCESS != ret)
+        init_ret = FFreeRTOSCanControl(os_can_ctrl_p[instance_id], FREERTOS_CAN_CTRL_ID_MASK_ENABLE, NULL);
+        if (FCAN_SUCCESS != init_ret)
         {
             FCAN_TEST_ERROR("FFreeRTOSCanControl FREERTOS_CAN_CTRL_ID_MASK_ENABLE failed.");
-            goto canfd_init_exit;
+            return init_ret;
         }
 
-        /* set canfd transfer mode */
-        ret = FFreeRTOSCanControl(os_can_ctrl_p[instance_id], FREERTOS_CAN_CTRL_MODE_SET, &tran_mode);
-        if (FCAN_SUCCESS != ret)
+        /* set can transfer mode */
+        init_ret = FFreeRTOSCanControl(os_can_ctrl_p[instance_id], FREERTOS_CAN_CTRL_MODE_SET, &tran_mode);
+        if (FCAN_SUCCESS != init_ret)
         {
             FCAN_TEST_ERROR("FFreeRTOSCanControl FREERTOS_CAN_CTRL_MODE_SET failed.");
-            goto canfd_init_exit;
+            return init_ret;
         }
 
         /* enable can transfer */
-        ret = FFreeRTOSCanControl(os_can_ctrl_p[instance_id], FREERTOS_CAN_CTRL_ENABLE, NULL);
-        if (FCAN_SUCCESS != ret)
+        init_ret = FFreeRTOSCanControl(os_can_ctrl_p[instance_id], FREERTOS_CAN_CTRL_ENABLE, NULL);
+        if (FCAN_SUCCESS != init_ret)
         {
             FCAN_TEST_ERROR("FFreeRTOSCanControl FREERTOS_CAN_CTRL_ENABLE failed.");
-            goto canfd_init_exit;
+            return init_ret;
         }
     }
 
-    printf("FFreeRTOSCanfdInitTask execute success !!!\r\n");
+    return init_ret;
+}
 
-    if ( ((int)(uintptr)pvParameters) == 0 )
-    {
-        printf("Standard frame test example!!!\r\n");
-    }
-    else if ( ((int)(uintptr)pvParameters) == 1 )
-    {
-        printf("Extended frame test example!!!\r\n");
-    }
+static void FFreeRTOSCanfdPolledTask(void *pvParameters)
+{
+    FError ret = FCAN_SUCCESS;
+    int task_res = 0;
+    int ide = (int)(uintptr)pvParameters;
 
-    /* canfd send task */
-    xReturn = xTaskCreate((TaskFunction_t)FFreeRTOSCanfdSendTask,  /* 任务入口函数 */
-                          (const char *)"FFreeRTOSCanfdSendTask",/* 任务名字 */
-                          (uint16_t)1024,  /* 任务栈大小 */
-                          pvParameters,/* 任务入口函数参数 */
-                          (UBaseType_t)configMAX_PRIORITIES - 5, /* 任务的优先级 */
-                          (TaskHandle_t *)&send_handle); /* 任务控制 */
-    if (xReturn != pdPASS)
+    /* init can controller */
+    ret = CanInit(ide);
+    if (CANFD_TEST_SUCCESS != ret)
     {
-        printf("Create FFreeRTOSCanfdSendTask failed.\r\n");
-        goto canfd_init_exit;
+        FCAN_TEST_ERROR("Can init failed.");
+        task_res = CANFD_INIT_FAILURE;
+        goto can_test_exit;
     }
 
-    /* canfd recv task */
-    xReturn = xTaskCreate((TaskFunction_t)FFreeRTOSCanfdRecvTask,  /* 任务入口函数 */
-                          (const char *)"FFreeRTOSCanfdRecvTask",/* 任务名字 */
-                          (uint16_t)1024,  /* 任务栈大小 */
-                          NULL,/* 任务入口函数参数 */
-                          (UBaseType_t)configMAX_PRIORITIES - 5, /* 任务的优先级 */
-                          (TaskHandle_t *)&recv_handle); /* 任务控制 */
-    if (xReturn != pdPASS)
+    /* canfd send data */
+    ret = FFreeRTOSCanfdSendThenRecvData(ide);
+    if (CANFD_TEST_SUCCESS != ret)
     {
-        printf("Create FFreeRTOSCanfdRecvTask failed.\r\n");
-        goto canfd_init_exit;
+        FCAN_TEST_ERROR("Canfd send then recv data failed.");
+        task_res = CANFD_DATA_FAILURE;
+        goto can_test_exit;
     }
 
-canfd_init_exit:
+can_test_exit:
+    FFreeRTOSCanDelete();
+    xQueueSend(xQueue_task, &task_res, 0);
     vTaskDelete(NULL);
 }
 
-static void FFreeRTOSCanfdSendTask(void *pvParameters)
+static FError FFreeRTOSCanfdSendThenRecvData(int ide)
 {
     FError ret = FCAN_SUCCESS;
-    u32 instance_id = FCAN0_ID;
     u32 count[FCAN_NUM] = {0};
-    u32 send_max_id;
-    int i = 0;
-    /* As per most tasks, this task is implemented in an infinite loop. */
-    for (;;)
+    BaseType_t xReturn = pdPASS;
+
+    for (int j = 0; j < FCAN_SEND_CNT; j++)
     {
-        printf("\r\ncanfd send task running.\r\n");
-        for (instance_id = FCAN0_ID; instance_id <= FCAN1_ID; instance_id++)
+        for (u32 instance_id = FCAN0_ID; instance_id <= FCAN1_ID; instance_id++)
         {
-            send_frame[instance_id].candlc = FCAN_SEND_LENGTH;                         //DLC
-            if (((int)(uintptr)pvParameters) == 1) 
+            send_frame[instance_id].candlc = FCAN_SEND_LENGTH;
+            if (ide == EXTEND_FRAME) 
             {
-                send_frame[instance_id].canid = FCAN_SEND_EXID + count[instance_id];   //EXID                                    //IDE
+                send_frame[instance_id].canid = FCAN_SEND_EXID + count[instance_id];
                 send_frame[instance_id].canid |= CAN_EFF_FLAG;
-                send_max_id = CAN_EFF_MASK | CAN_EFF_FLAG;
             }  
             else
             {
-                send_frame[instance_id].canid = FCAN_SEND_STID + count[instance_id];   //STID
+                send_frame[instance_id].canid = FCAN_SEND_STID + count[instance_id];
                 send_frame[instance_id].canid &= CAN_SFF_MASK;
-                send_max_id = CAN_SFF_MASK;
             }
 
-            for (i = 0; i < send_frame[instance_id].candlc; i++)
+            for (int i = 0; i < send_frame[instance_id].candlc; i++)
             {
                 send_frame[instance_id].data[i] = i + (instance_id << 4);
             }
             ret = FFreeRTOSCanSend(os_can_ctrl_p[instance_id], &send_frame[instance_id]);
             if (ret != FCAN_SUCCESS)
             {
-                printf("canfd%d send failed.\n", instance_id);
+                FCAN_TEST_ERROR("canfd%d send failed.\n", instance_id);
             }
             count[instance_id]++;
             vTaskDelay(CAN_SEND_PERIOD);
-            xQueueSendToBack(xQueue, &instance_id, portMAX_DELAY);
-        }
-        if ( (send_frame[instance_id - 1].canid == send_max_id) )
-        {
-            vTaskDelete(NULL);
+
+            /* can recv data */
+            ret = FFreeRTOSCanfdRecvData(instance_id);
+            if (CANFD_TEST_SUCCESS != ret)
+            {
+                FCAN_TEST_ERROR("Can recv data failed.");
+                return ret;
+            }            
         }
     }
+
+    return ret;
 }
 
-static void FFreeRTOSCanfdRecvTask(void *pvParameters)
+static FError FFreeRTOSCanfdRecvData(u32 instance_id)
 {
     FError ret = FCAN_SUCCESS;
-    u32 count[FCAN_NUM] = {0};
-    int i = 0;
-    u32 instance_id = FCAN1_ID;
-    /* As per most tasks, this task is implemented in an infinite loop. */
-    for (;;)
+    static u32 recv_count[FCAN_NUM] = {0};
+
+    instance_id = FCAN1_ID - instance_id;
+    ret = FFreeRTOSCanRecv(os_can_ctrl_p[instance_id], &recv_frame[instance_id]);
+    if (FCAN_SUCCESS == ret)
     {
-        /* wait canfd send give semphore */
-        xQueueReceive(xQueue, &instance_id, portMAX_DELAY);
-        instance_id = FCAN1_ID - instance_id;
-        ret = FFreeRTOSCanRecv(os_can_ctrl_p[instance_id], &recv_frame[instance_id]);
-        if (FCAN_SUCCESS == ret)
+        FCAN_TEST_DEBUG("canfd%d recv id is 0x%02x.", instance_id, recv_frame[instance_id].canid);
+        FCAN_TEST_DEBUG("canfd%d recv dlc is %d.", instance_id, recv_frame[instance_id].candlc);
+        FCAN_TEST_DEBUG("canfd%d recv data is ", instance_id);
+        for (int i = 0; i < recv_frame[instance_id].candlc; i++)
         {
-            printf("\r\ncanfd%d recv id is 0x%02x.\r\n", instance_id, recv_frame[instance_id].canid);
-            printf("canfd%d recv dlc is %d.\r\n", instance_id, recv_frame[instance_id].candlc);
-            printf("canfd%d recv data is ", instance_id);
-            for (i = 0; i < recv_frame[instance_id].candlc; i++)
+            FCAN_TEST_DEBUG("0x%02x ", recv_frame[instance_id].data[i]);
+            if (recv_frame[instance_id].data[i] != send_frame[FCAN1_ID - instance_id].data[i])
             {
-                printf("0x%02x ", recv_frame[instance_id].data[i]);
-                if (recv_frame[instance_id].data[i] != send_frame[FCAN1_ID - instance_id].data[i])
-                {
-                    FCAN_TEST_ERROR("\ncount%d = %d: canfd%d recv is not equal to canfd%d send!!!\r\n", instance_id,  count[instance_id], instance_id, FCAN1_ID - instance_id);
-                }
+                FCAN_TEST_ERROR("count%d = %d: canfd%d recv is not equal to canfd%d send!!!", instance_id,  recv_count[instance_id], instance_id, FCAN1_ID - instance_id);
             }
-            printf("\ncount%d = %d: canfd%d recv is equal to canfd%d send!!!\r\n", instance_id, count[instance_id], instance_id, FCAN1_ID - instance_id);
-            count[instance_id]++;
         }
-        if ((instance_id == 0) 
-        && ((recv_frame[instance_id].canid == (FCAN_SEND_EXID_MAX | CAN_EFF_FLAG)) 
-        || (recv_frame[instance_id].canid == FCAN_SEND_STID_MAX)))
+        recv_count[instance_id]++;
+        FCAN_TEST_DEBUG("count%d = %d: canfd%d recv is equal to canfd%d send!!!", instance_id, recv_count[instance_id], instance_id, FCAN1_ID - instance_id);
+    }
+    if (recv_count[instance_id] == FCAN_SEND_CNT)
+    {
+        if (recv_frame[instance_id].canid & CAN_EFF_FLAG)
         {
-            FFreeRTOSCanDelete();
+            printf("canfd%d -> canfd%d: Extended frame polled loop test completed.\r\n", FCAN1_ID - instance_id, instance_id);
         }
-    } 
+        else
+        {
+            printf("canfd%d -> canfd%d: Standard frame polled loop test completed.\r\n", FCAN1_ID - instance_id, instance_id);
+        }
+        recv_count[instance_id] = 0;
+    }    
+
+    return ret;
 }
 
 /* create canfd polled test, can0 and can1 loopback */
 BaseType_t FFreeRTOSCreateCanfdPolledTestTask(void)
 {
+    int task_res = CANFD_UNKNOWN_STATE;
     BaseType_t xReturn = pdPASS;
-    BaseType_t timer_started = pdPASS;
 
-    test_semaphore = xSemaphoreCreateBinary();
-    if (test_semaphore != NULL)
+    xQueue_task = xQueueCreate(1, sizeof(int));
+    if (xQueue_task == NULL)
     {
-        xSemaphoreGive(test_semaphore);
+        FCAN_TEST_ERROR("xQueue_task create failed.");
+        goto exit;
     }
 
     /* canfd polled example standard frame task */
-    xSemaphoreTake(test_semaphore, portMAX_DELAY);
-    xReturn = xTaskCreate((TaskFunction_t)FFreeRTOSCanfdInitTask,  /* 任务入口函数 */
-                          (const char *)"FFreeRTOSCanfdInitTask",/* 任务名字 */
+    xReturn = xTaskCreate((TaskFunction_t)FFreeRTOSCanfdPolledTask,  /* 任务入口函数 */
+                          (const char *)"FFreeRTOSCanfdPolledStandardTask",/* 任务名字 */
                           (uint16_t)1024,  /* 任务栈大小 */
-                          (void *)0,/* 任务入口函数参数 */
-                          (UBaseType_t)1,  /* 任务的优先级 */
+                          (void *)STANDARD_FRAME,/* 任务入口函数参数 */
+                          (UBaseType_t)CANFD_POLLED_TASK_PRIORITY,  /* 任务的优先级 */
                           NULL); /* 任务控制 */
+    if (xReturn == pdFAIL)
+    {
+        FCAN_TEST_ERROR("xTaskCreate FFreeRTOSCanfdPolledStandardTask failed.");
+        goto exit;
+    }
+
+    xReturn = xQueueReceive(xQueue_task, &task_res, TIMER_OUT);
+    if (xReturn == pdFAIL)
+    {
+        FCAN_TEST_ERROR("xQueue_task receive timeout.");
+        goto exit;
+    }                            
 
     /* canfd polled example extended frame task */
-    xSemaphoreTake(test_semaphore, portMAX_DELAY);
-    xReturn = xTaskCreate((TaskFunction_t)FFreeRTOSCanfdInitTask,  /* 任务入口函数 */
-                          (const char *)"FFreeRTOSCanfdInitTask2",/* 任务名字 */
+    xReturn = xTaskCreate((TaskFunction_t)FFreeRTOSCanfdPolledTask,  /* 任务入口函数 */
+                          (const char *)"FFreeRTOSCanfdPolledExtendedTask",/* 任务名字 */
                           (uint16_t)1024,  /* 任务栈大小 */
-                          (void *)1,/* 任务入口函数参数 */
-                          (UBaseType_t)1,  /* 任务的优先级 */
+                          (void *)EXTEND_FRAME,/* 任务入口函数参数 */
+                          (UBaseType_t)CANFD_POLLED_TASK_PRIORITY,  /* 任务的优先级 */
                           NULL); /* 任务控制 */
+    if (xReturn == pdFAIL)
+    {
+        FCAN_TEST_ERROR("xTaskCreate FFreeRTOSCanfdPolledExtendedTask failed.");
+        goto exit;
+    }
 
-    return xReturn;
+    xReturn = xQueueReceive(xQueue_task, &task_res, TIMER_OUT);                                       
+    if (xReturn == pdFAIL)
+    {
+        FCAN_TEST_ERROR("xQueue_task receive timeout.");
+        goto exit;
+    }                          
+
+exit:
+    if (xQueue_task != NULL)
+    {
+        vQueueDelete(xQueue_task);
+    }
+
+    if (task_res != CANFD_TEST_SUCCESS)
+    {
+        printf("%s@%d: Canfd polled loopback mode example [failure], task_res = %d\r\n", __func__, __LINE__, task_res);
+        return pdFAIL;
+    }
+    else
+    {
+        printf("%s@%d: Canfd polled loopback mode example [success].\r\n", __func__, __LINE__);
+        return pdPASS;
+    }
 }
 
 static void FFreeRTOSCanDelete(void)
@@ -377,16 +404,4 @@ static void FFreeRTOSCanDelete(void)
 
     /*iopad deinit */
     FIOMuxDeInit();
-
-    /* delete queue */
-    vQueueDelete(xQueue);
-
-    xSemaphoreGive(test_semaphore);
-
-    if (recv_handle)
-    {
-        vPrintf("\r\nDelete FFreeRTOSCanRecvTask success.\r\n");
-        vPrintf("\r\nDelete FFreeRTOSCanSendTask success.\r\n");
-        vTaskDelete(recv_handle);
-    }
 }

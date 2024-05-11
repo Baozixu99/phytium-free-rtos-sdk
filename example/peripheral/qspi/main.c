@@ -20,6 +20,7 @@
  *  Ver   Who           Date           Changes
  * ----- ------       --------      --------------------------------------
  * 1.0  wangxiaodong  2022/8/9      first release
+ * 1.1  zhangyan     2024/4/29    add no letter shell mode, adapt to auto-test system
  */
 
 #include <stdio.h>
@@ -31,6 +32,7 @@
 #else
 #include "task.h"
 #include "qspi_example.h"
+#define QSPI_EXAMPLE_TASK_PRIORITY 2
 void QspiExampleTaskEntry()
 {
     FFreeRTOSQspiCheckTaskCreate();
@@ -59,7 +61,7 @@ int main(void)
                       (const char *)"QspiExampleTaskEntry", /* 任务名字 */
                       (uint16_t)4096,                       /* 任务栈大小 */
                       NULL,                                 /* 任务入口函数参数 */
-                      (UBaseType_t)5,                       /* 任务的优先级 */
+                      (UBaseType_t)QSPI_EXAMPLE_TASK_PRIORITY,  /* 任务的优先级 */
                       NULL);
     taskEXIT_CRITICAL(); /*退出临界区*/
 #endif

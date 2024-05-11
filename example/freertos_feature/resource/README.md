@@ -10,7 +10,7 @@
 
 本例程需要用到
 - Phytium开发板（FT2000-4/D2000/E2000D/E2000Q/PHYTIUMPI）
-- [Phytium freeRTOS SDK](https://gitee.com/phytium_embedded/phytium-free-rtos-sdk)
+- [Phytium FreeRTOS SDK](https://gitee.com/phytium_embedded/phytium-free-rtos-sdk)
 - [Phytium standalone SDK](https://gitee.com/phytium_embedded/phytium-standalone-sdk)
 ### 2.1 硬件配置方法
 
@@ -79,12 +79,10 @@ bootelf -p 0x90100000
 
 - 系统进入后，输入```resource```查看指令说明
 - 输入```resource mutex_cre```，启动互斥信号量任务测试
-- 输入```resource mutex_del```，删除互斥信号量任务测试
 
 ![mutex](./figs/resource_mutex.png)
 
 - 输入```resource gate_cre```，启动守护任务测试
-- 输入```resource gate_del```，删除守护任务测试
 
 ![gate](./figs/resource_gate.png)
 

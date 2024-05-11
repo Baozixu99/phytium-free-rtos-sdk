@@ -32,14 +32,9 @@ extern "C"
 #endif
 
 /* interrupt task */
-void CreateBinarySemTasks(void);
-void DeleteBinarySemTasks(void);
-
-void CreateCountSemTasks(void);
-void DeleteCountSemTasks(void);
-
-void CreateQueueTasks(void);
-void DeleteQueueTasks(void);
+int CreateBinarySemTasks(void);
+int CreateCountSemTasks(void);
+int CreateQueueTasks(void);
 
 #ifdef __cplusplus
 }

@@ -13,13 +13,14 @@
  * 
  * FilePath: lwip_ipv6_example.h
  * Created Date: 2023-11-21 16:00:22
- * Last Modified: 2023-11-21 16:01:23
+ * Last Modified: 2024-04-26 15:52:43
  * Description:  This file is for lwip ipv6 example function definition.
  * 
  * Modify History:
  *  Ver      Who         Date               Changes
  * -----  ----------   --------  ---------------------------------
  *  1.0   liuzhihong   2023/12/26          first release
+ *  2.0   liuzhihong   2024/4/26   add no letter shell mode, adapt to auto-test system
  */
 #ifndef  LWIP_IPV6_EXAMPLE_H
 #define  LWIP_IPV6_EXAMPLE_H
@@ -42,7 +43,7 @@ extern "C"
 
 /************************** Function Prototypes ******************************/
 /* entry function for lwip ipv6 example */
-int LwipIpv6TestCreate(void);
+int FFreeRTOSLwipIpv6TaskCreate(void);
 void LwipIpv6TestDeinit(void);
 
 #ifdef __cplusplus

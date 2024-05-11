@@ -17,20 +17,49 @@
  * Description:  This file is for software_timer example that running shell task and open scheduler
  *
  * Modify History:
- *  Ver   Who       Date        Changes
- * ----- ------     --------    --------------------------------------
- * 1.0 wangxiaodong 2022/08/09  first commit
+ *  Ver      Who           Date         Changes
+ * -----    ------       --------      --------------------------------------
+ *  1.0   wangxiaodong   2022/8/9      first commit
+ *  2.0   liqiaozhong    2024/5/7      add no letter shell mode, adapt to auto-test system
  */
 
+#include <stdio.h>
+
+#include "FreeRTOS.h"
+
+#include "sdkconfig.h"
+
+#ifdef CONFIG_USE_LETTER_SHELL
 #include "shell.h"
 #include "shell_port.h"
-#include <stdio.h>
+#else
+#include "task.h"
+#include "feature_software_timer.h"
+#define SOFTWARE_TIMER_EXAMPLE_TASK_PRIORITY 2
+void SoftwareTimerExampleTaskEntry()
+{
+    CreateTimerTasks();
+    CreateTimerResetTasks();
+
+    printf("[test_end]\r\n");
+    vTaskDelete(NULL);
+}
+#endif
 
 int main(void)
 {
-    BaseType_t ret;
-
-    ret = LSUserShellTask() ;
+    BaseType_t ret = pdPASS; /* Define a return value with a default of pdPASS */
+#ifdef CONFIG_USE_LETTER_SHELL
+    ret = LSUserShellTask();
+#else
+    /* used in no-letter-shell mode */
+    ret = xTaskCreate((TaskFunction_t)SoftwareTimerExampleTaskEntry,
+                      (const char *)"SoftwareTimerExampleTaskEntry",
+                      (uint16_t)4096,
+                      NULL,
+                      (UBaseType_t)SOFTWARE_TIMER_EXAMPLE_TASK_PRIORITY,
+                      NULL);
+#endif
     if (ret != pdPASS)
     {
         goto FAIL_EXIT;
@@ -40,6 +69,6 @@ int main(void)
     while (1); /* 正常不会执行到这里 */
 
 FAIL_EXIT:
-    printf("failed 0x%x. \r\n", ret);
-    return 0;
+    printf("Software timer example failed in main.c, the ret value is 0x%x. \r\n", ret);
+    return -2;
 }

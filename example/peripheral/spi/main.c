@@ -31,7 +31,7 @@
 #else
 #include "task.h"
 #include "sfud_read_write.h"
-
+#define SFUD_EXAMPLE_TASK_PRIORITY 2
 void SfudExampleTaskEntry(void)
 {
     /*Demo read and write by sfud*/
@@ -60,7 +60,7 @@ int main(void)
                           (const char *)"SfudExampleTaskEntry",/* 任务名字 */
                           (uint16_t)4096,  /* 任务栈大小 */
                           NULL,/* 任务入口函数参数 */
-                          (UBaseType_t)2,  /* 任务的优先级 */
+                          (UBaseType_t)SFUD_EXAMPLE_TASK_PRIORITY,  /* 任务的优先级 */
                           NULL);
     taskEXIT_CRITICAL(); /*退出临界区*/
 

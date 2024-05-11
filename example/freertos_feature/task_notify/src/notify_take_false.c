@@ -12,6 +12,11 @@ that have occurred, and the number of events that have been processed.
 #include "semphr.h"
 #include "finterrupt.h"
 #include "fcpu_info.h"
+#include "event_groups.h"
+
+static EventGroupHandle_t xEventGroup;
+#define TEST_COMPLETE_FLAG  ( 1UL << 0UL ) /* Event bit 0, which is set by a task. */
+#define TIMER_OUT (pdMS_TO_TICKS(5000UL))
 
 #define TASK_STACK_SIZE         1024
 
@@ -40,7 +45,7 @@ that the task will be synchronized with. */
 static void vSetupSoftwareInterrupt(void);
 
 /* The rate at which the periodic task generates software interrupts. */
-static const TickType_t xInterruptFrequency = pdMS_TO_TICKS(5000UL);
+static const TickType_t xInterruptFrequency = pdMS_TO_TICKS(500UL);
 
 /* Stores the handle of the task to which interrupt processing is deferred. */
 static xTaskHandle xtask1_handle = NULL;
@@ -48,45 +53,6 @@ static xTaskHandle xtask2_handle = NULL;
 
 static u32 cpu_id = 0;
 
-/*-----------------------------------------------------------*/
-
-void CreateNotifyTakeFalseTasks(void)
-{
-    /* Install the handler for the software interrupt.  The syntax necessary
-    to do this is dependent on the FreeRTOS port being used.  The syntax
-    shown here can only be used with the FreeRTOS Windows port, where such
-    interrupts are only simulated. */
-    vSetupSoftwareInterrupt();
-
-    /* Create the 'handler' task, which is the task to which interrupt
-    processing is deferred, and so is the task that will be synchronized
-    with the interrupt.  The handler task is created with a high priority to
-    ensure it runs immediately after the interrupt exits.  In this case a
-    priority of 3 is chosen.  The handle of the task is saved for use by the
-    ISR. */
-    xTaskCreate(vHandlerTask, "Notify False Handler", TASK_STACK_SIZE, NULL, 3, &xtask1_handle);
-
-    /* Create the task that will periodically generate a software interrupt.
-    This is created with a priority below the handler task to ensure it will
-    get preempted each time the handler task exits the Blocked state. */
-    xTaskCreate(vPeriodicTask, "Notify False Periodic", TASK_STACK_SIZE, NULL, 1, &xtask2_handle);
-
-}
-
-void DeleteNotifyTakeFalseTasks(void)
-{
-    if (xtask1_handle)
-    {
-        vTaskDelete(xtask1_handle);
-        vPrintString("Task notify false Handler deletion");
-    }
-
-    if (xtask2_handle)
-    {
-        vTaskDelete(xtask2_handle);
-        vPrintString("Task notify false Periodic deletion");
-    }
-}
 /*-----------------------------------------------------------*/
 
 static void vHandlerTask(void *pvParameters)
@@ -111,12 +77,11 @@ static void vHandlerTask(void *pvParameters)
             vPrintString("Task Notify False Handler task - Processing event.\r\n");
             vPrintStringAndNumber("Task Notify False ulNotificationValue= ", ulNotificationValue);
         }
-        else
+        if (ulNotificationValue == 1)
         {
-            /* If this part of the function is reached then an interrupt did not
-            arrive within the expected time, and (in a real application) it may
-            be necessary to perform some error recovery operations. */
+            xEventGroupSetBits(xEventGroup, TEST_COMPLETE_FLAG);    
         }
+        
     }
 }
 /*-----------------------------------------------------------*/
@@ -196,11 +161,75 @@ static void vTriggerInterrupt(void)
     InterruptCoreInterSend(INTERRUPT_ID, (1 << cpu_id));
 }
 
+/*-----------------------------------------------------------*/
+void DeleteNotifyTakeFalseTasks(void)
+{
+    if (xtask1_handle)
+    {
+        vTaskDelete(xtask1_handle);
+        vPrintString("Task notify True Handler deletion \r\n");
+    }
+    if (xtask2_handle)
+    {
+        vTaskDelete(xtask2_handle);
+        vPrintString("Task notify True vPeriodicTask deletion \r\n");
+    }
+}
 
+BaseType_t CreateNotifyTakeFalseTasks(void)
+{
+    BaseType_t ret;
+    EventBits_t xEventGroupValue = 0;
+    const EventBits_t xBitsToWaitFor = TEST_COMPLETE_FLAG;
 
+    xEventGroup = xEventGroupCreate();
+    /* Install the handler for the software interrupt.  The syntax necessary
+    to do this is dependent on the FreeRTOS port being used.  The syntax
+    shown here can only be used with the FreeRTOS Windows port, where such
+    interrupts are only simulated. */
+    vSetupSoftwareInterrupt();
 
+    /* Create the 'handler' task, which is the task to which interrupt
+    processing is deferred, and so is the task that will be synchronized
+    with the interrupt.  The handler task is created with a high priority to
+    ensure it runs immediately after the interrupt exits.  In this case a
+    priority of 3 is chosen.  The handle of the task is saved for use by the
+    ISR. */
+    ret = xTaskCreate(vHandlerTask, "Notify False Handler", TASK_STACK_SIZE, NULL, 3, &xtask1_handle);
+    if (ret != pdPASS)
+    {
+        xtask1_handle = NULL;
+        vPrintStringAndNumber("vHandlerTask creation failed: ", ret);
+        goto exit;
+    }
 
+    /* Create the task that will periodically generate a software interrupt.
+    This is created with a priority below the handler task to ensure it will
+    get preempted each time the handler task exits the Blocked state. */
+    ret = xTaskCreate(vPeriodicTask, "Notify False Periodic", TASK_STACK_SIZE, NULL, 1, &xtask2_handle);
+    if (ret != pdPASS)
+    {
+        xtask2_handle = NULL;
+        vPrintStringAndNumber("vPeriodicTask creation failed: ", ret);
+        goto exit;
+    }
 
+    /* Block to wait for event bits to become set within the event group. */
+    xEventGroupValue = xEventGroupWaitBits(xEventGroup, xBitsToWaitFor, pdTRUE, pdTRUE, TIMER_OUT);
+
+exit:
+    DeleteNotifyTakeFalseTasks();
+    if (xEventGroupValue != xBitsToWaitFor)
+    {
+        vPrintf("%s@%d: Notify take false example [failure].\r\n", __func__, __LINE__);
+        return pdFAIL;
+    }
+    else
+    {
+        vPrintf("%s@%d: Notify take false example [success].\r\n", __func__, __LINE__);
+        return pdTRUE;
+    }
+}
 
 
 

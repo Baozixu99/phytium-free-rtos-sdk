@@ -3,15 +3,16 @@
 ## 1. 例程介绍
 
 本例程示范了freertos环境下的timer、tacho和capture的使用，包括timer控制器的初始化、定时、信号捕捉操作;
-程序启动后，创建timer、tacho或capture（两者使用同一IO，默认tacho，变更需要更改初始化和任务）的初始化任务,分别测试定时功能，采样转换功能，以及脉冲计数触发功能;
+程序启动后，创建timer、tacho或capture（两者使用同一IO，默认tacho，若想使用capture功能，则参照tacho测试步骤初始化即可）任务,分别测试定时功能，采样转换功能，以及脉冲计数触发功能;
 例程仅仅支持E2000上使用;
 E2000DQ上使用的demo板上的 PWM-IN12(tacho—in12) 进行测试。
+
 
 ## 2. 如何使用例程
 
 本例程需要用到
 - Phytium开发板（E2000DQ of demo板）
-- [Phytium freeRTOS SDK](https://gitee.com/phytium_embedded/phytium-free-rtos-sdk)
+- [Phytium FreeRTOS SDK](https://gitee.com/phytium_embedded/phytium-free-rtos-sdk)
 - [Phytium standalone SDK](https://gitee.com/phytium_embedded/phytium-standalone-sdk)
 ### 2.1 硬件配置方法
 
@@ -26,7 +27,7 @@ E2000DQ上使用的demo板上的 PWM-IN12(tacho—in12) 进行测试。
 
 ### 2.1.1 硬件连线
 
-- E2000 pwm_in12使用1KHz的方波
+- E2000 pwm_in12使用1KHz的方波,也即J30上，右内侧第三脚接入示波器或其他信号源方波信号，如下图所示
 
 ![hardware_e2000](./figs/tacho_hdw.png)
 
@@ -111,8 +112,7 @@ bootelf -p 0x90100000
 ![e2000d](./figs/timer_tacho.png)
 
 - 图中我们使用timer id 0 作为定时器任务的控制器,time in 的数字表示进入循环定时中断服务的次数。
-- get captureCnt表示使用timer id 12控制器来采集脉冲的个数（设置上升沿捕获）
-- tachometer id使用timer id 12控制器来抓取1KHz信号来模拟风扇波形信号。RPM表示转速
+- RPM表示转速
 
 ## 3. 如何解决问题
 

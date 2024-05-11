@@ -103,10 +103,10 @@ enum /*选择操作I2C的方式*/
 };
 
 /************************** Function Prototypes ******************************/
-/* init freeRTOS i2c instance */
+/* init FreeRTOS i2c instance */
 FFreeRTOSI2c *FFreeRTOSI2cInit(u32 instance_id, u32 work_mode, u32 slave_address, u32 speed_rate);
 
-/* deinit freeRTOS i2c instance */
+/* deinit FreeRTOS i2c instance */
 void FFreeRTOSI2cDeinit(FFreeRTOSI2c *os_i2c_p);
 
 /* tranfer i2c mesage */

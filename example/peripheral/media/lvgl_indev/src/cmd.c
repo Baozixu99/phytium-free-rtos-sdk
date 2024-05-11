@@ -36,7 +36,7 @@
 #include "lv_port_disp.h"
 #include "lv_obj.h"
 #include "lv_conf.h"
-#include "lv_indev_creat.h"
+#include "lv_indev_create.h"
 #include "lv_indev_test.h"
 
 static void FFreeRTOSMediaCmdUsage(void)

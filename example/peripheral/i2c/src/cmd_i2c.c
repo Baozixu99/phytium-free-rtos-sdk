@@ -27,13 +27,13 @@
 #include "strto.h"
 #include "sdkconfig.h"
 #include "FreeRTOS.h"
-#include "shell.h"
-#include "fi2c_os.h"
 #include "i2c_example.h"
 
 /************************** Function Prototypes ******************************/
 
 /*****************************************************************************/
+#ifdef CONFIG_USE_LETTER_SHELL
+#include "shell.h"
 static void FI2cExampleUsage()
 {
     printf("Usage:\r\n");
@@ -42,7 +42,7 @@ static void FI2cExampleUsage()
     printf("        -- E2000 demo board set time and read it.\r\n");
 #endif
 #if defined(CONFIG_FIREFLY_DEMO_BOARD)
-    printf("    i2c rw\r\n");
+    printf("    i2c ms_example\r\n");
     printf("        -- firefly board,Two i2c controllers are used for master-slave communication.\r\n");
 #endif
 }
@@ -67,7 +67,7 @@ static int I2cCmdEntry(int argc, char *argv[])
     }
 #endif
 #if defined(CONFIG_FIREFLY_DEMO_BOARD)
-    else if (!strcmp(argv[1], "rw"))
+    else if (!strcmp(argv[1], "ms_example"))
     {
         ret = FFreeRTOSI2cLoopbackCreate();
         if (ret != pdPASS)
@@ -81,3 +81,4 @@ static int I2cCmdEntry(int argc, char *argv[])
 }
 
 SHELL_EXPORT_CMD(SHELL_CMD_TYPE(SHELL_TYPE_CMD_MAIN), i2c, I2cCmdEntry, test freertos i2c driver);
+#endif

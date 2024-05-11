@@ -79,6 +79,9 @@ void DdmaTasksEntry(void)
     u32 bytes = 32;
     u32 spi_id = USED_SPI_ID;
     FFreeRTOSRunDDMASpiLoopback(spi_id, bytes);
+
+    /* end flag */
+    printf("[test_end]\r\n");
     vTaskDelete(NULL);
 }
 #endif

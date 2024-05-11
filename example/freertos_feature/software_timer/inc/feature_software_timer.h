@@ -17,11 +17,11 @@
  * Description:  This file is for task function define
  *
  * Modify History:
- *  Ver   Who       Date        Changes
- * ----- ------     --------    --------------------------------------
- * 1.0 wangxiaodong 2022/08/09  first commit
+ *  Ver      Who           Date         Changes
+ * -----    ------       --------      --------------------------------------
+ *  1.0   wangxiaodong   2022/8/9      first commit
+ *  2.0   liqiaozhong    2024/5/7      add no letter shell mode, adapt to auto-test system
  */
-
 
 #ifndef FEATURE_SOFTWARE_TIMER_H
 #define FEATURE_SOFTWARE_TIMER_H
@@ -31,12 +31,8 @@ extern "C"
 {
 #endif
 
-/* software timer create and start */
-void CreateTimerTasks(void);
-void DeleteTimerTasks(void);
-
-void CreateTimerResetTasks(void);
-void DeleteTimerResetTasks(void);
+int CreateTimerTasks(void);
+int CreateTimerResetTasks(void);
 
 #ifdef __cplusplus
 }

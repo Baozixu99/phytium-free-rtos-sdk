@@ -7,6 +7,20 @@
 
 GCC 4.1.2版本之后，提供了许多原子函数（Atomic Built-in Functions），这些函数主要用于实现线程安全的共享内存访问，可以保证共享变量的原子性、顺序性和正确性。
 原子函数在多线程或多进程编程中广泛应用，特别是在实现同步机制、锁和条件变量等方面具有重要作用。
+本例程分别测试了以下原子操作：
+
+|   **原子操作**    | 
+| :----------:  | 
+| FATOMIC_ADD 加法 | 
+| FATOMIC_INC 自加| 
+| FATOMIC_SUB 减法| 
+| FATOMIC_DEC 自减| 
+| FATOMIC_OR  或计算| 
+| FATOMIC_AND 与计算| 
+| FATOMIC_CAS_BOOL 比较运算(返回布尔类型)| 
+| FATOMIC_CAS_VAL  比较运算(返回数据类型)| 
+| FATOMIC_LOCK  原子锁| 
+| FATOMIC_UNLOCK  原子锁释放| 
 
 
 ## 2. 如何使用例程
@@ -14,7 +28,7 @@ GCC 4.1.2版本之后，提供了许多原子函数（Atomic Built-in Functions�
 本例程需要用到
 
 - Phytium开发板（FT2000-4/D2000/E2000D/E2000Q/PHYTIUMPI）
-- [Phytium freeRTOS SDK](https://gitee.com/phytium_embedded/phytium-free-rtos-sdk)
+- [Phytium FreeRTOS SDK](https://gitee.com/phytium_embedded/phytium-free-rtos-sdk)
 - [Phytium standalone SDK](https://gitee.com/phytium_embedded/phytium-standalone-sdk)
 
 ### 2.1 硬件配置方法
@@ -83,9 +97,5 @@ bootelf -p 0x90100000
 $ atomic cre
 ```
 
-- 删除原子操作测试任务
-```
-$ atomic del
-```
-
+![atomic_test](./figs/atomic_test.png)
 ## 3. 如何解决问题

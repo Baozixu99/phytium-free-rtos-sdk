@@ -45,7 +45,7 @@ static FFreeRTOSWdt os_wdt[FWDT_NUM] = {0};
 
 /**
  * @name: FFreeRTOSWdtInit
- * @msg:  init freeRTOS wdt instance, include init wdt and create mutex
+ * @msg:  init FreeRTOS wdt instance, include init wdt and create mutex
  * @param {u32} instance_id, wdt instance id
  * @return {FFreeRTOSWdt *} pointer to os wdt instance
  */
@@ -66,7 +66,7 @@ FFreeRTOSWdt *FFreeRTOSWdtInit(u32 instance_id)
 
 /**
  * @name: FFreeRTOSWdtDeinit
- * @msg:  deinit freeRTOS wdt instance, include stop wdt, deinit wdt and delete mutex
+ * @msg:  deinit FreeRTOS wdt instance, include stop wdt, deinit wdt and delete mutex
  * @param {FFreeRTOSWdt} *os_wdt_p, pointer to os wdt instance
  * @return err code information, FWDT_SUCCESS indicates success，others indicates failed
  */
@@ -84,7 +84,7 @@ FError FFreeRTOSWdtDeinit(FFreeRTOSWdt *os_wdt_p)
 
 /**
  * @name: FFreeRTOSWdtControl
- * @msg:  control freeRTOS wdt instance
+ * @msg:  control FreeRTOS wdt instance
  * @param {FFreeRTOSWdt} *os_wdt_p, pointer to os wdt instance
  * @param {int} cmd, control cmd
  * @param {void} *args, pointer to control cmd arguments

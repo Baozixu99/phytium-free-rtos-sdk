@@ -26,18 +26,32 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "ftypes.h"
+#include "wlan_station_scan.h"
+#include "wlan_common.h"
+#ifdef CONFIG_USE_LETTER_SHELL
 #include "shell.h"
 #include "shell_port.h"
+#endif
 
 int main()
 {
     BaseType_t xReturn = pdPASS;
-
+#ifdef CONFIG_USE_LETTER_SHELL
     xReturn = LSUserShellTask();
     if (xReturn != pdPASS)
     {
         goto FAIL_EXIT;
     }
+#else
+
+    xReturn = xTaskCreate((TaskFunction_t)WlanExampleEntry,
+                    (const char *)"WlanExampleEntry",
+                    (uint16_t)4096,
+                    NULL,
+                    (UBaseType_t)2,
+                    NULL);
+
+#endif
 
     vTaskStartScheduler(); /* 启动任务，开启调度 */
 
@@ -46,4 +60,11 @@ int main()
 FAIL_EXIT:
     printf("Failed,the xReturn value is 0x%x. \r\n", xReturn);
     return 0;
+}
+
+void WlanExampleEntry(void)
+{
+    FFreeRTOSWlanStationScanTaskCreate();
+    printf("[test_end].\r\n");
+    vTaskDelete(NULL);
 }

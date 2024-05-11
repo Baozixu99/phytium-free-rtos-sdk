@@ -47,7 +47,7 @@
 static void GpioCmdUsage(void)
 {
     printf("Usage:\r\n");
-    printf("pin io-irq\r\n");
+    printf("gpio io-irq\r\n");
     printf("-- Demo to test gpio interrupt\r\n");
 }
 static int GpioCmdEntry(int argc, char *argv[])

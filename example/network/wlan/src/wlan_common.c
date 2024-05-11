@@ -4,7 +4,6 @@
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
-
 #include "wlan_bt_fw.h"
 #include "wlan.h"
 #include "wifi.h"
@@ -201,6 +200,23 @@ FWlanRetStatus FWlanInit(void)
     }
 
     return status;
+}
+
+void FWlanDeinit(void)
+{
+    if(s_wlan_state == WLAN_STATE_NOT_INITIALIZED)
+    {
+        return;
+    }
+    else 
+    {
+        if(s_wlan_state == WLAN_STATE_STARTED)
+        {
+            FWlanStop();
+        }
+        wlan_deinit(WLAN_ACTIVE);
+        s_wlan_state = WLAN_STATE_NOT_INITIALIZED;
+    }
 }
 
 FWlanRetStatus FWlanStart(FWlanLinkLostCb callbackFunction)

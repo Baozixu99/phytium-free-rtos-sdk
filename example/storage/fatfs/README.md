@@ -10,7 +10,7 @@
 
 本例程需要用到
 - Phytium开发板（E2000D/E2000Q/PhytiumPi）
-- [Phytium freeRTOS SDK](https://gitee.com/phytium_embedded/phytium-free-rtos-sdk)
+- [Phytium FreeRTOS SDK](https://gitee.com/phytium_embedded/phytium-free-rtos-sdk)
 - [Phytium standalone SDK](https://gitee.com/phytium_embedded/phytium-standalone-sdk)
 
 ![hardware](./figures/hardware.png)
@@ -75,27 +75,32 @@ bootelf -p 0x90100000
 ### 2.4 输出与实验现象
 
 - 打开配置 CONFIG_FATFS_SDIF_TF, 使能 MicroSD(TF) 卡
+> 注意如果不需要使用分区功能请将CONFIG_FATFS_SDMMC_PARTITION设置为0，如果需要使用分区功能则请确保在MicroSD(TF)卡中已做好分区操作
 - 打开配置 CONFIG_FATFS_SDIF_EMMC, 使能 eMMC
 - 打开配置 CONFIG_FATFS_USB, 使能 U 盘
 - 打开配置 CONFIG_FATFS_FSATA, 使能 SATA 硬盘
 - 打开配置 CONFIG_FATFS_FSATA_PCIE, 使能 SATA 硬盘与 PCIE 接口
+> 请确保存储设备已连接到开发板再打开对应配置，否则程序可能会死循环
+
+![](./figures/config.png)
 
 - 打开配置 CONFIG_FATFS_BASIC_TEST，测试 FATFS 的基本功能
 - 打开配置 CONFIG_FATFS_SPEED_TEST, 测试 FATFS 的读写速度，会破环文件系统
 - 打开配置 CONFIG_FATFS_CYCLE_TEST, 运行 FATFS 的测试项，会破环文件系统
-- 编译镜像，加载到开发板上电启动
-
-![](./figures/config.png)
-
 ![](./figures/test_item.png)
 
-- 加载镜像启动后，自动开始测试
+- 编译镜像，加载到开发板上电启动
+
+> shell中输入命令 fatfs test，启动测试。
 
 ![](./figures/test_1.png)
 ![](./figures/test_2.png)
 ![](./figures/test_3.png)
 ![](./figures/test_4.png)
-![](./figures/test_5.png)
 
 ## 3. 如何解决问题
+
+1. fatfs_example.c中定义了WAIT_TIMEOUT变量，决定Task最长阻塞时间。如果测试时间过长，超过了WAIT_TIMEOUT, 那么程序会报告failure。可选择增大WAIT_TIMEOUT或减少测试时读写的字节数解决这一问题。
+
+2. 关闭CONFIG_FATFS_USB配置的同时，需要关闭Use CherryUSB，否则编译会报错。
  

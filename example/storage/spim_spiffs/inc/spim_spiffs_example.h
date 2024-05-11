@@ -27,6 +27,8 @@
 #define SPIM_SPIFFS_EXAMPLE_H
 
 /* spim spiffs read and write test */
-BaseType_t FFreeRTOSSpimSpiffsCreate(u32 spim_id);
+int FFreeRTOSSpimSpiffsRunWR(void);
+
+void SpimSpiffsExampleEntry(void);
 
 #endif // !

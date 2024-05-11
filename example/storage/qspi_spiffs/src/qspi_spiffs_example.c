@@ -13,7 +13,7 @@
  *
  * FilePath: qspi_spiffs_example.c
  * Date: 2022-07-11 11:32:48
- * LastEditTime: 2022-07-11 11:32:48
+ * LastEditTime: 2024-04-26 11:32:48
  * Description: This file is for the qspi_spiffs example functions.
  *
  * Modify History:
@@ -21,6 +21,7 @@
  * -----   ------         --------    --------------------------------------
  * 1.0   wangxiaodong    2022/8/9       first release
  * 1.1   zhangyan        2023/2/9       improve functions
+ * 1.2   huangjin        2024/4/26     add no letter shell mode, adapt to auto-test system
  */
 #include <stdlib.h>
 #include <string.h>
@@ -29,11 +30,9 @@
 #include "FreeRTOSConfig.h"
 #include "FreeRTOS.h"
 #include "task.h"
-#include "semphr.h"
+#include "queue.h"
 #include "fio_mux.h"
-#include "timers.h"
 #include "qspi_spiffs_example.h"
-#include "strto.h"
 #include "fassert.h"
 #include "fdebug.h"
 #include "fparameters.h"
@@ -61,6 +60,8 @@ enum
     FSPIFFS_OPS_READ_FILE_FAILED,
     FSPIFFS_OPS_REMOVE_FILE_FAILED,
     FSPIFFS_OPS_CLOSE_FILE_FAILED,
+    FSPIFFS_OPS_UNKNOWN_STATE,
+    FSPIFFS_OPS_DATA_FAILED,
 };
 
 #define FSPIFFS_DEBUG_TAG "SPIFFS-QSPI"
@@ -70,9 +71,9 @@ enum
 #define FSPIFFS_DEBUG(format, ...)   FT_DEBUG_PRINT_D(FSPIFFS_DEBUG_TAG, format, ##__VA_ARGS__)
 
 /* spiffs start address and size */
-#if defined(CONFIG_TARGET_E2000)
+#if defined(CONFIG_E2000D_DEMO_BOARD) || defined(CONFIG_E2000Q_DEMO_BOARD) || defined(CONFIG_FIREFLY_DEMO_BOARD)
 #define FSPIFFS_START_ADDR      (3 * SZ_1M)
-#elif defined(CONFIG_TARGET_FT2004) || defined(CONFIG_TARGET_D2000)
+#elif defined(CONFIG_FT2004_DSK_BOARD) || defined(CONFIG_D2000_TEST_BOARD)
 #define FSPIFFS_START_ADDR      (7 * SZ_1M)
 #endif
 
@@ -82,6 +83,10 @@ enum
 
 /* if format flash, TRUE is need format, it tasks some time  */
 #define FSPIFFS_IF_FORMAT       TRUE
+
+#define QSPI_SPIFFS_WRITE_READ_TASK_PRIORITY  3
+
+#define TIMER_OUT                  (pdMS_TO_TICKS(4000UL))
 
 /* 一个页大小两倍的一个RAM缓冲区, 用来加载和维护SPIFFS的逻辑页 */
 static volatile u8 fspiffs_work_buf[FSPIFFS_LOG_PAGE_SIZE * 2] = {0};
@@ -95,20 +100,7 @@ static boolean spiffs_inited = FALSE;
 const char *file_name = "test.txt";
 
 /************************** Constant Definitions *****************************/
-
-/* The periods assigned to the one-shot timers. */
-#define ONE_SHOT_TIMER_PERIOD       ( pdMS_TO_TICKS( 50000UL ) )
-
-/* write and read task delay in milliseconds */
-#define TASK_DELAY_MS   3000UL
-
-/* write and read task number */
-#define READ_WRITE_TASK_NUM 1
-static xSemaphoreHandle xCountingSemaphore;
-
-static xTaskHandle qspi_rw_handle;
-
-static TimerHandle_t xOneShotTimer;
+static QueueHandle_t xQueue = NULL;
 
 static const char *xString = "FFreeRTOSQspiSpiffsWriteReadTask is running\r\n";
 
@@ -166,7 +158,7 @@ static int FSpiffsOpsMount(boolean do_format)
     }
     else
     {
-        vPrintf("Mount spiffs success. \r\n");
+        FSPIFFS_INFO("Mount spiffs success. \r\n");
         instance.fs_ready = TRUE;
     }
 
@@ -206,9 +198,9 @@ static int FSpiffsOpsListAll(void)
     return ret;
 }
 
-int FSpiffsOpsCreateFile(const char *file_name)
+int FSpiffsOpsCreateFile(const char *create_file_name)
 {
-    FASSERT((file_name) && (strlen(file_name) > 0));
+    FASSERT((create_file_name) && (strlen(create_file_name) > 0));
     if (FALSE == instance.fs_ready)
     {
         FSPIFFS_ERROR("Please mount file system first.");
@@ -218,18 +210,18 @@ int FSpiffsOpsCreateFile(const char *file_name)
     int ret = FSPIFFS_OPS_OK;
 
     /* create file */
-    s32_t result = SPIFFS_creat(&instance.fs, file_name, 0);
+    s32_t result = SPIFFS_creat(&instance.fs, create_file_name, 0);
     if (result < 0)
     {
-        FSPIFFS_ERROR("Failed to create file %s", file_name);
+        FSPIFFS_ERROR("Failed to create file %s", create_file_name);
         return FSPIFFS_OPS_OPEN_FILE_FAILED;
     }
 
     /* open file */
-    spiffs_file fd = SPIFFS_open(&instance.fs, file_name, SPIFFS_RDONLY, 0);
+    spiffs_file fd = SPIFFS_open(&instance.fs, create_file_name, SPIFFS_RDONLY, 0);
     if (0 > fd)
     {
-        FSPIFFS_ERROR("Failed to open file %s errno %d", file_name, SPIFFS_errno(&instance.fs));
+        FSPIFFS_ERROR("Failed to open file %s errno %d", create_file_name, SPIFFS_errno(&instance.fs));
         return FSPIFFS_OPS_OPEN_FILE_FAILED;
     }
 
@@ -239,14 +231,14 @@ int FSpiffsOpsCreateFile(const char *file_name)
     result = SPIFFS_fstat(&instance.fs, fd, &status);
     if (result < 0)
     {
-        FSPIFFS_ERROR("Failed to get status of file %s, errno %d", file_name, SPIFFS_errno(&instance.fs));
+        FSPIFFS_ERROR("Failed to get status of file %s, errno %d", create_file_name, SPIFFS_errno(&instance.fs));
         ret = FSPIFFS_OPS_OPEN_FILE_FAILED;
         goto err_exit;
     }
 
-    if (0 != strcmp(status.name, file_name))
+    if (0 != strcmp(status.name, create_file_name))
     {
-        FSPIFFS_ERROR("Created file name %s != %s", status.name, file_name);
+        FSPIFFS_ERROR("Created file name %s != %s", status.name, create_file_name);
         ret = FSPIFFS_OPS_OPEN_FILE_FAILED;
         goto err_exit;
     }
@@ -258,31 +250,31 @@ int FSpiffsOpsCreateFile(const char *file_name)
         goto err_exit;
     }
 
-    vPrintf("File %s created successfully.\r\n", file_name);
+    FSPIFFS_INFO("File %s created successfully.\r\n", create_file_name);
 
 err_exit:
     (void)SPIFFS_close(&instance.fs, fd);
     return ret;
 }
 
-int FSpiffsOpsWriteFile(const char *file_name, const char *str)
+int FSpiffsOpsWriteFile(const char *write_file_name, const char *str)
 {
-    FASSERT((file_name) && (strlen(file_name) > 0));
+    FASSERT((write_file_name) && (strlen(write_file_name) > 0));
     FASSERT(str);
     int ret = FSPIFFS_OPS_OK;
     const u32 wr_len = strlen(str) + 1;
 
-    spiffs_file fd = SPIFFS_open(&instance.fs, file_name, SPIFFS_RDWR | SPIFFS_TRUNC, 0);
+    spiffs_file fd = SPIFFS_open(&instance.fs, write_file_name, SPIFFS_RDWR | SPIFFS_TRUNC, 0);
     if (0 > fd)
     {
-        FSPIFFS_ERROR("Failed to open file %s, errno %d", file_name, SPIFFS_errno(&instance.fs));
+        FSPIFFS_ERROR("Failed to open file %s, errno %d", write_file_name, SPIFFS_errno(&instance.fs));
         return FSPIFFS_OPS_OPEN_FILE_FAILED;
     }
 
     int result = SPIFFS_write(&instance.fs, fd, (void *)str, wr_len);
     if (result < 0)
     {
-        FSPIFFS_ERROR("Failed to write file %s, errno %d", file_name, SPIFFS_errno(&instance.fs));
+        FSPIFFS_ERROR("Failed to write file %s, errno %d", write_file_name, SPIFFS_errno(&instance.fs));
         ret = FSPIFFS_OPS_WRITE_FILE_FAILED;
         goto err_exit;
     }
@@ -293,7 +285,7 @@ int FSpiffsOpsWriteFile(const char *file_name, const char *str)
     result = SPIFFS_fstat(&instance.fs, fd, &status);
     if (result < 0)
     {
-        FSPIFFS_ERROR("Failed to get status of file %s, errno %d", file_name, SPIFFS_errno(&instance.fs));
+        FSPIFFS_ERROR("Failed to get status of file %s, errno %d", write_file_name, SPIFFS_errno(&instance.fs));
         ret = FSPIFFS_OPS_WRITE_FILE_FAILED;
         goto err_exit;
     }
@@ -307,15 +299,15 @@ int FSpiffsOpsWriteFile(const char *file_name, const char *str)
 
     /* flush all pending writes from cache to flash */
     (void)SPIFFS_fflush(&instance.fs, fd);
-    vPrintf("Write file %s with %d bytes successfully.\r\n", file_name, wr_len);
+    FSPIFFS_INFO("Write file %s with %d bytes successfully.\r\n", write_file_name, wr_len);
 err_exit:
     (void)SPIFFS_close(&instance.fs, fd);
     return ret;
 }
 
-int FSpiffsOpsReadFile(const char *file_name)
+int FSpiffsOpsReadFile(const char *read_file_name)
 {
-    FASSERT((file_name) && (strlen(file_name) > 0));
+    FASSERT((read_file_name) && (strlen(read_file_name) > 0));
     int ret = FSPIFFS_OPS_OK;
     int result = SPIFFS_OK;
 
@@ -332,10 +324,10 @@ int FSpiffsOpsReadFile(const char *file_name)
 
     /* open the file in read-only mode */
     open_flags = SPIFFS_RDWR;
-    spiffs_file fd = SPIFFS_open(&instance.fs, file_name, open_flags, 0);
+    spiffs_file fd = SPIFFS_open(&instance.fs, read_file_name, open_flags, 0);
     if (0 > fd)
     {
-        FSPIFFS_ERROR("Failed to open file %s, errno %d", file_name, SPIFFS_errno(&instance.fs));
+        FSPIFFS_ERROR("Failed to open file %s, errno %d", read_file_name, SPIFFS_errno(&instance.fs));
         return FSPIFFS_OPS_OPEN_FILE_FAILED;
     }
 
@@ -344,7 +336,7 @@ int FSpiffsOpsReadFile(const char *file_name)
     result = SPIFFS_fstat(&instance.fs, fd, &status);
     if (result < 0)
     {
-        FSPIFFS_ERROR("Failed to get status of file %s, errno %d", file_name, SPIFFS_errno(&instance.fs));
+        FSPIFFS_ERROR("Failed to get status of file %s, errno %d", read_file_name, SPIFFS_errno(&instance.fs));
         ret = FSPIFFS_OPS_OPEN_FILE_FAILED;
         goto err_exit;
     }
@@ -352,7 +344,7 @@ int FSpiffsOpsReadFile(const char *file_name)
     s32_t offset = SPIFFS_lseek(&instance.fs, fd, 0, SPIFFS_SEEK_END);
     if ((s32_t)status.size != offset)
     {
-        FSPIFFS_ERROR("File %s spiffs:%ld != fs:%ld", file_name, status.size, offset);
+        FSPIFFS_ERROR("File %s spiffs:%ld != fs:%ld", read_file_name, status.size, offset);
         ret = FSPIFFS_OPS_OPEN_FILE_FAILED;
         goto err_exit;
     }
@@ -372,12 +364,12 @@ int FSpiffsOpsReadFile(const char *file_name)
     s32_t read_bytes = SPIFFS_read(&instance.fs, fd, (void *)fspiffs_rd_buf, read_len);
     if (read_bytes < 0)
     {
-        FSPIFFS_ERROR("Failed to read file %s, errno %d", file_name, SPIFFS_errno(&instance.fs));
+        FSPIFFS_ERROR("Failed to read file %s, errno %d", read_file_name, SPIFFS_errno(&instance.fs));
         ret = FSPIFFS_OPS_READ_FILE_FAILED;
         goto err_exit;
     }
 
-    vPrintf("Read %s success, str = %s\n", file_name, fspiffs_rd_buf);
+    FSPIFFS_INFO("Read %s success, str = %s\n", read_file_name, fspiffs_rd_buf);
 
 err_exit :
     /* close file */
@@ -387,24 +379,20 @@ err_exit :
 }
 
 
-static void FFreeRTOSQspiSpiffsInitTask(void *pvParameters)
+static FError QspiSpiffsInit(void)
 {
+    FError init_ret = FSPIFFS_OPS_INIT_FAILED;
     int result = 0;
 
     if (TRUE == spiffs_inited)
     {
         FSPIFFS_WARN("Spiffs is already initialized.");
-        return;
+        return FSPIFFS_OPS_ALREADY_INITED;
     }
 
-    /* The qspi_id to use is passed in via the parameter.
-    Cast this to a qspi_id pointer. */
-    u32 qspi_id = (u32)(uintptr)pvParameters;
-    printf("qspi_id: %d\n", qspi_id);
     FIOMuxInit();
-#if defined(CONFIG_TARGET_E2000)
-    FIOPadSetQspiMux(qspi_id, FQSPI_CS_0);
-    FIOPadSetQspiMux(qspi_id, FQSPI_CS_1);
+#if defined(CONFIG_E2000D_DEMO_BOARD)
+    FIOPadSetQspiMux(FSPI0_ID, FQSPI_CS_0);
 #endif
 
     memset(&config, 0, sizeof(config));
@@ -420,7 +408,7 @@ static void FFreeRTOSQspiSpiffsInitTask(void *pvParameters)
     if (FSPIFFS_PORT_OK != result)
     {
         FSPIFFS_ERROR("Initialize spiffs failed.");
-        return;
+        return FSPIFFS_OPS_INIT_FAILED;
     }
 
     FSpiffsOpsMount(FSPIFFS_IF_FORMAT);
@@ -433,156 +421,124 @@ static void FFreeRTOSQspiSpiffsInitTask(void *pvParameters)
 
     FSPIFFS_INFO("Spiffs init successfully.");
 
-    for (int i = 0; i < READ_WRITE_TASK_NUM; i++)
-    {
-        xSemaphoreGive(xCountingSemaphore);
-    }
-
-    vTaskDelete(NULL);
-
+    return FSPIFFS_OPS_OK;
 }
 
-static void FFreeRTOSQspiSpiffsWriteReadTask(void *pvParameters)
+static FError QspiSpiffsWriteRead(void)
 {
-    const char *pcTaskName = (char *) pvParameters;
-    const TickType_t xDelay = pdMS_TO_TICKS(TASK_DELAY_MS);
     FError ret = FT_SUCCESS;
     char *string = "spiffs qspi write times";
     static int i = 0;
     memset(fspiffs_wr_buf, 0, FSPIFFS_RW_BUF_SIZE);
     
-    xSemaphoreTake(xCountingSemaphore, portMAX_DELAY);
-    /* As per most tasks, this task is implemented in an infinite loop. */
-    for (;;)
+    /* Print out the name of this task. */
+    FSPIFFS_INFO(xString);
+    i++;
+    sprintf(fspiffs_wr_buf, "%s-%d", string, i);
+    FSPIFFS_INFO("Write to %s, str = %s\n", file_name, fspiffs_wr_buf);
+    
+    FSpiffsOpsWriteFile(file_name, fspiffs_wr_buf);
+    FSpiffsOpsReadFile(file_name);
+
+    if (0 != strcmp(fspiffs_wr_buf, fspiffs_rd_buf))
     {
-        /* Print out the name of this task. */
-        vPrintf(pcTaskName);
-        i++;
-        sprintf(fspiffs_wr_buf, "%s-%d", string, i);
-        vPrintf("Write to %s, str = %s\n", file_name, fspiffs_wr_buf);
-        
-        FSpiffsOpsWriteFile(file_name, fspiffs_wr_buf);
-        FSpiffsOpsReadFile(file_name);
-
-        if (0 != strcmp(fspiffs_wr_buf, fspiffs_rd_buf))
-        {
-            FSPIFFS_ERROR("Read and write data are not equal!!!!\nwrite data:%s ,read data:%s\n", fspiffs_wr_buf, fspiffs_rd_buf);
-            vTaskDelete(NULL);
-        }
-        else
-        {
-            printf("Successfully, read and write data are equal.\n\n");
-        }
-        /* Delay for a period.  This time a call to vTaskDelay() is used which
-        places the task into the Blocked state until the delay period has
-        expired.  The parameter takes a time specified in 'ticks', and the
-        pdMS_TO_TICKS() macro is used (where the xDelay constant is
-        declared) to convert TASK_DELAY_MS milliseconds into an equivalent time in
-        ticks. */
-        vTaskDelay(xDelay);
-    }
-}
-
-static void prvOneShotTimerCallback(TimerHandle_t xTimer)
-{
-    /* Output a string to show the time at which the callback was executed. */
-    vPrintf("One-shot timer callback executing, delete QspiSpiffs ReadTask and WriteTask.\r\n");
-
-    FFreeRTOSQspiSpiffsDelete();
-}
-
-
-BaseType_t FFreeRTOSQspiSpiffsCreate(u32 qspi_id)
-{
-    BaseType_t xReturn = pdPASS;/* 定义一个创建信息返回值，默认为 pdPASS */
-    BaseType_t xTimerStarted = pdPASS;
-
-    xCountingSemaphore = xSemaphoreCreateCounting(READ_WRITE_TASK_NUM, 0);
-    if (xCountingSemaphore == NULL)
-    {
-        printf("FFreeRTOSQspiSpiffsCreate xCountingSemaphore create failed.\r\n");
-        return pdFAIL;
-    }
-
-    taskENTER_CRITICAL(); /*进入临界区*/
-
-    xReturn = xTaskCreate((TaskFunction_t)FFreeRTOSQspiSpiffsInitTask,  /* 任务入口函数 */
-                          (const char *)"FFreeRTOSQspiSpiffsInitTask",/* 任务名字 */
-                          (uint16_t)4096,  /* 任务栈大小 */
-                          (void *)(uintptr)qspi_id,/* 任务入口函数参数 */
-                          (UBaseType_t)1,  /* 任务的优先级 */
-                          NULL); /* 任务控制 */
-
-    xReturn = xTaskCreate((TaskFunction_t)FFreeRTOSQspiSpiffsWriteReadTask,  /* 任务入口函数 */
-                          (const char *)"FFreeRTOSQspiSpiffsWriteReadTask",/* 任务名字 */
-                          (uint16_t)4096,  /* 任务栈大小 */
-                          (void *)xString,/* 任务入口函数参数 */
-                          (UBaseType_t)configMAX_PRIORITIES - 1, /* 任务的优先级 */
-                          (TaskHandle_t *)&qspi_rw_handle); /* 任务控制 */
-
-    /* Create the one shot software timer, storing the handle to the created
-    software timer in xOneShotTimer. */
-    xOneShotTimer = xTimerCreate("OneShot Software Timer",       /* Text name for the software timer - not used by FreeRTOS. */
-                                 ONE_SHOT_TIMER_PERIOD,        /* The software timer's period in ticks. */
-                                 pdFALSE,                      /* Setting uxAutoRealod to pdFALSE creates a one-shot software timer. */
-                                 0,                            /* This example does not use the timer id. */
-                                 prvOneShotTimerCallback);     /* The callback function to be used by the software timer being created. */
-
-    /* Check the timers were created. */
-    if (xOneShotTimer != NULL)
-    {
-        /* Start the software timers, using a block time of 0 (no block time).
-        The scheduler has not been started yet so any block time specified here
-        would be ignored anyway. */
-        xTimerStarted = xTimerStart(xOneShotTimer, 0);
-
-        /* The implementation of xTimerStart() uses the timer command queue, and
-        xTimerStart() will fail if the timer command queue gets full.  The timer
-        service task does not get created until the scheduler is started, so all
-        commands sent to the command queue will stay in the queue until after
-        the scheduler has been started.  Check both calls to xTimerStart()
-        passed. */
-        if (xTimerStarted != pdPASS)
-        {
-            vPrintf("CreateSoftwareTimerTasks xTimerStart failed. \r\n");
-        }
+        FSPIFFS_ERROR("Read and write data are not equal!!!!\nwrite data:%s ,read data:%s\n", fspiffs_wr_buf, fspiffs_rd_buf);
+        return FSPIFFS_OPS_DATA_FAILED;
     }
     else
     {
-        vPrintf("CreateSoftwareTimerTasks xTimerCreate failed. \r\n");
+        printf("Successfully, read and write data are equal.\n\n");
     }
 
-    taskEXIT_CRITICAL();
+    return FSPIFFS_OPS_OK;
+}
 
-    return xReturn;
+
+static void FFreeRTOSQspiSpiffsWriteThenReadTask(void *pvParameters)
+{
+    FError ret = FT_SUCCESS;
+    int task_res = FSPIFFS_OPS_OK;
+
+    /* QspiSpiffs初始化 */
+    ret = QspiSpiffsInit();
+    if (ret != FT_SUCCESS)
+    {
+        task_res = FSPIFFS_OPS_INIT_FAILED;
+        FSPIFFS_ERROR("QspiSpiffsInit failed.");
+        goto task_exit;
+    }
+    /* QspiSpiffs写文件读文件 */
+    ret = QspiSpiffsWriteRead();
+    if (ret != FT_SUCCESS)
+    {
+        task_res = FSPIFFS_OPS_DATA_FAILED;
+        FSPIFFS_ERROR("QspiSpiffsWriteRead failed.");
+        goto task_exit;
+    }
+    /* 去初始化 */
+    FFreeRTOSQspiSpiffsDelete();
+
+task_exit:
+    xQueueSend(xQueue, &task_res, 0);
+    vTaskDelete(NULL);    
+}
+
+int FFreeRTOSQspiSpiffsCreate(void)
+{
+    BaseType_t xReturn = pdPASS;/* 定义一个创建信息返回值，默认为 pdPASS */
+    int task_res = FSPIFFS_OPS_UNKNOWN_STATE;
+
+    xQueue = xQueueCreate(1, sizeof(int)); /* 创建消息队列 */
+    if (xQueue == NULL)
+    {
+        FSPIFFS_ERROR("xQueue create failed.");
+        goto exit;
+    }    
+
+    xReturn = xTaskCreate((TaskFunction_t)FFreeRTOSQspiSpiffsWriteThenReadTask,  /* 任务入口函数 */
+                          (const char *)"FFreeRTOSQspiSpiffsWriteThenReadTask",/* 任务名字 */
+                          (uint16_t)4096,  /* 任务栈大小 */
+                          NULL,/* 任务入口函数参数 */
+                          (UBaseType_t)QSPI_SPIFFS_WRITE_READ_TASK_PRIORITY, /* 任务的优先级 */
+                          NULL); /* 任务控制 */
+    if (xReturn == pdFAIL)
+    {
+        FSPIFFS_ERROR("xTaskCreate FFreeRTOSQspiSpiffsWriteThenReadTask failed.");
+        goto exit;
+    }
+
+    xReturn = xQueueReceive(xQueue, &task_res, TIMER_OUT);
+    if (xReturn == pdFAIL)
+    {
+        FSPIFFS_ERROR("xQueue receive timeout.");
+        goto exit;
+    }    
+
+exit:
+    if (xQueue != NULL)
+    {
+        vQueueDelete(xQueue);
+    }
+
+    if (task_res != FSPIFFS_OPS_OK)
+    {
+        printf("%s@%d: Qspi_spiffs write and read example [failure], task_res = %d\r\n", __func__, __LINE__, task_res);
+        return task_res;
+    }
+    else
+    {
+        printf("%s@%d: Qspi_spiffs write and read example [success].\r\n", __func__, __LINE__);
+        return task_res;
+    }
 }
 
 static void FFreeRTOSQspiSpiffsDelete(void)
 {
-    BaseType_t xReturn = pdPASS;
-    FIOMuxDeInit();/*deinit iomux */
+    /*deinit iomux */
+    FIOMuxDeInit();
     FSpiffsDeInitialize(&instance);
-
-    if (qspi_rw_handle)
-    {
-        vTaskDelete(qspi_rw_handle);
-        vPrintf("Delete FFreeRTOSQspiSpiffsWriteReadTask successfully.\r\n");
-    }
-
-    /* delete count sem */
-    vSemaphoreDelete(xCountingSemaphore);
-
-    /* delete timer */
-    xReturn = xTimerDelete(xOneShotTimer, 0);
-    if (xReturn != pdPASS)
-    {
-        vPrintf("OneShot Software Timer Delete failed.\r\n");
-    }
-    else
-    {
-        vPrintf("OneShot Software Timer Delete successfully.\r\n");
-    }
-
+    spiffs_inited = FALSE;
+    return;
 }
 
 

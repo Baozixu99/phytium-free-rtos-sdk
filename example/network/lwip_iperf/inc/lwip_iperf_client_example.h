@@ -13,13 +13,14 @@
  * 
  * FilePath: lwip_iperf_client_example.h
  * Created Date: 2023-10-18 14:37:22
- * Last Modified: 2023-10-24 14:23:07
+ * Last Modified: 2024-04-28 10:24:27
  * Description:  This file is for lwip iperf client example function definition.
  * 
  * Modify History:
  *  Ver      Who         Date               Changes
  * -----  ----------   --------  ---------------------------------
  *  1.0   liuzhihong  2023/10/18          first release
+ *  2.0   liuzhihong  2024/04/28   add no letter shell mode, adapt to auto-test system
  */
 #ifndef  LWIP_IPERF_CLIENT_EXAMPLE_H
 #define  LWIP_IPERF_CLIENT_EXAMPLE_H
@@ -42,7 +43,8 @@ extern "C"
 
 /************************** Function Prototypes ******************************/
 /* entry function for lwip iperf client example */
-int LwipIperfClientCreate(void);
+
+int FFreeRTOSLwipIperfClientTaskCreate(void);
 void LwipIperfClientDeinit(void);
 
 #ifdef __cplusplus

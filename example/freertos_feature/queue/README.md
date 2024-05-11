@@ -5,11 +5,16 @@
 本例程示范了freertos环境下的queue的使用。
 队列又称消息队列，是一种常用于任务间通信的数据结构，队列可以在任务与任务间、中断和任务间传递信息，实现了任务接收来自其他任务或中断的不固定长度的消息，任务能够从队列里面读取消息，当队列中的消息是空时，读取消息的任务将被阻塞，用户还可以指定阻塞的任务时间 xTicksToWait，在这段时间中，如果队列为空，该任务将保持阻塞状态以等待队列数据有效。当队列中有新消息时，被阻塞的任务会被唤醒并处理新消息；当等待的时间超过了指定的阻塞时间，即使队列中尚无有效数据，任务也会自动从阻塞态转为就绪态。消息队列是一种异步的通信方式。
 
+本例程展示了队列的三种使用方法:
+1. 使用队列传输int类型数据(queue_int_send_recv.c)
+2. 使用队列传输结构体数据(queue_struct_send_recv.c)
+3. 队列集的使用(queue_set.c)
+
 ## 2. 如何使用例程
 
 本例程需要用到
 - Phytium开发板（FT2000-4/D2000/E2000D/E2000Q/PHYTIUMPI）
-- [Phytium freeRTOS SDK](https://gitee.com/phytium_embedded/phytium-free-rtos-sdk)
+- [Phytium FreeRTOS SDK](https://gitee.com/phytium_embedded/phytium-free-rtos-sdk)
 - [Phytium standalone SDK](https://gitee.com/phytium_embedded/phytium-standalone-sdk)
 ### 2.1 硬件配置方法
 
@@ -77,20 +82,20 @@ bootelf -p 0x90100000
 ### 2.4 输出与实验现象
 
 - 系统进入后，输入```queue```查看指令说明
-- 输入```queue int_cre```，启动queue的int类型数据的收发任务测试
-- 输入```queue int_del```，删除queue的int类型数据的收发任务测试
 
-![int](./figs/queue_int.png)
+![queue_cmd](./figs/queue_cmd.png)
+
+- 输入```queue int_cre```，启动queue的int类型数据的收发任务测试
+
+![int_cre](./figs/int_cre.png)
 
 - 输入```queue struct_cre```，启动queue的struct类型数据的收发任务测试
-- 输入```queue struct_del```，删除queue的struct类型数据的收发任务测试
 
-![struct](./figs/queue_struct.png)
+![struct_cre](./figs/struct_cre.png)
 
 - 输入```queue set_cre```，启动queue的set函数使用，收发任务测试
-- 输入```queue set_del```，删除queue的set函数使用，收发任务测试
 
-![set](./figs/queue_set.png)
+![set_cre](./figs/set_cre.png)
 
 - 测试任务能够能正常创建和删除，输入```ps```查看任务状态正常，即测试正常
 

@@ -38,8 +38,6 @@
 #include "fmio_hw.h"
 #include "fmio.h"
 
-static FMioCtrl i2c_master;
-static FMioCtrl i2c_slave;
 static FFreeRTOSI2c os_i2c[FMIO_NUM] = {0};
 
 /* virtual eeprom memory */
@@ -77,7 +75,7 @@ static void FI2cOsResetInterrupt(FI2c *pctrl)
 
 /**
  * @name: FFreeRTOSI2cInit
- * @msg: init freeRTOS i2c instance
+ * @msg: init FreeRTOS i2c instance
  * @return {FFreeRTOSI2c *}pointer to os i2c instance
  * @param {u32} instance_id,i2c instance_id
  */
@@ -100,29 +98,20 @@ FFreeRTOSI2c *FFreeRTOSI2cInit(u32 instance_id, u32 work_mode, u32 slave_address
     }
 
     const FMioConfig *mio_config_p ;
-    FMioCtrl *pctrl;
-    if (work_mode == FI2C_MASTER)
-    {
-        pctrl = &i2c_master;
-    }
-    else
-    {
-        pctrl = &i2c_slave;
-    }
-
+    FMioCtrl pctrl;
+    /*获取任意I2C控制器默认配置，作为MIO复用为I2C默认配置*/
     i2c_config = *FI2cLookupConfig(0);
-
     mio_config_p = FMioLookupConfig(instance_id);
+    
     if (NULL == mio_config_p)
     {
         vPrintf("Config of mio_i2c instance %d non found.\r\n", instance_id);
         return NULL;
     }
 
+    pctrl.config = *mio_config_p;
 
-    pctrl->config = *mio_config_p;
-
-    err = FMioFuncInit(pctrl, FMIO_FUNC_SET_I2C);
+    err = FMioFuncInit(&pctrl, FMIO_FUNC_SET_I2C);
     if (err != FREERTOS_I2C_SUCCESS)
     {
         vPrintf("Mio I2c initialize is error.\r\n ");
@@ -133,19 +122,16 @@ FFreeRTOSI2c *FFreeRTOSI2cInit(u32 instance_id, u32 work_mode, u32 slave_address
     i2c_config.work_mode = work_mode;
     i2c_config.slave_addr = slave_address;
     i2c_config.speed_rate = speed_rate;
+    i2c_config.instance_id = pctrl.config.instance_id;
+    i2c_config.base_addr = pctrl.config.func_base_addr;
+    i2c_config.irq_num = pctrl.config.irq_num;
 
-    if (work_mode == FI2C_MASTER)/* 主机中断优先级低于从机接收 */
+    if (work_mode == FI2C_MASTER)/* 主机中断优先级高于从机接收 */
     {
-        i2c_config.instance_id = i2c_master.config.instance_id;
-        i2c_config.base_addr = i2c_master.config.func_base_addr;
-        i2c_config.irq_num = i2c_master.config.irq_num;
         i2c_config.irq_prority = I2C_MASTER_IRQ_PRORITY;
     }
-    else
+    else if (work_mode == FI2C_SLAVE)
     {
-        i2c_config.instance_id = i2c_slave.config.instance_id;
-        i2c_config.base_addr = i2c_slave.config.func_base_addr;
-        i2c_config.irq_num = i2c_slave.config.irq_num;
         i2c_config.irq_prority = I2C_SLAVE_IRQ_PRORITY;
     }
 
@@ -160,12 +146,13 @@ FFreeRTOSI2c *FFreeRTOSI2cInit(u32 instance_id, u32 work_mode, u32 slave_address
     {
         FI2cOsSetupInterrupt(&os_i2c[instance_id].i2c_device);
     }
+
     return (&os_i2c[instance_id]);
 }
 
 /**
  * @name: FFreeRTOSI2cDeinit
- * @msg: deinit freeRTOS i2c instance, include deinit i2c and delete mutex semaphore
+ * @msg: deinit FreeRTOS i2c instance, include deinit i2c and delete mutex semaphore
  * @return {*}无
  * @param {FFreeRTOSI2c} *os_i2c_p,pointer to os i2c instance
  */
@@ -173,8 +160,7 @@ void FFreeRTOSI2cDeinit(FFreeRTOSI2c *os_i2c_p)
 {
     FASSERT(os_i2c_p);
     FASSERT(os_i2c_p->wr_semaphore != NULL);
-    FMioCtrl *pctrl = &i2c_master;
-    FMioFuncDeinit(pctrl);
+
     /* 避免没有关闭中断，存在触发 */
     InterruptMask(os_i2c_p->i2c_device.config.irq_num);
     FI2cDeInitialize(&os_i2c_p->i2c_device);

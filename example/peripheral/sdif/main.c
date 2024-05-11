@@ -16,21 +16,54 @@
  * LastEditTime: 2022-06-17 08:17:59
  * Description:  This file is for sdio test main entry.
  *
- * Modify History:
- *  Ver   Who        Date         Changes
- * ----- ------     --------    --------------------------------------
- *  1.0  zhugengyu  2022/8/26    first commit
+ * Modify History:
+ *  Ver      Who           Date         Changes
+ * -----    ------       --------      --------------------------------------
+ *  1.0    zhugengyu     2022/8/26     first commit
+ *  2.0    liqiaozhong   2024/4/22     add no letter shell mode, adapt to auto-test system
  */
 
+#include <stdio.h>
+
+#include "FreeRTOS.h"
+
+#include "sdkconfig.h"
+
+#ifdef CONFIG_USE_LETTER_SHELL
 #include "shell.h"
 #include "shell_port.h"
-#include <stdio.h>
+#else
+#include "task.h"
+#include "sdif_example.h"
+
+#define GDMA_EXAMPLE_TASK_PRIORITY 2
+
+void SdifExampleTaskEntry()
+{
+    /* example functions */
+    FFreeRTOSTfWriteRead();
+    FFreeRTOSEmmcWriteRead();
+
+    /* end flag */
+    printf("[test_end]\r\n");
+    vTaskDelete(NULL);
+}
+#endif
 
 int main(void)
 {
-    BaseType_t ret;
-
-    ret = LSUserShellTask() ;
+    BaseType_t ret = pdPASS;
+#ifdef CONFIG_USE_LETTER_SHELL
+    ret = LSUserShellTask();
+#else
+    /* used in no-letter-shell mode */
+    ret = xTaskCreate((TaskFunction_t)SdifExampleTaskEntry,    /* 任务入口函数 */
+                      (const char *)"SdifExampleTaskEntry",    /* 任务名字 */
+                      (uint16_t)4096,                          /* 任务栈大小 */
+                      NULL,                                    /* 任务入口函数参数 */
+                      (UBaseType_t)GDMA_EXAMPLE_TASK_PRIORITY, /* 任务优先级 */
+                      NULL);                                   /* 任务句柄 */
+#endif
     if (ret != pdPASS)
     {
         goto FAIL_EXIT;
@@ -40,6 +73,6 @@ int main(void)
     while (1);
 
 FAIL_EXIT:
-    printf("Failed,the ret value is 0x%x. \r\n", ret);
-    return 0;
+    printf("SDIF example failed in main.c, the ret value is 0x%x. \r\n", ret);
+    return -2;
 }

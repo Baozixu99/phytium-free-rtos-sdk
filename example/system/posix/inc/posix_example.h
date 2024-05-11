@@ -26,14 +26,15 @@
 #ifndef POSIX_EXAMPLE_H
 #define POSIX_EXAMPLE_H
 
+#include "FreeRTOS.h"
+
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
 /* POSIX Demo task */
-void CreatePOSIXDemoTasks(void);
-void CreateThreadDemoTasks(void);
+BaseType_t CreatePOSIXDemoTasks(void);
 
 #ifdef __cplusplus
 }

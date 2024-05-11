@@ -13,7 +13,7 @@
  * 
  * FilePath: main.c
  * Created Date: 2022-02-25 13:25:14
- * Last Modified: 2024-03-05 11:30:19
+ * Last Modified: 2024-05-06 17:56:58
  * Description:  This file is for main
  * 
  * Modify History: 
@@ -45,7 +45,7 @@ int main(void)
     ret = rpmsg_listening_func();
     if(ret != pdPASS)
         goto FAIL_EXIT;
-    OPENAMP_MAIN_DEBUG_I("Creat task OK!");
+    OPENAMP_MAIN_DEBUG_I("Create task OK!");
 
     vTaskStartScheduler(); /* 启动任务，开启调度 */   
     while (1); /* 正常不会执行到这里 */

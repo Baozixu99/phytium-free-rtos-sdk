@@ -7,11 +7,10 @@
 #include "finterrupt.h"
 #include "fcpu_info.h"
 
-
-static xTaskHandle xtask1_handle;
-static xTaskHandle xtask2_handle;
-
 #define TASK_STACK_SIZE         1024
+#define PERIODIC_TASK_PRIORITY  3
+#define SEM_TAKE_TASK_PRIORITY  4
+#define BIN_SEM_EXAMPLE_TIMEOUT pdMS_TO_TICKS(10000U)
 
 /* The interrupt number to use for the software interrupt generation.  This
 could be any unused number.  In this case the first chip level (non system)
@@ -26,6 +25,15 @@ numeric values represent low priority values, which can be confusing as it is
 counter intuitive. */
 #define INTERRUPT_PRIORITY  IRQ_PRIORITY_VALUE_12
 
+enum
+{
+    BIN_SEM_EXAMPLE_SUCCESS = 0,
+    BIN_SEM_EXAMPLE_UNKNOWN_STATE,
+    BIN_SEM_EXAMPLE_FAILURE,          
+};
+
+static QueueHandle_t xQueue = NULL;
+
 /* Macro to force an interrupt. */
 static void vTriggerInterrupt(void);
 
@@ -35,12 +43,20 @@ xSemaphoreHandle xBinarySemaphore;
 
 void vPeriodicTask(void *pvParameters)
 {
-    for (;;)
+    int task_res = BIN_SEM_EXAMPLE_UNKNOWN_STATE;
+
+    vTaskDelay(500 / portTICK_RATE_MS);
+    printf("Bin Periodic task - Generate an interrupt.\n");
+    vTriggerInterrupt();
+    printf("Bin Periodic task - Interrupt generated.\n");
+    
+    if (uxSemaphoreGetCount(xBinarySemaphore) == 0)
     {
-        vTaskDelay(5000 / portTICK_RATE_MS);
-        printf("Bin Periodic task - Generate an interrupt.\n");
-        vTriggerInterrupt();
+        task_res = BIN_SEM_EXAMPLE_SUCCESS;
+        xQueueSend(xQueue, &task_res, 0);
     }
+
+    vTaskDelete(NULL);
 }
 
 void vSemTakeTask(void *pvParameters)
@@ -50,7 +66,14 @@ void vSemTakeTask(void *pvParameters)
     {
         xSemaphoreTake(xBinarySemaphore, portMAX_DELAY);
         printf("Bin Handler task - Processing event.\n");
+
+        if (uxSemaphoreGetCount(xBinarySemaphore) == 0)
+        {
+            break;
+        }
     }
+
+    vTaskDelete(NULL);
 }
 
 static void vInterruptHandler(s32 vector, void *param)
@@ -66,7 +89,6 @@ static void vInterruptHandler(s32 vector, void *param)
 static void prvSetupSoftwareInterrupt()
 {
     GetCpuId(&cpu_id);
-    vPrintf("cpu_id is %d \r\n", cpu_id);
 
     /* The interrupt service routine uses an (interrupt safe) FreeRTOS API
     function so the interrupt priority must be at or below the priority defined
@@ -86,31 +108,48 @@ static void vTriggerInterrupt(void)
 }
 
 
-void CreateBinarySemTasks(void)
+int CreateBinarySemTasks(void)
 {
+    BaseType_t xReturn = pdPASS; /* 定义一个创建信息返回值，默认为 pdPASS */
+    int task_res = BIN_SEM_EXAMPLE_UNKNOWN_STATE;
+
+    xQueue = xQueueCreate(1, sizeof(int)); /* 创建消息队列 */
+    if (xQueue == NULL)
+    {
+        vPrintString("xQueue create failed.");
+        goto exit;
+    }
+
     vSemaphoreCreateBinary(xBinarySemaphore);
 
     if (xBinarySemaphore != NULL)
     {
         prvSetupSoftwareInterrupt();
-        xTaskCreate(vSemTakeTask,  "BinHandler",  TASK_STACK_SIZE, NULL, 3, &xtask1_handle);
-        xTaskCreate(vPeriodicTask, "BinPeriodic", TASK_STACK_SIZE, NULL, 1, &xtask2_handle);
+        xTaskCreate(vSemTakeTask,  "BinHandler",  TASK_STACK_SIZE, NULL, SEM_TAKE_TASK_PRIORITY, NULL);
+        xTaskCreate(vPeriodicTask, "BinPeriodic", TASK_STACK_SIZE, NULL, PERIODIC_TASK_PRIORITY, NULL);
     }
 
-}
-
-void DeleteBinarySemTasks(void)
-{
-    if (xtask1_handle)
+    xReturn = xQueueReceive(xQueue, &task_res, BIN_SEM_EXAMPLE_TIMEOUT);
+    if (xReturn == pdFAIL)
     {
-        vTaskDelete(xtask1_handle);
-        printf("Bin Handler deletion \r\n");
+        vPrintString("xQueue receive timeout.");
+        goto exit;
     }
 
-    if (xtask2_handle)
+exit:
+    if (xQueue != NULL)
     {
-        vTaskDelete(xtask2_handle);
-        printf("Bin Periodic deletion \r\n");
+        vQueueDelete(xQueue);
     }
 
+    if (task_res != BIN_SEM_EXAMPLE_SUCCESS)
+    {
+        vPrintString("Binary semaphore feature example [failure]");
+        return task_res;
+    }
+    else
+    {
+        vPrintString("Binary semaphore feature example [success].");
+        return task_res;
+    }
 }

@@ -20,106 +20,189 @@
  *  Ver   Who        Date         Changes
  * ----- ------     --------    --------------------------------------
  * 1.0  wangxiaodong 2023/06/23	  first release
+ * 1.1  zhangyan     2024/4/29    add no letter shell mode, adapt to auto-test system
  */
 
 #include <stdio.h>
 #include "FreeRTOSConfig.h"
 #include "FreeRTOS.h"
 #include "task.h"
+#include "queue.h"
 #include "fatomic.h"
-#include "fassert.h"
 #include "fkernel.h"
 
-static xTaskHandle xtask_handle;
-
+#define TIMER_OUT (pdMS_TO_TICKS(1000UL))
 #define TASK_STACK_SIZE         1024
+#define ATOMIC_TEST_TASK_PRIORITY 3
 
-
-void FAtomicExample(void *pvParameters)
+enum
 {
+    ATOMIC_TEST_SUCCESS = 0,
+    ATOMIC_TEST_UNKNOWN = 1,
+    ATOMIC_TEST_FAILURE = 2,
+};
+static QueueHandle_t xQueue = NULL;
+
+void FAtomicExampleTask(void *pvParameters)
+{
+    int task_res = ATOMIC_TEST_SUCCESS;
     int ret;
     int i = 0;
     u32 count = 0;
     u32 times = 0;
-    for (;;)
+
+    while (i++ < 10)
     {
-        i = 0;
-        count = 0;
-        while (i++ < 10)
-        {
-            ret = FATOMIC_ADD(count, 1);
-        }
-        FASSERT_MSG(count == 10, "FATOMIC_ADD error\r\n");
-
-        i = 0;
-        while (i++ < 10) 
-        {
-            ret = FATOMIC_INC(count);
-        }
-        FASSERT_MSG(count == 20, "FATOMIC_INC error\r\n");
-
-        i = 0;
-        while (i++ < 10) 
-        {
-            ret = FATOMIC_SUB(count, 1);
-        }
-        FASSERT_MSG(count == 10, "FATOMIC_SUB error\r\n");
-
-        i = 0;
-        while (i++ < 10) 
-        {
-            ret = FATOMIC_DEC(count);
-        }
-        FASSERT_MSG(count == 0, "FATOMIC_DEC error\r\n");
-
-        i = 0;
-        count = 0;
-        while (i++ < 16)
-        {
-            ret = FATOMIC_OR(count, BIT(i-1));
-        }
-        FASSERT_MSG(count == 0xFFFF, "FATOMIC_OR error\r\n");
-
-        i = 0;
-        count = 0xFFFF;
-        while (i++ < 16)
-        {
-            ret = FATOMIC_AND(count, ~BIT(i-1));
-        }
-        FASSERT_MSG(count == 0, "FATOMIC_AND error\r\n");
-
-        FATOMIC_CAS_BOOL(count, 0, 1);
-        FASSERT_MSG(count == 1, "FATOMIC_CAS_BOOL error\r\n");
-
-        FATOMIC_CAS_VAL(count, 0xFF, 0);
-        FASSERT_MSG(count == 1, "FATOMIC_CAS_VAL error\r\n");
-
-        FATOMIC_LOCK(count, 1);
-        FASSERT_MSG(count == 1, "FATOMIC_LOCK error\r\n");
-
-        FATOMIC_UNLOCK(count);
-        FASSERT_MSG(count == 0, "FATOMIC_UNLOCK error\r\n");
-
-        printf("Atomic example test success, times = %d!!! \r\n", times++);
-
-        vTaskDelay(1000);
+        ret = FATOMIC_ADD(count, 1);
+    }
+    if (count != 10)
+    {
+        printf("FATOMIC_ADD error\r\n");
+        task_res = ATOMIC_TEST_FAILURE;
+        goto task_exit;
+    }
+    
+    i = 0;
+    while (i++ < 10) 
+    {
+        ret = FATOMIC_INC(count);
+    }
+    if (count != 20)
+    {
+        printf("FATOMIC_INC error\r\n");
+        task_res = ATOMIC_TEST_FAILURE;
+        goto task_exit;
     }
 
-}
-
-
-void CreateAtomicTasks(void)
-{
-    printf("Create Atomic Task \r\n");
-    xTaskCreate(FAtomicExample,   "AtomicPeriodic", TASK_STACK_SIZE, NULL, 6, &xtask_handle);
-
-}
-
-void DeleteAtomicTasks(void)
-{
-    if (xtask_handle)
+    i = 0;
+    while (i++ < 10) 
     {
-        vTaskDelete(xtask_handle);
-        printf("AtomicPeriodic deletion \r\n");
+        ret = FATOMIC_SUB(count, 1);
+    }
+    if (count != 10)
+    {
+        printf("FATOMIC_SUB error\r\n");
+        task_res = ATOMIC_TEST_FAILURE;
+        goto task_exit;
+    }
+
+    i = 0;
+    while (i++ < 10) 
+    {
+        ret = FATOMIC_DEC(count);
+    }
+    if (count != 0)
+    {
+        printf("FATOMIC_DEC error\r\n");
+        task_res = ATOMIC_TEST_FAILURE;
+        goto task_exit;
+    }
+
+    i = 0;
+    count = 0;
+    while (i++ < 16)
+    {
+        ret = FATOMIC_OR(count, BIT(i-1));
+    }
+    if (count != 0xFFFF)
+    {
+        printf("FATOMIC_OR error\r\n");
+        task_res = ATOMIC_TEST_FAILURE;
+        goto task_exit;
+    }
+
+    i = 0;
+    count = 0xFFFF;
+    while (i++ < 16)
+    {
+        ret = FATOMIC_AND(count, ~BIT(i-1));
+    }
+    if (count != 0)
+    {
+        printf("FATOMIC_AND error\r\n");
+        task_res = ATOMIC_TEST_FAILURE;
+        goto task_exit;
+    }
+
+    FATOMIC_CAS_BOOL(count, 0, 1);
+    if (count != 1)
+    {
+        printf("FATOMIC_CAS_BOOL error\r\n");
+        task_res = ATOMIC_TEST_FAILURE;
+        goto task_exit;
+    }
+
+    FATOMIC_CAS_VAL(count, 0xFF, 0);
+    if (count != 1)
+    {
+        printf("FATOMIC_CAS_VAL error\r\n");
+        task_res = ATOMIC_TEST_FAILURE;
+        goto task_exit;
+    }
+
+    FATOMIC_LOCK(count, 1);
+    if (count != 1)
+    {
+        printf("FATOMIC_LOCK error\r\n");
+        task_res = ATOMIC_TEST_FAILURE;
+        goto task_exit;
+    }
+
+    FATOMIC_UNLOCK(count);
+    if (count != 0)
+    {
+        printf("FATOMIC_UNLOCK error\r\n");
+        task_res = ATOMIC_TEST_FAILURE;
+        goto task_exit;
+    }
+
+task_exit:
+    xQueueSend(xQueue, &task_res, 0);
+
+    vTaskDelete(NULL);
+}
+
+BaseType_t FFreeRTOSAtomicTaskCreate(void)
+{
+    BaseType_t xReturn = pdPASS; /* 定义一个创建信息返回值，默认为 pdPASS */
+    int task_res = ATOMIC_TEST_UNKNOWN;
+
+    xQueue = xQueueCreate(1, sizeof(int));
+    if (xQueue == NULL)
+    {
+        printf("xQueue create failed.\r\n");
+        goto exit;
+    }
+
+    xReturn = xTaskCreate((TaskFunction_t)FAtomicExampleTask, /* 任务入口函数 */
+                          (const char *)"FAtomicExampleTask", /* 任务名字 */
+                          (uint16_t)TASK_STACK_SIZE,                            /* 任务栈大小 */
+                          NULL,                                      /* 任务入口函数参数 */
+                          (UBaseType_t)ATOMIC_TEST_TASK_PRIORITY,     /* 任务的优先级 */
+                          NULL);
+    if (xReturn == pdFAIL)
+    {
+        printf("xTaskCreate FAtomicExampleTask failed.");
+        goto exit;
+    }
+
+    xReturn = xQueueReceive(xQueue, &task_res, TIMER_OUT);
+    if (xReturn == pdFAIL)
+    {
+        printf("xQueue receive timeout.\r\n");
+        goto exit;
+    }
+
+exit:
+    vQueueDelete(xQueue);
+    if (task_res != ATOMIC_TEST_SUCCESS)
+    {
+        printf("%s@%d: Atomic test example [failure], task_res = %d\r\n", __func__, __LINE__, task_res);
+        return pdFAIL;
+    }
+    else
+    {
+        printf("%s@%d: Atomic test indirect example [success].\r\n", __func__, __LINE__);
+        return pdTRUE;
     }
 }

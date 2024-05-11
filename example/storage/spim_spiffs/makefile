@@ -22,8 +22,8 @@ USR_BOOT_DIR		?= /mnt/d/tftboot
 
 
 image:
-	$(MAKE) clean
-	$(MAKE) all -j
+	$(MAKE) -s clean
+	$(MAKE) -s all -j
 	@cp ./$(IMAGE_OUT_NAME).elf $(USR_BOOT_DIR)/freertos.elf
 ifdef CONFIG_OUTPUT_BINARY
 	@cp ./$(IMAGE_OUT_NAME).bin $(USR_BOOT_DIR)/freertos.bin

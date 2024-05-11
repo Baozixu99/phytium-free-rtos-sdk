@@ -20,20 +20,50 @@
  *  Ver   Who       Date        Changes
  * ----- ------     --------    --------------------------------------
  * 1.0   huangjin   2023/10/20  first commit
+ * 2.0   huangjin   2024/04/25  add no letter shell mode, adapt to auto-test system
  */
 
+#include <stdio.h>
+#include "FreeRTOS.h"
+
+#ifdef CONFIG_USE_LETTER_SHELL
 #include "shell.h"
 #include "shell_port.h"
-#include <stdio.h>
-#include "canfd_intr_loopback_mode_example.h"
-#include "canfd_polled_loopback_mode_example copy.h"
-#include "canfd_id_filter_example.h"
+#else
+#include "task.h"
+#include "canfd_example.h"
+
+#define CANFD_EXAMPLE_TASK_PRIORITY 2
+
+void CanfdExampleTaskEntry(void *pvParameters)
+{
+    /* example functions */
+    FFreeRTOSCreateCanfdIntrTestTask();
+    FFreeRTOSCreateCanfdPolledTestTask();
+    FFreeRTOSCanfdCreateFilterTestTask();
+
+    /* end flag */
+    printf("[test_end]\r\n");
+    vTaskDelete(NULL);
+}
+#endif
+
 
 int main(void)
 {
-    BaseType_t ret;
+    BaseType_t ret = pdPASS;/* 定义一个创建信息返回值，默认为 pdPASS */
 
-    ret = LSUserShellTask() ;
+#ifdef CONFIG_USE_LETTER_SHELL
+    ret = LSUserShellTask();
+#else
+    /* used in no-letter-shell mode */
+    ret = xTaskCreate((TaskFunction_t)CanfdExampleTaskEntry,  /* 任务入口函数 */
+                          (const char *)"CanfdExampleTaskEntry",/* 任务名字 */
+                          (uint16_t)4096,  /* 任务栈大小 */
+                          NULL,/* 任务入口函数参数 */
+                          (UBaseType_t)CANFD_EXAMPLE_TASK_PRIORITY,  /* 任务的优先级 */
+                          NULL);
+#endif
     if (ret != pdPASS)
     {
         goto FAIL_EXIT;
@@ -43,6 +73,6 @@ int main(void)
     while (1); /* 正常不会执行到这里 */
 
 FAIL_EXIT:
-    printf("failed 0x%x. \r\n", ret);
+    printf("CANFD example failed in main.c, the ret value is 0x%x. \r\n", ret);
     return 0;
 }

@@ -20,6 +20,7 @@
  *  Ver      Who            Date           Changes
  * -----   ------         --------     --------------------------------------
  *  1.0   wangxiaodong    2022/8/9      first release
+ *  2.0   liqiaozhong     2024/4/22     add no letter shell mode, adapt to auto-test system
  */
 
 
@@ -31,8 +32,8 @@ extern "C"
 {
 #endif
 
-/* wdt read and write test */
-BaseType_t FFreeRTOSWdtCreate(u32 id);
+/* wdt feed test */
+int FFreeRTOSWdtCreate(void);
 
 #ifdef __cplusplus
 }

@@ -19,25 +19,48 @@
  * Modify History:
  *  Ver      Who            Date           Changes
  * -----   ------         --------    --------------------------------------
- * 1.0   wangxiaodong    2022/8/9       first release
+ * 1.0   wangxiaodong    2022/8/9     first release
+ * 2.0   huangjin        2024/4/25    add no letter shell mode, adapt to auto-test system
  */
 
+#include <stdio.h>
+#include "FreeRTOS.h"
+
+#ifdef CONFIG_USE_LETTER_SHELL
 #include "shell.h"
 #include "shell_port.h"
-#include <stdio.h>
+#else
+#include "task.h"
 #include "qspi_spiffs_example.h"
+
+#define QSPI_SPIFFS_EXAMPLE_TASK_PRIORITY 2
+
+void QspiSpiffsExampleTaskEntry(void *pvParameters)
+{
+    /* example functions */
+    FFreeRTOSQspiSpiffsCreate();
+
+    /* end flag */
+    printf("[test_end]\r\n");
+    vTaskDelete(NULL);
+}
+#endif
 
 int main(void)
 {
-    BaseType_t ret;
+    BaseType_t ret = pdPASS;/* 定义一个创建信息返回值，默认为 pdPASS */
 
-    ret = FFreeRTOSQspiSpiffsCreate(0);
-    if (ret != pdPASS)
-    {
-        goto FAIL_EXIT;
-    }
-
-    ret = LSUserShellTask() ;
+#ifdef CONFIG_USE_LETTER_SHELL
+    ret = LSUserShellTask();
+#else
+    /* used in no-letter-shell mode */
+    ret = xTaskCreate((TaskFunction_t)QspiSpiffsExampleTaskEntry,  /* 任务入口函数 */
+                          (const char *)"QspiSpiffsExampleTaskEntry",/* 任务名字 */
+                          (uint16_t)4096,  /* 任务栈大小 */
+                          NULL,/* 任务入口函数参数 */
+                          (UBaseType_t)QSPI_SPIFFS_EXAMPLE_TASK_PRIORITY,  /* 任务的优先级 */
+                          NULL);
+#endif
     if (ret != pdPASS)
     {
         goto FAIL_EXIT;
@@ -47,6 +70,6 @@ int main(void)
     while (1); /* 正常不会执行到这里 */
 
 FAIL_EXIT:
-    printf("Failed,the ret value is 0x%x. \r\n", ret);
+    printf("Qspi spiffs example failed in main.c, the ret value is 0x%x. \r\n", ret);
     return 0;
 }

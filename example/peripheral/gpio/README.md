@@ -18,10 +18,8 @@ GPIO (General-purpose input/output)，即通用型输入输出，其引脚可以
 - 杜邦线
 
 #### 2.1.1 对于E2000 D/Q Demo 板
-- 在本例程中短接 GPIO-3-A-4 和 GPIO-3-4-5,GPIO-3-4-5作为GPIO输出引脚，GPIO-3-A-4作为GPIO输入引脚，在J30位置如下图所示：
-
-![](./figs/pin_connect_gpio3.jpg)
-
+- 在本例程中短接 GPIO-4-A-11 和 GPIO-4-A-12，GPIO-4-A-11作为GPIO输入引脚，GPIO-4-A-12作为GPIO输出引脚，在J30位置如下图所示：
+![](./figs/pin_gpio_intr_board.png)
 
 #### 2.1.2 对于飞腾派
 - 需要用杜邦线短接GPIO3_1与GPIO3_2，分别对应飞腾派上的J1组引脚的第11号与第16号引脚

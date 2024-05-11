@@ -25,6 +25,9 @@
 #ifndef FATFS_EXAMPLES_H
 #define FATFS_EXAMPLES_H
 
+#include "ftypes.h"
+#include "FreeRTOS.h"
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -38,13 +41,13 @@ enum
     FFREERTOS_FATFS_USB_DISK =   3U,
     FFREERTOS_FATFS_SATA_DISK =   4U,
     FFREERTOS_FATFS_SATA_PCIE_DISK =   5U,
-
     FFREERTOS_DISK_TYPE_NUM,
 };
 
 /* fatfs run */
 BaseType_t FFreeRTOSFatfsTest(void);
 
+void FatfsExampleEntry(void);
 #ifdef __cplusplus
 }
 #endif

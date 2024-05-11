@@ -2,14 +2,18 @@
 
 ## 1. 例程介绍
 
-本例程示范了freertos环境下中断嵌套的使用方法
+中断嵌套测试例程 (nested_interrupt.c)
+- 将两个不同优先级的中断绑定至当前CPU(low-priority-intr和high-priority-intr)，并设定各自的中断服务函数
+- 循环5次触发low-priority-intr，在low-priority-intr的中断服务函数中，触发high-priority-intr中断，并等待CPU执行high-priority-intr的中断服务函数
+- 可以观测到，在执行low-priority-intr的中断服务函数的时候，CPU可以响应high-priority-intr中断，并执行high-priority-intr的中断服务函数
+- 根据flag值，以及val_low和val_high最终计算值，可判断例程测试成功
 
 ## 2. 如何使用例程
 
 本例程需要用到
 
 - Phytium开发板（FT2000-4/D2000/E2000D/E2000Q/PHYTIUMPI）
-- [Phytium freeRTOS SDK](https://gitee.com/phytium_embedded/phytium-free-rtos-sdk)
+- [Phytium FreeRTOS SDK](https://gitee.com/phytium_embedded/phytium-free-rtos-sdk)
 - [Phytium standalone SDK](https://gitee.com/phytium_embedded/phytium-standalone-sdk)
 
 ### 2.1 硬件配置方法
@@ -100,10 +104,9 @@ bootelf -p 0x90100000
 
 ### 2.4 输出与实验现象
 
-- 系统进入后，输入 ``nest``查看指令说明
-
-- 输入 ``nest cre``，启动中断嵌套测试
-- 输入 ``nest del``，删除中断嵌套测试
+```
+$ nest cre
+```
 
 ![nested](./figs/nest_intr.png)
 

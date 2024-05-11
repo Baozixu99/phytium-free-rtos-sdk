@@ -20,17 +20,17 @@
  *  Ver       Who            Date                 Changes
  * -----    ------         --------     --------------------------------------
  *  1.0    liushengming   2022/11/25             init commit
+ *  1.1   zhangyan       2024/4/18     add no letter shell mode, adapt to auto-test system
  */
 #ifndef I2C_EXAMPLE_H
 #define I2C_EXAMPLE_H
 
-#include "fi2c_os.h"
+#include "FreeRTOS.h"
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
-
 /***************************** Include Files *********************************/
 
 /************************** Definitions *****************************/
@@ -43,8 +43,6 @@ extern "C"
 /* i2c write and read test */
 BaseType_t FFreeRTOSI2cRtcCreate(void);
 BaseType_t FFreeRTOSI2cLoopbackCreate(void);
-/* dump buffer of slave */
-void FFreeRTOSI2cSlaveDump(FFreeRTOSI2c *os_i2c_p);
 
 #ifdef __cplusplus
 }

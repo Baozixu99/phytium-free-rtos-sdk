@@ -2,38 +2,66 @@
 
 ## 1. 例程介绍
 
-本例程示范了freertos环境下的i2c的读写使用，包括i2c的初始化、写、读和去初始化操作；
-(支持E2000DQ demo开发板)实现了读取RTC的例程。
-(支持firefly开发板)本例程实现了I2C主从（Master-Slave）通信，主机侧是开发板的MIO1，负责发起I2C数据读写,此例程中我们master端仅采用poll模式去读写操作，从机侧是开发板的MIO2模拟eeprom，负责响应I2C数据读写，采用中断响应方式，从机侧实现了一个虚拟的EEPROM缓冲区，模拟主机侧写入和读取数据的过程。
+I2C主从机模拟Eeprom通信测试例程(i2c_ms_example.c)
+注：该例程目前仅支持在PhytiumPi开发板上进行测试，E2000Q/D Demo板未引出两组I2C或MIO控制器引脚
+- 初始化MIO1控制器，设置为主机工作模式；初始化MIO2控制器，设置为从机工作模式，从机地址设置为0x30
+- 主机分别向从机内部偏移地址0x01和0x31处写入16字节长度数组(0x01-0x10)
+- 主机依次读取从机内部偏移地址0x01和0x31两处地址16字节长度的数据，与上述写入数据进行对比并打印
+- 打印从机内部所有存储数据，观测已写入内容
+- 去初始化MIO1/MIO2控制器
+
+I2C与RTC通信测试例程(i2c_rtc_example.c)
+注：该例程目前仅支持在E2000Q/D Demo开发板上进行测试，PhytiumPi开发板未内嵌RTC芯片
+- 初始化MIO9控制器，设置为主机工作模式
+- 向RTC芯片写入初始化时间进行，并开启计时
+- 每间隔1s，连续两次读取RTC内部时间并打印，观测打印结果
+- 去初始化MIO9控制器
 
 ## 2. 如何使用例程
 
 本例程需要用到
 
 - Phytium开发板（E2000DQ/phytiumpi）
-- [Phytium freeRTOS SDK](https://gitee.com/phytium_embedded/phytium-free-rtos-sdk)
+- [Phytium FreeRTOS SDK](https://gitee.com/phytium_embedded/phytium-free-rtos-sdk)
 - [Phytium standalone SDK](https://gitee.com/phytium_embedded/phytium-standalone-sdk)
 
 ### 2.1 硬件配置方法
 
 本例程支持的硬件平台包括
 
-- E2000DQ demo、phytiumpi开发板
+- E2000D/Q demo、phytiumpi开发板
 
 对应的配置项是
 
-- CONFIG_TARGET_E2000D、 CONFIG_TARGET_E2000Q
+- CONFIG_TARGET_E2000D
+- CONFIG_TARGET_E2000Q
 - CONFIG_TARGET_PHYTIUMPI
 
 ### 2.1.1 硬件连线
 
-- E2000
+- 下图所示为E2000D/Q demo开发板RTC芯片
 
-![hardware_e2000](./figs/E2000_1339.png)
+![e2000_1339](figs/e2000_1339.jpg)
 
-- phytiumpi
 
-![phytiumpi](./figs/hw_i2c_pi.png)
+- PhytiumPi请按照下图,将PIN_3与PIN_8引脚相连，PIN_5与PIN_10引脚相连
+
+![phytiumpi](figs/hw_i2c_pi.png)
+
+如需使用其他控制器测试，可参考下表进行连接，修改`i2c_ms_example.c`，`I2C_MS_TEST_MASTER`和`I2C_MS_TEST_SLAVE`即可
+
+|   **引脚**    | **控制器与通道** |
+| :----------:  | :-----------------|
+|  J1 PIN_3     | MIO1  I2C_SDA |
+|  J1 PIN_5     | MIO1  I2C_SCL |
+|  J1 PIN_8     | MIO2  I2C_SDA |
+|  J1 PIN_10    | MIO2  I2C_SCL |
+|  J1 PIN_27    | MIO8  I2C_SDA |
+|  J1 PIN_28    | MIO8  I2C_SCL |
+|  J1 PIN_16    | MIO10 I2C_SDA |
+|  J1 PIN_11    | MIO10 I2C_SCL |
+|  J2 PIN_4     | MIO0  I2C_SDA |
+|  J2 PIN_2     | MIO0  I2C_SCL |
 
 ### 2.2 SDK配置方法
 
@@ -132,15 +160,15 @@ bootelf -p 0x90100000
 i2c rtc
 ```
 
-![e2000d](figs/E2000_rtc.png)
+![rtc_example](figs/rtc_example.png)
 
 - phytiumpi 支持主从机进行通信，从设备控制器模拟eeprom
 
 ```
-i2c rw
+i2c ms_example
 ```
 
-![phytiumpi](./figs/phytiumpi.png)
+![ms_example](./figs/ms_example.png)
 
 ## 3. 如何解决问题
 
