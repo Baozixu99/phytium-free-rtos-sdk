@@ -26,45 +26,46 @@
 #ifndef FEATURE_TASK_H
 #define FEATURE_TASK_H
 
+#include "fdebug.h"
+
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
+#define FTASK_DEBUG_TAG "FFreeRTOSTask"
+#define FTASK_ERROR(format, ...) FT_DEBUG_PRINT_E(FTASK_DEBUG_TAG, format, ##__VA_ARGS__)
+#define FTASK_WARN(format, ...)  FT_DEBUG_PRINT_W(FTASK_DEBUG_TAG, format, ##__VA_ARGS__)
+#define FTASK_INFO(format, ...)  FT_DEBUG_PRINT_I(FTASK_DEBUG_TAG, format, ##__VA_ARGS__)
+#define FTASK_DEBUG(format, ...) FT_DEBUG_PRINT_D(FTASK_DEBUG_TAG, format, ##__VA_ARGS__)
+
 /* creating task */
 void CreateTasks(void);
-void DeleteTasks(void);
 
 /* using parameter */
 void CreateTasksForParamterTest(void);
-void DeleteTasksForParamterTest(void);
-
 
 /* test priority */
 void CreateTasksForPriorityTest(void);
-void DeleteTasksForPriorityTest(void);
-
 
 /* test block state */
 void CreateTasksForBlockTest(void);
-void DeleteTasksForBlockTest(void);
 
 /* tesk until delay */
 
 void CreateTasksForDelayUntilTest(void);
-void DeleteTasksForDelayUntilTest(void);
 
 /* blocking or none */
 void CreateTasksForBlockingOrNone(void);
-void DeleteTasksForBlockingOrNone(void);
 
 /* idle task */
 void CreateTasksForIdleTask(void);
-void DeleteTasksForForIdleTask(void);
 
 /* change priority task */
 void CreateTasksForChangePriorityTest(void);
-void DeleteTasksForChangePriorityTest(void);
+
+/*auto test*/
+void TasksExampleEntry(void);
 
 #ifdef __cplusplus
 }

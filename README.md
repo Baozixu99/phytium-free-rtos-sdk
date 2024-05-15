@@ -1,6 +1,6 @@
 # Phytium-FreeRTOS-SDK
 
-**v0.7.1** [ReleaseNote](./docs/ChangeLog.md)
+**v1.0.0** [ReleaseNote](./docs/ChangeLog.md)
 
 ## 1. 介绍
 

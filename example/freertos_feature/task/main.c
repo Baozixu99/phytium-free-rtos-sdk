@@ -22,19 +22,39 @@
  * 1.0 wangxiaodong 2022/08/09  first commit
  */
 
+#include <stdio.h>
+#include "feature_task.h"
+#include "FreeRTOS.h"
+#include "task.h"
+
+#ifdef CONFIG_USE_LETTER_SHELL
 #include "shell.h"
 #include "shell_port.h"
-#include <stdio.h>
+#endif
 
 int main(void)
 {
     BaseType_t ret;
 
+#ifdef CONFIG_USE_LETTER_SHELL
     ret = LSUserShellTask() ;
     if (ret != pdPASS)
     {
         goto FAIL_EXIT;
     }
+#else
+    ret = xTaskCreate((TaskFunction_t)TasksExampleEntry,
+                     (const char *)"TasksExampleEntry",
+                     (uint16_t)4096,
+                     NULL,
+                     (UBaseType_t)2,
+                     NULL);
+    if(ret != pdPASS)
+    {
+        goto FAIL_EXIT;
+    }
+
+#endif
 
     vTaskStartScheduler(); /* 启动任务，开启调度 */
     while (1); /* 正常不会执行到这里 */

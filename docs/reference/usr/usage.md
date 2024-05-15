@@ -26,15 +26,14 @@ src           --> 用户源文件*
     2. make clean  将目录下的工程进行清理
     3. make image   将目录下的工程进行编译，并将生成的elf 复制到目标地址
     4. make list_kconfig 当前工程支持哪些配置文件
-    5. make load_kconfig LOAD_CONFIG_NAME=<kconfig configuration files>  将预设配置加载至工程中
+    5. make load_kconfig LOAD_CONFIG_NAME=[kconfig configuration files]  将预设配置加载至工程中
     6. make menuconfig   配置目录下的参数变量
     7. make backup_kconfig 将目录下的sdkconfig 备份到./configs下
 
 - make list_kconfig 当前工程支持哪些配置文件
-- make load_kconfig LOAD_CONFIG_NAME=<kconfig configuration files>  将预设配置加载至工程中
+- make load_kconfig LOAD_CONFIG_NAME=[kconfig configuration files] 将预设配置加载至工程中
 
->配置成E2000D，使用对应的默认配置，如E2000d 32位:
-
+>例如：配置成E2000D，使用对应的默认配置，如E2000d 32位:
 ```
 $ make load_kconfig LOAD_CONFIG_NAME=e2000d_aarch32_demo_i2c
 ```
@@ -159,7 +158,7 @@ $ cp ./freertos.elf /mnt/d/tftboot
 # setenv gatewayip 192.168.4.1
 ```
 
-> 镜像启动的地址为`0x80100000`, 对于`BIN`文件，需要直接加载到`0x80100000`，对于`ELF`文件，启动地址会自动获取，需要加载到`DRAM`中一段可用的地址，这里选择`0x90100000`
+> 镜像启动的地址为`0x80100000`, 对于`BIN`文件，需要直接加载到`0x80100000`，对于`ELF`文件，启动地址会自动获取，需要加载到`DRAM`中一段可用的地址，这里选择`0x90100000`，根据实际的文件大小，也可以选择别的地址
 
 - 支持使用以下几种方式跳转启动(二选一)
 - 1. `AARCH32/AARCH64`支持加载`BIN`文件到启动地址，刷新缓存后，通过`go`命令跳转启动

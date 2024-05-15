@@ -8,7 +8,6 @@ BOOT_IMG_NAME      ?= freertos
 
 USER_CSRC := main.c
 USER_CSRC += $(wildcard  src/*.c)
-USER_CSRC += $(wildcard  ../common/*.c)
 			
 USER_ASRC := 
 USER_CXXSRC := 

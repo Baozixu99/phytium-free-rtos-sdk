@@ -78,16 +78,16 @@ bootelf -p 0x90100000
 
 - 系统进入后，输入```task```查看指令说明
 
-![](.\figs\task_result.png)
+![](./figs/result.png)
 
-- 执行相应的cre和del操作，创建和删除测试任务
-![](.\figs\task_cre.png)
 
-![](.\figs\task_del.png)
+- 执行相应的cre操作，创建和删除测试任务
+
+![](./figs/task_cre.png)
+
+
 
 - 测试任务能够能正常创建和删除，输入```ps```查看任务状态正常，即测试正常
-
-![](./pic/task_command.png)
 
 ## 3. 如何解决问题
 Q: ps查看任务状态异常

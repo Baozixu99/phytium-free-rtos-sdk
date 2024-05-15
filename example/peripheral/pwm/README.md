@@ -44,7 +44,7 @@ PWM双通道测试例程 (pwm_dual_channel_example.c)
 ### 2.1.1 E2000
 - E2000 demo板需外接逻辑分析仪或示波器测试，方法如下
 
-- 选择控制器PWM6的pwm12_dat_out(CHANNEL0)作为输出，对应开发板上J30引脚7
+- 选择控制器PWM2的pwm5_dat_out(CHANNEL1)作为输出，对应开发板上J30引脚3
 
 ![e2000_pwm](./figs/e2000_pwm.png)
 
@@ -162,7 +162,3 @@ pwm双通道测试对应波形
 
 - E2000 DEMO V0.8板无法使用PWM4至PWM7，故无法进行本用例
 ## 4. 修改历史记录
-
-
-
-

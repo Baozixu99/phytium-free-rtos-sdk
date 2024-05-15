@@ -167,7 +167,7 @@ void NestedIntrTask(void)
     prvSetupSoftwareNestedInterrupt();
     vNestedPeriod();
     /*取1E-6精度下比较计算结果，此精度可修改*/
-    if (fabs(val_low - VAL_LOW_CALC_RES) <= 1E-6 || fabs(val_high - VAL_HIGH_CALC_RES) <= 1E-6)
+    if (fabs(val_low - VAL_LOW_CALC_RES) >= 1E-6 || fabs(val_high - VAL_HIGH_CALC_RES) >= 1E-6)
     {
         task_res = NESTED_INTR_TEST_FAILURE;
     }

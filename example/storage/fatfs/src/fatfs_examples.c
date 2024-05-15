@@ -42,10 +42,13 @@
 /************************** Constant Definitions *****************************/
 #define FATFS_EVT_INIT_DONE        (0x1 << 0)
 #define FATFS_EVT_CYC_TEST_DONE    (0x1 << 1)
+
+/*The macro WR_SECTOR, RAM_WR_SECTOR, CYCLE_TIMES affects the test time.
+*If you want to increase the macro value, increase WAIT_TIMEOUT as well*/
 #define WR_SECTOR                  3000U
 #define RAM_WR_SECTOR              300000U
-
-#define WAIT_TIMEOUT               1800000U
+#define CYCLE_TIMES                1
+#define WAIT_TIMEOUT               pdMS_TO_TICKS(3000000U)
 /************************** Variable Definitions *****************************/
 static const char *mount_points[FFREERTOS_DISK_TYPE_NUM] =
 {
@@ -304,7 +307,7 @@ static FRESULT FatfsCycleTest(void)
     FRESULT fr = FR_OK;
 #ifdef CONFIG_FATFS_RAM_DISK
         printf("\r\n========Cycle test for RAM Disk=================\r\n");
-        fr = ff_cycle_test(mount_points[FFREERTOS_FATFS_RAM_DISK], 3);
+        fr = ff_cycle_test(mount_points[FFREERTOS_FATFS_RAM_DISK], CYCLE_TIMES);
         if (FR_OK != fr)
         {
             FF_ERROR("RAM cycle test failed, err = %d.", fr);
@@ -314,7 +317,7 @@ static FRESULT FatfsCycleTest(void)
 
 #ifdef CONFIG_FATFS_SDMMC_FSDIF_TF
         printf("\r\n========Cycle test for TF Disk=================\r\n");
-        fr = ff_cycle_test(mount_points[FFREERTOS_FATFS_TF_CARD], 3);
+        fr = ff_cycle_test(mount_points[FFREERTOS_FATFS_TF_CARD], CYCLE_TIMES);
         if (FR_OK != fr)
         {
             FF_ERROR("TF cycle test failed, err = %d.", fr);
@@ -324,7 +327,7 @@ static FRESULT FatfsCycleTest(void)
 
 #ifdef CONFIG_FATFS_SDMMC_FSDIF_EMMC
         printf("\r\n========Cycle test for SDIO Disk=================\r\n");
-        fr = ff_cycle_test(mount_points[FFREERTOS_FATFS_EMMC_CARD], 3);
+        fr = ff_cycle_test(mount_points[FFREERTOS_FATFS_EMMC_CARD], CYCLE_TIMES);
         if (FR_OK != fr)
         {
             FF_ERROR("SDIO cycle test failed, err = %d.", fr);
@@ -335,7 +338,7 @@ static FRESULT FatfsCycleTest(void)
 
 #ifdef CONFIG_FATFS_USB
         printf("\r\n========Cycle test for USB Disk=================\r\n");
-        fr = ff_cycle_test(mount_points[FFREERTOS_FATFS_USB_DISK], 3);
+        fr = ff_cycle_test(mount_points[FFREERTOS_FATFS_USB_DISK], CYCLE_TIMES);
         if (FR_OK != fr)
         {
             FF_ERROR("USB cycle test failed, err = %d.", fr);
@@ -345,7 +348,7 @@ static FRESULT FatfsCycleTest(void)
 
 #ifdef CONFIG_FATFS_FSATA
         printf("\r\n========Cycle test for SATA Disk=================\r\n");
-        fr = ff_cycle_test(mount_points[FFREERTOS_FATFS_SATA_DISK], 3);
+        fr = ff_cycle_test(mount_points[FFREERTOS_FATFS_SATA_DISK], CYCLE_TIMES);
         if (FR_OK != fr)
         {
             FF_ERROR("SATA cycle test failed, err = %d.", fr);
@@ -355,7 +358,7 @@ static FRESULT FatfsCycleTest(void)
 
 #ifdef CONFIG_FATFS_FSATA_PCIE
         printf("\r\n========Cycle test for SATA PCIE Disk=================\r\n");
-        fr = ff_cycle_test(mount_points[FFREERTOS_FATFS_SATA_PCIE_DISK], 3);
+        fr = ff_cycle_test(mount_points[FFREERTOS_FATFS_SATA_PCIE_DISK], CYCLE_TIMES);
         if (FR_OK != fr)
         {
             FF_ERROR("SATA pcie cycle test failed, err = %d.", fr);
@@ -405,8 +408,8 @@ task_ret:
 BaseType_t FFreeRTOSFatfsTest(void)
 {
     BaseType_t ret = pdPASS;
-    int task_ret = FR_OK;
-    xQueue = xQueueCreate(1,sizeof(int));
+    FRESULT task_ret = FR_OK;
+    xQueue = xQueueCreate(1, sizeof(FRESULT));
 
     ret = xTaskCreate((TaskFunction_t)FatfsRunTask,
                       (const char *)"FatfsRunTask",

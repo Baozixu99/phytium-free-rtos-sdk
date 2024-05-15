@@ -7,7 +7,7 @@
 DC 是一个显示控制器，主要完成将 CPU/GPU/VPU 处理后的图像数据，按照 Display 协议处理后送给 DP PHY 接入显示器。
 
 本司E2000系列型号芯片采用DisplayPort1.4协议，兼容 DisplayPort1.4/Embedded DisplayPort1.3 协议。
-本例程主要展示本司E2000系列芯片DC显示驱动功能以及lvgl中benchmark, stress以及widgets例程的操作。
+本例程主要展示本司E2000系列以及phytiumpi芯片DC显示驱动功能以及lvgl中benchmark, stress以及widgets例程的操作。
 
 lvgl中benchmark是一个基准测试，用来测试硬件平台的性能和驱动支持buufer刷新能力，主要是测试屏幕刷新的流畅度以及帧率。
 
@@ -28,7 +28,7 @@ lvgl中widgets属于组件测试，将lvgl中库组件组合运行，此demo属�
 
 本例程需要用到
 
-- Phytium开发板（E2000Q）
+- Phytium开发板（E2000开发板或phytiumpi））
 - 显示器及连接线
 - [Phytium Standalone SDK](https://gitee.com/phytium_embedded/phytium-standalone-sdk)
 
@@ -44,13 +44,13 @@ lvgl中widgets属于组件测试，将lvgl中库组件组合运行，此demo属�
 
 本例程所需的硬件设备包括
 
-- 通过DP线将显示器与E2000板卡连接
+- 通过DP线将显示器与板卡连接
 - 利用串口调试线连接板卡和调试电脑，波特率设为 115200-8-1-N
+- phytiumpi上Dp需通过转接线连接，无直接Dp接口
 
 ### 2.2 SDK配置方法
 
 ><font size="1">依赖哪些驱动、库和第三方组件，如何完成配置（列出需要使能的关键配置项）</font><br />
-
 
 - 本例子已经提供好具体的编译指令，以下进行介绍：
     - make 将目录下的工程进行编译
@@ -80,15 +80,12 @@ make menuconfig
 make image
 ```
 - 在host侧完成构建
-- 选择即将要运行的例程
 
-![demo_select](fig/demo_select.png)
+利用2.2 SDK配置方法进行编译下载，默认demo为benchmark，色深设置为32
 
-选定demo例程后， 利用2.2 SDK配置方法进行编译下载，默认demo为benchmark，色深设置为32
+LVGL提供可配置文件，配置目录为third-party/lvgl-8.3/lv_conf.h设置
 
-目前在menuconfig中支持配置demo选择以及色深设置，其余设置值为third-party/lvgl-8.3/lv_conf.h设置默认值
-
-在使用过程中， 使用者可根据实际硬件情况以及需要，在third-party/lvgl-8.3/lv_conf.h中进行相应组件配置。
+在使用过程中，使用者可根据实际硬件情况以及需要，在third-party/lvgl-8.3/lv_conf.h中进行相应组件配置。
 
 #### 2.3.2 下载过程
 
@@ -116,20 +113,15 @@ bootelf -p 0x90100000
 
 #### 2.4.1 初始化硬件设备控制器
 
-Media init 2 640 480 2 32 60
+Media init 
 
-- 2   :  通道号
-- 640 ： 宽
-- 480 ： 高
-- 2   ：模式(克隆，水平，垂直)
-- 32  ：色深
-- 60  ：刷新率
+![media_init](fig/media_init.png)
 
 初始化LVGL图形库：
 
 Media lvgl-init
 
-![init](fig/media_init.png)
+![lvgl_init](fig/lvgl_init.png)
 
 #### 2.4.2 example测试
 
@@ -143,7 +135,6 @@ Media demo
 
 ![widgets](fig/lvgl_widgets.jpg)
 
-
 ## 3. 如何解决问题
 
 ><font size="1">主要记录使用例程中可能会遇到的问题，给出相应的解决方案</font><br />
@@ -154,4 +145,3 @@ Media demo
 
 - 2022-12-6 ：v0.0.1 添加example
 - 2023-03-03: v0.0.2 添加多屏
-
