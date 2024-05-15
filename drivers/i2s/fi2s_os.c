@@ -13,7 +13,7 @@
  *
  * FilePath: fi2s_os.c
  * Created Date: 2024-02-29 10:49:34
- * Last Modified: 2024-04-26 15:11:27
+ * Last Modified: 2024-05-14 09:16:29
  * Description:  This file is for i2s driver
  *
  * Modify History:
@@ -131,21 +131,10 @@ FError FFreeRTOSSetupI2S(FFreeRTOSI2s *os_i2s_p)
 FError FFreeRTOSI2SDeinit(FFreeRTOSI2s *os_i2s_p)
 {
     FASSERT(os_i2s_p);
-    FASSERT(os_i2s_p->i2s_semaphore != NULL);
 
     FI2sStopWork(&os_i2s_p->i2s_ctrl);
 
     FI2sDeInitialize(&os_i2s_p->i2s_ctrl);
-
-    FASSERT_MSG(NULL != os_i2s_p->i2s_semaphore, "Semaphore not exists!!!");
-    vSemaphoreDelete(os_i2s_p->i2s_semaphore);
-
-    os_i2s_p->i2s_semaphore = NULL;
-
-    FASSERT_MSG(NULL != os_i2s_p->trx_event, "Event group not exists!!!");
-    vEventGroupDelete(os_i2s_p->trx_event);
-
-    os_i2s_p->trx_event = NULL;
 
     return FT_SUCCESS;
 }

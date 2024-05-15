@@ -1,3 +1,25 @@
+# Phytium FreeRTOS SDK 2024-05-14 v1.0.0 ChangeLog
+
+Change Log since 2024-05-10
+
+## example
+
+- update sockets/udp_multicast, sockets/udp_multicast, i2s, media, pwm, amp/openamp readme file
+- delete error i2s deinit report
+- solve nested_interrupt conditional judgment problem
+- solve fatfs variable type problem
+- solve can intr example problem in d2000 testing
+- update pwm default controller and channel id
+
+# Phytium FreeRTOS SDK 2024-05-10 ChangeLog
+
+Change Log since 2024-05-10
+
+## example
+
+- modify freertos feature task example, add no letter shell mode, adapt to auto-test system
+- repair bug in storage fatfs example
+
 # Phytium FreeRTOS SDK 2024-05-10 ChangeLog
 
 Change Log since 2024-05-10
@@ -138,6 +160,7 @@ Change Log since 2024-04-26
 
 ## example
 
+- modify fatfs example, add no letter shell mode, adapt to auto-test system
 - modify qspi_spiffs example, add no letter shell mode, adapt to auto-test system
 
 # Phytium FreeRTOS SDK 2024-04-26 ChangeLog

@@ -29,15 +29,7 @@
 #include "FreeRTOS.h"
 #include "../src/shell.h"
 
-#include "fdc_common_hw.h"
-#include "fdcdp.h"
-#include "fdp_hw.h"
-
-#include "lv_port_disp.h"
-#include "lv_obj.h"
-#include "lv_conf.h"
 #include "lv_demo_create.h"
-#include "lv_demo_test.h"
 
 static void FFreeRTOSMediaCmdUsage(void)
 {

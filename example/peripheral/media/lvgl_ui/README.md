@@ -19,7 +19,7 @@ LVGL (Light and Versatile Graphics Library) 是最流行的免费开源嵌入式
 
 本例程需要用到
 
-- Phytium开发板（E2000Q，E2000D）
+- Phytium开发板（E2000Q, E2000D, Phytiumpi）
 - 显示器及连接线
 - [Phytium Standalone SDK](https://gitee.com/phytium_embedded/phytium-standalone-sdk)
 
@@ -105,18 +105,9 @@ bootelf -p 0x90100000
 
 初始化DP:
 
-Media init 2 800 600 2 32 60
+Media init 
 
-注：此色深32应与lvgl中的色深参数相等，否则可能出现画面填充错位的现象
-
-- 2   :  通道号
-- 800 ： 宽
-- 600 ： 高
-- 2   ：模式(克隆，水平，垂直)
-- 32  ：色深
-- 60  ：刷新率
-
-![init](fig/media_init.png)
+![meidia_init](fig/media_init.png)
 
 初始化LVGL图形库：
 

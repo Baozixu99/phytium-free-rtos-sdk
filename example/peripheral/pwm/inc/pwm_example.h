@@ -34,8 +34,8 @@ extern "C"
 
 /************************** Constant Definitions *****************************/
 #if defined(CONFIG_E2000Q_DEMO_BOARD)||defined(CONFIG_E2000D_DEMO_BOARD)
-#define PWM_TEST_ID FPWM6_ID
-#define PWM_TEST_CHANNEL     FPWM_CHANNEL_0
+#define PWM_TEST_ID FPWM2_ID
+#define PWM_TEST_CHANNEL     FPWM_CHANNEL_1
 #elif defined(CONFIG_FIREFLY_DEMO_BOARD)
 #define PWM_TEST_ID FPWM4_ID
 #define PWM_TEST_CHANNEL     FPWM_CHANNEL_0

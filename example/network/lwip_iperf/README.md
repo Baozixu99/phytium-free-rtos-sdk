@@ -120,6 +120,7 @@ lwip iperfc
 
 ![iperf_client_example_result](./fig/iperf_client_example.png)
 ![iperf_client_test_result](./fig/iperf_client_test.png)
+
 #### 2.4.2 网卡iperf server测试例程 (lwip_iperf_server_example.c)
 ```
 lwip iperfs
@@ -146,7 +147,12 @@ lwip iperfs
 ```
       .mac_address={0x98, 0x0e, 0x24, 0x00, 0x11, 0x1},
 ```
+ - Q: 在进行lwip_iperfc测试时如何配置server的ip地址？
 
+ - A: 在lwip_iperf_client_example中修改如下代码即可：
+```
+  const ip_addr_t remote= IPADDR4_INIT_BYTES(192,168,4,50);
+```
 ## 4. 修改历史记录
 
 ><font size="1">记录例程的重大修改记录，标明修改发生的版本号 </font><br />

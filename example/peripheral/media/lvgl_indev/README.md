@@ -7,7 +7,7 @@
 DC 是一个显示控制器，主要完成将 CPU/GPU/VPU 处理后的图像数据，按照 Display 协议处理后送给 DP PHY 接入显示器。
 
 本司E2000系列型号芯片采用DisplayPort1.4协议，兼容 DisplayPort1.4/Embedded DisplayPort1.3 协议。
-本例程主要展示本司E2000系列芯片DC显示驱动功能以及驱动外设的能力，当前支持的设备有鼠标以及键盘
+本例程主要展示本司E2000系列以及phytiumpi芯片DC显示驱动功能以及驱动外设的能力，当前支持的设备有鼠标以及键盘
 
 本例程支持的cmd包括
 
@@ -22,7 +22,7 @@ DC 是一个显示控制器，主要完成将 CPU/GPU/VPU 处理后的图像数�
 
 本例程需要用到
 
-- Phytium开发板（E2000Q，E2000D）
+- Phytium开发板（E2000Q，E2000D, Phytiumpi）
 - 显示器及连接线
 - [Phytium Standalone SDK](https://gitee.com/phytium_embedded/phytium-standalone-sdk)
 
@@ -76,8 +76,6 @@ make image
 
 - 在host侧完成构建
 
-目前在menuconfig中支持配置色深,色深设置为32，其余设置值为third-party/lvgl-8.3/lv_conf.c设置默认值
-
 在使用过程中， 使用者可根据实际硬件情况以及需要，在third-party/lvgl-8.3/lv_conf.c中进行相应组件配置。
 
 #### 2.3.2 下载过程
@@ -108,18 +106,9 @@ bootelf -p 0x90100000
 
 初始化DP:
 
-Media init 2 640 480 2 32 60
+Media init 
 
-注：此色深32应与lvgl中的色深参数相等，否则可能出现画面填充错位的现象
-
-- 2   :  通道号
-- 640 ： 宽
-- 480 ： 高
-- 2   ：模式(克隆，水平，垂直)
-- 32  ：色深
-- 60  ：刷新率
-
-![init](fig/media_init.png)
+![meida init](fig/media_init.png)
 
 初始化LVGL图形库：
 

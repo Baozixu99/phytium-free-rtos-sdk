@@ -156,9 +156,9 @@ device_core 的 elf 文件加载地址需要修改为 0xe0100000 :
 1. 在编译环境下，切换至 phytium-free-rtos-sdk/example/system/amp/openamp 目录
    1.1 输入 'make config_e2000d_aarch32' 加载默认配置信息
    1.2 输入 'make clean' 清理 ./driver_core ./device_core 下的编译结果
-   1.3 输入 'make image' 编译driver_core / device_core 代码，并且生成对应的elf 文件
+   1.3 输入 'make image' 编译driver_core / device_core 代码，生成对应的elf 文件，并拷贝至 tftp 目录下
    1.4 先将 ./driver_core/makefile 与 ./device_core/makefile 中 的 USR_BOOT_DIR 修改为您的 tftp 所覆盖的目录
-   1.5 输入 'make boot' 将生成的elf 拷贝至 tftp 的目录下
+
 2. 使用串口连接E2000开发板 ，并且打开串口终端工具
    2.1 复位开发板之后，将E2000开发板的网络与tftp 服务器在同一局域网中
    2.2 在板子串口终端工具下输入以下命令
@@ -189,9 +189,9 @@ device_core 的 elf 文件加载地址需要修改为 0xe0100000 :
 1. 在编译环境下，切换至 phytium-standalone-sdk/example/system/amp/openamp 目录
    1.1 输入 'make config_e2000d_aarch64' 加载默认配置信息
    1.2 输入 'make clean' 清理 ./driver_core ./device_core 下的编译结果
-   1.3 输入 'make image' 编译driver_core / device_core 代码，并且生成对应的elf 文件
+   1.3 输入 'make image' 编译driver_core / device_core 代码，生成对应的elf 文件，并拷贝至 tftp 目录下
    1.4 先将 ./driver_core/makefile 与 ./device_core/makefile 中 的 USR_BOOT_DIR 修改为您的tftp 所覆盖的目录
-   1.5 输入 'make boot' 将生成的elf 拷贝至 tftp 的目录下
+
 2. 使用串口连接E2000开发板 ，并且打开串口终端工具
    2.1 复位开发板之后，将E2000开发板的网络与tftp 服务器在同一局域网中
    2.2 在板子串口终端工具下输入以下命令

@@ -82,6 +82,12 @@ static FError FFreeRTOSCanSendThenRecvData(int ide);
 static FError FFreeRTOSCanRecvData(FCanQueueData * xReceiveStructure);
 static void FFreeRTOSCanDelete(void);
 
+static void FCanTxIrqCallback(void *args)
+{
+    FFreeRTOSCan *os_can_p = (FFreeRTOSCan *)args;
+    FCAN_TEST_DEBUG("Can%d irq send frame is ok.", os_can_p->can_ctrl.config.instance_id);
+}
+
 static void FCanRxIrqCallback(void *args)
 {
     FFreeRTOSCan *os_can_p = (FFreeRTOSCan *)args;
@@ -103,6 +109,16 @@ static FError FFreeRTOSCanIntrSet(FFreeRTOSCan *os_can_p)
     FError ret = FCAN_SUCCESS;
     FCanIntrEventConfig intr_event;
     memset(&intr_event, 0, sizeof(intr_event));
+
+    intr_event.type = FCAN_INTR_EVENT_SEND;
+    intr_event.handler = FCanTxIrqCallback;
+    intr_event.param = (void *)os_can_p;
+    ret = FFreeRTOSCanControl(os_can_p, FREERTOS_CAN_CTRL_INTR_SET, &intr_event);
+    if (FCAN_SUCCESS != ret)
+    {
+        FCAN_TEST_ERROR("FFreeRTOSCanControl FCAN_INTR_EVENT_SEND failed.");
+        return ret;
+    }
 
     intr_event.type = FCAN_INTR_EVENT_RECV;
     intr_event.handler = FCanRxIrqCallback;

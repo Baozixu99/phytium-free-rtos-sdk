@@ -84,7 +84,6 @@ make
 make image
 ```
 
-
 #### 2.3.2 下载过程
 
 - host侧设置重启host侧tftp服务器
@@ -116,8 +115,6 @@ make menuconfig
   
 ![](./pic/ipv4_config.png)
 
-
-
 ##### IPv4 && IPv6 共存的模式
 
 - 输入以下命令
@@ -125,17 +122,13 @@ make menuconfig
 ```
 make menuconfig
 ```
-
 - 需将Multicast IP type 选为 IPV4 & IPV6
 
 ![](./pic/ipv4_ipv6_config.png)
 
-
 - 关闭仅仅使用IPv4 选项
   
 ![](./pic/DisableNotusingIPV4attheaSametime.png)
-
-
 
 #### 2.4.2 如何进行实验
 
@@ -163,19 +156,15 @@ lwip probe <driver id> <device id> <interface id> <dhcp_en> <ipaddr> <gateway> <
 
 ![](./pic/lwip_probe.png)
 
-
-
-
-
-
 #### 2.4.3 进行multicast 测试
 
 - 完成2.4.1 / 2.4.2 之后 ，可以进行multcast 的相关实验 ，以下以ipv6 的实验为例
-- 在串口终端上输入以下指令
+- 在开发板的letter-shell终端上输入以下指令
 ```
 multicast e0
 ```
 - 在编译器环境下执行
+>在上位机（一般是个人PC）shell终端中输入make test_code以生成multicast_server_ipv6.out脚本
 ```
 ./multicast_server_ipv6.out
 ```
@@ -188,14 +177,8 @@ multicast e0
 
 ![](./pic/测试终端打印.png)
 
-
 ## 3. 如何解决问题
-
-
-
 
 ## 4. 修改历史记录
 
 v0.1.0  完成第一版初始化
-
-
