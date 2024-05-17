@@ -21,6 +21,7 @@
  * ----- ------     --------    --------------------------------------
  *  1.0  zhugengyu  2022/8/26    init commit
  *  2.0  wangzq     2024/4/22     add no letter shell mode, adapt to auto-test system
+ *  3.0  zhugengyu  2024/5/10    rework gpio example
  */
 /***************************** Include Files *********************************/
 #include <string.h>
@@ -32,8 +33,7 @@
 
 #ifdef CONFIG_USE_LETTER_SHELL
 #include "../src/shell.h"
-#include "fgpio_os.h"
-#include "gpio_io_irq.h"
+#include "gpio_intr_example.h"
 /************************** Constant Definitions *****************************/
 
 /************************** Variable Definitions *****************************/

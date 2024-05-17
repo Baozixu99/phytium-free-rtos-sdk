@@ -4,7 +4,6 @@ include adc/src.mk
 include can/src.mk
 include dma/src.mk
 include eth/src.mk
-include gpio/src.mk
 include i2c/src.mk
 include media/src.mk
 include pwm/src.mk

@@ -14,7 +14,7 @@ GPIO (General-purpose input/output)，即通用型输入输出，其引脚可以
 - [Phytium Standalone SDK](https://gitee.com/phytium_embedded/phytium-standalone-sdk)
 
 ### 2.1 硬件配置方法
-- E2000 D/Q Demo 板 或 飞腾派
+- E2000 D/Q Demo 板 / 飞腾派 / D2000 Test 板
 - 杜邦线
 
 #### 2.1.1 对于E2000 D/Q Demo 板
@@ -22,10 +22,17 @@ GPIO (General-purpose input/output)，即通用型输入输出，其引脚可以
 ![](./figs/pin_gpio_intr_board.png)
 
 #### 2.1.2 对于飞腾派
-- 需要用杜邦线短接GPIO3_1与GPIO3_2，分别对应飞腾派上的J1组引脚的第11号与第16号引脚
+
+- 需要用杜邦线短接GPIO0_0与GPIO4_13，如下图所示，分别为 36 号和 37 号引脚
 ![](./figs/firefly_gpio_board.png)
 
 注：在上述例程中，若想使用其他GPIO进行测试，则需要在例程gpio_io_irq.c文件中修改GPIO引脚号IN_PIN_INDEX，OUT_PIN_INDEX，并重新编译烧写。
+
+#### 2.1.3 对于D2000 Test 板
+
+- 需要用杜邦线短接GPIO1_A_6与GPIO1_A_7，分别对应飞腾派上的J1组引脚的第11号与第16号引脚,对应SPI0排线，如下图所示 左侧排线的最下面脚（SPI0-SO 对应 GPIO 1-A-7）和右侧排线的最上面脚（SPI0-SCK 对应 GPIO 1-A-6）
+
+![](./figs/d2000_gpio_pin.png)
 
 ### 2.2 SDK配置方法
 

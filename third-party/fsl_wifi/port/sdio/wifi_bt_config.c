@@ -36,8 +36,7 @@ static sdmmchost_config_t s_inst_config;
 
 static FGpio gpio;
 static FGpioConfig gpio_config;
-static FGpioPinId PDn_index;
-static FGpioPin PDn; /* external PDn assertion */
+static u32 gpio_power_index = FGPIO_ID(FGPIO_CTRL_4, FGPIO_PIN_11);
 
 /*******************************************************************************
  * Code
@@ -60,23 +59,24 @@ void BOARD_WIFI_BT_Enable(bool enable)
 
 static void SdioMW8801PowerUp(void)
 {
-    gpio_config = *FGpioLookupConfig(FGPIO4_ID);
+    gpio_config = *FGpioLookupConfig(gpio_power_index);
     (void)FGpioCfgInitialize(&gpio, &gpio_config);
     
-    PDn_index.ctrl = FGPIO4_ID;
-    PDn_index.port = FGPIO_PORT_A;
-    PDn_index.pin  = FGPIO_PIN_11;
-    FIOPadSetGpioMux(PDn_index.ctrl, (u32)PDn_index.pin);
-    (void)FGpioPinInitialize(&gpio, &PDn, PDn_index);
-    (void)FGpioSetDirection(&PDn, FGPIO_DIR_OUTPUT);
+    FIOMuxInit();
+
+    FIOPadSetGpioMux(gpio_config.ctrl, (u32)gpio_config.pin);
+
+    (void)FGpioSetDirection(&gpio, FGPIO_DIR_OUTPUT);
 
     /* transitions from low to high for PDn pin to reset sdio card */
-    FGpioSetOutputValue(&PDn, FGPIO_PIN_LOW);
+    FGpioSetOutputValue(&gpio, FGPIO_PIN_LOW);
     SDMMC_OSADelay(50);
-    FGpioSetOutputValue(&PDn, FGPIO_PIN_HIGH);
+    FGpioSetOutputValue(&gpio, FGPIO_PIN_HIGH);
     SDMMC_OSADelay(50);
 
     FGpioDeInitialize(&gpio);
+
+    FIOMuxDeInit();
 
     printf("Assert PDn to power-up MW8801 \r\n");  
 }

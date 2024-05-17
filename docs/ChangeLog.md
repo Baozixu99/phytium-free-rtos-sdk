@@ -1,3 +1,16 @@
+# Phytium FreeRTOS SDK 2024-05-10 ChangeLog
+
+Change Log since 2024-05-09
+
+## example
+
+- rework gpio example and use standalone drivers api
+- add d2000 support in gpio example
+
+## drivers
+
+- remove fgpio_os
+
 # Phytium FreeRTOS SDK 2024-05-14 v1.0.0 ChangeLog
 
 Change Log since 2024-05-10

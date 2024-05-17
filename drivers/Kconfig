@@ -46,13 +46,6 @@ menu "Freertos Eth Drivers"
         default n
 endmenu
 
-menu "Freertos Gpio Drivers"
-    config FREERTOS_USE_GPIO
-    bool
-    prompt "Use Freertos gpio driver"
-    default n
-endmenu
-
 menu "Freertos Spim Drivers"
     config FREERTOS_USE_FSPIM
         bool

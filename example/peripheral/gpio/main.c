@@ -34,7 +34,7 @@
 #include "shell_port.h"
 #else
 #include "task.h"
-#include "gpio_io_irq.h"
+#include "gpio_intr_example.h"
 
 #define GPIO_EXAMPLE_TASK_PRIORITY 2
 

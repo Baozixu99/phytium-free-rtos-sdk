@@ -25,11 +25,6 @@ ifdef CONFIG_ENABLE_Pl011_UART
 	BUILD_INC_PATH_DIR += $(OS_DRV_CUR_DIR)/serial/fpl011
 endif #CONFIG_ENABLE_Pl011_UART
 
-# gpio
-ifdef CONFIG_ENABLE_FGPIO
-	BUILD_INC_PATH_DIR += $(OS_DRV_CUR_DIR)/gpio/fgpio
-endif
-
 # spi
 ifdef CONFIG_USE_FSPIM
 	BUILD_INC_PATH_DIR += $(OS_DRV_CUR_DIR)/spi/fspim
