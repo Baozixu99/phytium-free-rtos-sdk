@@ -60,7 +60,7 @@ sudo apt-get install tftp-hpa tftpd-hpa
 sudo apt-get install xinetd
 ```
 
-- 新建 tftboot 目录, `/mnt/d/tftboot`, 确保 tftboot 目录有执行权限`chmod 777 /**/tftboot`
+- 新建 tftpboot 目录, `/mnt/d/tftpboot`, 确保 tftpboot 目录有执行权限`chmod 777 /**/tftpboot`
 
 - 配置主机 tftpboot 服务, 新建并配置文件`/etc/xinetd.d/tftp`
 
@@ -74,7 +74,7 @@ server tftp
   wait = yes
   user = root
   server =  /usr/sbin/in.tftpd
-  server_args = -s /mnt/d/tftboot
+  server_args = -s /mnt/d/tftpboot
   disable = no
   per_source = 11
   cps = 100 2
@@ -88,7 +88,7 @@ server tftp
 $ sudo service tftpd-hpa start
 ```
 
-- 修改主机`tftp`配置，指向`tftboot`目录
+- 修改主机`tftp`配置，指向`tftpboot`目录
   修改/etc/default/tftpd-hpa
 
 ```
@@ -96,7 +96,7 @@ $ sudo nano /etc/default/tftpd-hpa
 # /etc/default/tftpd-hpa
 
 TFTP_USERNAME="tftp"
-TFTP_DIRECTORY="/mnt/d/tftboot"
+TFTP_DIRECTORY="/mnt/d/tftpboot"
 TFTP_ADDRESS=":69"
 TFTP_OPTIONS="-l -c -s"
 ```
@@ -108,7 +108,7 @@ $ sudo service tftpd-hpa restart
 ```
 
 - 测试主机`tftp`服务的可用性
-  > 登录`tftp`服务，获取`tftboot`目录下的一个文件
+  > 登录`tftp`服务，获取`tftpboot`目录下的一个文件
 
 ```
 $ tftp 192.168.4.50
@@ -139,15 +139,15 @@ tftp> q
 
 ### 1.3.3 配置开发板 ip，连通 host 下载启动镜像
 
-- 将`BIN`文件或者`ELF`文件复制到`tftboot`目录
+- 将`BIN`文件或者`ELF`文件复制到`tftpboot`目录
 - 此步骤目前已经集成到`make image`阶段，可以省略，如果未成功，可进行手动复制
 
 ```
-$ cp ./freertos.bin /mnt/d/tftboot
+$ cp ./freertos.bin /mnt/d/tftpboot
 ```
 
 ```
-$ cp ./freertos.elf /mnt/d/tftboot
+$ cp ./freertos.elf /mnt/d/tftpboot
 ```
 
 - 连通开发板串口，进入`u-boot`界面，配置开发板`ip`，`host`侧`ip`和网关地址

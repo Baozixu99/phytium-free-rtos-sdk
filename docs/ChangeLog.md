@@ -1,3 +1,27 @@
+# Phytium Standalone SDK 2024-06-18 ChangeLog
+
+Change Log since 2024-06-18
+
+## third-party
+
+- fix mmu_display cmd in aarch64 mode
+
+# Phytium Standalone SDK 2024-06-13 ChangeLog
+
+Change Log since 2024-06-11
+
+## example
+
+- change tftboot to tftpboot directory
+- refine exception example trace function
+- set default sdkconfig CONFIG_IMAGE_MAX_LENGTH=0x2000000 in aarch64 mode
+
+# Phytium FreeRTOS SDK 2024-06-12 ChangeLog
+
+## example 
+
+- change i2c example to use standalone drivers api
+
 # Phytium FreeRTOS SDK 2024-05-10 ChangeLog
 
 Change Log since 2024-05-09

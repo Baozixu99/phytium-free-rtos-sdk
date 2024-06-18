@@ -28,6 +28,8 @@
 #define ICC_EOIR1_EL1 	S3_0_C12_C12_1
 #define ICC_IAR1_EL1 	S3_0_C12_C12_0
 
+#define EXCEPTION_FRAME_SIZE 704 /* 704 = 22*8 + 32*16 + 2*8, except sp and spsr in FExcFrame */
+
 	.text
 
 	/* Variables and functions. */
@@ -63,10 +65,44 @@
 	stp	X16,X17, [sp,#-0x10]!
 	stp X18,X19, [sp,#-0x10]!
 	stp X29,X30, [sp,#-0x10]!
+
+	stp	q0,q1, [sp,#-0x20]!
+	stp	q2,q3, [sp,#-0x20]!
+	stp	q4,q5, [sp,#-0x20]!
+	stp	q6,q7, [sp,#-0x20]!
+	stp	q8,q9, [sp,#-0x20]!
+	stp	q10,q11, [sp,#-0x20]!
+	stp	q12,q13, [sp,#-0x20]!
+	stp	q14,q15, [sp,#-0x20]!
+	stp	q16,q17, [sp,#-0x20]!
+	stp	q18,q19, [sp,#-0x20]!
+	stp	q20,q21, [sp,#-0x20]!
+	stp	q22,q23, [sp,#-0x20]!
+	stp	q24,q25, [sp,#-0x20]!
+	stp	q26,q27, [sp,#-0x20]!
+	stp	q28,q29, [sp,#-0x20]!
+	stp	q30,q31, [sp,#-0x20]!
 .endm
 
 
 .macro RestoreRegister
+	ldp	q30,q31, [sp], #0x20
+	ldp	q28,q29, [sp], #0x20
+	ldp	q26,q27, [sp], #0x20
+	ldp	q24,q25, [sp], #0x20
+	ldp	q22,q23, [sp], #0x20
+	ldp	q20,q21, [sp], #0x20
+	ldp	q18,q19, [sp], #0x20
+	ldp	q16,q17, [sp], #0x20
+	ldp	q14,q15, [sp], #0x20
+	ldp	q12,q13, [sp], #0x20
+	ldp	q10,q11, [sp], #0x20
+	ldp	q8,q9, [sp], #0x20
+	ldp	q6,q7, [sp], #0x20
+	ldp	q4,q5, [sp], #0x20
+	ldp	q2,q3, [sp], #0x20
+	ldp	q0,q1, [sp], #0x20
+
 	ldp X29,X30, [sp], #0x10
 	ldp X18,X19, [sp], #0x10
 	ldp	X16,X17, [sp], #0x10
@@ -263,9 +299,6 @@ vSynchronousInterruptHandler:
 	/* store value */
 	STP		X0, X1, [SP, #-0x10]!
 	
-	/* Save the context of the current task and select a new task to run. */
-	portSAVE_CONTEXT
-
 #if defined( GUEST )
 	MRS		X0, ESR_EL1
 #else
@@ -281,6 +314,9 @@ vSynchronousInterruptHandler:
 #endif
 
 	B.NE	vSynchronousHandler
+
+	/* Save the context of the current task and select a new task to run. */
+	portSAVE_CONTEXT
 
 	LDP		X0, X1, [SP], #0x10
 
@@ -300,7 +336,7 @@ vSynchronousHandler:
 	mrs		x2, SPSR_EL1
 	stp	    x0, x1, [sp,#-0x10]!
 	mov		x21, sp 	
-	add		x21, x21, #208
+	add		x21, x21, #EXCEPTION_FRAME_SIZE
 	stp		x2,x21, [sp,#-0x10]!
 	mov 	x0, sp
 	
@@ -337,7 +373,7 @@ vSynchronousHandlerSPx:
 	mrs		x2, SPSR_EL1
 	stp	    x0, x1, [sp,#-0x10]!
 	mov		x21, sp 	
-	add		x21, x21, #208
+	add		x21, x21, #EXCEPTION_FRAME_SIZE
 	stp		x2,x21, [sp,#-0x10]!
 	mov 	x0, sp
 	
@@ -355,7 +391,7 @@ vSErrorInterruptHandler:
 	mrs		x2, SPSR_EL1
 	stp	    x0, x1, [sp,#-0x10]!
 	mov		x21, sp 	
-	add		x21, x21, #208
+	add		x21, x21, #EXCEPTION_FRAME_SIZE
 	stp		x21,x21, [sp,#-0x10]!
 	mov 	x0, sp
 

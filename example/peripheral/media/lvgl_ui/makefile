@@ -22,7 +22,7 @@ USER_INCLUDE := $(PROJECT_DIR)	\
 
 include $(FREERTOS_SDK_DIR)/tools/makeall.mk
 
-USR_BOOT_DIR		?= /mnt/d/tftboot
+USR_BOOT_DIR		?= /mnt/d/tftpboot
 
 
 image:

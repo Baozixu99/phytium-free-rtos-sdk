@@ -158,6 +158,8 @@ FreeRTOS_SWI_Handler:
  *****************************************************************************/
 .type vPortRestoreTaskContext, %function
 vPortRestoreTaskContext:
+	ldr	r0, =_freertos_vector_table
+	mcr	p15, 0, r0, c12, c0, 0
 	/* Switch to Supervisor mode. */
 	CPS		#SVC_MODE
 	portRESTORE_CONTEXT

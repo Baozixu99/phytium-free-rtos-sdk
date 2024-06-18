@@ -12,7 +12,7 @@ include $(FREERTOS_SDK_DIR)/tools/makeall.mk
 ifeq ($(OS),Windows_NT)
 	USR_BOOT_DIR		?= $(subst \,/, $(PHYTIUM_DEV_PATH))/tftp
 else
-	USR_BOOT_DIR		?= /mnt/d/tftboot
+	USR_BOOT_DIR		?= /mnt/d/tftpboot
 endif
 
 # 设置启动镜像名

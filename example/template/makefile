@@ -16,7 +16,7 @@ USER_INCLUDE := $(PROJECT_DIR)
 
 include $(FREERTOS_SDK_DIR)/tools/makeall.mk
 
-USR_BOOT_DIR		?= /mnt/d/tftboot
+USR_BOOT_DIR		?= /mnt/d/tftpboot
 
 image:
 	@$(MAKE) -s clean
@@ -26,3 +26,6 @@ ifdef CONFIG_OUTPUT_BINARY
 	@cp ./$(IMAGE_OUT_NAME).bin $(USR_BOOT_DIR)/$(BOOT_IMG_NAME).bin
 endif
 	@ls $(USR_BOOT_DIR)/$(BOOT_IMG_NAME).* -l
+
+e2000_jailhouse:
+	scp ./$(IMAGE_OUT_NAME).bin root@192.168.4.20:/root

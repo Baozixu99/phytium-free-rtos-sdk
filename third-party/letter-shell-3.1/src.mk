@@ -14,5 +14,6 @@ SHELL_CSRCS += cmd_bootelf.c \
 				cmd_rw.c \
 				cmd_sleep.c \
 				cmd_version.c \
-				cmd_ps.c 
+				cmd_ps.c \
+				cmd_mmu.c
 

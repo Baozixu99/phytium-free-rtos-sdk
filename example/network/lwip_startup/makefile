@@ -14,9 +14,9 @@ include $(FREERTOS_SDK_DIR)/tools/makeall.mk
 
 # 用户定义的编译目标文件上传路径 
 ifeq ($(OS),Windows_NT)
-USR_BOOT_DIR		?= /d/tftboot
+USR_BOOT_DIR		?= /d/tftpboot
 else
-USR_BOOT_DIR		?= /mnt/d/tftboot
+USR_BOOT_DIR		?= /mnt/d/tftpboot
 endif
 
 image:

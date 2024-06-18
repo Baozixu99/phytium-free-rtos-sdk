@@ -110,7 +110,7 @@ static FError FFreeRTOSPwmControl(FFreeRTOSPwm *os_pwm_p, int cmd, void *arg)
             break;
 
         case FREERTOS_PWM_CTRL_GET:
-            ret = FPwmVariableGet(&os_pwm_p->pwm_ctrl, configuration->channel, &configuration->pwm_cfg);
+            FPwmVariableGet(&os_pwm_p->pwm_ctrl, configuration->channel, &configuration->pwm_cfg);
             break;
 
         case FREERTOS_PWM_CTRL_ENABLE:

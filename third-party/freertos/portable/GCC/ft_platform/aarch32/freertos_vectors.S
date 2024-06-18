@@ -1,5 +1,5 @@
 .globl _boot
-.globl _vector_table
+.globl _freertos_vector_table
 
 .globl FiqInterruptHandler
 .globl DataAbortInterruptHandler
@@ -11,9 +11,9 @@
 .set EXCEPTION_FRAME_SIZE, (17*4)
 
 /* allocatable and executable */
-.section .vectors, "a"
+.section .rtos_vectors_freertos, "a"
 
-_vector_table:
+_freertos_vector_table:
     B	_boot
 	B	Undefined
 	B	FreeRTOS_SWI_Handler

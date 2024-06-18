@@ -2,19 +2,13 @@
 
 ## 1. 例程介绍
 
-本例程示范了freertos环境下测试Synchronous exception和Asynchronous exception
+本例程示范了freertos环境下测试Synchronous exception和Asynchronous exception.
 
-menuconfig选项中有如下配置选择：
+Synchronous exception包含未定义指令Invalid instruction和写只读内存区域Memory access permission error两种测试.
 
-EXCEPTION_INVALID_INSTRUCTION：Invalid instruction，未定义指令
+Asynchronous exception包含越界访问地址空间Memory access violation一种测试.
 
-EXCEPTION_ACCESS_PERMISSION_ERROR：Memory access permission error，写只读内存区域
-
-EXCEPTION_ACCESS_VIOLATION：Memory access violation，越界访问地址空间
-
-其中Synchronous exception包含Invalid instruction和Memory access permission error两种测试，Asynchronous exception包含Memory access violation一种测试
-
-注意aarch32和aarch64下，其异常分类有所差异，具体查看手册
+注意aarch32和aarch64下，其异常分类有所差异，具体查看手册.
 
 ## 2. 如何使用例程
 
@@ -112,4 +106,21 @@ bootelf -p 0x90100000
 
 ### 2.4 输出与实验现象
 
+```
+$ exception undef
+```
+![undef](./figs/undef.png)
+
+```
+$ exception access
+```
+![access](./figs/access.png)
+
+```
+$ exception abort
+```
+![abort](./figs/abort.png)
+
 ## 3. 如何解决问题
+
+本例程每次只能测试一种异常，需要重启后才能测试另一种。

@@ -99,8 +99,8 @@ void *metal_machine_io_mem_map(void *va, metal_phys_addr_t pa,
 {	
 	if (!flags)
 		return va;
-		
-	FSetTlbAttributes(pa, size, flags);
+	
+	FMmuMap((uintptr)pa, (uintptr)pa, size, flags);
 
 	return va;
 }

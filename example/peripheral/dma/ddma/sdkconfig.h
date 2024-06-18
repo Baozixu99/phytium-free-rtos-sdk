@@ -28,11 +28,11 @@
 #define CONFIG_GCC_CODE_MODEL_SMALL
 /* CONFIG_GCC_CODE_MODEL_LARGE is not set */
 /* end of Compiler configuration */
-#define CONFIG_USE_CACHE
-#define CONFIG_USE_MMU
 /* CONFIG_BOOT_WITH_FLUSH_CACHE is not set */
 /* CONFIG_MMU_DEBUG_PRINTS is not set */
 /* end of Arm architecture configuration */
+#define CONFIG_MMU_PAGE_SIZE 0x1000
+#define CONFIG_MAX_XLAT_TABLES 256
 /* end of Arch configuration */
 
 /* Soc configuration */
@@ -51,7 +51,6 @@
 #define CONFIG_F64BIT_MEMORY_ADDRESS 0x2000000000
 #define CONFIG_F64BIT_MEMORY_LENGTH 0x800000000
 #define CONFIG_TARGET_E2000
-/* CONFIG_USE_SPINLOCK is not set */
 #define CONFIG_DEFAULT_DEBUG_PRINT_UART1
 /* CONFIG_DEFAULT_DEBUG_PRINT_UART0 is not set */
 /* CONFIG_DEFAULT_DEBUG_PRINT_UART2 is not set */
@@ -84,6 +83,7 @@
 
 /* Sdk common configuration */
 
+#define CONFIG_ELOG_LINE_BUF_SIZE 0x100
 /* CONFIG_LOG_VERBOS is not set */
 /* CONFIG_LOG_DEBUG is not set */
 /* CONFIG_LOG_INFO is not set */
@@ -185,7 +185,7 @@
 #define CONFIG_DEFAULT_LINKER_SCRIPT
 /* CONFIG_USER_DEFINED_LD is not set */
 #define CONFIG_IMAGE_LOAD_ADDRESS 0x80100000
-#define CONFIG_IMAGE_MAX_LENGTH 0x1000000
+#define CONFIG_IMAGE_MAX_LENGTH 0x2000000
 #define CONFIG_HEAP_SIZE 1
 #define CONFIG_STACK_SIZE 0x400
 /* end of Linker Options */
@@ -218,11 +218,6 @@
 /* CONFIG_FREERTOS_USE_XMAC is not set */
 /* CONFIG_FREERTOS_USE_GMAC is not set */
 /* end of Freertos Eth Drivers */
-
-/* Freertos Gpio Drivers */
-
-/* CONFIG_FREERTOS_USE_GPIO is not set */
-/* end of Freertos Gpio Drivers */
 
 /* Freertos Spim Drivers */
 

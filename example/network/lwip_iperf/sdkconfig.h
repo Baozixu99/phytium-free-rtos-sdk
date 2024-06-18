@@ -28,11 +28,11 @@
 #define CONFIG_GCC_CODE_MODEL_SMALL
 /* CONFIG_GCC_CODE_MODEL_LARGE is not set */
 /* end of Compiler configuration */
-#define CONFIG_USE_CACHE
-#define CONFIG_USE_MMU
 #define CONFIG_BOOT_WITH_FLUSH_CACHE
 /* CONFIG_MMU_DEBUG_PRINTS is not set */
 /* end of Arm architecture configuration */
+#define CONFIG_MMU_PAGE_SIZE 0x1000
+#define CONFIG_MAX_XLAT_TABLES 256
 /* end of Arch configuration */
 
 /* Soc configuration */
@@ -83,6 +83,7 @@
 
 /* Sdk common configuration */
 
+#define CONFIG_ELOG_LINE_BUF_SIZE 0x100
 /* CONFIG_LOG_VERBOS is not set */
 /* CONFIG_LOG_DEBUG is not set */
 /* CONFIG_LOG_INFO is not set */
@@ -223,11 +224,6 @@
 #define CONFIG_FREERTOS_USE_XMAC
 /* CONFIG_FREERTOS_USE_GMAC is not set */
 /* end of Freertos Eth Drivers */
-
-/* Freertos Gpio Drivers */
-
-/* CONFIG_FREERTOS_USE_GPIO is not set */
-/* end of Freertos Gpio Drivers */
 
 /* Freertos Spim Drivers */
 

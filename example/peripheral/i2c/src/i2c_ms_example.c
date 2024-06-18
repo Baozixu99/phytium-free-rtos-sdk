@@ -126,6 +126,8 @@ void FI2cOsSlaveCb(void *instance_p, void *para, u32 evt)
         case FI2C_EVT_SLAVE_STOP:
         case FI2C_EVT_SLAVE_WRITE_REQUESTED:
             slave_p->first_write = TRUE;
+            break;   
+        case FI2C_EVT_SLAVE_ABORT:
             break;
         default:
             break;
@@ -192,6 +194,19 @@ void FI2cOsSlaveStop(void *instance_p, void *para)
 void FI2cOsSlaveWriteRequest(void *instance_p, void *para)
 {
     FI2cOsSlaveCb(instance_p, para, FI2C_EVT_SLAVE_WRITE_REQUESTED);
+}
+
+/**
+ * @name: FI2cOsSlaveAbort
+ * @msg: slave出现异常
+ * @return {*}
+ * @param {void} *instance_p
+ * @param {void} *para
+ */
+
+void FI2cOsSlaveAbort(void *instance_p, void *para)
+{
+    FI2cOsSlaveCb(instance_p, para, FI2C_EVT_SLAVE_ABORT);
 }
 
 /*
@@ -388,6 +403,7 @@ static FError FFreeRTOSI2cInitSet(uint32_t id, uint32_t work_mode, uint32_t slav
         FI2cSlaveRegisterIntrHandler(&os_i2c_slave->i2c_device, FI2C_EVT_SLAVE_READ_REQUESTED, FI2cOsSlaveReadRequest);
         FI2cSlaveRegisterIntrHandler(&os_i2c_slave->i2c_device, FI2C_EVT_SLAVE_STOP, FI2cOsSlaveStop);
         FI2cSlaveRegisterIntrHandler(&os_i2c_slave->i2c_device, FI2C_EVT_SLAVE_WRITE_REQUESTED, FI2cOsSlaveWriteRequest);
+        FI2cSlaveRegisterIntrHandler(&os_i2c_slave->i2c_device, FI2C_EVT_SLAVE_ABORT, FI2cOsSlaveAbort);
     }
 
     return ret;

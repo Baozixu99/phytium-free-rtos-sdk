@@ -163,6 +163,7 @@ void FFreeRTOSI2cDeinit(FFreeRTOSI2c *os_i2c_p)
 
     /* 避免没有关闭中断，存在触发 */
     InterruptMask(os_i2c_p->i2c_device.config.irq_num);
+    FI2cClearAbort(os_i2c_p->i2c_device.config.base_addr);/* 清除错误状态 */
     FI2cDeInitialize(&os_i2c_p->i2c_device);
 
     FASSERT_MSG(NULL != os_i2c_p->wr_semaphore, "Semaphore not exists!!!");

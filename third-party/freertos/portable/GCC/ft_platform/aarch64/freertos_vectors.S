@@ -5,14 +5,13 @@
 .global FreeRTOS_IRQ_Handler
 
 
-.section .freertos_vectors, "a"
+.section .rtos_vectors_freertos, "a"
 
 
 _freertos_vector_table:
 .set	FREERTOS_VBAR, _freertos_vector_table
 .align 11 /* VBAR_EL1 Vector Base Address is [55:48]  */
 .org(FREERTOS_VBAR)
-
 	b	vSynchronousInterruptHandler
 
 .org (FREERTOS_VBAR + 0x80)
