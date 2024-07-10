@@ -26,6 +26,7 @@
 #ifndef PWM_EXAMPLE_H
 #define PWM_EXAMPLE_H
 #include "FreeRTOS.h"
+#include "sdkconfig.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -33,13 +34,17 @@ extern "C"
 #endif
 
 /************************** Constant Definitions *****************************/
-#if defined(CONFIG_E2000Q_DEMO_BOARD)||defined(CONFIG_E2000D_DEMO_BOARD)
+#if defined(CONFIG_FIREFLY_DEMO_BOARD)
+#define PWM_TEST_ID FPWM3_ID
+#define PWM_TEST_CHANNEL     FPWM_CHANNEL_0
+#elif defined(CONFIG_PD2308_DEMO_BOARD)
+#define PWM_TEST_ID FPWM0_ID
+#define PWM_TEST_CHANNEL     FPWM_CHANNEL_0
+#else
 #define PWM_TEST_ID FPWM2_ID
 #define PWM_TEST_CHANNEL     FPWM_CHANNEL_1
-#elif defined(CONFIG_FIREFLY_DEMO_BOARD)
-#define PWM_TEST_ID FPWM4_ID
-#define PWM_TEST_CHANNEL     FPWM_CHANNEL_0
 #endif
+
 /* pwm test */
 BaseType_t FFreeRTOSPwmDeadBandTaskCreate();
 BaseType_t FFreeRTOSPwmSingleChannelTaskCreate();

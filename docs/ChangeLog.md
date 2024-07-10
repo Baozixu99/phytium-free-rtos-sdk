@@ -1,3 +1,23 @@
+# Phytium Standalone SDK 2024-07-10 ChangeLog
+
+Change Log since 2024-07-10
+
+## example
+
+- modify qspi indirect example, fix length problem in function FQspiFlashPortReadData
+
+# Phytium Standalone SDK 2024-07-10 ChangeLog
+
+Change Log since 2024-06-18
+
+## third-party
+
+- update fsl_sdmmc by standalone
+
+## example
+
+- init emmc by hs200 mode
+
 # Phytium Standalone SDK 2024-06-18 ChangeLog
 
 Change Log since 2024-06-18

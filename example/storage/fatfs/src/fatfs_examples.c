@@ -232,75 +232,6 @@ static FRESULT FatfsBasicTest(void)
     return fr;
 }
 
-
-    /* speed test will test diskio and destory file system */
-static FRESULT FatfsSpeedTest(void)
-{
-    FRESULT fr = FR_OK;
-#ifdef CONFIG_FATFS_RAM_DISK
-        printf("\r\n========Speed test for RAM Disk=================\r\n");
-        fr = ff_speed_bench(mount_points[FFREERTOS_FATFS_RAM_DISK], RAM_WR_SECTOR);
-        if (FR_OK != fr)
-        {
-            FF_ERROR("RAM disk speed test failed, err = %d.", fr);
-            return fr;
-        }
-#endif
-
-#ifdef CONFIG_FATFS_SDMMC_FSDIF_TF
-        printf("\r\n========Speed test for TF Card=================\r\n");
-        fr = ff_speed_bench(mount_points[FFREERTOS_FATFS_TF_CARD], WR_SECTOR);
-        if (FR_OK != fr)
-        {
-            FF_ERROR("TF speed test failed, err = %d.", fr);
-            return fr;
-        }
-#endif
-
-#ifdef CONFIG_FATFS_SDMMC_FSDIF_EMMC
-        printf("\r\n========Speed test for eMMC=================\r\n");
-        fr = ff_speed_bench(mount_points[FFREERTOS_FATFS_EMMC_CARD], WR_SECTOR);
-        if (FR_OK != fr)
-        {
-            FF_ERROR("SDIO speed test failed, err = %d.", fr);
-            return fr;
-        }
-#endif
-
-#ifdef CONFIG_FATFS_USB
-        printf("\r\n========Speed test for USB Disk=================\r\n");
-        fr = ff_speed_bench(mount_points[FFREERTOS_FATFS_USB_DISK], WR_SECTOR);
-        printf("Speed test for USB end\r\n");
-        if (FR_OK != fr)
-        {
-            FF_ERROR("USB speed test failed, err = %d.", fr);
-            return fr;
-        }
-        
-#endif
-
-#ifdef CONFIG_FATFS_FSATA
-        printf("\r\n========Speed test for SATA Disk=================\r\n");
-        fr = ff_speed_bench(mount_points[FFREERTOS_FATFS_SATA_DISK], WR_SECTOR);
-        if (FR_OK != fr)
-        {
-            FF_ERROR("SATA speed test failed, err = %d.", fr);
-            return fr;
-        }
-#endif
-
-#ifdef CONFIG_FATFS_FSATA_PCIE
-        printf("\r\n========Speed test for SATA PCIE Disk=================\r\n");
-        fr = ff_speed_bench(mount_points[FFREERTOS_FATFS_SATA_PCIE_DISK], WR_SECTOR);
-        if (FR_OK != fr)
-        {
-            FF_ERROR("SATA PCIE speed test failed, err = %d.", fr);
-            return fr;
-        }
-#endif
-    return fr;
-}
-
 /* cycle test will test diskio and destory file system */
 static FRESULT FatfsCycleTest(void)
 {
@@ -385,14 +316,6 @@ void FatfsRunTask(void)
     }
 #endif
 
-#ifdef CONFIG_FATFS_SPEED_TEST
-    fret = FatfsSpeedTest();
-    if(FR_OK != fret)
-    {
-        goto task_ret;
-    }
-#endif
-    
 #ifdef CONFIG_FATFS_CYCLE_TEST
     fret = FatfsCycleTest();
     if(FR_OK != fret)

@@ -110,7 +110,7 @@ status_t SDMMC_OSAEventCreate(void *eventHandle)
  * param event event flags.
  * retval kStatus_Fail or kStatus_Success.
  */
-status_t SDMMC_OSAEventWait(void *eventHandle, uint32_t eventType, uint32_t timeoutMilliseconds, uint32_t *event)
+status_t SDMMC_OSAEventWait(void *eventHandle, uint32_t eventType, uint32_t timeoutMilliseconds, uint32_t *event, uint32_t flags)
 {
     assert(eventHandle != NULL);
 
@@ -128,9 +128,19 @@ status_t SDMMC_OSAEventWait(void *eventHandle, uint32_t eventType, uint32_t time
         if (KOSA_StatusSuccess == status)
         {
             (void)SDMMC_OSAEventGet(eventHandle, eventType, event);
-            if ((*event & eventType) != 0U)
+            if (flags & SDMMC_OSA_EVENT_FLAG_AND)
             {
-                return kStatus_Success;
+                if (*event == eventType)
+                {
+                    return kStatus_Success;
+                }
+            }
+            else
+            {
+                if ((*event & eventType) != 0U)
+                {
+                    return kStatus_Success;
+                }
             }
         }
     }

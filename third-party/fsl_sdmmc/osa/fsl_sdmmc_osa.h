@@ -30,6 +30,9 @@
 #define SDMMC_OSA_EVENT_CARD_INSERTED (1UL << 8U)
 #define SDMMC_OSA_EVENT_CARD_REMOVED  (1UL << 9U)
 
+#define SDMMC_OSA_EVENT_FLAG_AND      (1UL << 0U)
+#define SDMMC_OSA_EVENT_FLAG_OR       (1UL << 1U)
+
 /*!@brief enable semphore by default */
 #ifndef SDMMC_OSA_POLLING_EVENT_BY_SEMPHORE
 #define SDMMC_OSA_POLLING_EVENT_BY_SEMPHORE 1
@@ -104,7 +107,7 @@ status_t SDMMC_OSAEventCreate(void *eventHandle);
  * @param event event flags.
  * @retval kStatus_Fail or kStatus_Success.
  */
-status_t SDMMC_OSAEventWait(void *eventHandle, uint32_t eventType, uint32_t timeoutMilliseconds, uint32_t *event);
+status_t SDMMC_OSAEventWait(void *eventHandle, uint32_t eventType, uint32_t timeoutMilliseconds, uint32_t *event, uint32_t flags);
 
 /*!
  * @brief set event.

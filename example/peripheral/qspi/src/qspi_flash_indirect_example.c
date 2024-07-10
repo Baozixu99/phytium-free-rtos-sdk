@@ -13,14 +13,15 @@
  *
  * FilePath: qspi_flash_indirect_example.c
  * Date: 2023-11-20 11:32:48
- * LastEditTime: 2023-11-20 11:32:48
+ * LastEditTime: 2024-7-10 11:32:48
  * Description:  This file is an example function implementation for the indirect mode of qspi flash
  *
  * Modify History:
  *  Ver   Who           Date           Changes
  * ----- ------       --------      --------------------------------------
  * 1.0  huangjin      2023/11/16    first release
- * 1.1 zhangyan       2024/4/18     add no letter shell mode, adapt to auto-test system
+ * 1.1  zhangyan      2024/4/18     add no letter shell mode, adapt to auto-test system
+ * 1.2  huangjin      2024/7/10     modify QspiRead function
  */
 #include <string.h>
 #include "FreeRTOSConfig.h"
@@ -48,9 +49,6 @@
 #define DAT_LENGTH 64
 static u8 rd_buf[DAT_LENGTH] = {0};
 static u8 wr_buf[DAT_LENGTH] = {0};
-
-/* test task number */
-#define READ_WRITE_TASK_NUM 3
 
 enum
 {
@@ -91,9 +89,14 @@ static FError QspiRead(void)
     FError ret = FQSPI_SUCCESS;
     const TickType_t xDelay = pdMS_TO_TICKS(TASK_DELAY_MS);
     int i = 0;
+    u32 read_index = 0;
 
     /* Read norflash data */
-    ret = FQspiFlashPortReadData(&os_qspi_ctrl_p->qspi_ctrl, FQSPI_FLASH_CMD_READ, flash_wr_start, rd_buf, DAT_LENGTH);
+    while (read_index < DAT_LENGTH)
+    {
+        ret = FQspiFlashPortReadData(&os_qspi_ctrl_p->qspi_ctrl, FQSPI_FLASH_CMD_READ, flash_wr_start+read_index, rd_buf+read_index, FQSPI_CMD_PORT_CMD_RW_MAX);
+        read_index += FQSPI_CMD_PORT_CMD_RW_MAX;
+    }
     if (FQSPI_SUCCESS != ret)
     {
         FQSPI_ERROR("QspiRead FFreeRTOSQspiTransfer failed, return value: 0x%x\r\n", ret);
@@ -141,8 +144,8 @@ static FError QspiWrite(void)
     /* Write norflash data */
     while (array_index < sizeof(wr_buf))
     {
-        u8 data_to_write[4] = {0};
-        for (i = 0; i < 4; i++)
+        u8 data_to_write[FQSPI_CMD_PORT_CMD_RW_MAX] = {0};
+        for (i = 0; i < FQSPI_CMD_PORT_CMD_RW_MAX; i++)
         {
             if (array_index < sizeof(wr_buf))
             {
@@ -154,13 +157,13 @@ static FError QspiWrite(void)
                 break;
             }
         }
-        ret = FQspiFlashPortWriteData(&os_qspi_ctrl_p->qspi_ctrl, FQSPI_FLASH_CMD_PP, write_addr, (u8 *)(data_to_write), 4);
+        ret = FQspiFlashPortWriteData(&os_qspi_ctrl_p->qspi_ctrl, FQSPI_FLASH_CMD_PP, write_addr, (u8 *)(data_to_write), FQSPI_CMD_PORT_CMD_RW_MAX);
         if (FQSPI_SUCCESS != ret)
         {
             FQSPI_ERROR("Failed to erase sectors. return value: 0x%x\r\n", ret);
             return ret;
         }
-        write_addr += 4;
+        write_addr += FQSPI_CMD_PORT_CMD_RW_MAX;
     }
 
     return ret;

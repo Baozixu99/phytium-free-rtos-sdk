@@ -212,7 +212,7 @@ int FFreeRTOSEmmcWriteRead(void)
     s_inst_config.endianMode = kSDMMCHOST_EndianModeLittle;
     s_inst_config.maxTransSize = SD_MAX_RW_BLK * SD_BLOCK_SIZE;
     s_inst_config.defBlockSize = SD_BLOCK_SIZE;
-    s_inst_config.cardClock = MMC_CLOCK_52MHZ;
+    s_inst_config.cardClock = FSDIF_CLK_SPEED_100_MHZ;
 
     /* 创建主要操作任务 */
     xReturn = xTaskCreate((TaskFunction_t)SdifEmmcReadWriteTask,

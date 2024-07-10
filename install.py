@@ -11,9 +11,9 @@ linux_aarch64 = 1
 windows_x64 = 2
 
 # STEP 1: Check environment
-if (platform.system() == 'Linux' ) and (platform.processor() == 'x86_64'):
+if (platform.system() == 'Linux' ) and (platform.machine() == 'x86_64'):
     install_platform = linux_x86
-elif (platform.system() == 'Linux' ) and (platform.processor() == 'aarch64'): # Arm64 computer
+elif (platform.system() == 'Linux' ) and (platform.machine() == 'aarch64'): # Arm64 computer
     install_platform = linux_aarch64
 elif (platform.system() == 'Windows') and (platform.machine() == 'AMD64'):
     install_platform = windows_x64
@@ -36,7 +36,7 @@ freertos_sdk_path = install_path
 print("Standalone SDK at {}".format(freertos_sdk_path))
 
 # Add standalone sdk
-standalone_sdk_v="0f31ca6f028af44e999e986157388f655d1f528e"
+standalone_sdk_v="3174e23d3c319a5685910febb17ca87237ca7ceb"
 if (install_platform == windows_x64):
     standalone_path=freertos_sdk_path  + '\\standalone'
 else:
