@@ -353,12 +353,13 @@ static FError FFreeRTOSCanSendThenRecvData(int ide)
                 return ret;
             }
             count[instance_id]++;
-
+            ret = CAN_UNKNOWN_STATE; 
             /* wait recv interrupt */
             xReturn = xQueueReceive(xQueue_irq, &xReceiveStructure, TIMER_OUT);
             if (xReturn == pdFAIL)
             {
                 FCAN_TEST_ERROR("xQueue_irq receive timeout.");
+                ret = CAN_RECV_FAILURE;
                 return ret;
             } 
 

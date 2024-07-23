@@ -64,6 +64,7 @@ if not os.path.exists(standalone_path):
                                        /third-party \
                                        !/third-party/lwip-2.1.2/ports/arch \
                                        /tools \
+                                       /standalone.kconfig \
                                        /soc")
 
     os.system("git checkout {}".format(standalone_sdk_v))

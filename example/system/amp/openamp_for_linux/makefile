@@ -4,7 +4,9 @@ FREERTOS_SDK_DIR = $(CURDIR)/../../../..
 USER_CSRC := main.c
 USER_CSRC += $(wildcard  src/*.c)
 
-USER_INCLUDE := $(PROJECT_DIR)
+USER_INCLUDE += $(PROJECT_DIR) \
+				$(PROJECT_DIR)/inc \
+				$(PROJECT_DIR)/common
 
 include $(FREERTOS_SDK_DIR)/tools/makeall.mk
 

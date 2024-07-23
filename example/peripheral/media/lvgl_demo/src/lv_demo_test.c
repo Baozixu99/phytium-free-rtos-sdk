@@ -47,7 +47,7 @@
 #define FMEDIA_EVT_INTR(index)             BIT(index)
 #define FMEDIA_CHANNEL_0                    0
 #define FMEDIA_CHANNEL_1                    1
-static u8 *static_frame_buffer_address = (u8 *)0xa0000000 ;
+static u8 static_frame_buffer_address[1920 * 1080 * 4] __attribute__((aligned(128))) = {0};/*Framebuffer 大小 (字节) = 屏幕宽度 (像素) × 屏幕高度 (像素) × 每像素位数 (bpp) / 8*/
 static EventGroupHandle_t media_event = NULL;
 static FFreeRTOSMedia os_media;
 /**********************Macros (Inline Functions) Definitions *********************/

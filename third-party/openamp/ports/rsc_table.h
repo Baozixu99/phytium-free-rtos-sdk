@@ -35,33 +35,44 @@
 extern "C" {
 #endif
 
-    /************************** Constant Definitions *****************************/
-
-    /************************** Variable Definitions *****************************/
-
-    /************************** Function Prototypes ******************************/
-
-    /***************** Macros (Inline Functions) Definitions *********************/
-
-
 #define NO_RESOURCE_ENTRIES         8
 
-    /**************************** Type Definitions *******************************/
+/* Place resource table in special ELF section */
+#define __section_t(S)          __attribute__((__section__(#S)))
+#define __resource              __section_t(.resource_table)
 
-    /* Resource table for the given remote */
-    struct remote_resource_table
-    {
-        unsigned int version;
-        unsigned int num;
-        unsigned int reserved[2];
-        unsigned int offset[NO_RESOURCE_ENTRIES];
-        /* rpmsg vdev entry */
-        struct fw_rsc_vdev rpmsg_vdev;
-        struct fw_rsc_vdev_vring rpmsg_vring0;
-        struct fw_rsc_vdev_vring rpmsg_vring1;
-    } __attribute__((packed, aligned(0x100)));
+#define RPMSG_IPU_C0_FEATURES        1
 
-    void *get_resource_table(int rsc_id, int *len);
+/* VirtIO rpmsg device id */
+#define VIRTIO_ID_RPMSG_             7
+
+/* notifyid is a unique rproc-wide notify index for this vdev */
+#define VDEV_NOTIFYID				0
+/* Remote supports Name Service announcement */
+#define VIRTIO_RPMSG_F_NS           0
+
+#define NUM_VRINGS                  0x02
+#define VRING_ALIGN                 0x1000
+#define RING_TX                     CONFIG_VRING_TX_ADDR
+#define RING_RX                     CONFIG_VRING_RX_ADDR
+
+#define NUM_TABLE_ENTRIES           1
+
+/**************************** Type Definitions *******************************/
+
+/* Resource table for the given remote */
+struct remote_resource_table
+{
+    unsigned int version;
+    unsigned int num;
+    unsigned int reserved[2];
+    unsigned int offset[NO_RESOURCE_ENTRIES];
+    /* rpmsg vdev entry */
+    struct fw_rsc_vdev rpmsg_vdev;
+    struct fw_rsc_vdev_vring rpmsg_vring0;
+    struct fw_rsc_vdev_vring rpmsg_vring1;
+} __attribute__((packed, aligned(0x1000)));
+
 
 #if defined __cplusplus
 }

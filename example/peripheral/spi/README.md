@@ -9,7 +9,7 @@
 ## 2. 如何使用例程
 
 本例程需要用到
-- Phytium开发板(E2000D/E2000Q/FT2000-4/D2000/PhytiumPi)
+- Phytium开发板(E2000D/E2000Q/PhytiumPi)
 - [Phytium FreeRTOS SDK](https://gitee.com/phytium_embedded/phytium-free-rtos-sdk)
 - [Phytium Standalone SDK](https://gitee.com/phytium_embedded/phytium-standalone-sdk)
 - Flash芯片
@@ -18,14 +18,12 @@
 
 本例程支持的硬件平台包括
 
-- E2000D，E2000Q，FT2000/4，D2000，PhytiumPi
+- E2000D，E2000Q，PhytiumPi
 
 对应的配置项是，
 
 - CONFIG_TARGET_E2000D
 - CONFIG_TARGET_E2000Q
-- CONFIG_TARGET_FT2004
-- CONFIG_TARGET_D2000
 - CONFIG_TARGET_PHYTIUMPI
 
 ### 2.1.1 E2000

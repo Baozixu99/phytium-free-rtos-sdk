@@ -7,13 +7,6 @@
 
 #define CONFIG_TARGET_NAME "openamp_for_linux"
 /* end of  Freertos Configuration */
-
-/* AMP Config */
-
-#define CONFIG_IPI_IRQ_NUM 9
-#define CONFIG_IPI_IRQ_NUM_PRIORITY 1
-#define CONFIG_IPI_CHN_BITMASK 255
-/* end of AMP Config */
 /* end of Project Configuration */
 #define CONFIG_USE_FREERTOS
 
@@ -110,11 +103,6 @@
 /* CONFIG_INTERRUPT_ROLE_MASTER is not set */
 #define CONFIG_INTERRUPT_ROLE_SLAVE
 /* end of Sdk common configuration */
-
-/* Image information configuration */
-
-/* CONFIG_IMAGE_INFO is not set */
-/* end of Image information configuration */
 
 /* Drivers configuration */
 
@@ -287,20 +275,9 @@
 
 #define CONFIG_USE_OPENAMP
 #define CONFIG_USE_OPENAMP_IPI
-#define CONFIG_OPENAMP_RESOURCES_ADDR 0xc0000000
-#define CONFIG_VRING_TX_ADDR 0xffffffff
-#define CONFIG_VRING_RX_ADDR 0xffffffff
-#define CONFIG_VRING_SIZE 0x100
-#define CONFIG_POLL_BASE_ADDR 0xc0224000
 #define CONFIG_SKIP_SHBUF_IO_WRITE
 #define CONFIG_USE_MASTER_VRING_DEFINE
-
-/* Baremetal config */
-
-/* CONFIG_MEM_NO_CACHE is not set */
-/* CONFIG_MEM_WRITE_THROUGH is not set */
-#define CONFIG_MEM_NORMAL
-/* end of Baremetal config */
+#define CONFIG_USE_CACHE_COHERENCY
 /* end of OpenAmp */
 /* CONFIG_USE_YMODEM is not set */
 /* CONFIG_USE_SFUD is not set */

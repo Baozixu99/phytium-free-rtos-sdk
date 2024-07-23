@@ -48,7 +48,7 @@ static void DdmaCmdUsage(void)
     printf("ddma spi-loopback\r\n");
     printf("-- Run ddma spi loopback example, default transfer 32 bytes\r\n");
     printf("ddma spi-loopback N\r\n");
-    printf("-- Run ddma spi loopback example, N is a number, N <= 128 =bytes, default transfer N bytes\r\n");
+    printf("-- Run ddma spi loopback example, N is a number, N <= 128 =bytes, N % 4 == 0, default transfer N bytes\r\n");
 }
 
 static int DdmaCmdEntry(int argc, char *argv[])

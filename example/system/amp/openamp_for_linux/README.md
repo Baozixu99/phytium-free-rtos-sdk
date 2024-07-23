@@ -13,13 +13,15 @@
 
 - 本例程基于开源openamp项目
   [OpenAMP](https://github.com/OpenAMP/open-amp.git)
-- 本例程主要提供了D2000/FT2004/E2000D/E2000Q/PHYTIUMPI Linux与RTOS之间的测试例程
+- 本例程主要提供了D2000/E2000D/E2000Q/PHYTIUMPI Linux与RTOS之间的测试例程
 - 本例程演示rpmsg用法的示例演示应用程序。此应用core0 中的程序为从机程序，core1 中的程序为主机linux程序，其目标是从核程序工作在echo 模式下，主核主动发送数据之后，从机程序会将收到的数据重新回复发送回去
 - 如果需要添加其他应用任务，则要求应用任务优先级比RpmsgEchoTask优先级（默认是4）高，否则应用任务无法执行。
 
-- 参阅《飞腾嵌入式OpenAMP技术解决方案与用户操作手册v1.0》配置好linux环境，本例程只提供编译镜像
+- 参阅《飞腾嵌入式OpenAMP技术解决方案与用户操作手册v1.4》配置好linux环境，本例程只提供编译镜像
  [手册链接](https://gitee.com/phytium_embedded/phytium-embedded-docs/tree/master/open-amp)
 - 注意linux4.19内核只支持aarch32编译的镜像 *.elf 文件,linux5.1内核支持aarch64和32位编译的镜像。
+
+- 多核共享资源的调整主要集中在 `common` 目录下，可以根据需要进行修改。
 
 ## 2. 如何使用例程
 
@@ -29,7 +31,7 @@
 
 > <font size="1">哪些硬件平台是支持的，需要哪些外设，例程与开发板哪些IO口相关等（建议附录开发板照片，展示哪些IO口被引出）</font><br />
 
-1. 准备一块 D2000 、FT2004 、 E2000Q/D 、firefly开发板中任意一款
+1. 准备一块 D2000 、 E2000Q/D 、firefly开发板中任意一款
 2. 将串口连接好电脑，波特率设为 115200-8-1-N
 
 ### 2.2 SDK配置方法
@@ -57,18 +59,12 @@
 
 - 以E2000D为例,加载E2000D aarch32位，输入 ` make config_e2000d_aarch32 `
 
-![OpenAMP配置](./figs/OpenAmpConfig.png)
-
-- Destination IPI mask               : ipi 中断中，用于唤醒其他核心的掩码
-
 ![Core0构建](figs/Core0_BUILD_.png)
 
-- Baremetal config -> Select mem default attribute       : 提供内存属性选择
 - Remoteproc use ipi       : 使用ipi 中断模式进行提醒
-- Openamp resource address : OpenAMP 中共享资源表中地址
-- Vring tx address         : 共享发送缓冲区的起始地址，同时也是共享buffer 区域的起始地址(由linux分配，初始值设置全f)
-- Vring rx address         : 共享接收缓冲区的起始地址(由linux分配，初始值设置全f)
-- table of base physical address of each of the pages in the I/O region : 用于核心间提醒机制的共享内存初始点
+- Skip local rvdev->shbuf_io
+- Use the Vring definition in the master
+- Use cache coherency
 
 ### 2.4 输出与实验现象
 
@@ -80,11 +76,12 @@
 
 1. 进入amp/openamp_for_linux 目录
 2. 输入 ` make config_e2000d_aarch32 ` 加载E2000D默认配置项目，其他配置项可以输入 ` make config_ ` 后按tab键查看支持哪些默认配置项目
-3. 在 Sdk common configuration → Use default interrupt configuration → Interrupt role select  选项中选择 use slave role
+3. 选择好配置项目后，输入 `make menuconfig` 打开配置项目
+4. 在 Sdk common configuration → Use default interrupt configuration → Interrupt role select  选项中选择 use slave role(默认配置好的)
 
    ![interrupt_set](./figs/interrupt_set.png)
 
-4. 目录下输入 "make clean"  "make image" ,生成openamp_core0.elf 文件之后，将其拷贝至linux 指定目录下(注意linux加载的镜像名称必须是openamp_core0.elf，否则无法识别到)
+5. 目录下输入 "make clean"  "make image" ,生成openamp_core0.elf 文件之后，将其拷贝至linux 指定目录下(注意linux加载的镜像名称必须是openamp_core0.elf，否则无法识别到)
 
 #### E2000 aarch64 freertos程序测试 （仅适用于linux 5.10）
 
@@ -92,11 +89,12 @@
 
 1. 进入amp/openamp_for_linux 目录
 2. 输入 ` make config_e2000d_aarch64 ` 加载E2000D默认配置项目，其他配置项可以输入 ` make config_ ` 后按tab键查看支持哪些默认配置项目
-3. 在 Sdk common configuration → Use default interrupt configuration → Interrupt role select  选项中选择 use slave role
+3. 选择好配置项目后，输入 `make menuconfig` 打开配置项目
+4. 在 Sdk common configuration → Use default interrupt configuration → Interrupt role select  选项中选择 use slave role(默认配置好的)
 
    ![interrupt_set](./figs/interrupt_set.png)
 
-4. 目录下输入 "make clean"  "make image" ,生成openamp_core0.elf 文件之后，将其拷贝至linux 指定目录下(注意linux加载的镜像名称必须是openamp_core0.elf，否则无法识别到)
+5. 目录下输入 "make clean"  "make image" ,生成openamp_core0.elf 文件之后，将其拷贝至linux 指定目录下(注意linux加载的镜像名称必须是openamp_core0.elf，否则无法识别到)
 
 ## 3. 如何解决问题 (Q&A)
 > 主要记录使用例程中可能会遇到的问题，给出相应的解决方案

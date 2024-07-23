@@ -13,7 +13,7 @@
  * 
  * FilePath: main.c
  * Created Date: 2022-02-25 13:25:14
- * Last Modified: 2024-05-06 17:56:58
+ * Last Modified: 2024-07-19 14:47:05
  * Description:  This file is for main
  * 
  * Modify History: 
@@ -31,22 +31,21 @@
 #include "fdebug.h"
 #include "FreeRTOS.h"
 #include "task.h"
+#include "rpmsg-demo-listening.h"
 
 #define OPENAMP_MAIN_DEBUG_TAG "OPENAMP_MAIN"
 #define OPENAMP_MAIN_DEBUG_I(format, ...) FT_DEBUG_PRINT_I(OPENAMP_MAIN_DEBUG_TAG, format, ##__VA_ARGS__)
 #define OPENAMP_MAIN_DEBUG_W(format, ...) FT_DEBUG_PRINT_W(OPENAMP_MAIN_DEBUG_TAG, format, ##__VA_ARGS__)
 #define OPENAMP_MAIN_DEBUG_E(format, ...) FT_DEBUG_PRINT_E(OPENAMP_MAIN_DEBUG_TAG, format, ##__VA_ARGS__)
 
-extern int rpmsg_listening_func(void);
 int main(void)
 {
     BaseType_t ret;
-
     ret = rpmsg_listening_func();
     if(ret != pdPASS)
         goto FAIL_EXIT;
     OPENAMP_MAIN_DEBUG_I("Create task OK!");
-
+    /* 开启任务调度前确保主核不会提前发送消息过来，否则会导致IPI模式中断被屏蔽，无法接收到消息中断 */
     vTaskStartScheduler(); /* 启动任务，开启调度 */   
     while (1); /* 正常不会执行到这里 */
 

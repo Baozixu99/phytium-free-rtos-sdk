@@ -344,6 +344,7 @@ static FError FFreeRTOSCanfdSendThenRecvData(int ide)
             if (xReturn == pdFAIL)
             {
                 FCAN_TEST_ERROR("xQueue_irq receive timeout.");
+                ret = CANFD_RECV_FAILURE;
                 return ret;
             } 
 

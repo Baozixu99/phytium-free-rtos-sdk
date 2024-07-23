@@ -23,30 +23,47 @@
  *  1.1 huanghe    2023/03/09  Adapt OpenAMP routines based on e2000D/Q
  */
 
-
+#include <stdio.h>
+#include "FreeRTOS.h"
 #include "ftypes.h"
-#include "fpsci.h"
-#include "shell.h"
-#include "fsleep.h"
-#include "fprintk.h"
-#include "fdebug.h"
+#include "sdkconfig.h"
+#ifdef CONFIG_USE_LETTER_SHELL
 #include "shell_port.h"
+#include "shell.h"
+#else
+#include "task.h"
+#include "rpmsg_demo_manager.h"
 
-#define OPENAMP_MAIN_DEBUG_TAG "OPENAMP_MAIN"
-#define OPENAMP_MAIN_DEBUG_I(format, ...) FT_DEBUG_PRINT_I(OPENAMP_MAIN_DEBUG_TAG, format, ##__VA_ARGS__)
-#define OPENAMP_MAIN_DEBUG_W(format, ...) FT_DEBUG_PRINT_W(OPENAMP_MAIN_DEBUG_TAG, format, ##__VA_ARGS__)
-#define OPENAMP_MAIN_DEBUG_E(format, ...) FT_DEBUG_PRINT_E(OPENAMP_MAIN_DEBUG_TAG, format, ##__VA_ARGS__)
+void OpenampExampleTaskEntry(void)
+{
+    /*Demo read and write by sfud*/
+    FFreeRTOSOpenampExample();
+
+    printf("[test_end]\r\n");
+
+    vTaskDelete(NULL);
+}
+#endif
 
 extern int FOpenampCmdEntry(int argc, char *argv[]) ;
 
 int main(void)
 {
-    BaseType_t ret;
-
-    ret = LSUserShellTask() ;
+    BaseType_t ret = pdPASS; /* 定义一个创建信息返回值，默认为 pdPASS */
+#ifdef CONFIG_USE_LETTER_SHELL
+    ret = LSUserShellTask();
     if(ret != pdPASS)
         goto FAIL_EXIT;
-
+#else
+    taskENTER_CRITICAL(); /* no schedule when create task */
+    ret = xTaskCreate((TaskFunction_t )OpenampExampleTaskEntry, /* 任务入口函数 */
+                        (const char* )"OpenampExampleTaskEntry",/* 任务名字 */
+                        (uint16_t )(4096*2), /* 任务栈大小 */
+                        (void* )NULL,/* 任务入口函数参数 */
+                        (UBaseType_t )4, /* 任务的优先级 */
+                        NULL); /* 任务控制块指针 */
+    taskEXIT_CRITICAL(); /* allow schedule since task created */
+#endif
     vTaskStartScheduler(); /* 启动任务，开启调度 */   
     while (1); /* 正常不会执行到这里 */
 

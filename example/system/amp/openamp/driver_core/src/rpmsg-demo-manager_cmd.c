@@ -30,25 +30,29 @@
 #include <metal/alloc.h>
 #include <string.h>
 #include "strto.h"
-#include "shell.h"
+
 #include "platform_info.h"
 #include "rpmsg_service.h"
-#include <metal/sleep.h>
 #include "rsc_table.h"
+#include "helper.h"
+#include "load_fw.h"
+#include "fparameters.h"
 #include "fdebug.h"
-#include "fkernel.h"
 #include "felf.h"
 #include "sdkconfig.h"
+#include "libmetal_configs.h"
+#include "openamp_configs.h"
+#include "fsleep.h"
 
 #include "FreeRTOS.h"
 #include "task.h"
-#include "finterrupt.h"
-#include "fpsci.h"
-
+#ifdef CONFIG_USE_LETTER_SHELL
+#include "shell.h"
+#endif
 /************************** Constant Definitions *****************************/
 
 /***************** Macros (Inline Functions) Definitions *********************/
-#define     DEMO_MANG_MASTER_DEBUG_TAG "    DEMO_MANG_MASTER"
+#define     DEMO_MANG_MASTER_DEBUG_TAG "DEMO_MANG_MASTER"
 #define     DEMO_MANG_MASTER_DEBUG_I(format, ...) FT_DEBUG_PRINT_I( DEMO_MANG_MASTER_DEBUG_TAG, format, ##__VA_ARGS__)
 #define     DEMO_MANG_MASTER_DEBUG_W(format, ...) FT_DEBUG_PRINT_W( DEMO_MANG_MASTER_DEBUG_TAG, format, ##__VA_ARGS__)
 #define     DEMO_MANG_MASTER_DEBUG_E(format, ...) FT_DEBUG_PRINT_E( DEMO_MANG_MASTER_DEBUG_TAG, format, ##__VA_ARGS__)
@@ -58,89 +62,53 @@
 #define MANAGE_READ 1
 #define MANAGE_WAIT 0
 
-#define DEMO_MANAGER_ADDR   (RPMSG_RESERVED_ADDRESSES - 1)
-
 #define RPMSG_PING_DEMO     0x1
 #define RPMSG_SAM_PING_DEMO 0X2
 #define RPMSG_MAT_MULT_DEMO 0X3
 #define RPMSG_NO_COPY_DEMO  0X4
 #define RPMSG_DEMO_MAX      0x5
 
-#define REMOTEPROC_MASK     BIT(CONFIG_TARGET_CPU_MASK)
-#define ELF_LOAD_ADDR       0xf1000000U
 /************************** Variable Definitions *****************************/
-/* Globals */
+struct metal_device kick_device_00 = {
+    .name = SLAVE_00_KICK_DEV_NAME,
+	.bus = NULL,
+    .irq_num = 1,
+	.irq_info = (void *)SLAVE_00_SGI,
+} ;
 
-static struct rpmsg_endpoint lept;
-static struct rpmsg_device *rpdev = NULL;
+struct remoteproc_priv slave_00_priv = {
+    .kick_dev_name =           SLAVE_00_KICK_DEV_NAME  ,
+	.kick_dev_bus_name =        KICK_BUS_NAME ,
+    .cpu_id        = SLAVE_DEVICE_CORE_00 ,/* 设置CPU ID */
 
+	.src_table_attribute = SLAVE00_SOURCE_TABLE_ATTRIBUTE ,
+	
+	/* |rx vring|tx vring|share buffer| */
+	.share_mem_va = SLAVE00_SHARE_MEM_ADDR ,
+	.share_mem_pa = SLAVE00_SHARE_MEM_ADDR ,
+	.share_buffer_offset =  SLAVE00_VRING_SIZE ,
+	.share_mem_size = SLAVE00_SHARE_MEM_SIZE ,
+	.share_mem_attribute = SLAVE00_SHARE_BUFFER_ATTRIBUTE ,
+} ;
+/*OpenAMP 相关定义*/
+struct remoteproc remoteproc_slave_00 ;
+static struct rpmsg_device *rpdev_slave_00 = NULL;
+static struct rpmsg_endpoint ept_master_slave_00;
+/* 标志相关定义 */
 static int volatile cmd_ok = MANAGE_WAIT;
 static u32 demo_flag = RPMSG_PING_DEMO;
-static void *platform = NULL;
 static u32 elf_boot_flag = 0;
-
-extern struct image_store_ops mem_image_store_ops;
-struct mem_file {
-	const void *base;
-};
-
-static struct mem_file image = {
-	.base = (void *)ELF_LOAD_ADDR,
-};
-
+/* 镜像相关定义 */
+extern const struct image_store_ops mem_image_store_ops;
+static struct mem_file image[FCORE_NUM] = {(void *)0};
+extern  void * amp_img_start;
+extern  void * amp_img_end;
 /************************** Function Prototypes ******************************/
 extern int rpmsg_echo(struct rpmsg_device *rdev, void *priv);
 extern int rpmsg_sample_echo(struct rpmsg_device *rdev, void *priv) ;
 extern int matrix_multiplyd(struct rpmsg_device *rdev, void *priv) ;
 extern int rpmsg_nocopy_echo(struct rpmsg_device *rdev, void *priv) ;
 static int FOpenampClose(void *platform);
-
-static void FOpenampCmdUsage()
-{
-    printf("Usage:\r\n");
-    printf("openamp auto \r\n");
-    printf("-- Auto running.\r\n");
-    printf("-- [1] This application echoes back data that was sent to it by the master core.\r\n");
-    printf("-- [2] This application simulate sample rpmsg driver. For this it echo 100 time message sent by the rpmsg sample client available in distribution.\r\n");
-    printf("-- [3] This application receives two matrices from the master, multiplies them and returns the result to the master core.\r\n");
-    printf("-- [4] This application echoes back data that was sent to it by the master core.\r\n");
-}
-
-/*-----------------------------------------------------------------------------*
- *  Image Function
- *-----------------------------------------------------------------------------*/
-static int FLoadelfRemoteproc(struct image_store_ops *store_ops,void *platform)
-{
-    int ret = 0;
-    struct remoteproc *rproc = platform;
-    struct remoteproc_priv *prproc = rproc->priv;
-
-    prproc->cpu_mask = REMOTEPROC_MASK;
-    if (rproc == NULL)
-        return -1;
-    /* Configure remoteproc to get ready to load executable */
-	remoteproc_config(rproc, NULL);
-
-    /* Load remoteproc executable */
-	DEMO_MANG_MASTER_DEBUG_I("Start to load executable with remoteproc_load(0x%x) \r\n",(unsigned long)image.base);
-
-    rproc->bootaddr = ElfLoadElfImagePhdr((unsigned long)image.base);
-    if (!rproc->bootaddr)
-    {
-        rproc->state = RPROC_READY;
-    }
-    /* Start the processor */
-    ret = remoteproc_start(rproc);
-	if (ret) 
-    {
-        remoteproc_shutdown(rproc);
-		DEMO_MANG_MASTER_DEBUG_E("failed to start processor\r\n");
-		return ret;
-	}
-	DEMO_MANG_MASTER_DEBUG_I("successfully started the processor\r\n");
-
-    return ret;
-}
 
 /*-----------------------------------------------------------------------------*
  *  RPMSG endpoint callbacks
@@ -169,7 +137,7 @@ static int rpmsg_endpoint_cb(struct rpmsg_endpoint *ept, void *data, size_t len,
 static void rpmsg_service_unbind(struct rpmsg_endpoint *ept)
 {
     (void)ept;
-    rpmsg_destroy_ept(&lept);
+    rpmsg_destroy_ept(&ept_master_slave_00);
     DEMO_MANG_MASTER_DEBUG_E("Echo test: service is destroyed.\r\n");
 }
 
@@ -177,13 +145,13 @@ static void rpmsg_name_service_bind_cb(struct rpmsg_device *rdev,
                                        const char *name, uint32_t dest)
 {
     DEMO_MANG_MASTER_DEBUG_I("New endpoint notification is received.\r\n");
-    if (strcmp(name, DEMO_SERVICE_NAME))
+    if (strcmp(name, RPMSG_SERVICE_00_NAME))
     {
         DEMO_MANG_MASTER_DEBUG_E("Unexpected name service %s.\r\n", name);
     }
     else
-        (void)rpmsg_create_ept(&lept, rdev, DEMO_SERVICE_NAME,
-                               DEMO_MANAGER_ADDR, dest,
+        (void)rpmsg_create_ept(&ept_master_slave_00, rdev, RPMSG_SERVICE_00_NAME,
+                               MASTER_DRIVER_EPT_ADDR, dest,
                                rpmsg_endpoint_cb,
                                rpmsg_service_unbind);
 }
@@ -196,15 +164,15 @@ static int FManageEptCreat(struct rpmsg_device *rdev, void *priv)
     int ret = 0;
 
     /* Create RPMsg endpoint */
-    ret = rpmsg_create_ept(&lept, rdev, DEMO_SERVICE_NAME,
-                            DEMO_MANAGER_ADDR, RPMSG_ADDR_ANY,
+    ret = rpmsg_create_ept(&ept_master_slave_00, rdev, RPMSG_SERVICE_00_NAME,
+                            MASTER_DRIVER_EPT_ADDR, SLAVE_DEVICE_00_EPT_ADDR,
                             rpmsg_endpoint_cb, rpmsg_service_unbind);
     if (ret)
     {
         DEMO_MANG_MASTER_DEBUG_E("Failed to create endpoint. %d \r\n", ret);
         return -1;
     }
-    while (!is_rpmsg_ept_ready(&lept))
+    while (!is_rpmsg_ept_ready(&ept_master_slave_00))
     {
         DEMO_MANG_MASTER_DEBUG_I("start to wait platform_poll \r\n");
         platform_poll(priv);
@@ -217,7 +185,7 @@ int FRunningApp(struct rpmsg_device *rdev, void *priv)
 {
     int ret = 0;
 
-    ret = rpmsg_send(&lept, &demo_flag, sizeof(u32));
+    ret = rpmsg_send(&ept_master_slave_00, &demo_flag, sizeof(u32));
     if (ret < 0)
     {
         DEMO_MANG_MASTER_DEBUG_E("Failed to send data,ret:%d...\r\n",ret);
@@ -296,37 +264,18 @@ int FRunningApp(struct rpmsg_device *rdev, void *priv)
 /*-----------------------------------------------------------------------------*
  *  Application entry point
  *-----------------------------------------------------------------------------*/
-static int FRpmsgDemoManager(void *platform)
-{
-    int ret = 0;
-    rpdev = platform_create_rpmsg_vdev(platform, 0, VIRTIO_DEV_MASTER, NULL, rpmsg_name_service_bind_cb);
-    if (!rpdev)
-    {
-        DEMO_MANG_MASTER_DEBUG_E("Failed to create rpmsg virtio device.\r\n");
-        ret = platform_cleanup(platform);
-        return ret;
-    }
-    else
-    {
-        ret = FManageEptCreat(rpdev, platform);
-    }
-    return ret;
-}
-
-
-
 static int FOpenampClose(void *platform)
 {
     int ret = 0;
     struct remoteproc *rproc = platform;
     if (rproc == NULL)
         return -1;
-    if (rpdev == NULL)
+    if (rpdev_slave_00 == NULL)
         return -1;
     
-    rpmsg_destroy_ept(&lept);
+    rpmsg_destroy_ept(&ept_master_slave_00);
     
-    platform_release_rpmsg_vdev(rpdev, platform);
+    platform_release_rpmsg_vdev(rpdev_slave_00, platform);
 
     ret = remoteproc_shutdown(rproc);
     if (ret != 0)
@@ -343,48 +292,105 @@ static int FOpenampClose(void *platform)
     return ret;
 }
 
+static void * CheckElfStartAddress(void * address)
+{
+    if(ElfIsImageValid((unsigned long)address))
+    {
+        return address;
+    }
+    return NULL;
+}
+
+
 int FOpenampExample(void)
 {
     int ret = 0;
-    
     demo_flag = RPMSG_PING_DEMO;
-
+    printf("amp_img_start is 0x%x \r\n",&amp_img_start);
+    printf("amp_img_end is 0x%x \r\n",&amp_img_end);
     if (elf_boot_flag == 0)
     {
-        /* Initialize platform */
-        ret = platform_init(1, 0, &platform);
-        if (ret)
+        void *temp_address = &amp_img_start;
+        u32 i = 0;
+        while (temp_address < (void *)&amp_img_end)
         {
-            DEMO_MANG_MASTER_DEBUG_E("Failed to initialize platform.\r\n");
-            platform_cleanup(platform);
+            void * boot_elf_address = CheckElfStartAddress((void *)temp_address);
+            if(boot_elf_address != NULL)
+            {
+                image[i].base = temp_address;
+                i++ ;
+            }
+            temp_address++;
+        }
+        for (u32 j = 0;  j< i; j++)
+        {
+            printf("boot_elf_address is 0x%x. \r\n",image[j].base);
+        }
+        
+        init_system();  /* Initialize the system resources and environment */ 
+        /* Initialize remoteproc */
+        if (!platform_create_proc(&remoteproc_slave_00, &slave_00_priv, &kick_device_00)) 
+        {
+            DEMO_MANG_MASTER_DEBUG_E("Failed to create remoteproc instance for slave 00\r\n");
+            platform_cleanup(&remoteproc_slave_00);
             return -1;
         }
-
-        ret = FLoadelfRemoteproc(&mem_image_store_ops,platform);
-        if (ret)
+        /*加载镜像，并启动，镜像的序号对应为 amp_config.json中 一个配置项 的索引位置*/
+        if(load_exectuable_block(&remoteproc_slave_00, &mem_image_store_ops, &image[SLAVE00_IMAGE_NUM].base, NULL))
         {
-            DEMO_MANG_MASTER_DEBUG_E("Failed to FLoadelfRemoteproc.\r\n");
-            platform_cleanup(platform);
             return -1;
         }
-    
-        ret = FRpmsgDemoManager(platform);
+        /* Setup resource tables for the created remoteproc instances*/
+        if (platform_setup_src_table(&remoteproc_slave_00, remoteproc_slave_00.rsc_table)) 
+        {
+            DEMO_MANG_MASTER_DEBUG_E("Failed to setup src table for slave 00\r\n");
+            return -1;
+        }
+        DEMO_MANG_MASTER_DEBUG_I("Setup resource tables for the created remoteproc instances is over \r\n");
+        /* Setup shared memory regions for both remoteproc instances */ 
+        if (platform_setup_share_mems(&remoteproc_slave_00)) 
+        {
+            DEMO_MANG_MASTER_DEBUG_E("Failed to setup shared memory for slave 00\r\n");
+            return -1;
+        }
+        DEMO_MANG_MASTER_DEBUG_I("Setup shared memory regions for both remoteproc instances is over \r\n");
+        /* Create rpmsg virtual devices for communication */ 
+        rpdev_slave_00 = platform_create_rpmsg_vdev(&remoteproc_slave_00, 0, VIRTIO_DEV_MASTER, NULL, rpmsg_name_service_bind_cb);
+        if (!rpdev_slave_00) 
+        {
+            DEMO_MANG_MASTER_DEBUG_E("Failed to create rpmsg vdev for slave 00\r\n");
+            platform_cleanup(&remoteproc_slave_00);
+            return -1;
+        }
+        DEMO_MANG_MASTER_DEBUG_I("Create rpmsg virtual devices for communication \r\n");
+        ret = FManageEptCreat(rpdev_slave_00, &remoteproc_slave_00);
         if (ret)
         {
-            return FOpenampClose(platform);
+            return FOpenampClose(&remoteproc_slave_00);
         }
         elf_boot_flag = 1;
+        fsleep_millisec(1000);/*等待slave 00 启动完成，并完成初始化任务调度*/
     }
     if (elf_boot_flag == 1)
     {
         while (demo_flag < RPMSG_DEMO_MAX)
         {
-            ret = FRunningApp(rpdev, platform);
+            ret = FRunningApp(rpdev_slave_00, &remoteproc_slave_00);
             if (ret)
             {
-                return FOpenampClose(platform);
+                return FOpenampClose(&remoteproc_slave_00);
             }
         }
+    }
+    vTaskDelay(pdMS_TO_TICKS(100));
+    DEMO_MANG_MASTER_DEBUG_I("Stopping application...\r\n");
+    if (ret != 0 && elf_boot_flag == 1 && demo_flag == (RPMSG_DEMO_MAX-1))
+    {
+        printf("%s@%d: openamp example [failure] !!! \r\n", __func__, __LINE__);
+    }
+    else
+    {
+        printf("%s@%d: openamp example [success] !!! \r\n", __func__, __LINE__);
     }
     return ret;
 }
@@ -410,14 +416,43 @@ void RpmsgEchoTask( void * args )
 	/* Initialize platform */
 	DEMO_MANG_MASTER_DEBUG_I("start application");
 	ret = FOpenampExample();
-	if (ret) 
+	if (ret)
 	{
 		DEMO_MANG_MASTER_DEBUG_E("Failed to running example.\r\n");
 	}
-	DEMO_MANG_MASTER_DEBUG_I("Stopping application...\r\n");
     vTaskDelete(NULL);
 }
 
+BaseType_t FFreeRTOSOpenampExample(void)
+{
+    BaseType_t xReturn = pdPASS;
+
+    xReturn = xTaskCreate((TaskFunction_t )RpmsgEchoTask, /* 任务入口函数 */
+                        (const char* )"RpmsgEchoTask",/* 任务名字 */
+                        (uint16_t )(4096*2), /* 任务栈大小 */
+                        (void* )NULL,/* 任务入口函数参数 */
+                        (UBaseType_t )4, /* 任务的优先级 */
+                        NULL); /* 任务控制块指针 */
+    
+    if(xReturn != pdPASS)
+    {
+        DEMO_MANG_MASTER_DEBUG_E("Failed to create a RpmsgEchoTask task ");
+        return -1;
+    }
+    return xReturn;
+}
+
+#ifdef CONFIG_USE_LETTER_SHELL
+static void FOpenampCmdUsage()
+{
+    printf("Usage:\r\n");
+    printf("openamp auto \r\n");
+    printf("-- Auto running.\r\n");
+    printf("-- [1] This application echoes back data that was sent to it by the master core.\r\n");
+    printf("-- [2] This application simulate sample rpmsg driver. For this it echo 100 time message sent by the rpmsg sample client available in distribution.\r\n");
+    printf("-- [3] This application receives two matrices from the master, multiplies them and returns the result to the master core.\r\n");
+    printf("-- [4] This application echoes back data that was sent to it by the master core.\r\n");
+}
 
 BaseType_t FOpenampCmdEntry(int argc, char *argv[])
 {
@@ -425,21 +460,7 @@ BaseType_t FOpenampCmdEntry(int argc, char *argv[])
 
     if (!strcmp(argv[1], "auto"))
     {
-        taskENTER_CRITICAL(); /* no schedule when create task */
-
-        ret = xTaskCreate((TaskFunction_t )RpmsgEchoTask, /* 任务入口函数 */
-                            (const char* )"RpmsgEchoTask",/* 任务名字 */
-                            (uint16_t )(4096*2), /* 任务栈大小 */
-                            (void* )NULL,/* 任务入口函数参数 */
-                            (UBaseType_t )4, /* 任务的优先级 */
-                            NULL); /* 任务控制块指针 */
-        taskEXIT_CRITICAL(); /* allow schedule since task created */
-        
-        if(ret != pdPASS)
-        {
-            DEMO_MANG_MASTER_DEBUG_E("Failed to create a RpmsgEchoTask task ");
-            return -1;
-        }
+        ret = FFreeRTOSOpenampExample();
     }
     else
     {
@@ -451,3 +472,4 @@ BaseType_t FOpenampCmdEntry(int argc, char *argv[])
 }
 
 SHELL_EXPORT_CMD(SHELL_CMD_TYPE(SHELL_TYPE_CMD_MAIN), openamp, FOpenampCmdEntry, test freertos openamp);
+#endif

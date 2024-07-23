@@ -21,7 +21,6 @@
  * ----- ------     --------    --------------------------------------
  */
 
-
 #ifndef PLATFORM_INFO_H_
 #define PLATFORM_INFO_H_
 
@@ -29,115 +28,73 @@
 #include <openamp/remoteproc.h>
 #include <openamp/virtio.h>
 #include <openamp/rpmsg.h>
+#include <openamp/rpmsg_virtio.h>
 #include "sdkconfig.h"
+#include "ftypes.h"
 
-
-
-/************************** Constant Definitions *****************************/
-
-/************************** Variable Definitions *****************************/
-
-
-#if defined __cplusplus
-extern "C" {
+#ifdef __cplusplus
+extern "C"
+{
 #endif
 
-    /***************** Macros (Inline Functions) Definitions *********************/
+#define POLL_STOP 				0x1U
+/* 需要宇linux 进行沟通 */
+#define REMOTE_PROC_STOP      	0x0001U
 
-    /* Cortex R5 memory attributes */
-#define DEVICE_SHARED       0x00000001U /* device, shareable */
-#define DEVICE_NONSHARED    0x00000010U /* device, non shareable */
-#define NORM_NSHARED_NCACHE 0x00000008U /* Non cacheable  non shareable */
-#define NORM_SHARED_NCACHE  0x0000000CU /* Non cacheable shareable */
-#define PRIV_RW_USER_RW     (0x00000003U<<8U) /* Full Access */
+/**************************** Type Definitions *******************************/
 
-
-#define SHARED_MEM_PA       CONFIG_VRING_TX_ADDR
-#define POLL_BASE_ADDR      CONFIG_POLL_BASE_ADDR
-
-#define SHARED_MEM_SIZE     0x100000UL  /* 必须要和kernel 进行约定 */
-#define SHARED_BUF_OFFSET   0x8000UL
-
-#ifndef CONFIG_USE_OPENAMP_IPI
-#define  POLL_STOP 0x1U
-#endif
-
-    /**************************** Type Definitions *******************************/
-
-    struct remoteproc_priv
-    {
-        const char *kick_dev_name;
-        const char *kick_dev_bus_name;
-        struct metal_device *kick_dev;
-        struct metal_io_region *kick_io;
+struct remoteproc_priv {
+	const char *kick_dev_name;
+	const char *kick_dev_bus_name;
+	struct metal_device *kick_dev;
+	struct metal_io_region *kick_io;
 #ifdef CONFIG_USE_OPENAMP_IPI
-        unsigned int ipi_chn_mask; /**< IPI channel mask */
-        atomic_int ipi_nokick;
+	atomic_int ipi_nokick;
 #endif /* !RPMSG_NO_IPI */
-        unsigned int cpu_mask;
-    };
+	unsigned int cpu_id ;
+	/* remoteproc elf address */
+	metal_phys_addr_t elf_addr;
+	unsigned int src_table_ready_flag ;
+	/* src_table memory */
+	u32 src_table_attribute ;
+	/* share_mem_size = |tx vring|rx vring|share buffer| */
+	metal_phys_addr_t share_mem_va ;
+	metal_phys_addr_t share_mem_pa ;
+	u32	share_mem_size ;
+	u32 share_buffer_offset ;
+	u32 share_mem_attribute ;
+	struct rpmsg_virtio_shm_pool shpool;
+};
 
-    /************************** Function Prototypes ******************************/
+/************************** Function Prototypes ******************************/
 
-    /**
-     * platform_init - initialize the platform
-     *
-     * It will initialize the platform.
-     *
-     * @argc: number of arguments
-     * @argv: array of the input arguements
-     * @platform: pointer to store the platform data pointer
-     *
-     * return 0 for success or negative value for failure
-     */
-    int platform_init(int argc, char *argv[], void **platform);
+struct remoteproc *platform_create_proc(struct remoteproc * rproc_inst,struct remoteproc_priv *priv ,struct metal_device *kick_dev) ;
 
-    /**
-     * platform_create_rpmsg_vdev - create rpmsg vdev
-     *
-     * It will create rpmsg virtio device, and returns the rpmsg virtio
-     * device pointer.
-     *
-     * @platform: pointer to the private data
-     * @vdev_index: index of the virtio device, there can more than one vdev
-     *              on the platform.
-     * @role: virtio master or virtio slave of the vdev
-     * @rst_cb: virtio device reset callback
-     * @ns_bind_cb: rpmsg name service bind callback
-     *
-     * return pointer to the rpmsg virtio device
-     */
-    struct rpmsg_device *
-    platform_create_rpmsg_vdev(void *platform, unsigned int vdev_index,
-                               unsigned int role,
-                               void (*rst_cb)(struct virtio_device *vdev),
-                               rpmsg_ns_bind_cb ns_bind_cb);
+int platform_setup_src_table(struct remoteproc *rproc_inst,metal_phys_addr_t *rsc_table) ;
 
-    /**
-     * platform_poll - platform poll function
-     *
-     * @platform: pointer to the platform
-     *
-     * return negative value for errors, otherwise 0.
-     */
-    int platform_poll(void *platform);
+int platform_setup_share_mems(struct remoteproc *rproc_inst);
 
-    /**
-     * platform_release_rpmsg_vdev - release rpmsg virtio device
-     *
-     * @rpdev: pointer to the rpmsg device
-     */
-    void platform_release_rpmsg_vdev(struct rpmsg_device *rpdev, void *platform);
+struct rpmsg_device *platform_create_rpmsg_vdev(void *platform, unsigned int vdev_index, unsigned int role,
+												void (*rst_cb)(struct virtio_device *vdev), rpmsg_ns_bind_cb ns_bind_cb) ;
+int platform_poll(void *priv);
 
-    /**
-     * platform_cleanup - clean up the platform resource
-     *
-     * @platform: pointer to the platform
-     */
-    int platform_cleanup(void *platform);
+int platform_poll_nonblocking(void *priv) ;
 
+void platform_release_rpmsg_vdev(struct rpmsg_device *rpdev, void *platform);
 
-#if defined __cplusplus
+int platform_cleanup(void *platform);
+
+#ifdef  CONFIG_USE_OPENAMP_IPI
+unsigned int rproc_check_rsc_table_stop(struct remoteproc *rproc);
+#endif
+
+unsigned int rproc_get_stop_flag(void);
+
+void rproc_set_stop_flag(void);
+
+void rproc_clear_stop_flag(void);
+
+#ifdef __cplusplus
 }
 #endif
 

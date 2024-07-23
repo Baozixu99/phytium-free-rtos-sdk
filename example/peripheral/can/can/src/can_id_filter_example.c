@@ -355,7 +355,7 @@ static FError FFreeRTOSCanSendThenRecvData(int mode)
                 return ret;
             }
             count[instance_id]++;
-
+            ret = CAN_UNKNOWN_STATE; 
             /* wait recv interrupt */
             xReturn = xQueueReceive(xQueue_irq, &xReceiveStructure, RECV_TIMER_OUT);
             if (xReturn == pdPASS)

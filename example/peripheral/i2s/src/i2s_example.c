@@ -74,7 +74,8 @@ static FDdmaBdlDescConfig bdl_desc_config[100];/*bdl_desc_config []根据TX_RX_B
 static FDdmaBdlDesc *bdl_desc_list_g;
 #define  per_buffer  16384/*录制时每个buffer的大小，单位字节*/
 #define TX_RX_BUF_LEN         100* 16384/*录制时总buffer的大小，一共10个buff,单位字节*/
-static u32 data_buf = 0xa0000000;
+
+static u32 data_buf[TX_RX_BUF_LEN] __attribute__((aligned(FDDMA_DDR_ADDR_ALIGMENT))) = {0};
 /***************** Macros (Inline Functions) Definitions *********************/
 #define FI2S_DEBUG_TAG "FI2S-TRANS"
 #define FI2S_ERROR(format, ...) FT_DEBUG_PRINT_E(FI2S_DEBUG_TAG, format, ##__VA_ARGS__)
@@ -227,7 +228,6 @@ static FError DdmaInit(void)
     {
         FDdmaClearChanIrq(ddma->ctrl.config.base_addr, chan, ddma->ctrl.config.caps);
         u32 status = FDdmaReadReg(ddma->ctrl.config.base_addr, FDDMA_STA_OFFSET);
-
     }
     /* set BDL descriptors */
     for (fsize_t loop = 0; loop < bdl_num; loop++)
@@ -272,6 +272,9 @@ static FError DdmaInit(void)
     tx_request.valid_desc_num = bdl_num;
     ret = FFreeRTOSDdmaSetupBDLChannel(ddma, tx_chan_id, &tx_request);
 
+    printf("ddma id = %d, tx_chan_id = %d, rx_chan_id = %d\r\n",FDDMA2_I2S_ID, tx_chan_id, rx_chan_id);
+    printf("bdl_num = %d, per_buffer = %d, TX_RX_BUF_LEN = %d\r\n",bdl_num, per_buffer, TX_RX_BUF_LEN);
+    printf("the buffer address is %p\r\n", data_buf);
     if (ret != FT_SUCCESS)
     {
         FI2S_ERROR("Ddma set config failed.");

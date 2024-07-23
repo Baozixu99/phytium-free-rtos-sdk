@@ -13,7 +13,7 @@
  * 
  * FilePath: main.c
  * Created Date: 2022-02-24 16:56:46
- * Last Modified: 2024-04-11 09:36:01
+ * Last Modified: 2024-07-17 09:15:15
  * Description:  This file is for This file is for AMP example that running rpmsg_echo_task and open scheduler
  * 
  * Modify History: 
@@ -31,8 +31,7 @@
 #include "portmacro.h"
 #include "FreeRTOS.h"
 #include "task.h"
-
-extern int rpmsg_echo_task(void);
+#include "slaver_00_example.h"
 
 int main(void)
 {

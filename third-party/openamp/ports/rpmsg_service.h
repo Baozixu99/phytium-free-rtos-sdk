@@ -12,7 +12,6 @@ extern "C"
 
 /* name service of endpoint */
 #define RPMSG_SERVICE_NAME          "rpmsg-openamp-demo-channel"
-#define DEMO_SERVICE_NAME           "demo-openamp-channel"
 
 #ifdef __cplusplus
 }

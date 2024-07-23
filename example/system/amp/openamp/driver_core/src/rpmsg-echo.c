@@ -33,7 +33,6 @@
 #include "rpmsg_service.h"
 #include <metal/sleep.h>
 #include "rsc_table.h"
-#include "shell.h"
 #include "fcache.h"
 #include "fdebug.h"
 

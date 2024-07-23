@@ -1,3 +1,20 @@
+# Phytium Standalone SDK 2024-07-23 ChangeLog
+
+Change Log since 2024-07-12
+
+## example
+
+- modify the openamp example to support linux
+- modify the openamp driver and device role
+
+# Phytium Standalone SDK 2024-07-12 ChangeLog
+
+Change Log since 2024-07-10
+
+## example
+
+- modify the example with no device attached
+
 # Phytium Standalone SDK 2024-07-10 ChangeLog
 
 Change Log since 2024-07-10

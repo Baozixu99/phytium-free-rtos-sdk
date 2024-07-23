@@ -20,6 +20,7 @@
  *  Ver   Who        Date         Changes
  * ----- ------     --------    --------------------------------------
  * 1.0	 huanghe	2022/04/21   first release
+ * 1.1	 liusm	    2024/07/05   modify for phytium platform
  */
 
 /***************************** Include Files *********************************/
@@ -31,253 +32,164 @@
 #include <metal/utilities.h>
 #include <openamp/rpmsg_virtio.h>
 #include <errno.h>
+#include <stdio.h>
 #include "platform_info.h"
 #include "rsc_table.h"
 #include "sdkconfig.h"
-#include "fmmu.h"
 #include "fdebug.h"
-#include <stdio.h>
+#include "helper.h"
 
-/************************** Constant Definitions *****************************/
-
-/**************************** Type Definitions *******************************/
-
-/***************** Macros (Inline Functions) Definitions *********************/
-
-#define     FT_PLAT_INFO_MAIN_DEBUG_TAG "    FT_PLAT_INFO_MAIN"
-#define     FT_PLAT_INFO_MAIN_DEBUG_I(format, ...) FT_DEBUG_PRINT_I( FT_PLAT_INFO_MAIN_DEBUG_TAG, format, ##__VA_ARGS__)
-#define     FT_PLAT_INFO_MAIN_DEBUG_W(format, ...) FT_DEBUG_PRINT_W( FT_PLAT_INFO_MAIN_DEBUG_TAG, format, ##__VA_ARGS__)
-#define     FT_PLAT_INFO_MAIN_DEBUG_E(format, ...) FT_DEBUG_PRINT_E( FT_PLAT_INFO_MAIN_DEBUG_TAG, format, ##__VA_ARGS__)
-
-
-#define KICK_DEV_NAME         "poll_dev"
-#define KICK_BUS_NAME         "generic"
-
+#define     FT_PLAT_INFO_DEBUG_TAG "FT_PLAT_INFO"
+#define     FT_PLAT_INFO_DEBUG_I(format, ...) FT_DEBUG_PRINT_I( FT_PLAT_INFO_DEBUG_TAG, format, ##__VA_ARGS__)
+#define     FT_PLAT_INFO_DEBUG_W(format, ...) FT_DEBUG_PRINT_W( FT_PLAT_INFO_DEBUG_TAG, format, ##__VA_ARGS__)
+#define     FT_PLAT_INFO_DEBUG_E(format, ...) FT_DEBUG_PRINT_E( FT_PLAT_INFO_DEBUG_TAG, format, ##__VA_ARGS__)
 
 #ifdef CONFIG_USE_OPENAMP_IPI
     #define _rproc_wait() asm volatile("wfi")
 #endif /* !RPMSG_NO_IPI */
 
-#ifdef CONFIG_MEM_NORMAL
-    #define MEM_ATTR_ACESS (MT_NORMAL|MT_P_RW_U_RW)
-#endif
-
-#ifdef CONFIG_MEM_WRITE_THROUGH
-    #define MEM_ATTR_ACESS (MT_NORMAL_WT|MT_P_RW_U_RW)
-#endif
-
-#ifdef CONFIG_MEM_NO_CACHE
-    #define MEM_ATTR_ACESS (MT_NORMAL_NC|MT_P_RW_U_RW)
-#endif
-
-
 /************************** Variable Definitions *****************************/
-
-/* Polling information used by remoteproc operations.
- */
-static metal_phys_addr_t poll_phys_addr = POLL_BASE_ADDR;
-struct metal_device kick_device =
-{
-    .name = "poll_dev",
-    .bus = NULL,
-    .num_regions = 1,
-    .regions = {
-        {
-            .virt = (void *)POLL_BASE_ADDR,
-            .physmap = &poll_phys_addr,
-            .size = 0x1000,
-            .page_shift = -1UL,
-            .page_mask = -1UL,
-            .mem_flags = MEM_ATTR_ACESS,
-            .ops = {NULL},
-        }
-    },
-    .node = {NULL},
-#ifdef CONFIG_USE_OPENAMP_IPI
-    .irq_num = 1,
-    .irq_info = (void *)CONFIG_IPI_IRQ_NUM,
-#endif /* !RPMSG_NO_IPI */
-};
-
-static struct remoteproc_priv rproc_priv =
-{
-    .kick_dev_name = KICK_DEV_NAME,
-    .kick_dev_bus_name = KICK_BUS_NAME,
-#ifdef CONFIG_USE_OPENAMP_IPI
-    .ipi_chn_mask = CONFIG_IPI_CHN_BITMASK,//IPI_CHN_BITMASK,
-#endif /* !RPMSG_NO_IPI */
-};
+static volatile unsigned int stop_flag = 0;
+extern struct remoteproc_ops phytium_proc_ops ;
 
 #ifdef CONFIG_USE_MASTER_VRING_DEFINE
-    static metal_phys_addr_t linux_share_buffer;
+static metal_phys_addr_t linux_share_buffer;
 #endif
-
-static struct remoteproc rproc_inst;
-/* notification operation and remote processor managementi operations. */
-extern struct remoteproc_ops phytium_proc_ops;
-/* RPMsg virtio shared buffer pool */
-static struct rpmsg_virtio_shm_pool shpool;
-
-extern struct remote_resource_table resources;
-
 
 /************************** Function Prototypes ******************************/
-
-static struct remoteproc *platform_create_proc(int proc_index, int rsc_index)
+#ifdef  CONFIG_USE_OPENAMP_IPI
+unsigned int rproc_check_rsc_table_stop(struct remoteproc *rproc)
 {
-    void *rsc_table;
-    int rsc_size;
-    int ret;
-    u32 cpu_id;
+    if (!rproc) {
+        FT_PLAT_INFO_DEBUG_E("rproc NULL! \r\n");
+        return 0;
+    }
+    struct remote_resource_table *table_ptr = rproc->rsc_table;
+    unsigned int *flag = table_ptr->reserved;
+
+    if (*flag & REMOTE_PROC_STOP) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+#endif
+
+unsigned int rproc_get_stop_flag(void)
+{
+    return stop_flag;
+}
+
+void rproc_set_stop_flag(void)
+{
+    stop_flag |= REMOTE_PROC_STOP;
+}
+
+void rproc_clear_stop_flag(void)
+{
+    stop_flag &= ~REMOTE_PROC_STOP;
+}
+
+struct remoteproc *platform_create_proc(struct remoteproc * rproc_inst,struct remoteproc_priv *priv ,struct metal_device *kick_dev)
+{
+	struct remoteproc * rproc;
+
+	if (metal_register_generic_device(kick_dev))
+    {
+        return NULL;
+    }
+
+	/* Initialize remoteproc instance */
+	/* metal_device_open(KICK_BUS_NAME,KICK_DEV_NAME,rproc_inst->priv->kick_dev) */
+	/* rproc_inst->priv->kick_io = metal_device_io_region(rproc_inst->priv->kick_dev, 0); */
+    rproc = remoteproc_init(rproc_inst, &phytium_proc_ops, priv) ;
+    
+    return rproc;
+}
+
+int platform_setup_src_table(struct remoteproc *rproc_inst,metal_phys_addr_t *rsc_table)
+{
     metal_phys_addr_t pa;
-
-    (void)proc_index;
-
-    rsc_table = (void *)&resources; //get_resource_table(rsc_index, &rsc_size);
-    rsc_size = sizeof(resources);
-    /* resource_table_dump(); */
-    /* Register IPI device */
-    if (metal_register_generic_device(&kick_device))
-    {
-        return NULL;
-    }
-    /* Initialize remoteproc instance */
-    if (!remoteproc_init(&rproc_inst, &phytium_proc_ops, &rproc_priv))
-    {
-        return NULL;
-    }
-
-    /* Mmap shared memories Or shall we constraint that they will be set as carved out in the resource table?. mmap resource table */
-    pa = (metal_phys_addr_t)rsc_table;
-    (void *)remoteproc_mmap(&rproc_inst, &pa, NULL, rsc_size, MEM_ATTR_ACESS, &rproc_inst.rsc_io);
-    /* mmap shared memory */
-    pa = SHARED_MEM_PA;
-    (void *)remoteproc_mmap(&rproc_inst, &pa, NULL, SHARED_MEM_SIZE, MEM_ATTR_ACESS, NULL);
-
-    /* linux kernel malloc addr */
-#ifdef CONFIG_USE_MASTER_VRING_DEFINE
-    pa = resources.rpmsg_vdev.vring[0].da; /* 默认kernel vring[0].da 的首地址是整个sharebuffer 的起始位置 */
-    (void *)remoteproc_mmap(&rproc_inst, &pa, NULL, SHARED_MEM_SIZE * 2, MEM_ATTR_ACESS, NULL);
-    linux_share_buffer = pa;
-#endif
-    /* parse resource table to remoteproc */
-    ret = remoteproc_set_rsc_table(&rproc_inst, rsc_table, rsc_size);
-    if (ret)
-    {
-        FT_PLAT_INFO_MAIN_DEBUG_E("Failed to intialize remoteproc %d \r\n", ret);
-        remoteproc_remove(&rproc_inst);
-        return NULL;
-    }
-
-    FT_PLAT_INFO_MAIN_DEBUG_I("Initialize remoteproc successfully.\r\n");
-
-    return &rproc_inst;
-}
-
-extern int init_system(void);
-extern void cleanup_system(void);
-
-int platform_init(int argc, char *argv[], void **platform)
-{
-    unsigned long proc_id = 0;
-    unsigned long rsc_id = 0;
-    struct remoteproc *rproc;
-
-    if (!platform)
-    {
-        FT_PLAT_INFO_MAIN_DEBUG_E("Failed to initialize platform, NULL pointer to store platform data.\r\n");
-        return -EINVAL;
-    }
-
-    /* Initialize HW system components */
-    init_system();
-
-    if (argc >= 2)
-    {
-        proc_id = strtoul(argv[1], NULL, 0);
-    }
-
-    if (argc >= 3)
-    {
-        rsc_id = strtoul(argv[2], NULL, 0);
-    }
-    rproc = platform_create_proc(proc_id, rsc_id);
-    if (!rproc)
-    {
-        FT_PLAT_INFO_MAIN_DEBUG_E("Failed to create remoteproc device.\r\n");
-        return -EINVAL;
-    }
-
-    *platform = rproc;
-
-    return 0;
-}
-
-struct rpmsg_device *platform_create_rpmsg_vdev(void *platform, unsigned int vdev_index, unsigned int role, void (*rst_cb)(struct virtio_device *vdev), rpmsg_ns_bind_cb ns_bind_cb)
-{
-    struct remoteproc *rproc = platform;
-    struct rpmsg_virtio_device *rpmsg_vdev;
-    struct virtio_device *vdev;
-    void *shbuf;
-    struct metal_io_region *shbuf_io;
+	struct remoteproc_priv *priv = rproc_inst->priv;
     int ret;
+	// metal_phys_addr_t *rsc_table = priv->src_table_va ;
+	size_t rsc_size = sizeof(struct remote_resource_table) ;
+	unsigned int attribute = priv->src_table_attribute ;	
 
-    rpmsg_vdev = metal_allocate_memory(sizeof(*rpmsg_vdev));
-    if (!rpmsg_vdev)
+    pa = (metal_phys_addr_t)rsc_table;
+	/* rproc_inst.mems  rproc_inst.rsc_io*/
+	/* 在OpenAMP应用中，通常需要通过remoteproc_mmap()函数将远程处理器中的共享内存映射到本地主机中，以便应用程序进行读写操作。*/
+	(void *)remoteproc_mmap(rproc_inst, &pa, NULL, rsc_size, attribute, &rproc_inst->rsc_io);
+
+    ret = remoteproc_set_rsc_table(rproc_inst, (struct resource_table *)rsc_table, rsc_size);
+	if (ret)
     {
-        return NULL;
-    }
+		FT_PLAT_INFO_DEBUG_E("Failed to intialize remoteproc %d \r\n",ret);
+		remoteproc_remove(rproc_inst);
+		return -1;
+	}
+	priv->src_table_ready_flag = 1;/* 标记src_table已经准备好了 */
+    return 0 ;
+}
 
+int platform_setup_share_mems(struct remoteproc *rproc_inst)
+{
+	int ret;
+	struct remoteproc_priv *priv = rproc_inst->priv;
 #ifdef CONFIG_USE_MASTER_VRING_DEFINE
-    shbuf_io = remoteproc_get_io_with_pa(rproc, linux_share_buffer);
-    if (!shbuf_io)
-    {
-        goto err1;
-    }
-    FT_PLAT_INFO_MAIN_DEBUG_I("linux_share_buffer is %p \r\n", linux_share_buffer);
-    shbuf = metal_io_phys_to_virt(shbuf_io, linux_share_buffer + SHARED_BUF_OFFSET);
+	struct remote_resource_table *table_ptr = rproc_inst->rsc_table;
+	priv->share_mem_pa = table_ptr->rpmsg_vdev.vring[0].da;/* 默认kernel vring[0].da 的首地址是整个sharebuffer 的起始位置 */
+	(void *)remoteproc_mmap(rproc_inst, &priv->share_mem_pa, NULL, priv->share_mem_size, priv->share_mem_attribute, NULL);
 #else
-    shbuf_io = remoteproc_get_io_with_pa(rproc, SHARED_MEM_PA);
-    FT_PLAT_INFO_MAIN_DEBUG_I("shbuf_io is %p \r\n", shbuf_io);
-    if (!shbuf_io)
-    {
-        goto err1;
-    }
-
-    shbuf = metal_io_phys_to_virt(shbuf_io, SHARED_MEM_PA + SHARED_BUF_OFFSET);
+	(void *)remoteproc_mmap(rproc_inst, &priv->share_mem_pa, &priv->share_mem_va, priv->share_mem_size, priv->share_mem_attribute, NULL);
 #endif
+    return 0 ;
+}
 
-    FT_PLAT_INFO_MAIN_DEBUG_I("Creating remoteproc virtio\r\n");
-    /* TODO: can we have a wrapper for the following two functions? */
-    vdev = remoteproc_create_virtio(rproc, vdev_index, role, rst_cb);
-    if (!vdev)
-    {
-        FT_PLAT_INFO_MAIN_DEBUG_E("Failed remoteproc_create_virtio\r\n");
-        goto err1;
-    }
+struct rpmsg_device *platform_create_rpmsg_vdev(void *platform, unsigned int vdev_index, unsigned int role,
+												void (*rst_cb)(struct virtio_device *vdev), rpmsg_ns_bind_cb ns_bind_cb)
+{
+	struct remoteproc *rproc = platform;
+	struct rpmsg_virtio_device *rpmsg_vdev;
+	struct virtio_device *vdev;
+	void *shbuf;
+	struct metal_io_region *shbuf_io;
+    struct remoteproc_priv *priv = rproc->priv;
+	int ret;
 
-    FT_PLAT_INFO_MAIN_DEBUG_I("Initializing rpmsg shared buffer pool\r\n");
-    /* Only RPMsg virtio master needs to initialize the shared buffers pool */
-    rpmsg_virtio_init_shm_pool(&shpool, shbuf, (SHARED_MEM_SIZE - SHARED_BUF_OFFSET));
+	rpmsg_vdev = metal_allocate_memory(sizeof(*rpmsg_vdev));
+	if (!rpmsg_vdev)
+		return NULL;
 
+	shbuf_io = remoteproc_get_io_with_pa(rproc, priv->share_mem_pa);
+	if (!shbuf_io)
+		goto err1;
+	FT_PLAT_INFO_DEBUG_I("share_mem_pa is %p \r\n",priv->share_mem_pa);
+	shbuf = metal_io_phys_to_virt(shbuf_io, priv->share_mem_pa + priv->share_buffer_offset);
+	/* TODO: can we have a wrapper for the following two functions? */
+	vdev = remoteproc_create_virtio(rproc, vdev_index, role, rst_cb);
+	if (!vdev) {
+		FT_PLAT_INFO_DEBUG_E("failed remoteproc_create_virtio\r\n");
+		goto err1;
+	}
 
-    FT_PLAT_INFO_MAIN_DEBUG_I("Initializing rpmsg vdev\r\n");
-    /* RPMsg virtio slave can set shared buffers pool argument to NULL */
-    ret = rpmsg_init_vdev(rpmsg_vdev, vdev, ns_bind_cb, shbuf_io, &shpool);
-    if (ret)
-    {
-        FT_PLAT_INFO_MAIN_DEBUG_E("Failed rpmsg_init_vdev\r\n");
-        goto err2;
-    }
+	/* Only RPMsg virtio master needs to initialize the shared buffers pool */
+	rpmsg_virtio_init_shm_pool(&priv->shpool, shbuf, priv->share_mem_size - priv->share_buffer_offset);
 
-    FT_PLAT_INFO_MAIN_DEBUG_I("Initializing rpmsg vdev\r\n");
-    return rpmsg_virtio_get_rpmsg_device(rpmsg_vdev);
+	/* RPMsg virtio slave can set shared buffers pool argument to NULL */
+	ret = rpmsg_init_vdev(rpmsg_vdev, vdev, ns_bind_cb, shbuf_io, &priv->shpool);
+	if (ret) {
+		FT_PLAT_INFO_DEBUG_E("failed rpmsg_init_vdev ret is %d \r\n",ret);
+		goto err2;
+	}
+	FT_PLAT_INFO_DEBUG_I("initializing rpmsg vdev\r\n");
+	return rpmsg_virtio_get_rpmsg_device(rpmsg_vdev);
 
 err2:
-    remoteproc_remove_virtio(rproc, vdev);
+	remoteproc_remove_virtio(rproc, vdev);
 err1:
-    metal_free_memory(rpmsg_vdev);
-    return NULL;
+	metal_free_memory(rpmsg_vdev);
+	return NULL;
 }
 
 int platform_poll(void *priv)
@@ -286,7 +198,6 @@ int platform_poll(void *priv)
     struct remoteproc_priv *prproc;
     unsigned int flags;
     int ret;
-
 
     prproc = rproc->priv;
     while (1)
@@ -317,6 +228,37 @@ int platform_poll(void *priv)
     return 0;
 }
 
+
+int platform_poll_nonblocking(void *priv)
+{
+    struct remoteproc *rproc = priv;
+    struct remoteproc_priv *prproc;
+    unsigned int flags;
+    int ret;
+
+    prproc = rproc->priv;
+
+#ifndef CONFIG_USE_OPENAMP_IPI
+        if (metal_io_read32(prproc->kick_io, 0) & POLL_STOP)   //RPROC_M2S_SHIFT
+        {
+            ret = remoteproc_get_notification(rproc,RSC_NOTIFY_ID_ANY);
+            if (ret)
+                return ret;
+        }
+        (void)flags;
+#else /* !RPMSG_NO_IPI */
+        flags = metal_irq_save_disable();
+        if (!(atomic_flag_test_and_set(&prproc->ipi_nokick)))
+        {
+            metal_irq_restore_enable(flags);
+            ret = remoteproc_get_notification(rproc,RSC_NOTIFY_ID_ANY);
+            if (ret)
+                return ret;
+        }
+        metal_irq_restore_enable(flags);
+#endif /* RPMSG_NO_IPI */
+    return 0;
+}
 
 void platform_release_rpmsg_vdev(struct rpmsg_device *rpdev, void *platform)
 {

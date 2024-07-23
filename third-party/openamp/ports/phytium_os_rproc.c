@@ -1,25 +1,26 @@
 /*
- * Copyright : (C) 2022 Phytium Information Technology, Inc.
+ * Copyright : (C) 2024 Phytium Information Technology, Inc.
  * All Rights Reserved.
- *
+ * 
  * This program is OPEN SOURCE software: you can redistribute it and/or modify it
  * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,
  * either version 1.0 of the License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See the Phytium Public License for more details.
- *
- *
+ * 
+ * 
  * FilePath: phytium_os_rproc.c
- * Date: 2022-02-25 09:59:08
- * LastEditTime: 2022-02-25 09:59:08
- * Description:  This file is for defining phytium platform specific remoteproc implementation.
- *
- * Modify History:
- *  Ver   Who        Date         Changes
- * ----- ------     --------    --------------------------------------
+ * Created Date: 2024-07-02 16:01:32
+ * Last Modified: 2024-07-19 10:23:10
+ * Description:  This file is for
+ * 
+ * Modify History:
+ *  Ver      Who        Date               Changes
+ * -----  ----------  --------  ---------------------------------
  * 1.0	 huanghe	2022/04/21   first release
+ * 2.0	 liusm	    2024/07/03   modify for phytium platform
  */
 
 /***************************** Include Files *********************************/
@@ -40,7 +41,7 @@
 #include "fcpu_info.h"
 #include "fpsci.h"
 #include "fcache.h"
-
+#include "sdkconfig.h"
 /************************** Constant Definitions *****************************/
 
 /**************************** Type Definitions *******************************/
@@ -49,43 +50,43 @@
 
 /***************** Macros (Inline Functions) Definitions *********************/
 
-#define     PHYTIUM_RPROC_MAIN_DEBUG_TAG "    PHYTIUM_RPROC_MAIN"
-#define     PHYTIUM_RPROC_MAIN_DEBUG_I(format, ...) FT_DEBUG_PRINT_I( PHYTIUM_RPROC_MAIN_DEBUG_TAG, format, ##__VA_ARGS__)
-#define     PHYTIUM_RPROC_MAIN_DEBUG_W(format, ...) FT_DEBUG_PRINT_W( PHYTIUM_RPROC_MAIN_DEBUG_TAG, format, ##__VA_ARGS__)
-#define     PHYTIUM_RPROC_MAIN_DEBUG_E(format, ...) FT_DEBUG_PRINT_E( PHYTIUM_RPROC_MAIN_DEBUG_TAG, format, ##__VA_ARGS__)
+#define     PHYTIUM_RPROC_DEBUG_TAG "PHYTIUM_RPROC"
+#define     PHYTIUM_RPROC_DEBUG_I(format, ...) FT_DEBUG_PRINT_I( PHYTIUM_RPROC_DEBUG_TAG, format, ##__VA_ARGS__)
+#define     PHYTIUM_RPROC_DEBUG_W(format, ...) FT_DEBUG_PRINT_W( PHYTIUM_RPROC_DEBUG_TAG, format, ##__VA_ARGS__)
+#define     PHYTIUM_RPROC_DEBUG_E(format, ...) FT_DEBUG_PRINT_E( PHYTIUM_RPROC_DEBUG_TAG, format, ##__VA_ARGS__)
 
 /************************** Function Prototypes ******************************/
-
-
-#ifdef CONFIG_MEM_NORMAL
-    #define DEFAULT_MEM_ATTRIBUTE (MT_NORMAL|MT_P_RW_U_RW)
-#endif
-
-#ifdef CONFIG_MEM_WRITE_THROUGH
-    #define DEFAULT_MEM_ATTRIBUTE (MT_NORMAL_WT|MT_P_RW_U_RW)
-#endif
-
-#ifdef CONFIG_MEM_NO_CACHE
-    #define DEFAULT_MEM_ATTRIBUTE (MT_NORMAL_NC|MT_P_RW_U_RW)
-#endif
 
 #ifdef  CONFIG_USE_OPENAMP_IPI
 
 static void PhytiumIrqhandler(s32 vector, void *param)
 {
     struct remoteproc *rproc = param;
-    struct remoteproc_priv *prproc;
-    u32 cpu_id;
+	struct remoteproc_priv *prproc;
+	prproc = rproc->priv;
     (void)vector;
 
-    if (!rproc)
-    {
-        PHYTIUM_RPROC_MAIN_DEBUG_E("rproc is empty \r\n") ;
+    if(!rproc)
+	{
+		PHYTIUM_RPROC_DEBUG_E("rproc is empty.") ;
         return ;
     }
+	
+	if (prproc->src_table_ready_flag != 1)
+	{
+		goto exit;
+	}
 
-    prproc = rproc->priv;
-    atomic_flag_clear(&prproc->ipi_nokick);
+	if (rproc_check_rsc_table_stop(rproc))
+	{
+        PHYTIUM_RPROC_DEBUG_E("stop flag found, cpu down!.\n\r") ;
+        rproc_set_stop_flag();
+		FPsciCpuOff();
+		return;
+    }
+
+exit:
+	atomic_flag_clear(&prproc->ipi_nokick);
 }
 
 #endif
@@ -108,31 +109,29 @@ PhytiumProcInit(struct remoteproc *rproc,struct remoteproc_ops *ops,
                             &kick_dev);
     if (ret)
     {
-        PHYTIUM_RPROC_MAIN_DEBUG_E("Failed to open polling device: %d.\r\n", ret);
+        PHYTIUM_RPROC_DEBUG_E("Failed to open polling device: %d.\r\n", ret);
         return NULL;
     }
     rproc->priv = prproc;
     prproc->kick_dev = kick_dev;
-    prproc->kick_io = metal_device_io_region(kick_dev, 0);
-    if (!prproc->kick_io)
-    {
-        goto err1;
-    }
 
 #ifdef CONFIG_USE_OPENAMP_IPI
     u32 cpu_id;
     atomic_store(&prproc->ipi_nokick, 1);
     GetCpuId(&cpu_id);
+    PHYTIUM_RPROC_DEBUG_I("CPU ID : %d.", cpu_id) ;
     /* Register interrupt handler and enable interrupt */
     irq_vect = (uintptr_t)kick_dev->irq_info;
-    PHYTIUM_RPROC_MAIN_DEBUG_I("irq_vect is %d \r\n", irq_vect) ;
-    PHYTIUM_RPROC_MAIN_DEBUG_I("current %d \r\n", cpu_id) ;
-
-    InterruptSetPriority(irq_vect, 16) ;
+    PHYTIUM_RPROC_DEBUG_I("irq_vect is %d .", irq_vect) ;
+    InterruptSetPriority(irq_vect, IRQ_PRIORITY_VALUE_0) ;
     InterruptInstall(irq_vect, PhytiumIrqhandler, rproc, "phytium_rproc") ;
-
     InterruptUmask(irq_vect) ;
 #else
+    prproc->kick_io = metal_device_io_region(kick_dev, 0);
+    if (!prproc->kick_io)
+    {
+        goto err1;
+    }
     (void)irq_vect;
     metal_io_write32(prproc->kick_io, 0, !POLL_STOP);
 #endif /* !CONFIG_USE_OPENAMP_IPI */
@@ -161,7 +160,7 @@ static void PhytiumProcRemove(struct remoteproc *rproc)
     dev = prproc->kick_dev;
     if (dev)
     {
-        PHYTIUM_RPROC_MAIN_DEBUG_I("Start to remove \r\n") ;
+        PHYTIUM_RPROC_DEBUG_I("Start to remove \r\n") ;
         InterruptMask((uintptr_t)dev->irq_info);
     }
 #else /* RPMSG_NO_IPI */
@@ -183,23 +182,15 @@ PhytiumProcMmap(struct remoteproc *rproc, metal_phys_addr_t *pa,
     lpa = *pa;
     lda = *da;
 
-    if (lpa == METAL_BAD_PHYS && lda == METAL_BAD_PHYS)
-    {
-        return NULL;
-    }
-    if (lpa == METAL_BAD_PHYS)
-    {
-        lpa = lda;
-    }
-    if (lda == METAL_BAD_PHYS)
-    {
-        lda = lpa;
-    }
+	if (lpa == METAL_BAD_PHYS && lda == METAL_BAD_PHYS)
+		return NULL;
+	if (lpa == METAL_BAD_PHYS)
+		lpa = lda;
+	if (lda == METAL_BAD_PHYS)
+		lda = lpa;
 
-    if (!attribute)
-    {
-        attribute = DEFAULT_MEM_ATTRIBUTE;
-    }
+	if (!attribute)
+		attribute = (MT_NORMAL|MT_P_RW_U_RW);
 
     mem = metal_allocate_memory(sizeof(*mem));
     if (!mem)
@@ -214,8 +205,7 @@ PhytiumProcMmap(struct remoteproc *rproc, metal_phys_addr_t *pa,
     }
     remoteproc_init_mem(mem, NULL, lpa, lda, size, tmpio);
     /* va is the same as pa in this platform */
-    metal_io_init(tmpio, (void *)lpa, &mem->pa, size,
-                  -1, attribute, NULL);
+    metal_io_init(tmpio, (void *)lpa, &mem->pa, size, -1, attribute, NULL);
     remoteproc_add_mem(rproc, mem);
     *pa = lpa;
     *da = lda;
@@ -242,9 +232,11 @@ static int PhytiumProcNotify(struct remoteproc *rproc, uint32_t id)
 #ifndef CONFIG_USE_OPENAMP_IPI
     metal_io_write32(prproc->kick_io, 0, POLL_STOP);
 #else
-    u32 cpu_id;
-    GetCpuId(&cpu_id);
-    InterruptCoreInterSend((uintptr)(prproc->kick_dev->irq_info), prproc->ipi_chn_mask);
+#ifdef CONFIG_USE_MASTER_VRING_DEFINE
+	InterruptCoreInterSend((uintptr)(prproc->kick_dev->irq_info), prproc->cpu_id);
+#else
+	InterruptCoreInterSend((uintptr)(prproc->kick_dev->irq_info), 1 << prproc->cpu_id);
+#endif
 #endif /* RPMSG_NO_IPI */
 
     return 0;
@@ -257,9 +249,9 @@ static int Phytium_rproc_start(struct remoteproc *rproc)
 
 	priv = rproc->priv;
 	FCacheDCacheFlush();
-	ret = FPsciCpuMaskOn(priv->cpu_mask, (uintptr_t)rproc->bootaddr);
+    ret = FPsciCpuMaskOn(1 << priv->cpu_id , (uintptr_t)rproc->bootaddr);
 	if (ret != 0) {
-		PHYTIUM_RPROC_MAIN_DEBUG_E("Failed to start core mask 0x%x, ret=0x%x\n\r", priv->cpu_mask, ret);
+		PHYTIUM_RPROC_DEBUG_E("Failed to start core id 0x%x, ret=0x%x\n\r", priv->cpu_id, ret);
 		return -1;
 	} 
 

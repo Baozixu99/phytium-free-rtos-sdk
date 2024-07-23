@@ -19,6 +19,9 @@ export SDK_DIR
 # config path
 SDK_KCONFIG_DIR ?= $(SDK_DIR)/tools/build/Kconfiglib
 
+# Pyhthon 工具目录
+SDK_PYTHON_TOOLS_DIR ?= $(SDK_DIR)/tools/build/py_tools
+
 # 编译中间文件输出的路径
 BUILD_OUT_PATH ?= $(PROJECT_DIR)/build
 
@@ -41,3 +44,7 @@ include $(SDK_DIR)/tools/build/build.mk
 # make menuconfig tools
 include $(SDK_DIR)/tools/build/menuconfig/preconfig.mk
 include $(SDK_DIR)/tools/build/menuconfig/menuconfig.mk
+
+amp_make:
+	$(PYTHON) $(SDK_PYTHON_TOOLS_DIR)/amp_parse_config.py
+	cp ./packed_image.elf $(USR_BOOT_DIR)/freertos.elf
