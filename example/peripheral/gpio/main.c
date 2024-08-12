@@ -59,7 +59,7 @@ int main(void)
     /* used in no-letter-shell mode */
     ret = xTaskCreate((TaskFunction_t)GpioExampleTaskEntry,    /* 任务入口函数 */
                       (const char *)"GpioExampleTaskEntry",    /* 任务名字 */
-                      (uint16_t)4096,                          /* 任务栈大小 */
+                      4096,                          /* 任务栈大小 */
                       NULL,                                    /* 任务入口函数参数 */
                       (UBaseType_t)GPIO_EXAMPLE_TASK_PRIORITY, /* 任务优先级 */
                       NULL);                                   /* 任务句柄 */

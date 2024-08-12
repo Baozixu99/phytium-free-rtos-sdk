@@ -48,7 +48,7 @@ int main(void)
     taskENTER_CRITICAL();
     ret = xTaskCreate((TaskFunction_t)DdmaTasksEntry,
                         (const char *)"DdmaTaskEntry",
-                        (uint16_t)4096,
+                        4096,
                         NULL,
                         (UBaseType_t)2,
                         NULL);

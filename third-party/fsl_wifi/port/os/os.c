@@ -79,7 +79,7 @@ int os_thread_create(os_thread_t *thandle,
 {
     int ret;
 
-    ret = xTaskCreate(main_func, name, (uint16_t)stack->size, arg, (uint32_t)prio, thandle);
+    ret = xTaskCreate(main_func, name, (configSTACK_DEPTH_TYPE)stack->size, arg, (uint32_t)prio, thandle);
 
     os_dprintf(
         " Thread Create: ret %d thandle %p"

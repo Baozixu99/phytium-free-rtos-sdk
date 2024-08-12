@@ -278,7 +278,7 @@ int rpmsg_echo_task(void)
 
     ret = xTaskCreate((TaskFunction_t )RpmsgEchoTask, /* 任务入口函数 */
                         (const char* )"RpmsgEchoTask",/* 任务名字 */
-                        (uint16_t )(4096*2), /* 任务栈大小 */
+                        (4096*2), /* 任务栈大小 */
                         (void* )NULL,/* 任务入口函数参数 */
                         (UBaseType_t )4, /* 任务的优先级 */
                         NULL); /* 任务控制块指针 */

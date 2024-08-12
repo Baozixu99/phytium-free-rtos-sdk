@@ -8,7 +8,6 @@ BOOT_IMG_NAME      ?= freertos
 
 USER_CSRC := main.c
 USER_CSRC += $(wildcard  src/*.c)
-USER_CSRC += $(wildcard  ../common/*.c)
 			
 USER_ASRC := 
 USER_CXXSRC := 
@@ -19,8 +18,11 @@ USER_INCLUDE := $(PROJECT_DIR)	\
 
 include $(FREERTOS_SDK_DIR)/tools/makeall.mk
 
+ifeq ($(OS),Windows_NT)
+USR_BOOT_DIR		?= D:\\tftpboot
+else
 USR_BOOT_DIR		?= /mnt/d/tftpboot
-
+endif
 
 image: all
 	@cp ./$(IMAGE_OUT_NAME).elf $(USR_BOOT_DIR)/freertos.elf

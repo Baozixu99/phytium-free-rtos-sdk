@@ -35,10 +35,6 @@ ifdef CONFIG_USE_LVGL
 include $(FREERTOS_SDK_DIR)/third-party/lvgl-8.3/include.mk
 endif
 
-ifdef CONFIG_USE_CHERRY_USB
-include $(FREERTOS_SDK_DIR)/third-party/cherryusb/include.mk
-endif
-
 ifdef CONFIG_USE_LIBMETAL
 include $(FREERTOS_SDK_DIR)/third-party/libmetal/include.mk
 endif
@@ -53,4 +49,8 @@ endif
 
 ifdef CONFIG_USE_FSL_WIFI
 include $(FREERTOS_SDK_DIR)/third-party/fsl_wifi/include.mk
+endif
+
+ifdef CONFIG_USE_CHERRY_USB
+include $(SDK_DIR)/third-party/cherryusb/include.mk
 endif

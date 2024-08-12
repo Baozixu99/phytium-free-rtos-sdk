@@ -391,7 +391,7 @@ BaseType_t CreatePOSIXDemoTasks(void)
 
     xReturn = xTaskCreate((TaskFunction_t)POSIXDemoTask, /* 任务入口函数 */
                           (const char *)"POSIXDemoTask",       /* 任务名字 */
-                          (uint16_t)TASK_STACK_SIZE,       /* 任务栈大小 */
+                          TASK_STACK_SIZE,       /* 任务栈大小 */
                           (void *)NULL,                    /* 任务入口函数参数 */
                           (UBaseType_t)POSIX_DEMO__TASK_PRIORITY,                  /* 任务的优先级 */
                           &xtask_handle);                  /* 任务控制 */

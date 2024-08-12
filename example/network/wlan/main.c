@@ -46,7 +46,7 @@ int main()
 
     xReturn = xTaskCreate((TaskFunction_t)WlanExampleEntry,
                     (const char *)"WlanExampleEntry",
-                    (uint16_t)4096,
+                    4096,
                     NULL,
                     (UBaseType_t)2,
                     NULL);

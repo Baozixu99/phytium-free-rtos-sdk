@@ -113,17 +113,6 @@ lib_openamp_info:
 BAREMETAL_LIBS+= $(BUILD_OUT_PATH)/lib_openamp.a
 endif
 
-ifdef CONFIG_USE_CHERRY_USB
-$(BUILD_OUT_PATH)/lib_cherryusb.a: lib_cherryusb.a
-lib_cherryusb.a:
-	$(call rtos_invoke_make_in_dir,$(FREERTOS_SDK_DIR),third-party/cherryusb,makefile,all,)
-lib_cherryusb_debug:
-	$(call rtos_invoke_make_in_dir,$(FREERTOS_SDK_DIR),third-party/cherryusb,makefile,debug,)
-lib_cherryusb_info:
-	$(call rtos_invoke_make_in_dir,$(FREERTOS_SDK_DIR),third-party/cherryusb,makefile,compiler_info,)
-BAREMETAL_LIBS+= $(BUILD_OUT_PATH)/lib_cherryusb.a
-endif
-
 # libmetal
 ifdef CONFIG_USE_LIBMETAL
 $(BUILD_OUT_PATH)/lib_libmetal.a: lib_libmetal.a
@@ -156,6 +145,17 @@ libfslwifi_debug:
 libfslwifi_info:
 	$(call rtos_invoke_make_in_dir,$(FREERTOS_SDK_DIR),third-party/fsl_wifi,makefile,compiler_info,)
 BAREMETAL_LIBS+= $(BUILD_OUT_PATH)/libfslwifi.a
+endif
+
+ifdef CONFIG_USE_CHERRY_USB
+$(BUILD_OUT_PATH)/libcherryusb.a: libcherryusb.a
+libcherryusb.a:
+	$(call rtos_invoke_make_in_dir,$(SDK_DIR),third-party/cherryusb,makefile,all,)
+libcherryusb_debug:
+	$(call rtos_invoke_make_in_dir,$(SDK_DIR),third-party/cherryusb,makefile,debug,)
+libcherryusb_info:
+	$(call rtos_invoke_make_in_dir,$(SDK_DIR),third-party/cherryusb,makefile,compiler_info,)
+BAREMETAL_LIBS+= $(BUILD_OUT_PATH)/libcherryusb.a
 endif
 
 # ifdef CONFIG_USE_SDMMC_CMD

@@ -52,7 +52,7 @@ int main()
 #else                                 
     xReturn = xTaskCreate((TaskFunction_t)FFreeRTOSPosixExampleTaskEntry, /* 任务入口函数 */
                       (const char *)"FFreeRTOSPosixExampleTaskEntry", /* 任务名字 */
-                      (uint16_t)4096,                       /* 任务栈大小 */
+                      4096,                       /* 任务栈大小 */
                       NULL,                                 /* 任务入口函数参数 */
                       (UBaseType_t)FREERTOS_POSIX_EXAMPLE_TASK_PRIORITY,                       /* 任务的优先级 */
                       NULL);

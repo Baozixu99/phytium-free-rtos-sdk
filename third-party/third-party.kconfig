@@ -128,12 +128,12 @@ config USE_FREEMODBUS
 config USE_CHERRY_USB
     bool
     default n
-    prompt "Use CherryUSB(0.8.0)"
+    prompt "Use CherryUSB"
     help
         Include CherryUSB for XHCI controller
 
     if USE_CHERRY_USB
-        source "$(FREERTOS_SDK_DIR)/third-party/cherryusb/Kconfig"
+        source "$SDK_DIR/third-party/cherryusb/cherryusb.kconfig"
     endif
 
 config USE_CRYPTO_PLUS_PLUS

@@ -55,7 +55,7 @@ int main()
 #else                                 
     xReturn = xTaskCreate((TaskFunction_t)NestedExampleTaskEntry, /* 任务入口函数 */
                       (const char *)"NestedExampleTaskEntry", /* 任务名字 */
-                      (uint16_t)4096,                       /* 任务栈大小 */
+                      4096,                       /* 任务栈大小 */
                       NULL,                                 /* 任务入口函数参数 */
                       (UBaseType_t)NESTED_EXAMPLE_TASK_PRIORITY,                       /* 任务的优先级 */
                       NULL);

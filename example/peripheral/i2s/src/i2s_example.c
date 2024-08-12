@@ -391,7 +391,7 @@ BaseType_t FFreeRTOSRunI2sExample(void)
     }
     xReturn = xTaskCreate((TaskFunction_t)FFreeRTOSI2sTransTask,         /* 任务入口函数 */
                           (const char *)"FFreeRTOSI2sTransTask",         /* 任务名字 */
-                          (uint16_t)4096,                         /* 任务栈大小 */
+                          4096,                         /* 任务栈大小 */
                           NULL,                                   /* 任务入口函数参数 */
                           (UBaseType_t)I2S_TEST_TASK_PRIORITY, /* 任务优先级 */
                           NULL);                                  /* 任务句柄 */

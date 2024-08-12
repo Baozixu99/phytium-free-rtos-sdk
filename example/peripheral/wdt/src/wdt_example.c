@@ -212,7 +212,7 @@ int FFreeRTOSWdtCreate(void)
 
     xReturn = xTaskCreate((TaskFunction_t)WdtExampleTask,         /* 任务入口函数 */
                           (const char *)"WdtExampleTask",         /* 任务名字 */
-                          (uint16_t)4096,                         /* 任务栈大小 */
+                          4096,                         /* 任务栈大小 */
                           NULL,                                   /* 任务入口函数参数 */
                           (UBaseType_t)WDT_FEED_TASK_PRIORITY,    /* 任务优先级 */
                           NULL);                                  /* 任务句柄 */

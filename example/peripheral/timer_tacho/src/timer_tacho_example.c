@@ -405,7 +405,7 @@ BaseType_t FFreeRTOSTimerTachoCreate(void)
 
     xReturn = xTaskCreate((TaskFunction_t)TimerTachoTask,  /* 任务入口函数 */
                           (const char *)"TimerTachoTask",/* 任务名字 */
-                          (uint16_t)1024,  /* 任务栈大小 */
+                          1024,  /* 任务栈大小 */
                           (void *)NULL,/* 任务入口函数参数 */
                           (UBaseType_t)TIMER_TACHO_TEST_TASK_PRIORITY, /* 任务的优先级 */
                           NULL);                                  /* 任务句柄 */

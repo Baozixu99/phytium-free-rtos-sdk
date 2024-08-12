@@ -45,7 +45,7 @@ int main(void)
 
     ret = xTaskCreate((TaskFunction_t)SpimSpiffsExampleEntry,
                     (const char *)"SpimSpiffsExampleEntry",
-                    (uint16_t)4096,
+                    4096,
                     NULL,
                     (UBaseType_t)2,
                     NULL);

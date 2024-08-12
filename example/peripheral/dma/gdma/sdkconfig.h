@@ -98,11 +98,6 @@
 /* CONFIG_INTERRUPT_ROLE_SLAVE is not set */
 /* end of Sdk common configuration */
 
-/* Image information configuration */
-
-/* CONFIG_IMAGE_INFO is not set */
-/* end of Image information configuration */
-
 /* Drivers configuration */
 
 #define CONFIG_USE_IOMUX
@@ -131,7 +126,6 @@
 /* CONFIG_USE_NAND is not set */
 /* CONFIG_USE_RTC is not set */
 /* CONFIG_USE_SATA is not set */
-/* CONFIG_USE_USB is not set */
 /* CONFIG_USE_ADC is not set */
 /* CONFIG_USE_PWM is not set */
 /* CONFIG_USE_IPC is not set */

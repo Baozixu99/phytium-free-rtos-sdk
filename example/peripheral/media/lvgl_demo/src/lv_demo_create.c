@@ -181,14 +181,14 @@ BaseType_t FFreeRTOSMediaInitCreate(void)
     /* Media init task */
     xReturn = xTaskCreate((TaskFunction_t)FFreeRTOSMediaDeviceInit,  /* 任务入口函数 */
                           (const char *)"FFreeRTOSMediaDeviceInit",  /* 任务名字 */
-                          (uint16_t)1024,                         /* 任务栈大小 */
+                          1024,                         /* 任务栈大小 */
                           NULL,                   /* 任务入口函数参数 */
                           (UBaseType_t)configMAX_PRIORITIES - 2,                       /* 任务的优先级 */
                           (TaskHandle_t *)&init_task); /* 任务控制 */
     /* Hpd task control */
     xReturn = xTaskCreate((TaskFunction_t)FFreeRTOSMediaHpdHandle, /* 任务入口函数 */
                           (const char *)"FFreeRTOSMediaHpdHandle", /* 任务名字 */
-                          (uint16_t)1024,                        /* 任务栈大小 */
+                          1024,                        /* 任务栈大小 */
                           NULL,                   /* 任务入口函数参数 */
                           (UBaseType_t)configMAX_PRIORITIES - 1,                      /* 任务的优先级 */
                           (TaskHandle_t *)&hpd_task);
@@ -211,7 +211,7 @@ BaseType_t FFreeRTOSlVGLConfigCreate(void )
     /* lvgl demo task */
     xReturn = xTaskCreate((TaskFunction_t)FFreeRTOSLVGLConfigTask,  /* 任务入口函数 */
                           (const char *)"FFreeRTOSLVGLConfigTask",  /* 任务名字 */
-                          (uint16_t)1024,                         /* 任务栈大小 */
+                          1024,                         /* 任务栈大小 */
                           NULL,                                 /* 任务入口函数参数 */
                           (UBaseType_t)configMAX_PRIORITIES - 3,                         /* 任务的优先级 */
                           (TaskHandle_t *)&lvgl_init_task); /* 任务控制 */
@@ -235,7 +235,7 @@ BaseType_t FFreeRTOSlVGLDemoCreate(void)
     /* lvgl demo task */
     xReturn = xTaskCreate((TaskFunction_t)FFreeRTOSLVGLDemoTask,  /* 任务入口函数 */
                           (const char *)"FFreeRTOSLVGLDemoTask",  /* 任务名字 */
-                          (uint16_t)1024,                         /* 任务栈大小 */
+                          1024,                         /* 任务栈大小 */
                           NULL,                                   /* 任务入口函数参数 */
                           (UBaseType_t)configMAX_PRIORITIES - 4,                         /* 任务的优先级 */
                           (TaskHandle_t *)&demo_task); /* 任务控制 */

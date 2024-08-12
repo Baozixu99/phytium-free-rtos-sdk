@@ -342,7 +342,7 @@ BaseType_t FFreeRTOSCreateCanPolledTestTask(void)
     /* can polled example standard frame task */
     xReturn = xTaskCreate((TaskFunction_t)FFreeRTOSCanPolledTask,  /* 任务入口函数 */
                           (const char *)"FFreeRTOSCanPolledStandardTask",/* 任务名字 */
-                          (uint16_t)1024,  /* 任务栈大小 */
+                          1024,  /* 任务栈大小 */
                           (void *)STANDARD_FRAME,/* 任务入口函数参数 */
                           (UBaseType_t)CAN_POLLED_TASK_PRIORITY,  /* 任务的优先级 */
                           NULL); /* 任务控制 */
@@ -362,7 +362,7 @@ BaseType_t FFreeRTOSCreateCanPolledTestTask(void)
     /* can polled example extended frame task */
     xReturn = xTaskCreate((TaskFunction_t)FFreeRTOSCanPolledTask,  /* 任务入口函数 */
                           (const char *)"FFreeRTOSCanPolledExtendedTask",/* 任务名字 */
-                          (uint16_t)1024,  /* 任务栈大小 */
+                          1024,  /* 任务栈大小 */
                           (void *)EXTEND_FRAME,/* 任务入口函数参数 */
                           (UBaseType_t)CAN_POLLED_TASK_PRIORITY,  /* 任务的优先级 */
                           NULL); /* 任务控制 */

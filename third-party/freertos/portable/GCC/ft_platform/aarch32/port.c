@@ -453,8 +453,8 @@ void FreeRTOS_Tick_Handler(void)
     }
 
     /* unmask all interrupt priorities. */
-    InterruptSetPriorityMask(portUNMASK_VALUE); 
-    
+    InterruptSetPriorityMask(portUNMASK_VALUE);
+
     /* interrupt clear. */
     configCLEAR_TICK_INTERRUPT();
 }
@@ -566,4 +566,10 @@ static void vPortPriorityConfigCheck(void)
         ulMaxAPIPriorityMask = PRIORITY_TRANSLATE_SET(ulMaxAPIPriorityMask);
         ulPortUnmask = PRIORITY_TRANSLATE_SET(ulPortUnmask);
     }
+}
+
+extern int vApplicationInIrq(void);
+_WEAK int xPortIsInsideInterrupt( void )
+{
+    return vApplicationInIrq();
 }

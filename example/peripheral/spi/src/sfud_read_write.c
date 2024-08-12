@@ -259,7 +259,7 @@ BaseType_t FFreeRTOSSfudWriteThenRead(void)
     }
     xReturn = xTaskCreate((TaskFunction_t)SpiSfudWriteThenReadTask,  /* 任务入口函数 */
                           (const char *)"SpiSfudWriteThenReadTask",/* 任务名字 */
-                          (uint16_t)4096,  /* 任务栈大小 */
+                          4096,  /* 任务栈大小 */
                           NULL,/* 任务入口函数参数 */
                           (UBaseType_t)SFUD_WR_TEST_TASK_PRIORITY,  /* 任务的优先级 */
                           NULL);

@@ -332,7 +332,7 @@ BaseType_t FFreeRTOSRunDDMASpiLoopback(u32 spi_id, u32 bytes)
 
     ret = xTaskCreate((TaskFunction_t)DdmaTask,  /* task entry */
                     (const char *)"DdmaTask",/* task name */
-                    (uint16_t)4096,  /* task stack size in words */
+                    4096,  /* task stack size in words */
                     (void *)&bytes, /* task params */
                     (UBaseType_t)configMAX_PRIORITIES - 1,  /* task priority */
                     NULL); /* task handler */

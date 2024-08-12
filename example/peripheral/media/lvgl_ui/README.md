@@ -164,7 +164,6 @@ Media demo
 
 输入以上命令后,鼠标和键盘均能正常使用
 
-![media_indev](fig/media_indev.jpg)
 
 ## 3. 如何解决问题
 

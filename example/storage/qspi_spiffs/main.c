@@ -56,7 +56,7 @@ int main(void)
     /* used in no-letter-shell mode */
     ret = xTaskCreate((TaskFunction_t)QspiSpiffsExampleTaskEntry,  /* 任务入口函数 */
                           (const char *)"QspiSpiffsExampleTaskEntry",/* 任务名字 */
-                          (uint16_t)4096,  /* 任务栈大小 */
+                          4096,  /* 任务栈大小 */
                           NULL,/* 任务入口函数参数 */
                           (UBaseType_t)QSPI_SPIFFS_EXAMPLE_TASK_PRIORITY,  /* 任务的优先级 */
                           NULL);

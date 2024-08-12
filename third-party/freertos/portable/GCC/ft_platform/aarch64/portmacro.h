@@ -198,4 +198,6 @@ number of bits implemented by the interrupt controller. */
 #define portICCBPR_BINARY_POINT_OFFSET (0x08)
 #define portICCRPR_RUNNING_PRIORITY_OFFSET (0x14)
 
+int xPortIsInsideInterrupt( void );
+
 #endif /* PORTMACRO_H */

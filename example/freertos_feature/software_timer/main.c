@@ -55,7 +55,7 @@ int main(void)
     /* used in no-letter-shell mode */
     ret = xTaskCreate((TaskFunction_t)SoftwareTimerExampleTaskEntry,
                       (const char *)"SoftwareTimerExampleTaskEntry",
-                      (uint16_t)4096,
+                      4096,
                       NULL,
                       (UBaseType_t)SOFTWARE_TIMER_EXAMPLE_TASK_PRIORITY,
                       NULL);

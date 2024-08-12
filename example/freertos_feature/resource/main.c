@@ -58,7 +58,7 @@ int main(void)
     /* used in no-letter-shell mode */
     ret = xTaskCreate((TaskFunction_t)FeatureResourceExampleTaskEntry,  /* 任务入口函数 */
                           (const char *)"FeatureResourceExampleTaskEntry",/* 任务名字 */
-                          (uint16_t)4096,  /* 任务栈大小 */
+                          4096,  /* 任务栈大小 */
                           NULL,/* 任务入口函数参数 */
                           (UBaseType_t)FEATURE_RESOUCE_EXAMPLE_TASK_PRIORITY,  /* 任务的优先级 */
                           NULL);

@@ -211,7 +211,7 @@ int  FFreeRTOSLwipDhcpTaskCreate(void)
     
     xReturn = xTaskCreate((TaskFunction_t)LwipDhcpInitTask, /* 任务入口函数 */
                       (const char *)"LwipDhcpInitTask", /* 任务名字 */
-                      (uint16_t)4096,                 /* 任务栈大小 */
+                      4096,                 /* 任务栈大小 */
                         NULL,                   /* 任务入口函数参数 */
                       (UBaseType_t)configMAX_PRIORITIES - 1, /* 任务的优先级 */
                       NULL);                          /* 任务控制块指针 */

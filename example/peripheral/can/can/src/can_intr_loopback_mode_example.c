@@ -436,7 +436,7 @@ BaseType_t FFreeRTOSCreateCanIntrTestTask(void)
     /* can intr example standard frame task */
     xReturn = xTaskCreate((TaskFunction_t)FFreeRTOSCanIntrTask,  /* 任务入口函数 */
                           (const char *)"FFreeRTOSCanIntrStandardTask",/* 任务名字 */
-                          (uint16_t)1024,  /* 任务栈大小 */
+                          1024,  /* 任务栈大小 */
                           (void *)STANDARD_FRAME,/* 任务入口函数参数 */
                           (UBaseType_t)CAN_INTR_TASK_PRIORITY,  /* 任务的优先级 */
                           NULL); /* 任务控制 */
@@ -456,7 +456,7 @@ BaseType_t FFreeRTOSCreateCanIntrTestTask(void)
     /* can intr example extended frame task */
     xReturn = xTaskCreate((TaskFunction_t)FFreeRTOSCanIntrTask,  /* 任务入口函数 */
                           (const char *)"FFreeRTOSCanIntrExtendedTask",/* 任务名字 */
-                          (uint16_t)1024,  /* 任务栈大小 */
+                          1024,  /* 任务栈大小 */
                           (void *)EXTEND_FRAME,/* 任务入口函数参数 */
                           (UBaseType_t)CAN_INTR_TASK_PRIORITY,  /* 任务的优先级 */
                           NULL); /* 任务控制 */   

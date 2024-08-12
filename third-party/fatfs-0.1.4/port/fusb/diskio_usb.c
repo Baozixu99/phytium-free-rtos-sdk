@@ -32,24 +32,7 @@
 #define FF_DEBUG(format, ...)   FT_DEBUG_PRINT_D(FF_DEBUG_TAG, format, ##__VA_ARGS__)
 #define FF_WARN(format, ...)    FT_DEBUG_PRINT_W(FF_DEBUG_TAG, format, ##__VA_ARGS__)
 
-#define FUSB_MEMP_TOTAL_SIZE     SZ_1M
 #define FUSB_FATFS_ID            FUSB3_ID_0
-
-static FMemp memp;
-static u8 memp_buf[FUSB_MEMP_TOTAL_SIZE];
-FASSERT_STATIC(FUSB_FATFS_ID < FUSB3_NUM);
-
-static const u32 usb_irq_num[FUSB3_NUM] =
-{
-    [FUSB3_ID_0] = FUSB3_0_IRQ_NUM,
-    [FUSB3_ID_1] = FUSB3_1_IRQ_NUM
-};
-
-static const uintptr xhci_base_addr[FUSB3_NUM] =
-{
-    [FUSB3_ID_0] = FUSB3_0_BASE_ADDR + FUSB3_XHCI_OFFSET,
-    [FUSB3_ID_1] = FUSB3_1_BASE_ADDR + FUSB3_XHCI_OFFSET
-};
 
 typedef struct
 {
@@ -57,7 +40,6 @@ typedef struct
     boolean init_ok;
     BYTE pdrv;
     const TCHAR *disk_name;
-    struct usbh_bus usb;
 } ff_usb_disk;
 
 static ff_usb_disk usb_disk =
@@ -65,93 +47,10 @@ static ff_usb_disk usb_disk =
     .id = FUSB_FATFS_ID,
     .pdrv = FF_DRV_NOT_USED,
     .init_ok = FALSE,
-    .disk_name = "/usb0/sda" 
+    .disk_name = "/dev/sda"
 };
 
 /*****************************************************************************/
-extern void USBH_IRQHandler(void *);
-
-static void UsbHcInterrruptHandler(s32 vector, void *param)
-{
-    USBH_IRQHandler(param);
-}
-
-static void UsbHcSetupInterrupt(u32 id)
-{
-    u32 cpu_id;
-    u32 irq_num = usb_irq_num[id];
-    u32 irq_priority = 13U;
-
-    GetCpuId(&cpu_id);
-    InterruptSetTargetCpus(irq_num, cpu_id);
-
-    InterruptSetPriority(irq_num, irq_priority);
-
-    /* register intr callback */
-    InterruptInstall(irq_num,
-                     UsbHcInterrruptHandler,
-                     &(usb_disk.usb),
-                     NULL);
-
-    /* enable irq */
-    InterruptUmask(irq_num);
-}
-
-void UsbHcSetupMemp(void)
-{
-    if (FT_COMPONENT_IS_READY != memp.is_ready)
-    {
-        USB_ASSERT(FT_SUCCESS == FMempInit(&memp, &memp_buf[0], &memp_buf[0] + FUSB_MEMP_TOTAL_SIZE));
-    }
-}
-
-/* implement cherryusb weak functions */
-void usb_hc_low_level_init(uint32_t id)
-{
-    UsbHcSetupMemp();
-    UsbHcSetupInterrupt(id);
-}
-
-unsigned long usb_hc_get_register_base(uint32_t id)
-{
-    return xhci_base_addr[id];
-}
-
-void *usb_hc_malloc(size_t size)
-{
-    return usb_hc_malloc_align(sizeof(void *), size);
-}
-
-void *usb_hc_malloc_align(size_t align, size_t size)
-{
-    void *result = FMempMallocAlign(&memp, size, align);
-
-    if (result)
-    {
-        memset(result, 0U, size);
-    }
-
-    return result;
-}
-
-void usb_hc_free(void *ptr)
-{
-    if (NULL != ptr)
-    {
-        FMempFree(&memp, ptr);
-    }
-}
-
-void usb_assert(const char *filename, int linenum)
-{
-    FAssert(filename, linenum, 0xff);
-}
-
-void usb_hc_dcache_invalidate(void *addr, unsigned long len)
-{
-    FCacheDCacheInvalidateRange((uintptr)addr, len);
-}
-/*****************************************/
 
 /*-----------------------------------------------------------------------*/
 /* Get Drive Status                                                      */
@@ -191,8 +90,7 @@ static DSTATUS usb_disk_initialize(
 
     if (FALSE == disk->init_ok)
     {
-        memset(&disk->usb, 0, sizeof(disk->usb));
-        (void)usbh_initialize(disk->id, &disk->usb); /* start a task to emurate usb hub and attached usb disk */
+        (void)usbh_initialize(disk->id, usb_hc_get_register_base(disk->id)); /* start a task to emurate usb hub and attached usb disk */
         while (TRUE)
         {
             if (NULL != usbh_find_class_instance(disk->disk_name))

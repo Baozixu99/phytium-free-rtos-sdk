@@ -526,3 +526,9 @@ static void vPortPriorityConfigCheck(void)
         ullPortUnmask = PRIORITY_TRANSLATE_SET(ullPortUnmask);
     }
 }
+
+extern int vApplicationInIrq(void);
+_WEAK int xPortIsInsideInterrupt( void )
+{
+    return vApplicationInIrq();
+}

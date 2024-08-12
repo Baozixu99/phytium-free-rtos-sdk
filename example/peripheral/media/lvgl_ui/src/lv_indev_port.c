@@ -20,6 +20,7 @@
  * ----- ------  -------- --------------------------------------
  *  1.0  Wangzq     2023/04/20  Modify the format and establish the version
  *  1.1  Wangzq     2023/07/07  change the third-party and driver relation 
+ *  1.2  Wangzq     2024/08/01  change the port to adapt the new cherryusb stack
  */
 /*********************
  *      INCLUDES
@@ -38,6 +39,7 @@
 #include "lvgl.h"
 #include "usbh_core.h"
 #include "usbh_hid.h"
+#include "usb_config.h"
 
 #define HID_KEYCODE_TO_ASCII    \
     {0     , 0      }, /* 0x00 */ \
@@ -145,23 +147,28 @@
     {'='   , '='    }, /* 0x67 */ \
 
 
+#define XHCI_INPUT_WAIT_TIME    (pdMS_TO_TICKS(20000UL))
+#define TIMER_OUT               (XHCI_INPUT_WAIT_TIME + (pdMS_TO_TICKS(10000UL)))
 /************************** Variable Definitions *****************************/
-#define FUSB_MEMP_TOTAL_SIZE     SZ_1M
-
-static char *keyborad_name = "/usb0/kbd0";
-static char *mouse_name = "/usb1/mouse1";
-
-static FMemp memp;
-static u8 memp_buf[FUSB_MEMP_TOTAL_SIZE];
-static struct usbh_bus usb[FUSB3_NUM];
+static u8 const keycode2ascii[128][2] =  { HID_KEYCODE_TO_ASCII };
 static struct usbh_urb kbd_intin_urb;
-static bool botton_press_state = false;
+static uint8_t kbd_buffer[128] __attribute__((aligned(sizeof(unsigned long)))) = {0};
+static struct usb_osal_timer *kbd_timer = NULL;
+static QueueHandle_t xQueue = NULL;
 
+static char *keyborad_name = "/dev/input0";
+static char *mouse_name = "/dev/input2";
+
+enum
+{
+    XHCI_USB_MOUSE_SUCCESS = 0,
+    XHCI_USB_MOUSE_FAIL    = 1,
+};
+
+static bool botton_press_state = false;
 static struct usbh_urb mouse_intin_urb;
 static uint8_t mouse_buffer[128] __attribute__((aligned(sizeof(unsigned long)))) = {0};
-static uint8_t kbd_buffer[128] __attribute__((aligned(sizeof(unsigned long)))) = {0};
-static u8 const keycode2ascii[128][2] =  { HID_KEYCODE_TO_ASCII };
-
+static struct usb_osal_timer *mouse_timer = NULL;
 static f32 mouse_xdisp;
 static f32 mouse_ydisp;
 static uint8_t mouse_wdisp;/*reserved,w is the botton of mouse*/
@@ -179,106 +186,6 @@ static void keypad_read(lv_indev_drv_t *indev_drv, lv_indev_data_t *data);
 static uint32_t keypad_get_key(void);
 
 /************************** Function Prototypes ******************************/
-extern void USBH_IRQHandler(void *);
-
-static void UsbHcInterrruptHandler(s32 vector, void *param)
-{
-    USBH_IRQHandler(param);
-}
-
-static u8 UsbInputGetInterfaceProtocol(struct usbh_hid *hid_class)
-{
-    struct usbh_hubport *hport = hid_class->hport;
-    u8 intf = hid_class->intf;
-    const struct usb_interface_descriptor *intf_desc = &hport->config.intf->altsetting[intf].intf_desc;
-
-    return intf_desc->bInterfaceProtocol;
-}
-
-static void UsbHcSetupInterrupt(u32 id)
-{
-    u32 cpu_id;
-    u32 irq_num = (id == FUSB3_ID_0) ? FUSB3_0_IRQ_NUM : FUSB3_1_IRQ_NUM;
-    u32 irq_priority = 13U;
-
-    GetCpuId(&cpu_id);
-    InterruptSetTargetCpus(irq_num, cpu_id);
-
-    InterruptSetPriority(irq_num, irq_priority);
-
-    /* register intr callback */
-    InterruptInstall(irq_num,
-                     UsbHcInterrruptHandler,
-                     &usb[id],
-                     NULL);
-
-    /* enable irq */
-    InterruptUmask(irq_num);
-}
-
-/*********************************hardware configure********************************************/
-void UsbHcSetupMemp(void)
-{
-    if (FT_COMPONENT_IS_READY != memp.is_ready)
-    {
-        USB_ASSERT(FT_SUCCESS == FMempInit(&memp, &memp_buf[0], &memp_buf[0] + FUSB_MEMP_TOTAL_SIZE));
-    }
-}
-
-/* implement cherryusb weak functions */
-void usb_hc_low_level_init(uint32_t id)
-{
-    UsbHcSetupMemp();
-    UsbHcSetupInterrupt(id);
-}
-
-unsigned long usb_hc_get_register_base(uint32_t id)
-{
-    if (FUSB3_ID_0 == id)
-    {
-        return FUSB3_0_BASE_ADDR + FUSB3_XHCI_OFFSET;
-    }
-    else
-    {
-        return FUSB3_1_BASE_ADDR + FUSB3_XHCI_OFFSET;
-    }
-}
-
-void *usb_hc_malloc(size_t size)
-{
-    return usb_hc_malloc_align(sizeof(void *), size);
-}
-
-void *usb_hc_malloc_align(size_t align, size_t size)
-{
-    void *result = FMempMallocAlign(&memp, size, align);
-
-    if (result)
-    {
-        memset(result, 0U, size);
-    }
-    return result;
-}
-
-void usb_hc_free(void *ptr)
-{
-    if (NULL != ptr)
-    {
-        FMempFree(&memp, ptr);
-    }
-}
-
-void usb_assert(const char *filename, int linenum)
-{
-    FAssert(filename, linenum, 0xff);
-}
-
-void usb_hc_dcache_invalidate(void *addr, unsigned long len)
-{
-    FCacheDCacheInvalidateRange((uintptr)addr, len);
-}
-
-/*********************************usb indev function********************************************/
 /* look up new key in previous keys */
 static inline boolean FindKeyInPrevInput(const struct usb_hid_kbd_report *report, u8 keycode)
 {
@@ -319,39 +226,34 @@ static void UsbKeyBoardHandleInput(struct usb_hid_kbd_report *input)
 
 static void UsbKeyboardCallback(void *arg, int nbytes)
 {
-    u8 intf_protocol;
-    struct usbh_hid *kbd_class = (struct usbh_hid *)arg;
-    intf_protocol = UsbInputGetInterfaceProtocol(kbd_class);
-    if (HID_PROTOCOL_KEYBOARD == intf_protocol) /* handle input from keyboard */
+      struct usbh_hid *hid_class = (struct usbh_hid *)arg;
+printf("UsbKeyboardCallback **********\r\n");
+    if (nbytes > 0) 
     {
-        if (nbytes < (int)sizeof(struct usb_hid_kbd_report))
-        {
-            printf("nbytes = %d", nbytes);
-        }
-        else
-        {
-            UsbKeyBoardHandleInput((struct usb_hid_kbd_report *)kbd_buffer);
-        }
+        UsbKeyBoardHandleInput((struct usb_hid_kbd_report *)kbd_buffer);
     }
-    else
+
+    if (kbd_timer) 
     {
-        printf("mismatch callback for protocol-%d", intf_protocol);
-        return;
+        usb_osal_timer_start(kbd_timer);
     }
 }
 
 static inline void UsbMouseLeftButtonCB(void)
 {
+    printf("<-\r\n");
     botton_press_state = true;
 }
 
 static inline void UsbMouseRightButtonCB(void)
 {
+    printf("->\r\n");
     botton_press_state = true;
 }
 
 static inline void UsbMouseMiddleButtonCB(void)
 {
+    printf("C\r\n");
     botton_press_state = true;
 }
 
@@ -372,7 +274,6 @@ static void UsbMouseHandleInput(struct usb_hid_mouse_report *input)
     {
         UsbMouseRightButtonCB();
     }
-
     mouse_xdisp = (f32)(LV_HOR_RES_MAX / 256.0) * input->xdisp + mouse_xdisp;/*relative to last position*/
     mouse_ydisp = (f32)(LV_VER_RES_MAX / 256.0) * input->ydisp + mouse_ydisp;
 
@@ -398,23 +299,14 @@ static void UsbMouseCallback(void *arg, int nbytes)
 {
     u8 intf_protocol;
     struct usbh_hid *mouse_class = (struct usbh_hid *)arg;
-    intf_protocol = UsbInputGetInterfaceProtocol(mouse_class);
-
-    if (HID_PROTOCOL_MOUSE == intf_protocol) /* handle input from mouse */
+    if (nbytes > 0) 
     {
-        if (nbytes < (int)sizeof(struct usb_hid_mouse_report))
-        {
-            printf("nbytes = %d", nbytes);
-        }
-        else
-        {
-            UsbMouseHandleInput((struct usb_hid_mouse_report *)mouse_buffer);
-        }
+        UsbMouseHandleInput((struct usb_hid_mouse_report *)mouse_buffer);
     }
-    else
+
+    if (mouse_timer)
     {
-        printf("mismatch callback for protocol-%d", intf_protocol);
-        return;
+        usb_osal_timer_start(mouse_timer);
     }
 }
 
@@ -431,10 +323,24 @@ void lv_port_kb_init(u32 id)
     indev_keypad = lv_indev_drv_register(&indev_drv_keyborad);
 }
 
+static void UsbMouseTimeout(void *arg)
+{
+    struct usbh_hid *hid = (struct usbh_hid *)arg;
+    usbh_int_urb_fill(&hid->intin_urb, hid->hport, hid->intin, mouse_buffer, hid->intin->wMaxPacketSize, 0, UsbMouseCallback, hid);
+    usbh_submit_urb(&hid->intin_urb);
+}
+
+static void UsbKeyboardTimeout(void *arg)
+{
+    struct usbh_hid *hid = (struct usbh_hid *)arg;
+    usbh_int_urb_fill(&hid->intin_urb, hid->hport, hid->intin, kbd_buffer, hid->intin->wMaxPacketSize, 0, UsbKeyboardCallback, hid);
+    usbh_submit_urb(&hid->intin_urb);
+}
+
 void lv_port_ms_init(u32 id)
 {
     static  lv_indev_drv_t indev_drv_mouse;
-    LV_IMG_DECLARE(lv_shubiao);
+    LV_IMG_DECLARE(lv_mouse);
     mouse_init(id);
     /*Register a mouse input device*/
     lv_indev_drv_init(&indev_drv_mouse);
@@ -443,18 +349,18 @@ void lv_port_ms_init(u32 id)
     indev_mouse = lv_indev_drv_register(&indev_drv_mouse);
     /*Set cursor. For simplicity set a HOME symbol now.*/
     lv_obj_t *mouse_cursor = lv_img_create(lv_scr_act());
-    lv_img_set_src(mouse_cursor, &lv_shubiao);
+    lv_img_set_src(mouse_cursor, &lv_mouse);
     lv_img_set_angle(mouse_cursor, 0);
     lv_img_set_zoom(mouse_cursor, 128);
     lv_indev_set_cursor(indev_mouse, mouse_cursor);
+
 }
 
 /*Initialize your mouse*/
 static void mouse_init(u32 id)
 {
     u32 ret = 0;
-    memset(&usb[id], 0, sizeof(usb[id]));
-    ret = usbh_initialize(id, &usb[id]);
+    ret = usbh_initialize(id, usb_hc_get_register_base(id));
     if (0 != ret)
     {
         printf("init usb failed \r\n");
@@ -488,6 +394,7 @@ static bool mouse_is_pressed(void)
 {
     if (true == botton_press_state)
     {
+        printf("botton_press_state \r\n");
         return true;
     }
     else
@@ -499,22 +406,61 @@ static bool mouse_is_pressed(void)
 /*Get the x and y coordinates if the mouse is pressed*/
 static void mouse_get_xy(lv_coord_t *x, lv_coord_t *y)
 {
+        (*x) = mouse_xdisp;
+        (*y) = mouse_ydisp;
+}
+
+void usbh_hid_run(struct usbh_hid *hid_class)
+{
+    struct usbh_hubport *hport = hid_class->hport;
+    uint8_t intf = hid_class->intf;
+  
     struct usbh_hid *mouse_class;
-    u8 intf_protocol;
+
     mouse_class = (struct usbh_hid *)usbh_find_class_instance(mouse_name);
 
     if (mouse_class == NULL)
     {
-        printf("mouse_class null \r\n");
-        vTaskDelete(NULL);
-        return;
+        printf(" *********** mouse_class null \r\n");
     }
-    else
+          /*Your code comes here*/
+    struct usbh_hid *kbd_class;
+    u8 intf_protocol;
+
+    kbd_class = (struct usbh_hid *)usbh_find_class_instance(keyborad_name);
+    if (kbd_class == NULL)
     {
-        usbh_int_urb_fill(&mouse_intin_urb, mouse_class->intin, mouse_buffer, 8, 0, UsbMouseCallback, mouse_class);
-        usbh_submit_urb(&mouse_intin_urb);
-        (*x) = mouse_xdisp;
-        (*y) = mouse_ydisp;
+        printf("kbd_class null \r\n");
+        vTaskDelete(NULL);
+    }
+
+    if (HID_PROTOCOL_KEYBOARD == hport->config.intf[intf].altsetting[0].intf_desc.bInterfaceProtocol) 
+    {
+        printf("**/dev/input%d is keyboard \r\n", hid_class->minor);   
+
+    kbd_timer = usb_osal_timer_create("keyboard_timer",
+                                      USBH_GET_URB_INTERVAL(kbd_class->intin->bInterval, kbd_class->hport->speed),
+                                      UsbKeyboardTimeout,
+                                      kbd_class,
+                                      false);
+    if (kbd_timer != NULL)
+    {
+        usb_osal_timer_start(kbd_timer);
+    }    
+    } 
+    else if (HID_PROTOCOL_MOUSE == hport->config.intf[intf].altsetting[0].intf_desc.bInterfaceProtocol) 
+    {
+        printf("**/dev/input%d is mouse \r\n", hid_class->minor);    
+
+           mouse_timer = usb_osal_timer_create("mouse_timer",
+                                      USBH_GET_URB_INTERVAL(mouse_class->intin->bInterval, mouse_class->hport->speed),
+                                      UsbMouseTimeout,
+                                      mouse_class,
+                                      false);
+    if (mouse_timer != NULL)
+    {
+        usb_osal_timer_start(mouse_timer);
+    }  
     }
 }
 
@@ -522,8 +468,8 @@ static void mouse_get_xy(lv_coord_t *x, lv_coord_t *y)
 static void keypad_init(u32 id)
 {
     u32 ret = 0;
-    memset(&usb[id], 0, sizeof(usb[id]));
-    ret = usbh_initialize(id, &usb[id]);
+    ret = usbh_initialize(id, usb_hc_get_register_base(id));
+
     if (0 != ret)
     {
         printf("init usb failed \r\n");
@@ -544,6 +490,7 @@ static void keypad_read(lv_indev_drv_t *indev_drv, lv_indev_data_t *data)
     keyborad_code = 0;
     if (act_key != 0)
     {
+    printf("act_key = %d \r\n", act_key);
         data->state = LV_INDEV_STATE_PR;
         /*Translate the keys to LVGL control characters according to your key definitions*/
         last_key = act_key;
@@ -553,31 +500,12 @@ static void keypad_read(lv_indev_drv_t *indev_drv, lv_indev_data_t *data)
         data->state = LV_INDEV_STATE_REL;
     }
     data->key = last_key;
-
 }
 
 /*Get the currently being pressed key.  0 if no key is pressed*/
 static uint32_t keypad_get_key(void)
 {
-    /*Your code comes here*/
-    struct usbh_hid *kbd_class;
-    u8 intf_protocol;
-
-    kbd_class = (struct usbh_hid *)usbh_find_class_instance(keyborad_name);
-    if (kbd_class == NULL)
-    {
-        printf("kbd_class null \r\n");
-        vTaskDelete(NULL);
-        return 0;
-    }
-    else
-    {
-        usbh_int_urb_fill(&kbd_intin_urb, kbd_class->intin, kbd_buffer, 8, 0, UsbKeyboardCallback, kbd_class);
-        usbh_submit_urb(&kbd_intin_urb);  
-        return keyborad_code;
-    }
-
-    return 0;
+    return keyborad_code;
 }
 
 /*This dummy typedef exists purely to silence -Wpedantic.*/

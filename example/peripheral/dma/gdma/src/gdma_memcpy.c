@@ -215,7 +215,7 @@ int FFreeRTOSGdmaMemcpy(void)
 
     xReturn = xTaskCreate((TaskFunction_t)GdmaMemcpyTask,         /* 任务入口函数 */
                           (const char *)"GdmaMemcpyTask",         /* 任务名字 */
-                          (uint16_t)4096,                         /* 任务栈大小 */
+                          4096,                         /* 任务栈大小 */
                           NULL,                                   /* 任务入口函数参数 */
                           (UBaseType_t)GDMA_MEMCPY_TASK_PRIORITY, /* 任务优先级 */
                           NULL);                                  /* 任务句柄 */

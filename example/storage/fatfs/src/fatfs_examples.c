@@ -336,7 +336,7 @@ BaseType_t FFreeRTOSFatfsTest(void)
 
     ret = xTaskCreate((TaskFunction_t)FatfsRunTask,
                       (const char *)"FatfsRunTask",
-                      (uint16_t)2048,
+                      2048,
                       NULL,
                       (UBaseType_t)configMAX_PRIORITIES - 1,
                       NULL);

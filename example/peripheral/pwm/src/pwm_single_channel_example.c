@@ -175,7 +175,7 @@ BaseType_t FFreeRTOSPwmSingleChannelTaskCreate()
 
     xReturn = xTaskCreate((TaskFunction_t)FFreeRTOSSingleChannelTask,         /* 任务入口函数 */
                           (const char *)"FFreeRTOSSingleChannelTask",         /* 任务名字 */
-                          (uint16_t)4096,                         /* 任务栈大小 */
+                          4096,                         /* 任务栈大小 */
                           NULL,                                   /* 任务入口函数参数 */
                           (UBaseType_t)PWM_SINGLE_CHANNEL_TEST_TASK_PRIORITY, /* 任务优先级 */
                           NULL);                                  /* 任务句柄 */

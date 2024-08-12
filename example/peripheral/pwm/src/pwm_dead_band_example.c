@@ -211,7 +211,7 @@ BaseType_t FFreeRTOSPwmDeadBandTaskCreate()
 
     xReturn = xTaskCreate((TaskFunction_t)FFreeRTOSPwmDeadBandTask,         /* 任务入口函数 */
                           (const char *)"FFreeRTOSPwmDeadBandTask",         /* 任务名字 */
-                          (uint16_t)4096,                         /* 任务栈大小 */
+                          4096,                         /* 任务栈大小 */
                           NULL,                                   /* 任务入口函数参数 */
                           (UBaseType_t)PWM_DEAD_BAND_TEST_TASK_PRIORITY, /* 任务优先级 */
                           NULL);                                  /* 任务句柄 */

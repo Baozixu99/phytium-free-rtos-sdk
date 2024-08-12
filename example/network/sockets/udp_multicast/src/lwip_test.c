@@ -197,7 +197,7 @@ void LwipTest(void *args)
     BaseType_t ret;
     ret = xTaskCreate((TaskFunction_t)LwipTestCreate, /* 任务入口函数 */
                       (const char *)"LwipTestCreate", /* 任务名字 */
-                      (uint16_t)2048,                 /* 任务栈大小 */
+                      2048,                 /* 任务栈大小 */
                       (void *)args,                   /* 任务入口函数参数 */
                       (UBaseType_t)configMAX_PRIORITIES - 1, /* 任务的优先级 */
                       NULL);                          /* 任务控制块指针 */

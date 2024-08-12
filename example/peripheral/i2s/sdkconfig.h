@@ -99,11 +99,6 @@
 /* CONFIG_INTERRUPT_ROLE_SLAVE is not set */
 /* end of Sdk common configuration */
 
-/* Image information configuration */
-
-/* CONFIG_IMAGE_INFO is not set */
-/* end of Image information configuration */
-
 /* Drivers configuration */
 
 #define CONFIG_USE_IOMUX
@@ -138,7 +133,6 @@
 /* CONFIG_USE_NAND is not set */
 /* CONFIG_USE_RTC is not set */
 /* CONFIG_USE_SATA is not set */
-/* CONFIG_USE_USB is not set */
 /* CONFIG_USE_ADC is not set */
 /* CONFIG_USE_PWM is not set */
 /* CONFIG_USE_IPC is not set */
@@ -197,7 +191,7 @@
 #define CONFIG_DEFAULT_LINKER_SCRIPT
 /* CONFIG_USER_DEFINED_LD is not set */
 #define CONFIG_IMAGE_LOAD_ADDRESS 0x80100000
-#define CONFIG_IMAGE_MAX_LENGTH 0x10000000
+#define CONFIG_IMAGE_MAX_LENGTH 0x20000000
 #define CONFIG_HEAP_SIZE 1
 #define CONFIG_STACK_SIZE 0x400
 /* end of Linker Options */

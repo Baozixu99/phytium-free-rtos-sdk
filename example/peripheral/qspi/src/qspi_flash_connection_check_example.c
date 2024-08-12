@@ -98,7 +98,7 @@ BaseType_t FFreeRTOSQspiCheckTaskCreate(void)
     taskENTER_CRITICAL();                                       /*进入临界区*/
     xReturn = xTaskCreate((TaskFunction_t)QspiConnectCheckTask, /* 任务入口函数 */
                           (const char *)"QspiConnectCheckTask", /* 任务名字 */
-                          (uint16_t)1024,                       /* 任务栈大小 */
+                          1024,                       /* 任务栈大小 */
                           NULL,
                           (UBaseType_t)QSPI_FLASH_CONNECT_TEST_TASK_PRIORITY, /* 任务的优先级 */
                           NULL);

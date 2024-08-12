@@ -20,26 +20,57 @@
  *  Ver   Who         Date         Changes
  * ----- ------     --------    --------------------------------------
  * 1.0   zhugengyu  2022/10/19   init commit
+ * 2.0   zhugengyu  2024/7/1     support auto-run
  */
 
+#include <stdio.h>
+#include "FreeRTOS.h"
+#include "fparameters.h"
+
+#ifdef CONFIG_USE_LETTER_SHELL
 #include "shell.h"
 #include "shell_port.h"
-#include <stdio.h>
+#else
+
+#include "usbh_core.h"
+
+#define XHCI_EXAMPLE_TASK_PRIORITY  2U
+void XhciPcieExampleTaskEntry(void)
+{
+    /* init xhci controller */
+
+    (void)usbh_initialize(0U, 0U);
+
+    vTaskDelete(NULL);
+}
+#endif
 
 int main(void)
 {
-    BaseType_t ret;
+    BaseType_t ret = pdPASS;
 
+#ifdef CONFIG_USE_LETTER_SHELL
     ret = LSUserShellTask();
     if (ret != pdPASS)
     {
         goto FAIL_EXIT;
     }
+#else
+
+    taskENTER_CRITICAL();
+    ret = xTaskCreate((TaskFunction_t)XhciPcieExampleTaskEntry,  /* 任务入口函数 */
+                          (const char *)"XhciPcieExampleTaskEntry",/* 任务名字 */
+                          (uint16_t)4096,  /* 任务栈大小 */
+                          NULL,/* 任务入口函数参数 */
+                          (UBaseType_t)XHCI_EXAMPLE_TASK_PRIORITY,  /* 任务的优先级 */
+                          NULL);
+    taskEXIT_CRITICAL();
+#endif
 
     vTaskStartScheduler(); /* 启动任务，开启调度 */
     while (1); /* 正常不会执行到这里 */
 
 FAIL_EXIT:
     printf("Failed,the ret value is 0x%x. \r\n", ret);
-    return 0;
+    return ret;
 }

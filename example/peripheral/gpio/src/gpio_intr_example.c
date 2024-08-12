@@ -293,7 +293,7 @@ BaseType_t FFreeRTOSRunGpioIrq(void)
 
     ret = xTaskCreate((TaskFunction_t)GpioIrqTestTask,         /* 任务入口函数 */
                       (const char *)"GpioIrqTestTask",         /* 任务名字 */
-                      (uint16_t)GPIO_IRQ_TEST_TASK_STACK_SIZE, /* 任务栈大小 */
+                      GPIO_IRQ_TEST_TASK_STACK_SIZE, /* 任务栈大小 */
                       NULL,                                    /* 任务入口函数参数 */
                       (UBaseType_t)GPIO_IRQ_TEST_TASK_PRIORITY, /* 任务优先级 */
                       NULL);                                   /* 任务句柄 */

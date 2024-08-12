@@ -199,7 +199,7 @@ int FFreeRTOSLwipIperfClientTaskCreate(void)
     
     xReturn = xTaskCreate((TaskFunction_t)LwipIperfClientTestTask, /* 任务入口函数 */
                       (const char *)"LwipIperfClientTestTask", /* 任务名字 */
-                      (uint16_t)4096,                 /* 任务栈大小 */
+                      4096,                 /* 任务栈大小 */
                         NULL,                   /* 任务入口函数参数 */
                       (UBaseType_t)configMAX_PRIORITIES - 1, /* 任务的优先级 */
                       NULL);                          /* 任务控制块指针 */

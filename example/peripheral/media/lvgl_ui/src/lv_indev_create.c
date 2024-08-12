@@ -105,7 +105,7 @@ BaseType_t FFreeRTOSInitKbCreate(u32 id)
     /* init keyborad task */
     xReturn = xTaskCreate((TaskFunction_t)keyboardinit,  /* 任务入口函数 */
                           (const char *)"keyboardinit",  /* 任务名字 */
-                          (uint16_t)1024,                         /* 任务栈大小 */
+                         1024,                         /* 任务栈大小 */
                           (void *)(uintptr)id,                                /* 任务入口函数参数 */
                           (UBaseType_t)configMAX_PRIORITIES - 3,                         /* 任务的优先级 */
                           (TaskHandle_t *)&init_kb_task); /* 任务控制 */
@@ -123,7 +123,7 @@ BaseType_t FFreeRTOSInitMsCreate(u32 id)
     /* init mouse task */
     xReturn = xTaskCreate((TaskFunction_t)mouseinit,  /* 任务入口函数 */
                           (const char *)"mouseinit",  /* 任务名字 */
-                          (uint16_t)1024,                         /* 任务栈大小 */
+                         1024,                         /* 任务栈大小 */
                           (void *)(uintptr)id,                                /* 任务入口函数参数 */
                           (UBaseType_t)configMAX_PRIORITIES - 3,                         /* 任务的优先级 */
                           (TaskHandle_t *)&init_ms_task); /* 任务控制 */
@@ -147,14 +147,14 @@ BaseType_t FFreeRTOSMediaInitCreate(void )
     /* Media init task */
     xReturn = xTaskCreate((TaskFunction_t)FFreeRTOSMediaDeviceInit,  /* 任务入口函数 */
                           (const char *)"FFreeRTOSMediaDeviceInit",  /* 任务名字 */
-                          (uint16_t)1024,                         /* 任务栈大小 */
+                         1024,                         /* 任务栈大小 */
                           NULL,                   /* 任务入口函数参数 */
                           (UBaseType_t)configMAX_PRIORITIES - 2,                       /* 任务的优先级 */
                           (TaskHandle_t *)&init_task); /* 任务控制 */
     /* Hpd task control */
     xReturn = xTaskCreate((TaskFunction_t)FFreeRTOSMediaHpdHandle, /* 任务入口函数 */
                           (const char *)"FFreeRTOSMediaHpdHandle", /* 任务名字 */
-                          (uint16_t)1024,                        /* 任务栈大小 */
+                         1024,                        /* 任务栈大小 */
                           NULL,                   /* 任务入口函数参数 */
                           (UBaseType_t)configMAX_PRIORITIES - 1,                      /* 任务的优先级 */
                           (TaskHandle_t *)&hpd_task);
@@ -176,7 +176,7 @@ BaseType_t FFreeRTOSlVGLConfigCreate(void)
     /* lvgl demo task */
     xReturn = xTaskCreate((TaskFunction_t)FFreeRTOSLVGLConfigTask,  /* 任务入口函数 */
                           (const char *)"FFreeRTOSLVGLConfigTask",  /* 任务名字 */
-                          (uint16_t)1024,                         /* 任务栈大小 */
+                         1024,                         /* 任务栈大小 */
                           NULL,                                 /* 任务入口函数参数 */
                           (UBaseType_t)configMAX_PRIORITIES - 3,                         /* 任务的优先级 */
                           (TaskHandle_t *)&lvgl_init_task); /* 任务控制 */

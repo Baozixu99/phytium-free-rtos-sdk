@@ -54,7 +54,7 @@ void LSUserShellTaskCreate(void *args)
 
     ret = xTaskCreate((TaskFunction_t)LSSerialWaitLoop,  /* 任务入口函数 */
                       (const char *)"LSSerialWaitLoop",/* 任务名字 */
-                      (uint16_t)1024,  /* 任务栈大小 */
+                      1024,  /* 任务栈大小 */
                       (void *)NULL,/* 任务入口函数参数 */
                       (UBaseType_t)2,  /* 任务的优先级 */
                       NULL); /* 任务控制块指针 */
@@ -73,7 +73,7 @@ BaseType_t LSUserShellTask(void)
 {
     return xTaskCreate((TaskFunction_t)LSUserShellTaskCreate,  /* 任务入口函数 */
                        (const char *)"LSUserShellTaskCreate",/* 任务名字 */
-                       (uint16_t)1024,  /* 任务栈大小 */
+                       1024,  /* 任务栈大小 */
                        (void *)NULL,/* 任务入口函数参数 */
                        (UBaseType_t)2,  /* 任务的优先级 */
                        NULL); /* 任务控制块指针 */

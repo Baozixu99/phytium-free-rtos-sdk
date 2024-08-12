@@ -28,7 +28,7 @@
 #define CONFIG_GCC_CODE_MODEL_SMALL
 /* CONFIG_GCC_CODE_MODEL_LARGE is not set */
 /* end of Compiler configuration */
-/* CONFIG_BOOT_WITH_FLUSH_CACHE is not set */
+#define CONFIG_BOOT_WITH_FLUSH_CACHE
 /* CONFIG_MMU_DEBUG_PRINTS is not set */
 /* end of Arm architecture configuration */
 #define CONFIG_MMU_PAGE_SIZE 0x1000
@@ -85,10 +85,10 @@
 
 #define CONFIG_ELOG_LINE_BUF_SIZE 0x100
 /* CONFIG_LOG_VERBOS is not set */
-#define CONFIG_LOG_DEBUG
+/* CONFIG_LOG_DEBUG is not set */
 /* CONFIG_LOG_INFO is not set */
 /* CONFIG_LOG_WARN is not set */
-/* CONFIG_LOG_ERROR is not set */
+#define CONFIG_LOG_ERROR
 /* CONFIG_LOG_NONE is not set */
 #define CONFIG_LOG_EXTRA_INFO
 /* CONFIG_LOG_DISPALY_CORE_NUM is not set */
@@ -97,11 +97,6 @@
 #define CONFIG_INTERRUPT_ROLE_MASTER
 /* CONFIG_INTERRUPT_ROLE_SLAVE is not set */
 /* end of Sdk common configuration */
-
-/* Image information configuration */
-
-/* CONFIG_IMAGE_INFO is not set */
-/* end of Image information configuration */
 
 /* Drivers configuration */
 
@@ -129,8 +124,6 @@
 /* CONFIG_USE_NAND is not set */
 /* CONFIG_USE_RTC is not set */
 /* CONFIG_USE_SATA is not set */
-#define CONFIG_USE_USB
-#define CONFIG_ENABLE_USB_FXHCI
 /* CONFIG_USE_ADC is not set */
 /* CONFIG_USE_PWM is not set */
 /* CONFIG_USE_IPC is not set */
@@ -147,9 +140,9 @@
 
 /* Optimization options */
 
-/* CONFIG_DEBUG_NOOPT is not set */
+#define CONFIG_DEBUG_NOOPT
 /* CONFIG_DEBUG_CUSTOMOPT is not set */
-#define CONFIG_DEBUG_FULLOPT
+/* CONFIG_DEBUG_FULLOPT is not set */
 #define CONFIG_DEBUG_OPT_UNUSED_SECTIONS
 #define CONFIG_DEBUG_LINK_MAP
 /* CONFIG_CCACHE is not set */
@@ -290,16 +283,14 @@
 
 /* CherryUSB Configuration */
 
+#define CONFIG_CHERRY_USB_PORT_XHCI_PLATFROM
+/* CONFIG_CHERRY_USB_PORT_XHCI_PCIE is not set */
+/* CONFIG_CHERRY_USB_PORT_PUSB2 is not set */
 #define CONFIG_CHERRY_USB_PORT_XHCI
-/* CONFIG_CHERRY_USB_PORT_PHYTIUM_OTG is not set */
 #define CONFIG_CHERRYUSB_HOST
-/* CONFIG_CHERRYUSB_DEVICE is not set */
 #define CONFIG_CHERRY_USB_HOST_HUB
 #define CONFIG_CHERRY_USB_HOST_MSC
 #define CONFIG_CHERRY_USB_HOST_HID
-/* CONFIG_CHERRY_USB_HOST_VEDIO is not set */
-/* CONFIG_CHERRY_USB_HOST_CDC is not set */
-/* CONFIG_CHERRY_USB_HOST_RNDIS_WIRELESS is not set */
 /* end of CherryUSB Configuration */
 /* CONFIG_USE_FSL_SDMMC is not set */
 /* CONFIG_USE_FSL_WIFI is not set */

@@ -226,7 +226,7 @@ BaseType_t FFreeRTOSQspiIndirectTaskCreate(void)
     taskENTER_CRITICAL();                                            /*进入临界区*/
     xReturn = xTaskCreate((TaskFunction_t)FFreeRTOSQspiIndirectTask, /* 任务入口函数 */
                           (const char *)"FFreeRTOSQspiIndirectTask", /* 任务名字 */
-                          (uint16_t)1024,                            /* 任务栈大小 */
+                          1024,                            /* 任务栈大小 */
                           NULL,                                      /* 任务入口函数参数 */
                           (UBaseType_t)QSPI_FLASH_INDIRECT_TEST_TASK_PRIORITY,     /* 任务的优先级 */
                           NULL);

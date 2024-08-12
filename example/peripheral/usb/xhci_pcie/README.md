@@ -27,11 +27,8 @@ CherryUSB 是一个用于嵌入式系统 USB 协议栈，支持运行在 Host �
 
 ![μPD720201](./figs/uPD720201.png)
 
-> 目前 CherryUSB 只支持使用 USB 2.0 port，四路 USB 接口中有些是默认走 USB 3.0 port，还无法使用，要选择默认 USB 2.0 port 的口，如上图所示的连接方式
-
-- PCIe 卡默认接在 PCIE 0 控制器上，接在其它控制器上要在例程中修改 FPCIE_INSTANCE_ID 以及 PCIE 中断号
-
 - 本例程基于E2000 Demo 开发板，使用logitech键盘、Dell鼠标和Sandisk盘完成测试
+- 本例程支持D200 Demo 开发板
 
 ### 2.2 SDK配置方法
 
@@ -85,54 +82,74 @@ tftpboot 0x90100000 freertos.elf
 bootelf -p 0x90100000
 ```
 
-### 2.4 输出与实验现象
+### 2.4 输出与实验现象 (E2000D/Q Demo 板)
 
 ><font size="1">描述输入输出情况，列出存在哪些输出，对应的输出是什么（建议附录相关现象图片）</font><br />
 
+#### 2.4.1 枚举 USB 设备
 
-#### 2.4.1 读写 U 盘
+- 将 USB 设备连接在 PCIe XHCI 卡上
 
-- 将 U 盘（USB3.0 接口U盘）插在 USB 口，初始化 XHCI 控制器后，查看 U 盘设备是否枚举成功，然后通过枚举成功后返回的设备路径`/usb0/sda`读写 U 盘
+![USB 设备](./figs/xhci_pcie_usb_devices.png)
 
-```
-usb init 0
-usb lsusb 0 -t
-usb disk /usb0/sda
-```
-
-![usb_disk](./figs/usb_disk_connection.jpg)
-
-- 输入`usb disk`后，启动一个任务不断读写U盘
-
-![usb_disk_init](./figs/usb_disk.png)
-
-#### 2.4.2 获取键盘输入
-
-- 将键盘插在 USB 口，鼠标插在 USB-1 口，分别初始化 USB-0 和 USB-1 控制器，查看键盘和鼠标是否枚举成功，通过枚举成功后返回的设备路径`/usb0/kbd0`和`/usb1/mouse1`，开启键盘和鼠标输入后进行读取
+- 输入下面的命令，开始枚举 USB 设备
 
 ```
-usb init 0
-usb lsusb 0 -t
-usb kbd /usb0/kbd0
+usb start
 ```
 
-- 之后可以通过中断处理键盘输入，如下所示，`hello cherryusb in phytium` 是通过 /usb0/kbd0 设备输入的
-
-![Alt text](./figs/usb_kbd.png)
-
-#### 2.4.2 获取鼠标输入
+- 设备枚举完成后，输入命令查看枚举到的 USB 设备的拓扑结构，
 
 ```
-usb init 0
-usb lsusb 0 -t
-usb mouse /usb0/mouse0
+usb lsusb -t
 ```
 
-- 之后可以通过中断处理鼠标输入
+![发现 USB 设备](./figs/xhci_pcie_attach_devices.png)
 
-![Alt text](./figs/usb_mouse.png)
+#### 2.4.2 使用 U 盘
 
-- 上图中，首先打印的是通过 USB 键盘输入的字符串，以及一系列特殊字符，然后是鼠标的输入，x和y是鼠标的平面坐标位置，w是鼠标中间滚轮的位置，<-、-> 和 C 分别是按下鼠标左、右键和中间滚轮后的返回
+- 主要的测试方法和 [XHCI_Platform 例程](../xhci_platform/README.md) 中一致
+
+```
+usb disk /dev/sda
+usb diskbench /dev/sdb
+```
+
+![USB U 盘读写速度](./figs/xhci_pcie_usb_disk_speed.png)
+
+#### 2.4.3 使用 USB 鼠标和键盘
+
+- 主要的测试方法和 [XHCI_Platform 例程](../xhci_platform/README.md) 中一致，这次枚举过程中鼠标对应设备 `/dev/input2`，具体使用时要看枚举打印信息
+
+```
+usb mouse /dev/input2
+```
+
+![USB 鼠标](./figs/xhci_pcie_usb_mouse.png)
+
+```
+usb keyboard /dev/input0
+```
+
+![USB 键盘](./figs/xhci_pcie_usb_keyboard.png)
+
+
+
+#### 2.4.4 D2000 Demo 板上进行测试
+
+- 在 D2000 Demo 板上可以进行测试，在开发板上有四个 USB 插槽，它们属于同一个 PCIe XHCI 控制器，对应控制器上不同的 Rootport，Rootport 中部分是 USB 3.X 协议的，另外一部分是 USB 2.X 协议的 
+
+![D2000 Demo 板](./figs/d2000_demo.jpg)
+
+![连接 USB 设备](./figs/connect_usb_devices.png)
+
+- 在开发板上连接若干设备后，输入 `usb start` 开始枚举设备，完成设备枚举后输入命令查看设备，键盘对应
+
+```
+usb lsusb -t
+```
+
+![](./figs/d2000_devices.png)
 
 ## 3. 如何解决问题
 
@@ -145,3 +162,4 @@ usb mouse /usb0/mouse0
 - V0.3.1 首次合入
 - v0.1.0 支持USB 3.0 设备枚举
 - v0.7.1 区分 XHCI 平台设备和 PCIe 设备
+- v1.0.0 更新 CherryUSB，解决 Hub 遗留问题，支持 D2000

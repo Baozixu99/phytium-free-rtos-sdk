@@ -497,7 +497,7 @@ int FFreeRTOSQspiSpiffsCreate(void)
 
     xReturn = xTaskCreate((TaskFunction_t)FFreeRTOSQspiSpiffsWriteThenReadTask,  /* 任务入口函数 */
                           (const char *)"FFreeRTOSQspiSpiffsWriteThenReadTask",/* 任务名字 */
-                          (uint16_t)4096,  /* 任务栈大小 */
+                          4096,  /* 任务栈大小 */
                           NULL,/* 任务入口函数参数 */
                           (UBaseType_t)QSPI_SPIFFS_WRITE_READ_TASK_PRIORITY, /* 任务的优先级 */
                           NULL); /* 任务控制 */

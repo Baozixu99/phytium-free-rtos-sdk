@@ -36,7 +36,7 @@ freertos_sdk_path = install_path
 print("Standalone SDK at {}".format(freertos_sdk_path))
 
 # Add standalone sdk
-standalone_sdk_v="3174e23d3c319a5685910febb17ca87237ca7ceb"
+standalone_sdk_v="2ff7883c95cd312c636c9f35903b46ae74f8749d"
 if (install_platform == windows_x64):
     standalone_path=freertos_sdk_path  + '\\standalone'
 else:

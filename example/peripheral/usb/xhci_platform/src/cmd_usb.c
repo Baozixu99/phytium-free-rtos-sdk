@@ -28,8 +28,36 @@
 
 #include "FreeRTOS.h"
 
+#include "usbh_core.h"
+
+#ifdef CONFIG_USE_LETTER_SHELL
 #include "../src/shell.h"
-#include "usb_host.h"
+#include "xhci_host_example.h"
+#endif
+
+#ifdef CONFIG_USE_LETTER_SHELL
+BaseType_t FFreeRTOSInitUsb(u32 id);
+BaseType_t FFreeRTOSDeInitUsb(u32 id);
+BaseType_t FFreeRTOSListUsbDev(int argc, char *argv[]);
+
+static void USBCmdUsage(void)
+{
+    printf("Usage:\r\n");
+    printf("usb start <id>\r\n");
+    printf("-- Start usb bus and enumrate devices\r\n");
+    printf("usb stop <id>\r\n");
+    printf("-- Stop usb bus and deattach devices\r\n");
+    printf("usb lsusb\r\n");
+    printf("-- List all attached devices on usb bus\r\n");      
+    printf("usb disk <id> <dev>\r\n");
+    printf("-- Read and write usb disk device\r\n");
+    printf("usb diskbench <id> <dev>\r\n");
+    printf("-- Bench read and write usb disk device\r\n");
+    printf("usb keyboard <id> <dev>\r\n");
+    printf("-- Get usb keyboard input\r\n");
+    printf("usb mouse <id> <dev>\r\n");
+    printf("-- Get usb mouse input\r\n");
+}
 
 static int USBCmdEntry(int argc, char *argv[])
 {
@@ -37,47 +65,126 @@ static int USBCmdEntry(int argc, char *argv[])
     u32 usb_id = 0;
     const char *devname;
 
-    if (!strcmp(argv[1], "init"))
+    if (!strcmp(argv[1], "start"))
     {
-        if (argc < 3) {
-            return -2;
+        if (argc < 2) 
+        {
+            usb_id = 0;
+        }
+        else
+        {
+            usb_id = (uint8_t)simple_strtoul(argv[2], NULL, 10);
         }
 
-        usb_id = (uint8_t)simple_strtoul(argv[2], NULL, 10);
-        ret = FFreeRTOSInitUsb(usb_id);
+        ret = usbh_initialize(usb_id, usb_hc_get_register_base(usb_id));
+    }
+    else if (!strcmp(argv[1], "stop"))
+    {
+        if (argc < 2) 
+        {
+            usb_id = 0;
+        }
+        else
+        {
+            usb_id = (uint8_t)simple_strtoul(argv[2], NULL, 10);
+        }
+
+        ret = usbh_deinitialize(usb_id);
     }
     else if (!strcmp(argv[1], "lsusb"))
     {
-        ret = FFreeRTOSListUsbDev(argc - 1, &argv[1]);
+        ret = lsusb(argc - 1, &argv[1]);
     }
     else if (!strcmp(argv[1], "disk"))
     {
-        if (argc < 3) {
-            return -2;
+        if (argc < 2) 
+        {
+            usb_id = 0;
+        }
+        else
+        {
+            usb_id = (uint8_t)simple_strtoul(argv[2], NULL, 10);
+        }
+        
+        if (argc < 3)
+        {
+            devname = "/dev/sda";
+        }
+        else
+        {
+            devname = argv[3];
         }
 
-        devname = argv[2];
-        ret = FFreeRTOSRunUsbDisk(devname);
+        ret = FFreeRTOSRunXhciDisk(usb_id, devname);
     }
-    else if (!strcmp(argv[1], "kbd"))
+    else if (!strcmp(argv[1], "diskbench"))
     {
-        if (argc < 3) {
-            return -2;
+        if (argc < 2) 
+        {
+            usb_id = 0;
+        }
+        else
+        {
+            usb_id = (uint8_t)simple_strtoul(argv[2], NULL, 10);
+        }
+        
+        if (argc < 3)
+        {
+            devname = "/dev/sda";
+        }
+        else
+        {
+            devname = argv[3];
         }
 
-        devname = argv[2];
-        ret = FFreeRTOSRunUsbKeyboard(devname);
+        ret = FFreeRTOSRunXhciDiskBench(usb_id, devname);
+    }
+    else if (!strcmp(argv[1], "keyboard"))
+    {
+        if (argc < 2) 
+        {
+            usb_id = 0;
+        }
+        else
+        {
+            usb_id = (uint8_t)simple_strtoul(argv[2], NULL, 10);
+        }
+        
+        if (argc < 3)
+        {
+            devname = "/dev/input0";
+        }
+        else
+        {
+            devname = argv[3];
+        }
+
+        ret = FFreeRTOSRunXhciKeyboard(usb_id, devname);
     }
     else if (!strcmp(argv[1], "mouse"))
     {
-        if (argc < 3) {
-            return -2;
+        if (argc < 2) 
+        {
+            usb_id = 0;
+        }
+        else
+        {
+            usb_id = (uint8_t)simple_strtoul(argv[2], NULL, 10);
+        }
+        
+        if (argc < 3)
+        {
+            devname = "/dev/input0";
+        }
+        else
+        {
+            devname = argv[3];
         }
 
-        devname = argv[2];
-        ret = FFreeRTOSRunUsbMouse(devname);
+        ret = FFreeRTOSRunXhciMouse(usb_id, devname);
     }
 
     return ret;
 }
 SHELL_EXPORT_CMD(SHELL_CMD_TYPE(SHELL_TYPE_CMD_MAIN), usb, USBCmdEntry, test freertos usb driver);
+#endif

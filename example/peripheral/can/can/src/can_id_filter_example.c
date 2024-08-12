@@ -448,7 +448,7 @@ BaseType_t FFreeRTOSCanCreateFilterTestTask(void)
     /* can filter test1 task */
     xReturn = xTaskCreate((TaskFunction_t)FFreeRTOSCanFilterTask,         /* 任务入口函数 */
                           (const char *)"FFreeRTOSCanFilterMode1Task", /* 任务名字 */
-                          (uint16_t)1024,                                 /* 任务栈大小 */
+                          1024,                                 /* 任务栈大小 */
                           (void *)CAN_FILTER_MODE_1,                                      /* 任务入口函数参数 */
                           (UBaseType_t)CAN_FILTER_TASK_PRIORITY,          /* 任务的优先级 */
                           NULL);                                          /* 任务控制 */
@@ -468,7 +468,7 @@ BaseType_t FFreeRTOSCanCreateFilterTestTask(void)
     /* can filter test2 task */
     xReturn = xTaskCreate((TaskFunction_t)FFreeRTOSCanFilterTask,         /* 任务入口函数 */
                           (const char *)"FFreeRTOSCanFilterMode2Task", /* 任务名字 */
-                          (uint16_t)1024,                                 /* 任务栈大小 */
+                          1024,                                 /* 任务栈大小 */
                           (void *)CAN_FILTER_MODE_2,                                      /* 任务入口函数参数 */
                           (UBaseType_t)CAN_FILTER_TASK_PRIORITY,          /* 任务的优先级 */
                           NULL);                                          /* 任务控制 */

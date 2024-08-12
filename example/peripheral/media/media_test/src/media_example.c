@@ -354,7 +354,7 @@ BaseType_t FFreeRTOSMediaCreate(void)
     /* Media init task */
     xReturn = xTaskCreate((TaskFunction_t)FFreeRTOSMediaInitTask, /* 任务入口函数 */
                           (const char *)"FFreeRTOSMediaInitTask", /* 任务名字 */
-                          (uint16_t)1024,                         /* 任务栈大小 */
+                          1024,                         /* 任务栈大小 */
                           NULL,                    /* 任务入口函数参数 */
                           (UBaseType_t)configMAX_PRIORITIES - 2,                       /* 任务的优先级 */
                           (TaskHandle_t *)&init_task);
@@ -362,7 +362,7 @@ BaseType_t FFreeRTOSMediaCreate(void)
     /* HPD任务控制 */
     xReturn = xTaskCreate((TaskFunction_t)FFreeRTOSMediaHpdTask, /* 任务入口函数 */
                           (const char *)"FFreeRTOSMediaHpdTask", /* 任务名字 */
-                          (uint16_t)1024,                        /* 任务栈大小 */
+                          1024,                        /* 任务栈大小 */
                           NULL,                   /* 任务入口函数参数 */
                           (UBaseType_t)configMAX_PRIORITIES - 1,                 /* 任务的优先级 */
                           (TaskHandle_t *)&hpd_task);

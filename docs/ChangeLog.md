@@ -1,4 +1,43 @@
-# Phytium Standalone SDK 2024-07-23 ChangeLog
+# Phytium FreeRTOS SDK 2024-08-12 ChangeLog
+
+Change Log since 2024-08-05
+
+## example
+
+- update xhci_platform and xhci_pcie example
+- add pusb2_device and pusb2_host example
+- update fatfs example for usb disk
+
+## third-party
+
+- remove cherryusb and move to standalone
+- fix memory pool, lock-free in isr context
+
+# Phytium FreeRTOS SDK 2024-08-05 ChangeLog
+
+Change Log since 2024-08-01
+
+## .gitlab-ci
+
+- E2000D board test pipeline first add
+
+# Phytium FreeRTOS SDK 2024-08-01 ChangeLog
+
+Change Log since 2024-07-31
+
+## third-party
+
+- Override configSTACK_DEPTH_TYPE to uint32_t in FreeRTOSConfig.h
+
+# Phytium FreeRTOS SDK 2024-07-31 ChangeLog
+
+Change Log since 2024-07-30
+
+## .gitlab-ci
+
+- Migrate Jenkins Pipeline Functionality to GitLab Native CI/CD Pipeline
+
+# Phytium FreeRTOS SDK 2024-07-23 ChangeLog
 
 Change Log since 2024-07-12
 
@@ -7,7 +46,7 @@ Change Log since 2024-07-12
 - modify the openamp example to support linux
 - modify the openamp driver and device role
 
-# Phytium Standalone SDK 2024-07-12 ChangeLog
+# Phytium FreeRTOS SDK 2024-07-12 ChangeLog
 
 Change Log since 2024-07-10
 
@@ -15,7 +54,7 @@ Change Log since 2024-07-10
 
 - modify the example with no device attached
 
-# Phytium Standalone SDK 2024-07-10 ChangeLog
+# Phytium FreeRTOS SDK 2024-07-10 ChangeLog
 
 Change Log since 2024-07-10
 
@@ -23,7 +62,7 @@ Change Log since 2024-07-10
 
 - modify qspi indirect example, fix length problem in function FQspiFlashPortReadData
 
-# Phytium Standalone SDK 2024-07-10 ChangeLog
+# Phytium FreeRTOS SDK 2024-07-10 ChangeLog
 
 Change Log since 2024-06-18
 
@@ -35,7 +74,7 @@ Change Log since 2024-06-18
 
 - init emmc by hs200 mode
 
-# Phytium Standalone SDK 2024-06-18 ChangeLog
+# Phytium FreeRTOS SDK 2024-06-18 ChangeLog
 
 Change Log since 2024-06-18
 
@@ -43,7 +82,7 @@ Change Log since 2024-06-18
 
 - fix mmu_display cmd in aarch64 mode
 
-# Phytium Standalone SDK 2024-06-13 ChangeLog
+# Phytium FreeRTOS SDK 2024-06-13 ChangeLog
 
 Change Log since 2024-06-11
 
@@ -55,7 +94,7 @@ Change Log since 2024-06-11
 
 # Phytium FreeRTOS SDK 2024-06-12 ChangeLog
 
-## example 
+## example
 
 - change i2c example to use standalone drivers api
 
@@ -434,17 +473,17 @@ Change Log since 2024-03-08
 
 ## driver
 
-- change gpio driver for adapting the sdk 
+- change gpio driver for adapting the sdk
 
 # Phytium FreeRTOS SDK 2024-03-08 ChangeLog
 
 Change Log since 2024-02-29
 
-## example 
+## example
 
 - add ui example
 
-## third -party 
+## third -party
 
 - change shell with echo ctrl
 
@@ -454,7 +493,7 @@ Change Log since 2024-02-29
 
 ## example
 
-- add i2s example 
+- add i2s example
 
 ## driver
 
@@ -555,7 +594,7 @@ Change Log since 2023-12-25
 ## driver
 
 - new standalone version adaptation of xmac and gmac.
- 
+
 ## example
 
 - reconstruting network example:lwip-startup.
@@ -777,7 +816,7 @@ Change Log sinc 2023-09-06
 
 # example
 
-- change the i2s example to adapt the phytiumpi, modify some bugs 
+- change the i2s example to adapt the phytiumpi, modify some bugs
 
 # driver
 
@@ -788,7 +827,7 @@ Change Log sinc 2023-09-01
 
 # example
 
-- change the i2s example to adapt the phytiumpi, modify some bugs 
+- change the i2s example to adapt the phytiumpi, modify some bugs
 
 # driver
 
@@ -844,7 +883,7 @@ Change Log sinc 2023-08-30
 
 ## third-party
 
-- Change the fatfs src.mk and include.mk 
+- Change the fatfs src.mk and include.mk
 
 # Phytium FreeRTOS SDK 2023-08-31 ChangeLog
 
@@ -855,11 +894,11 @@ Change Log sinc 2023-08-29
 
 ## example
 
-- Change the peripheral makefile and Kconfig , compile the all example 
+- Change the peripheral makefile and Kconfig , compile the all example
 
 ## third-party
 
-- Change the lvgl , cherryusb and sdmmc makefile and Kconfig 
+- Change the lvgl , cherryusb and sdmmc makefile and Kconfig
 - Change the third-party/include.mk , thirdparty.mk
 
 # Phytium FreeRTOS SDK 2023-08-29 ChangeLog
@@ -878,16 +917,16 @@ Change Log sinc 2023-08-28
 
 Change Log sinc 2023-08-20
 
-## example 
+## example
 
 - adapt to new frameworks
-- adapt feature, qspi, atomic 
+- adapt feature, qspi, atomic
 
 # Phytium FreeRTOS SDK 2023-07-14 ChangeLog
 
 Change Log sinc 2023-07-10
 
-## example 
+## example
 
 - add template_new example to show new complier use
 ## third-party
@@ -920,7 +959,7 @@ Change Log sinc 2023-07-02
 
 ## third-party
 
-- letter-shell adapt to new psci api 
+- letter-shell adapt to new psci api
 
 # Phytium FreeRTOS SDK 2023-06-28 ChangeLog
 
@@ -1011,7 +1050,7 @@ Change Log sinc 2023-3-16
 - modify cherryusb (ready to merge to cherryusb baseline)
     -  reconstruct xhci driver
     -  modify usbh_bus usage to support use multiple usb controller
-    -  modify enumration proccedure to support enumrate usb 3.0 device (e.g mass storage)  
+    -  modify enumration proccedure to support enumrate usb 3.0 device (e.g mass storage)
     -  implment for usb 3.0 hub
 
 ## example
@@ -1027,7 +1066,7 @@ Change Log sinc 2023-3-15
 
 - driver/media add the multi-display driver
 
-## example 
+## example
 
 - media add  config and example for the multi-display
 

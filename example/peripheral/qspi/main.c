@@ -59,7 +59,7 @@ int main(void)
     taskENTER_CRITICAL();                                   /*进入临界区*/
     ret = xTaskCreate((TaskFunction_t)QspiExampleTaskEntry, /* 任务入口函数 */
                       (const char *)"QspiExampleTaskEntry", /* 任务名字 */
-                      (uint16_t)4096,                       /* 任务栈大小 */
+                      4096,                       /* 任务栈大小 */
                       NULL,                                 /* 任务入口函数参数 */
                       (UBaseType_t)QSPI_EXAMPLE_TASK_PRIORITY,  /* 任务的优先级 */
                       NULL);

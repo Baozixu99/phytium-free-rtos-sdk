@@ -217,7 +217,7 @@ int FFreeRTOSEmmcWriteRead(void)
     /* 创建主要操作任务 */
     xReturn = xTaskCreate((TaskFunction_t)SdifEmmcReadWriteTask,
                           (const char *)"SdifEmmcReadWriteTask",
-                          (uint16_t)4096,
+                          4096,
                           NULL,
                           (UBaseType_t)SDIF_EXAMPLE_TASK_PRIORITY,
                           NULL);

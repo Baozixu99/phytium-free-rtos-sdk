@@ -40,10 +40,12 @@
 #define FMEMP_INFO(format, ...)    FT_DEBUG_PRINT_I(FMEMP_DEBUG_TAG, format, ##__VA_ARGS__)
 #define FMEMP_DEBUG(format, ...)   FT_DEBUG_PRINT_D(FMEMP_DEBUG_TAG, format, ##__VA_ARGS__)
 
+extern int vApplicationInIrq(void);
+
 static inline boolean FMempTakeSema(SemaphoreHandle_t locker)
 {
     FASSERT_MSG((NULL != locker), "Locker not exists.");
-    if (pdFALSE == xSemaphoreTake(locker, portMAX_DELAY))
+    if ((!vApplicationInIrq()) && pdFALSE == xSemaphoreTake(locker, portMAX_DELAY))
     {
         FMEMP_ERROR("Failed to give locker !!!");
         return FALSE;
@@ -55,7 +57,7 @@ static inline boolean FMempTakeSema(SemaphoreHandle_t locker)
 static inline void FMempGiveSema(SemaphoreHandle_t locker)
 {
     FASSERT_MSG((NULL != locker), "Locker not exists.");
-    if (pdFALSE == xSemaphoreGive(locker))
+    if ((!vApplicationInIrq()) && (pdFALSE == xSemaphoreGive(locker)))
     {
         FMEMP_ERROR("Failed to give locker !!!");
     }

@@ -176,7 +176,7 @@ BaseType_t FFreeRTOSAtomicTaskCreate(void)
 
     xReturn = xTaskCreate((TaskFunction_t)FAtomicExampleTask, /* 任务入口函数 */
                           (const char *)"FAtomicExampleTask", /* 任务名字 */
-                          (uint16_t)TASK_STACK_SIZE,                            /* 任务栈大小 */
+                          TASK_STACK_SIZE,                            /* 任务栈大小 */
                           NULL,                                      /* 任务入口函数参数 */
                           (UBaseType_t)ATOMIC_TEST_TASK_PRIORITY,     /* 任务的优先级 */
                           NULL);

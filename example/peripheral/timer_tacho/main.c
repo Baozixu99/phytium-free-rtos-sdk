@@ -59,7 +59,7 @@ int main(void)
     /* used in no-letter-shell mode */
     ret = xTaskCreate((TaskFunction_t)TimerTachoExampleTaskEntry,    /* 任务入口函数 */
                       (const char *)"TimerTachoExampleTaskEntry",    /* 任务名字 */
-                      (uint16_t)4096,                          /* 任务栈大小 */
+                      4096,                          /* 任务栈大小 */
                       NULL,                                    /* 任务入口函数参数 */
                       (UBaseType_t)TIMER_TACHO_EXAMPLE_TASK_PRIORITY, /* 任务优先级 */
                       NULL);                                   /* 任务句柄 */
