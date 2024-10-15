@@ -8,6 +8,7 @@ stages:
   - pre_stage     # 准备阶段
   - compile_stage # 编译阶段
   - test_stage    # 测试阶段
+  - report_stage  # 测试报表生成阶段
   - post_stage    # 收尾阶段
 
 # 所有soc覆盖编译启动
@@ -23,8 +24,10 @@ all_soc_compile:
 freertos_feature_compile:
   stage: compile_stage
   script:
-    - cd /home/gitlab-runner/auto_compile_tool/phytium-test-tools/test_tool
-    - python3 gitlab_pipeline_compile.py $CI_MERGE_REQUEST_PROJECT_PATH $CI_PROJECT_DIR $CI_PROJECT_DIR/example/freertos_feature
+    - cd /home3/gitlab_runner_workspace/auto_compile_tool
+    - python3 set_common_info.py /home3/gitlab_runner_workspace/auto_compile_tool/phytium-test-tools/test_tool/config_info/common.json freertos
+    - cd /home3/gitlab_runner_workspace/auto_compile_tool/phytium-test-tools/test_tool
+    - python3 gitlab_pipeline_compile.py $CI_PROJECT_DIR $CI_PROJECT_DIR/example/freertos_feature
   tags:
     - compile
   needs: ["all_soc_compile"]
@@ -32,8 +35,10 @@ freertos_feature_compile:
 network_compile:
   stage: compile_stage
   script:
-    - cd /home/gitlab-runner/auto_compile_tool/phytium-test-tools/test_tool
-    - python3 gitlab_pipeline_compile.py $CI_MERGE_REQUEST_PROJECT_PATH $CI_PROJECT_DIR $CI_PROJECT_DIR/example/network
+    - cd /home3/gitlab_runner_workspace/auto_compile_tool
+    - python3 set_common_info.py /home3/gitlab_runner_workspace/auto_compile_tool/phytium-test-tools/test_tool/config_info/common.json freertos
+    - cd /home3/gitlab_runner_workspace/auto_compile_tool/phytium-test-tools/test_tool
+    - python3 gitlab_pipeline_compile.py $CI_PROJECT_DIR $CI_PROJECT_DIR/example/network
   tags:
     - compile
   needs: ["all_soc_compile"]
@@ -41,8 +46,10 @@ network_compile:
 peripheral_compile:
   stage: compile_stage
   script:
-    - cd /home/gitlab-runner/auto_compile_tool/phytium-test-tools/test_tool
-    - python3 gitlab_pipeline_compile.py $CI_MERGE_REQUEST_PROJECT_PATH $CI_PROJECT_DIR $CI_PROJECT_DIR/example/peripheral
+    - cd /home3/gitlab_runner_workspace/auto_compile_tool
+    - python3 set_common_info.py /home3/gitlab_runner_workspace/auto_compile_tool/phytium-test-tools/test_tool/config_info/common.json freertos
+    - cd /home3/gitlab_runner_workspace/auto_compile_tool/phytium-test-tools/test_tool
+    - python3 gitlab_pipeline_compile.py $CI_PROJECT_DIR $CI_PROJECT_DIR/example/peripheral
   tags:
     - compile
   needs: ["all_soc_compile"]
@@ -50,8 +57,10 @@ peripheral_compile:
 storage_compile:
   stage: compile_stage
   script:
-    - cd /home/gitlab-runner/auto_compile_tool/phytium-test-tools/test_tool
-    - python3 gitlab_pipeline_compile.py $CI_MERGE_REQUEST_PROJECT_PATH $CI_PROJECT_DIR $CI_PROJECT_DIR/example/storage
+    - cd /home3/gitlab_runner_workspace/auto_compile_tool
+    - python3 set_common_info.py /home3/gitlab_runner_workspace/auto_compile_tool/phytium-test-tools/test_tool/config_info/common.json freertos
+    - cd /home3/gitlab_runner_workspace/auto_compile_tool/phytium-test-tools/test_tool
+    - python3 gitlab_pipeline_compile.py $CI_PROJECT_DIR $CI_PROJECT_DIR/example/storage
   tags:
     - compile
   needs: ["all_soc_compile"]
@@ -59,22 +68,35 @@ storage_compile:
 system_compile:
   stage: compile_stage
   script:
-    - cd /home/gitlab-runner/auto_compile_tool/phytium-test-tools/test_tool
-    - python3 gitlab_pipeline_compile.py $CI_MERGE_REQUEST_PROJECT_PATH $CI_PROJECT_DIR $CI_PROJECT_DIR/example/system
+    - cd /home3/gitlab_runner_workspace/auto_compile_tool
+    - python3 set_common_info.py /home3/gitlab_runner_workspace/auto_compile_tool/phytium-test-tools/test_tool/config_info/common.json freertos
+    - cd /home3/gitlab_runner_workspace/auto_compile_tool/phytium-test-tools/test_tool
+    - python3 gitlab_pipeline_compile.py $CI_PROJECT_DIR $CI_PROJECT_DIR/example/system
   tags:
     - compile
   needs: ["all_soc_compile"]
 
-# 板级测试启动
-e2000d_board_test:
-  stage: test_stage
+template_compile:
+  stage: compile_stage
   script:
-    - echo "test on E2000d board is about to start..."
+    - cd /home3/gitlab_runner_workspace/auto_compile_tool
+    - python3 set_common_info.py /home3/gitlab_runner_workspace/auto_compile_tool/phytium-test-tools/test_tool/config_info/common.json freertos
+    - cd /home3/gitlab_runner_workspace/auto_compile_tool/phytium-test-tools/test_tool
+    - python3 gitlab_pipeline_compile.py $CI_PROJECT_DIR $CI_PROJECT_DIR/example/template
   tags:
-    - test
-  when: manual
+    - compile
+  needs: ["all_soc_compile"]
 
 # 各模块板级测试
+code_update:
+  stage: test_stage
+  script:
+    - echo "Code has been updated."
+  tags:
+    - test
+  allow_failure: true
+  when: manual
+
 freertos_feature_test:
   stage: test_stage
   script:
@@ -84,8 +106,8 @@ freertos_feature_test:
     - python3 gitlab_pipeline_board_test.py $CI_PROJECT_DIR $CI_PROJECT_DIR/example/freertos_feature
   tags:
     - test
-  allow_failure: true 
-  needs: ["e2000d_board_test"]
+  allow_failure: true
+  when: manual
 
 network_test:
   stage: test_stage
@@ -96,8 +118,8 @@ network_test:
     - python3 gitlab_pipeline_board_test.py $CI_PROJECT_DIR $CI_PROJECT_DIR/example/network
   tags:
     - test
-  allow_failure: true 
-  needs: ["e2000d_board_test"]
+  allow_failure: true
+  when: manual
 
 peripheral_test:
   stage: test_stage
@@ -108,8 +130,8 @@ peripheral_test:
     - python3 gitlab_pipeline_board_test.py $CI_PROJECT_DIR $CI_PROJECT_DIR/example/peripheral
   tags:
     - test
-  allow_failure: true 
-  needs: ["e2000d_board_test"]
+  allow_failure: true
+  when: manual
 
 storage_test:
   stage: test_stage
@@ -120,8 +142,8 @@ storage_test:
     - python3 gitlab_pipeline_board_test.py $CI_PROJECT_DIR $CI_PROJECT_DIR/example/storage
   tags:
     - test
-  allow_failure: true 
-  needs: ["e2000d_board_test"]
+  allow_failure: true
+  when: manual
 
 system_test:
   stage: test_stage
@@ -132,5 +154,18 @@ system_test:
     - python3 gitlab_pipeline_board_test.py $CI_PROJECT_DIR $CI_PROJECT_DIR/example/system
   tags:
     - test
-  allow_failure: true 
-  needs: ["e2000d_board_test"]
+  allow_failure: true
+  when: manual
+
+  # 测试报表生成
+update_report:
+  stage: report_stage
+  script:
+    - cd /home/gitlab-runner/test_tool/phytium-test-tools/test_tool
+    - python3 gitlab_pipeline_report_display.py freertos $CI_PROJECT_DIR
+  tags:
+    - test
+  when: manual
+  artifacts:
+    paths:
+      - report_for_gitlab_pipeline/

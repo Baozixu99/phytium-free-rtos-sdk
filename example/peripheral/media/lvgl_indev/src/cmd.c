@@ -27,7 +27,9 @@
 #include "strto.h"
 #include "sdkconfig.h"
 #include "FreeRTOS.h"
-#include "../src/shell.h"
+#ifdef CONFIG_USE_LETTER_SHELL
+#include "shell.h"
+#include "shell_port.h"
 
 #include "fdc_common_hw.h"
 #include "fdcdp.h"
@@ -168,3 +170,4 @@ static int MediaCmdEntry(int argc, char *argv[])
 }
 
 SHELL_EXPORT_CMD(SHELL_CMD_TYPE(SHELL_TYPE_CMD_MAIN), Media, MediaCmdEntry, test freertos media driver);
+#endif

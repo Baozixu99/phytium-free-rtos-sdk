@@ -126,8 +126,18 @@ FError FFreeRTOSQspiTransfer(FFreeRTOSQspi *os_qspi_p, FFreeRTOSQspiMessage *mes
         {
             if (NULL != write_buf)
             {
-                /* write norflash data */
-                ret = FQspiFlashWriteData(pctrl, cmd, flash_addr, write_buf, length);
+                /* read norflash data */
+                if (pctrl->wr_cfg.wr_cmd != cmd)
+                {
+                    ret |= FQspiFlashWriteDataConfig(pctrl, cmd);
+                    if (FQSPI_SUCCESS != ret)
+                    {
+                        FQSPI_ERROR("Qspi write config failed.");
+                        goto transfer_exit;
+                    }
+                }
+
+                ret = FQspiFlashWriteData(pctrl, flash_addr, write_buf, length);
                 if (FQSPI_SUCCESS != ret)
                 {
                     FQSPI_ERROR("Qspi failed to write mem, result 0x%x", ret);

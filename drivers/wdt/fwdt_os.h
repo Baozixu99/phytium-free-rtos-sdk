@@ -43,8 +43,8 @@ extern "C"
 /* freertos wdt interrupt priority */
 #define FREERTOS_WDT_IRQ_PRIORITY IRQ_PRIORITY_VALUE_12
 
-#define FREERTOS_WDT_CTRL_GET_TIMEOUT    (1) /* get timeout(in seconds) */
-#define FREERTOS_WDT_CTRL_SET_TIMEOUT    (2) /* set timeout(in seconds) */
+#define FREERTOS_WDT_CTRL_GET_TIMEOUT    (1) /* get timeout value in ticks */
+#define FREERTOS_WDT_CTRL_SET_TIMEOUT    (2) /* set timeout value in ticks */
 
 #define FREERTOS_WDT_CTRL_KEEPALIVE      (4) /* refresh watchdog */
 #define FREERTOS_WDT_CTRL_START          (5) /* start watchdog */

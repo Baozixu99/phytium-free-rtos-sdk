@@ -123,10 +123,11 @@ static FError WdtExampleFeed(void)
 {
     FError ret = FWDT_SUCCESS;
     uint32_t notify_result;
-    u32 wdt_timeout = WDT_ONCE_TIMEOUT; /* 为了传入地址，重新赋值 */
+    u32 wdt_timeout = 0;
     const TickType_t max_block_time = WDT_FEED_PERIOD;
 
     /* set wdt timeout value */
+    wdt_timeout = (u32)(GenericTimerFrequecy() * WDT_ONCE_TIMEOUT);
     ret = FFreeRTOSWdtControl(os_wdt_ctrl_p, FREERTOS_WDT_CTRL_SET_TIMEOUT, &wdt_timeout);
     if (ret != FWDT_SUCCESS)
     {

@@ -423,16 +423,15 @@ static void FFreeRTOSI2cLoopbackTask(void *pvParameters)
     BaseType_t xReturn = pdPASS;
     int task_res = I2C_MS_TEST_SUCCESS;
     FIOMuxInit();
-
-    ret = FFreeRTOSI2cInitSet(I2C_MS_TEST_MASTER_DEVICE, FI2C_MASTER, MASTER_SLAVE_ADDR);
+    ret = FFreeRTOSI2cInitSet(I2C_MS_TEST_SLAVE_DEVICE, FI2C_SLAVE, MASTER_SLAVE_ADDR);
     if (ret != FREERTOS_I2C_SUCCESS)
     {
         FI2C_ERROR("I2c FFreeRTOSI2cInitSet failed.\r\n");
         task_res = I2C_MS_SET_FAILURE;
         goto task_exit;
     }
-
-    ret = FFreeRTOSI2cInitSet(I2C_MS_TEST_SLAVE_DEVICE, FI2C_SLAVE, MASTER_SLAVE_ADDR);
+    
+    ret = FFreeRTOSI2cInitSet(I2C_MS_TEST_MASTER_DEVICE, FI2C_MASTER, MASTER_SLAVE_ADDR);
     if (ret != FREERTOS_I2C_SUCCESS)
     {
         FI2C_ERROR("I2c FFreeRTOSI2cInitSet failed.\r\n");

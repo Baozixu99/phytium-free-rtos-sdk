@@ -104,6 +104,8 @@ void BOARD_WIFI_BT_Config(void *host, sdio_int_t cardInt)
     s_inst_config.sdioCardInt = cardInt;
     s_inst_config.sdioCardIntArg = NULL;
 
+    /*init iomux*/
+    FIOMuxInit();
     FIOPadSetSdMux(s_inst_config.hostId);
     if (kStatus_Success != SDIO_CfgInitialize(sdio_host, &s_inst_config))
     {

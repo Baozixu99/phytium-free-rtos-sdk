@@ -99,8 +99,6 @@ FFreeRTOSI2c *FFreeRTOSI2cInit(u32 instance_id, u32 work_mode, u32 slave_address
 
     const FMioConfig *mio_config_p ;
     FMioCtrl pctrl;
-    /*获取任意I2C控制器默认配置，作为MIO复用为I2C默认配置*/
-    i2c_config = *FI2cLookupConfig(0);
     mio_config_p = FMioLookupConfig(instance_id);
     
     if (NULL == mio_config_p)
@@ -119,13 +117,12 @@ FFreeRTOSI2c *FFreeRTOSI2cInit(u32 instance_id, u32 work_mode, u32 slave_address
     }
 
     /* Modify configuration */
-    i2c_config.work_mode = work_mode;
-    i2c_config.slave_addr = slave_address;
-    i2c_config.speed_rate = speed_rate;
+    i2c_config.use_7bit_addr = TRUE;
+    i2c_config.irq_prority = 0;
     i2c_config.instance_id = pctrl.config.instance_id;
     i2c_config.base_addr = pctrl.config.func_base_addr;
     i2c_config.irq_num = pctrl.config.irq_num;
-
+    i2c_config.ref_clk_hz = FMIO_CLK_FREQ_HZ;
     if (work_mode == FI2C_MASTER)/* 主机中断优先级高于从机接收 */
     {
         i2c_config.irq_prority = I2C_MASTER_IRQ_PRORITY;
@@ -141,6 +138,20 @@ FFreeRTOSI2c *FFreeRTOSI2cInit(u32 instance_id, u32 work_mode, u32 slave_address
         vPrintf("I2c Init failed.\r\n");
         return NULL;
     }
+    /*set the i2c parameters */
+    err = FI2cSetAddress(&os_i2c[instance_id].i2c_device, work_mode, slave_address);
+    if (FREERTOS_I2C_SUCCESS != err)
+    {
+        vPrintf("set mio slave parameters failed, ret: 0x%x\r\n", err);
+        return NULL;
+    }
+    err = FI2cSetSpeed(&os_i2c[instance_id].i2c_device, speed_rate, TRUE);
+    if (FREERTOS_I2C_SUCCESS != err)
+    {
+        vPrintf("set mio slave parameters failed, ret: 0x%x\r\n", err);
+        return NULL;
+    }
+
     /* 从机模式，开中断接收数据 */
     if (work_mode == FI2C_SLAVE)
     {

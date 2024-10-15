@@ -115,10 +115,6 @@ FError FFreeRTOSWdtControl(FFreeRTOSWdt *os_wdt_p, int cmd, void *args)
 
         case FREERTOS_WDT_CTRL_SET_TIMEOUT:
             os_wdt_p->timeout_value = *((u32 *)args);
-            if (os_wdt_p->timeout_value >= FWDT_MAX_TIMEOUT)
-            {
-                goto control_exit;
-            }
             ret = FWdtSetTimeout(pctrl, os_wdt_p->timeout_value);
             if (FWDT_SUCCESS != ret)
             {

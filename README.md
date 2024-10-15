@@ -1,6 +1,6 @@
 # Phytium-FreeRTOS-SDK
 
-**v1.0.0** [ReleaseNote](./docs/ChangeLog.md)
+**v1.1.0** [ReleaseNote](./docs/ChangeLog.md)
 
 ## 1. 介绍
 
@@ -16,7 +16,7 @@
 
 - 目前支持在Windows和Linux上使用SDK，支持在x86_64和arm aarch64设备上完成交叉编译
 
-![windows](./docs/fig/windows.png)![linux](./docs/fig/linux.png)![输入图片说明](./docs/fig/kylin.png)
+![windows](./docs/fig/windows.png)![linux](./docs/fig/linux.png)![输入图片说明](./docs/fig/kylin.png)![phystudio](./docs/reference/ide/figs/phystudio_brand.png)
 
 - 参考如下说明搭建Phytium FreeRTOS SDK的软件环境
 
@@ -25,6 +25,9 @@
     [Linux x86_64 快速入门](./docs/reference/usr/install_linux_x86_64.md)
 
     [Linux arm aarch64 快速入门](./docs/reference/usr/install_linux_aarch64.md)
+
+    [PhyStudio用户手册 无工程调试](./docs/reference/ide/debug_noproj.md)
+	![](./docs/reference/ide/figs/noproj_debug.png)
 
 
 - 参考[使用说明](./docs/reference/usr/usage.md), 新建Phytium FreeRTOS SDK的应用工程，与开发板建立连接

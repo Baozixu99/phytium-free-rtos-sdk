@@ -162,7 +162,7 @@ FFreeRTOSSpim *FFreeRTOSSpimInit(u32 id, const FFreeRTOSSpimConifg *input_config
     config.en_test = instance->config.inner_loopback;
     config.en_dma = instance->config.en_dma;
     config.irq_prority = FFREERTOS_SPIM_IRQ_PRIORITY;
-    config.freq_hz = FSPIM_OS_MAX_SPEED;
+    config.sclk_hz = FSPIM_OS_MAX_SPEED;
 
     FIOMuxInit();
     FIOPadSetSpimMux(id);

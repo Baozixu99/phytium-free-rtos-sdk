@@ -24,7 +24,12 @@
 #include "lv_ui.h"
 #include "lv_ui_helpers.h"
 
-void ui_screen_screen_init(lv_obj_t *parent);
+#ifdef CONFIG_USE_LETTER_SHELL
+#include "shell.h"
+#include "shell_port.h"
+#endif
+
+extern void ui_screen_screen_init(lv_obj_t *parent);
 lv_obj_t *ui_screen;
 lv_obj_t *ui____initial_actions0;
 
@@ -37,6 +42,7 @@ lv_obj_t *ui____initial_actions0;
 
 static lv_obj_t *tv;
 
+
 void ui_init(void)
 {
     lv_disp_t *dispp = lv_disp_get_default();
@@ -46,8 +52,9 @@ void ui_init(void)
 
     ui_screen = lv_obj_create(NULL);
     lv_obj_clear_flag(ui_screen, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
-
+#ifdef CONFIG_USE_LETTER_SHELL
     ui_screen_screen_init(ui_screen);
+#endif
     lv_disp_load_scr(ui_screen);
     ui____initial_actions0 = lv_obj_create(NULL);
 

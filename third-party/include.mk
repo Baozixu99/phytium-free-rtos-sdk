@@ -1,4 +1,3 @@
-
 FREERTOS_SDK_DIR ?= $(SDK_DIR)/..
 
 ifdef CONFIG_USE_BACKTRACE
@@ -11,9 +10,7 @@ endif
 
 include $(FREERTOS_SDK_DIR)/third-party/freertos/include.mk
 
-ifdef CONFIG_USE_TLSF
 include $(FREERTOS_SDK_DIR)/third-party/tlsf-3.1.0/include.mk
-endif
 
 ifdef CONFIG_USE_FATFS_0_1_4
 include $(FREERTOS_SDK_DIR)/third-party/fatfs-0.1.4/include.mk

@@ -22,15 +22,21 @@
  * 1.0  Wangzq     2022/12/20  Modify the format and establish the version
  */
 
+#ifdef CONFIG_USE_LETTER_SHELL
 #include "shell.h"
 #include "shell_port.h"
+#endif
 #include <stdio.h>
+#include "FreeRTOS.h"
+#include "task.h"
 
 int main(void)
 {
     BaseType_t ret;
-
+    
+#ifdef CONFIG_USE_LETTER_SHELL
     ret = LSUserShellTask();
+#endif
     if (ret != pdPASS)
     {
         goto FAIL_EXIT;

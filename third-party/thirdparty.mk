@@ -46,7 +46,6 @@ lib_fatfs_info:
 BAREMETAL_LIBS+= $(BUILD_OUT_PATH)/lib_fatfs.a
 endif
 
-ifdef CONFIG_USE_TLSF
 $(BUILD_OUT_PATH)/lib_tlsf.a: lib_tlsf.a
 lib_tlsf.a:
 	$(call rtos_invoke_make_in_dir,$(FREERTOS_SDK_DIR),third-party/tlsf-3.1.0,makefile,all,)
@@ -55,7 +54,6 @@ lib_tlsf_debug:
 lib_tlsf_info:
 	$(call rtos_invoke_make_in_dir,$(FREERTOS_SDK_DIR),third-party/tlsf-3.1.0,makefile,compiler_info,)
 BAREMETAL_LIBS+= $(BUILD_OUT_PATH)/lib_tlsf.a
-endif
 
 ifdef CONFIG_USE_LWIP
 $(BUILD_OUT_PATH)/lib_lwip.a: lib_lwip.a

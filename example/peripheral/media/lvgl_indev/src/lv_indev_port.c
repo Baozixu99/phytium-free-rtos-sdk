@@ -154,7 +154,6 @@ static u8 const keycode2ascii[128][2] =  { HID_KEYCODE_TO_ASCII };
 static struct usbh_urb kbd_intin_urb;
 static uint8_t kbd_buffer[128] __attribute__((aligned(sizeof(unsigned long)))) = {0};
 static struct usb_osal_timer *kbd_timer = NULL;
-static QueueHandle_t xQueue = NULL;
 
 static char *keyborad_name = "/dev/input0";
 static char *mouse_name = "/dev/input2";

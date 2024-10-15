@@ -24,7 +24,8 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
-#include "shell_port.h"
+
+
 #include "finterrupt.h"
 #include "fpl011_os.h"
 #include "fdebug.h"
@@ -44,9 +45,12 @@ static lv_obj_t *tv;
 lv_obj_t *ui_text_receive_message;
 lv_obj_t *ui_image_logo;
 
-extern Shell shell_object;
-static char data[64];
 
+static char data[64];
+#ifdef CONFIG_USE_LETTER_SHELL
+#include "shell.h"
+#include "shell_port.h"
+extern Shell shell_object;
 /**
  * @brief LVGL用户shell写
  *
@@ -103,6 +107,7 @@ static void text_receive_event_cb(lv_event_t *e)
        shellHandler(&shell_object, indev->proc.types.keypad.last_key);
     }
 }
+#endif
 
 void ui_screen_screen_init(lv_obj_t *parent)
 {

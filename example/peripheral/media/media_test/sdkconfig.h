@@ -44,6 +44,7 @@
 /* CONFIG_TARGET_FT2004 is not set */
 /* CONFIG_TARGET_D2000 is not set */
 /* CONFIG_TARGET_PD2308 is not set */
+/* CONFIG_TARGET_QEMU_VIRT is not set */
 #define CONFIG_SOC_NAME "phytiumpi"
 #define CONFIG_SOC_CORE_NUM 4
 #define CONFIG_F32BIT_MEMORY_ADDRESS 0x80000000
@@ -96,6 +97,7 @@
 #define CONFIG_USE_DEFAULT_INTERRUPT_CONFIG
 #define CONFIG_INTERRUPT_ROLE_MASTER
 /* CONFIG_INTERRUPT_ROLE_SLAVE is not set */
+/* CONFIG_INTERRUPT_ROLE_NONE is not set */
 /* end of Sdk common configuration */
 
 /* Drivers configuration */
@@ -265,15 +267,7 @@
 /* Third-party configuration */
 
 /* CONFIG_USE_LWIP is not set */
-#define CONFIG_USE_LETTER_SHELL
-
-/* Letter Shell Configuration */
-
-#define CONFIG_LS_PL011_UART
-#define CONFIG_DEFAULT_LETTER_SHELL_USE_UART1
-/* CONFIG_DEFAULT_LETTER_SHELL_USE_UART0 is not set */
-/* CONFIG_DEFAULT_LETTER_SHELL_USE_UART2 is not set */
-/* end of Letter Shell Configuration */
+/* CONFIG_USE_LETTER_SHELL is not set */
 /* CONFIG_USE_AMP is not set */
 /* CONFIG_USE_YMODEM is not set */
 /* CONFIG_USE_SFUD is not set */
