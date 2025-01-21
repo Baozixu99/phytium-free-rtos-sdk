@@ -339,7 +339,7 @@ FError FGmacOsInit(FGmacOs *instance_p)
     }
 
     /* Initialize Rx Description list : ring Mode */
-    status = FGmacSetupRxDescRing(gmac_p, (FGmacDmaDesc *)(instance_p->rx_desc), instance_p->rx_buf, FGMAC_MAX_PACKET_SIZE, GMAC_RX_DESCNUM);
+    status = FGmacSetupRxDescRing(gmac_p, (FGmacDmaDesc *)(instance_p->rx_desc), (uintptr)(instance_p->rx_desc), instance_p->rx_buf, (uintptr)(instance_p->rx_buf), FGMAC_MAX_PACKET_SIZE, GMAC_RX_DESCNUM);
     if (FT_SUCCESS != status)
     {
         OS_MAC_DEBUG_E("Gmac setup rx return err code %d", status);
@@ -347,7 +347,7 @@ FError FGmacOsInit(FGmacOs *instance_p)
     }
 
     /* Initialize Tx Description list : ring Mode */
-    status = FGmacSetupTxDescRing(gmac_p, (FGmacDmaDesc *)(instance_p->tx_desc), instance_p->tx_buf, FGMAC_MAX_PACKET_SIZE, GMAC_TX_DESCNUM);
+    status = FGmacSetupTxDescRing(gmac_p, (FGmacDmaDesc *)(instance_p->tx_desc), (uintptr)(instance_p->tx_desc), instance_p->tx_buf, (uintptr)(instance_p->tx_buf), FGMAC_MAX_PACKET_SIZE, GMAC_TX_DESCNUM);
     if (FT_SUCCESS != status)
     {
         OS_MAC_DEBUG_E("Gmac setup tx return err code %d", status);

@@ -40,9 +40,32 @@
 #include "fdcdp.h"
 #include "fdp_hw.h"
 #include "fdp.h"
+#include "fdcdp_reg.h"
 #include"media_example.h"
+#include "fdcdp_crtc.h"
 
+typedef struct
+{
+    u32 bit_depth;
+    u32 bpc;
+    u32 color_depth;
+    u32 clock_mode;
+    u32 color_rep;
+    u32 width;
+    u32 height;
+    u32 multi_mode;
+} FuserCfg;
 
+static const FuserCfg user_cfg = {
+    .bit_depth = 8,
+    .bpc = 8,
+    .color_depth = 32,
+    .clock_mode = 1,
+    .color_rep = 0,
+    .width = 800,
+    .height = 600,
+    .multi_mode = 0/*0:clone, 1 :horz, 2:vert*/
+};
 /************************** Variable Definitions *****************************/
 #define FMEDIA_EVT_INTR(index)             BIT(index)
 #define FMEDIA_CHANNEL_0                    0
@@ -98,14 +121,17 @@ static void FFreeRTOSMediaHpdConnectCallback(void *args, u32 index)
 {
     FASSERT(args != NULL);
     FDcDp *instance_p = (FDcDp *)args;
-    FDpChannelRegRead(instance_p->dp_instance_p[index].config.dp_channe_base_addr, FDP_TX_INTERRUPT); /*clear interrupt*/
+    FDpChannelRegRead(instance_p->dp_instance_p[index].config.dp_channe_base_addr, PHYTIUM_DP_INTERRUPT_STATUS); /*clear interrupt*/
     FFreeRTOSMediaSendEvent(FMEDIA_EVT_INTR(index));
-    instance_p->connect_flg[index] = 1;
+    instance_p->is_initialized[index] = FDCDP_IS_INITIALIZED;
     printf("Dp:%d connect\r\n", index);
 }
 
 /**
  * @name: FFreeRTOSMediaHpdBreakCallback
+ * 
+ * 
+ * 
  * @msg:  the hpd disconnect event
  * @param  {void} *args is the instance of dcdp
  * @param  {u32} index is the channel
@@ -115,8 +141,8 @@ static void FFreeRTOSMediaHpdBreakCallback(void *args, u32 index)
 {
     FASSERT(args != NULL);
     FDcDp *instance_p = (FDcDp *)args;
-    FDpChannelRegRead(instance_p->dp_instance_p[index].config.dp_channe_base_addr, FDP_TX_INTERRUPT); /*clear interrupt*/
-    instance_p->connect_flg[index] = 0;
+    FDpChannelRegRead(instance_p->dp_instance_p[index].config.dp_channe_base_addr, PHYTIUM_DP_INTERRUPT_STATUS); /*clear interrupt*/
+    instance_p->is_initialized[index] = FDCDP_NOT_INITIALIZED;
     FFreeRTOSMediaSendEvent(FMEDIA_EVT_INTR(index));
     printf("Dp:%d disconnect\r\n", index);
 }
@@ -132,7 +158,7 @@ static void FFreeRTOSMediaAuxTimeoutCallback(void *args, u32 index)
 {
     FASSERT(args != NULL);
     FDcDp *instance_p = (FDcDp *)args;
-    FDpChannelRegRead(instance_p->dp_instance_p[index].config.dp_channe_base_addr, FDP_TX_INTERRUPT); /*clear interrupt*/
+    FDpChannelRegRead(instance_p->dp_instance_p[index].config.dp_channe_base_addr, PHYTIUM_DP_INTERRUPT_STATUS); /*clear interrupt*/
     printf("Dp:%d aux connect timeout\r\n", index);
 }
 
@@ -147,7 +173,7 @@ static void FFreeRTOSMediaAuxErrorCallback(void *args, u32 index)
 {
     FASSERT(args != NULL);
     FDcDp *instance_p = (FDcDp *)args;
-    FDpChannelRegRead(instance_p->dp_instance_p[index].config.dp_channe_base_addr, FDP_TX_INTERRUPT); /*clear interrupt*/
+    FDpChannelRegRead(instance_p->dp_instance_p[index].config.dp_channe_base_addr, PHYTIUM_DP_INTERRUPT_STATUS); /*clear interrupt*/
     printf("Dp:%d aux connect error\r\n", index);
 }
 
@@ -201,6 +227,7 @@ static void FDcDpIrqAllEnable(FDcDp *instance_p)
  */
 static void FFreeRTOSMediaInitTask(void)
 {
+    FError ret = FDP_SUCCESS;
     u32 index, start_index, end_index;
 
     /*设置用户参数*/
@@ -215,18 +242,35 @@ static void FFreeRTOSMediaInitTask(void)
         start_index = channel;
         end_index = channel + 1;
     }
+    os_media.dcdp_ctrl.multi_mode = user_cfg.multi_mode;
     for (index = start_index; index < end_index; index ++)
     {
-        os_media.dcdp_ctrl.user_config[index].width = 640;
-        os_media.dcdp_ctrl.user_config[index].height = 480;
-        os_media.dcdp_ctrl.user_config[index].refresh_rate = 60;
-        os_media.dcdp_ctrl.user_config[index].color_depth = 32;
-        os_media.dcdp_ctrl.user_config[index].multi_mode = 0;
-        os_media.dcdp_ctrl.user_config[index].fb_phy = (uintptr)static_frame_buffer_address;
-        os_media.dcdp_ctrl.user_config[index].fb_virtual = (uintptr)static_frame_buffer_address ;/*当前例程虚拟地址和物理地址一致，实际需要根据需要进行映射*/
-    }
+        FDcDpCfgInitialize(&os_media.dcdp_ctrl,index);
 
-    FFreeRTOSMedia *os_config  = FFreeRTOSMediaHwInit(channel, &os_media);
+        os_media.dcdp_ctrl.dc_instance_p[index].config = *FDcLookupConfig(index);
+        
+        os_media.dcdp_ctrl.dp_instance_p[index].config = *FDpLookupConfig(index);
+
+        os_media.dcdp_ctrl.dp_instance_p[index].trans_config.bit_depth = user_cfg.bit_depth;
+
+        os_media.dcdp_ctrl.dc_instance_p[index].crtc.bpc = user_cfg.bpc;
+
+        os_media.dcdp_ctrl.dc_instance_p[index].color_depth = user_cfg.color_depth;
+
+        os_media.dcdp_ctrl.dp_instance_p[index].trans_config.clock_mode = user_cfg.clock_mode;
+
+        os_media.dcdp_ctrl.dp_instance_p[index].trans_config.color_rep_format = user_cfg.color_rep;
+
+        os_media.dcdp_ctrl.dc_instance_p[index].channel = index;
+
+        os_media.dcdp_ctrl.dc_instance_p[index].fb_addr = (uintptr)static_frame_buffer_address ;/*当前例程虚拟地址和物理地址一致，实际需要根据需要进行映射*/
+
+        os_media.dcdp_ctrl.dc_instance_p[index].fb_virtual = (uintptr)static_frame_buffer_address ;/*当前例程虚拟地址和物理地址一致，实际需要根据需要进行映射*/
+
+        FDcDpGeneralCfgInitial(&os_media.dcdp_ctrl, index);
+    }
+    
+    FFreeRTOSMedia *os_config  = FFreeRTOSMediaHwInit(&os_media,user_cfg.width, user_cfg.height);
     FFreeRTOSMediaIrqSet(&os_config->dcdp_ctrl);
     FDcDpIrqAllEnable(&os_config->dcdp_ctrl);
     vTaskDelete(NULL);
@@ -262,7 +306,7 @@ static void PhyFramebufferWrite(FDcCtrl *instance_p, uintptr offset, u32 length,
     u32 Index;
     for (Index = 0; Index < length; Index++)
     {
-        FtOut32(os_media.dcdp_ctrl.user_config->fb_virtual + offset + Index * 4, *((u32 *)(config + Index * 4)));
+        FtOut32(instance_p->fb_virtual + offset + Index * 4, *((u32 *)(config + Index * 4)));
     }
 }
 
@@ -312,7 +356,7 @@ FError FMediaDisplayDemo(void)
         blt_buffer.Green = 0xff;
         blt_buffer.Blue = 0x0;
         blt_buffer.reserve = 0;
-        BltVideoToFill(&instance_p->dc_instance_p[index], &blt_buffer, instance_p->user_config[index].width, instance_p->user_config[index].height);
+        BltVideoToFill(&instance_p->dc_instance_p[index], &blt_buffer, user_cfg.width, user_cfg.height);
     }
 }
 
@@ -322,22 +366,23 @@ static void FFreeRTOSMediaHpdTask(void)
     u32 index;
     u32 ret = 0 ;
     FFreeRTOSMediaWaitEvent(FMEDIA_EVT_INTR(FMEDIA_CHANNEL_0) | FMEDIA_EVT_INTR(FMEDIA_CHANNEL_1), portMAX_DELAY);
-
+    os_media.dcdp_ctrl.multi_mode = user_cfg.multi_mode;
     for (;;)
     {
         for (index = 0; index < FDCDP_INSTANCE_NUM; index++)
         {
-            if (os_media.dcdp_ctrl.connect_flg[index] == 1)
+            if (os_media.dcdp_ctrl.is_initialized[index] == FDCDP_NOT_INITIALIZED)
             {
-                ret = FDcDpHotPlugConnect(&os_media.dcdp_ctrl, index);
+                FDcDpCfgInitialize(&os_media.dcdp_ctrl, index);
+                ret = FDcDpInitial(&os_media.dcdp_ctrl, index, user_cfg.width, user_cfg.height);
                 FFreeRTOSMediaClearEvent(media_event, FMEDIA_EVT_INTR(index));
-                if (ret == FMEDIA_DP_SUCCESS)
+                if (ret == FDP_SUCCESS)
                 {
                     printf("Hpd task finish ,  reinit the dp success.\r\n");
                 }
-
-                os_media.dcdp_ctrl.connect_flg[index] == 0;
+                os_media.dcdp_ctrl.is_initialized[index] = FDCDP_IS_INITIALIZED;
             }
+        
         }
         vTaskDelay(200);
     }

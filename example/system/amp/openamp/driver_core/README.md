@@ -77,7 +77,7 @@ rpmsg-design:
 
 - 具体使用方法为：
 
-  - 在 /example/system/amp/openamp 对应 目录 下
+  - 在 /example/system/amp/openamp/driver_core 目录 下
   - 执行上述指令
 
 ### 2.3 构建和下载
@@ -102,16 +102,15 @@ rpmsg-design:
 
 #### 用户自定义修改配置项
 
-- 因为多核采用的是脚本自动寻找 `amp_config.json` 文件描述的工程目录，加载配置好的配置项（在目标路径的 configs 目录下），进行编译。所以，需要先保存修改好的配置项到默认配置目录中。
+- 因为多核采用的是脚本自动寻找 `amp_config.json` 文件描述的工程目录，加载配置好的默认配置项（在目标路径的 configs 目录下），进行编译。所以，需要先保存修改好的配置项到默认配置目录中。
 
-- 可以单个进入子工程目录中，单个调试完工程后再组合编译（遇到启动问题，推荐此构建方式排查调试多核启动问题）（注意：aarch32模式单个调试启动需要打开CONFIG_USE_AARCH64_L1_TO_AARCH32）。
+- 可以单个进入工程目录中，单个调试完工程后再组合编译（遇到启动问题，推荐此构建方式排查调试多核启动问题）（注意：aarch32模式单个调试启动需要打开CONFIG_USE_AARCH64_L1_TO_AARCH32）。
 
 > aarch32需要注意的点
 
 ![USE_AARCH64_L1_TO_AARCH32](./fig/OpenAMPConfig0.png)
 
-- 单个工程目录中使用`make backup_kconfig`保存调试好的AARCH32配置到默认配置，别忘了在工程中关闭CONFIG_USE_AARCH64_L1_TO_AARCH32，否则会导致启动失败。
-- 注意：混合异构部署启动中，各个工程都不需要打开（可以看工程的configs目录下凡是aarch32的配置都没打开），否则会导致启动失败，因为bootcode启动阶段已经做了此转换操作。
+- 单个工程目录中使用`make backup_kconfig`保存调试好的AARCH32配置到默认配置，如果是子工程（`amp_config.json`非bootstrap配置项）别忘了在工程中关闭CONFIG_USE_AARCH64_L1_TO_AARCH32，否则会导致启动失败。
 
 #### 编译
 
@@ -151,16 +150,16 @@ rpmsg-design:
 
 2.4 输入 'openamp' 运行openamp 命令程序示例,结果显示为:
 
-![1677585960509](./fig/1677585960509.png)
+![openamp64](./fig/openamp64.png)
 
 - 其中 "openamp auto" 表示命令的完整格式，一次性测试4个demo，红色方框为核2调用函数启动核心0的过程
 
-![20230512192325](./fig/20230512192325.png)
+![openamp64_auto](./fig/openamp64_auto.png)
 
 
 - 其中 "Test Results:Error count =" 表示通信过程中出现错误的次数
 
-![20231017160632](./fig/20231017160632.png)
+![Test64_Results](./fig/Test64_Results.png)
 
 #### aarch32 程序测试 （freeRTOS 间）
 
@@ -190,15 +189,15 @@ rpmsg-design:
 
 2.5 输入 'openamp' 运行openamp 命令程序示例
 
-![20230512195526](./fig/20230512195526.png)
+![openamp32](./fig/openamp32.png)
 
 2.6 输入 'openamp auto' 表示命令的完整格式，一次性测试4个demo
 
-![20230512200435](./fig/20230512200435.png)
+![openamp32_auto](./fig/openamp32_auto.png)
 
 - 其中 "Test Results:Error count =" 表示通信过程中出现错误的次数
 
-![20231017165755](./fig/20231017165755.png)
+![Test32_Results](./fig/Test32_Results.png)
 
 ## 3. 如何解决问题 (Q&A)
 
@@ -214,3 +213,4 @@ rpmsg-design:
 - 2023-05-12 ：v0.1.0 初始化项目
 - 2023-05-31 : v0.1.1 增加自动加载从核elf并启动的功能
 - 2024-07-18 : v0.1.2 完善openamp生命周期管理，修改配置方式
+- 2024-12-03 : v0.1.3 增加新多元异构系统架构支持，完善readme文档

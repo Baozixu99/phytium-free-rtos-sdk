@@ -32,7 +32,7 @@
 #include "shell_port.h"
 
 #include "lv_demo_create.h"
-
+#include "lv_demo_test.h"
 static void FFreeRTOSMediaCmdUsage(void)
 {
     printf("Usage:\r\n");

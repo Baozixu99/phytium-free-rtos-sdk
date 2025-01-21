@@ -66,6 +66,17 @@ lib_lwip_info:
 BAREMETAL_LIBS+= $(BUILD_OUT_PATH)/lib_lwip.a
 endif
 
+ifdef CONFIG_USE_MBEDTLS
+$(BUILD_OUT_PATH)/lib_mbedtls.a: lib_mbedtls.a
+lib_mbedtls.a: 
+	$(call rtos_invoke_make_in_dir,$(FREERTOS_SDK_DIR),third-party/mbedtls-3.6,makefile,all,)
+lib_mbedtls_debug:
+	$(call rtos_invoke_make_in_dir,$(FREERTOS_SDK_DIR),third-party/mbedtls-3.6,makefile,debug,)
+lib_mbedtls_info:
+	$(call rtos_invoke_make_in_dir,$(FREERTOS_SDK_DIR),third-party/mbedtls-3.6,makefile,compiler_info,)
+BAREMETAL_LIBS+= $(BUILD_OUT_PATH)/lib_mbedtls.a
+endif
+
 ifdef CONFIG_USE_SFUD
 $(BUILD_OUT_PATH)/lib_sfud.a: lib_sfud.a
 lib_sfud.a:

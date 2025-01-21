@@ -32,7 +32,6 @@
 #include "fdcdp.h"
 #include "fdp_hw.h"
 #include "fdp.h"
-#include "fdc_common_hw.h"
 
 /***************** Macros (Inline Functions) Definitions *********************/
 
@@ -47,32 +46,24 @@
  * @name: FFreeRTOSMediaHwInit
  * @msg:  init the media,dc and dp
  * @param  {u32} channel is the dc channel
+ * @param  {FFreeRTOSMedia*} instance is the driver instance
  * @param  {u32} width is the width
  * @param  {u32} height is the height
- * @param  {u32} multi_mode is multi display mode,0:clone,1:hor,2:ver
- * @param  {u32} color_depth is the color depth
- * @param  {u32} refresh_rate is the refresh rate of screen
  * @return err code information, 0 indicates success，others indicates failed
  */
-FFreeRTOSMedia *FFreeRTOSMediaHwInit(u32 channel,FFreeRTOSMedia *instance)
+FFreeRTOSMedia *FFreeRTOSMediaHwInit(FFreeRTOSMedia *instance, u32 width, u32 height)
 {
     FError ret = FT_SUCCESS;
     u32 index;
-    FDcDpCfgInitialize(&instance->dcdp_ctrl);
 
     for (index = 0; index < FDCDP_INSTANCE_NUM; index ++)
     {
-        instance->dcdp_ctrl.dc_instance_p[index].config = *FDcLookupConfig(index);
-        instance->dcdp_ctrl.dp_instance_p[index].config = *FDpLookupConfig(index);
+        ret = FDcDpInitial(&instance->dcdp_ctrl, index, width, height);
     }
-    ret = FDcDpInitialize(&instance->dcdp_ctrl, channel);
-    if (ret != FMEDIA_DP_SUCCESS)
+    if((instance->dcdp_ctrl.is_initialized[0]) | (instance->dcdp_ctrl.is_initialized[1]))
     {
-        FMEDIA_ERROR("DcDp initial failed");
-        goto err_exit;
+        ret = FDP_SUCCESS;
     }
-
-err_exit:
     return (FT_SUCCESS == ret) ? instance : NULL; /* exit with NULL if failed */
 }
 

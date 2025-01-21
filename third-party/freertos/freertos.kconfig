@@ -15,7 +15,22 @@ menu "FreeRTOS Kernel Configuration"
         default 1000
         help
             Select the tick rate at which FreeRTOS does pre-emptive context switching.
-    
+
+    choice
+        prompt "Freertos tick interrupt source"
+        default NON_SECURE_PHYSICAL_TIMER
+
+    config NON_SECURE_PHYSICAL_TIMER
+        bool "Non-secure Physical Timer"
+        help
+            "Use the Physical Timer for timing operations."
+
+    config NON_SECURE_VIRTUAL_TIMER
+        bool "Non-secure Virtual Timer"
+        help
+            "Use the Virtual Timer for timing operations."
+    endchoice
+
     config FREERTOS_MAX_PRIORITIES
         int "Max task priority"
         range 1 32

@@ -31,7 +31,6 @@
 #include "shell.h"
 #include "shell_port.h"
 
-#include "fdc_common_hw.h"
 #include "fdcdp.h"
 #include "fdp_hw.h"
 

@@ -129,6 +129,16 @@ point is zero. */
 #define portMAX_8_BIT_VALUE							( ( uint8_t ) 0xff )
 #define portBIT_0_SET								( ( uint8_t ) 0x01 )
 
+/* Let the user override the pre-loading of the initial LR with the address of
+ * prvTaskExitError() in case it messes up unwinding of the stack in the
+ * debugger. */
+#ifdef configTASK_RETURN_ADDRESS
+    #define portTASK_RETURN_ADDRESS    configTASK_RETURN_ADDRESS
+#else
+    #define portTASK_RETURN_ADDRESS    prvTaskExitError
+#endif
+
+
 /*-----------------------------------------------------------*/
 
 /*
@@ -136,6 +146,11 @@ point is zero. */
  * assembly code so is implemented in portASM.s.
  */
 extern void vPortRestoreTaskContext(void);
+
+/*
+ * Used to catch tasks that attempt to return from their implementing function.
+ */
+static void prvTaskExitError( void );
 
 /*-----------------------------------------------------------*/
 
@@ -243,7 +258,7 @@ StackType_t *pxPortInitialiseStack(StackType_t *pxTopOfStack, TaskFunction_t pxC
     pxTopOfStack--;
     *pxTopOfStack = (StackType_t)0x00; /* XZR - has no effect, used so there are an even number of registers. */
     pxTopOfStack--;
-    *pxTopOfStack = (StackType_t)0x00; /* R30 - procedure call link register. */
+    *pxTopOfStack = (StackType_t)portTASK_RETURN_ADDRESS; /* R30 - procedure call link register. */
     pxTopOfStack--;
 
     *pxTopOfStack = portINITIAL_PSTATE;
@@ -286,6 +301,23 @@ StackType_t *pxPortInitialiseStack(StackType_t *pxTopOfStack, TaskFunction_t pxC
 
     return pxTopOfStack;
 }
+
+static void prvTaskExitError( void )
+{
+    /* A function that implements a task must not exit or attempt to return to
+     * its caller as there is nothing to return to.  If a task wants to exit it
+     * should instead call vTaskDelete( NULL ).
+     *
+     * Artificially force an assert() to be triggered if configASSERT() is
+     * defined, then stop here so application writers can catch the error. */
+    configASSERT( ullCriticalNesting == ~0UL );
+    portDISABLE_INTERRUPTS();
+
+    for( ; ; )
+    {
+    }
+}
+
 /*-----------------------------------------------------------*/
 
 BaseType_t xPortStartScheduler(void)

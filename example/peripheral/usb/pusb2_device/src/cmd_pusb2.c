@@ -27,7 +27,7 @@
 #include "sdkconfig.h"
 
 #include "FreeRTOS.h"
-
+#ifdef CONFIG_USE_LETTER_SHELL
 #include "../src/shell.h"
 #include "pusb2_mass_storage_example.h"
 #include "pusb2_virtual_serial_example.h"
@@ -66,3 +66,4 @@ static int USBCmdEntry(int argc, char *argv[])
     return ret;
 }
 SHELL_EXPORT_CMD(SHELL_CMD_TYPE(SHELL_TYPE_CMD_MAIN), pusb2, USBCmdEntry, test freertos usb driver);
+#endif

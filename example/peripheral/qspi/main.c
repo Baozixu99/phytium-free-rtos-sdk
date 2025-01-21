@@ -40,9 +40,9 @@ void QspiExampleTaskEntry()
     FFreeRTOSQspiPolledTaskCreate();
 
     FFreeRTOSQspiIndirectTaskCreate();
-
+#if defined(CONFIG_E2000D_DEMO_BOARD) || defined(CONFIG_E2000Q_DEMO_BOARD)
     FFreeRTOSQspiDualFlashTaskCreate();
-
+#endif
     printf("[test_end]\r\n");
 
     vTaskDelete(NULL);

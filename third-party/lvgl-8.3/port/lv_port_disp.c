@@ -58,12 +58,12 @@ void FMediaDispFramebuffer(FDcDp *instance)
   
     if ((rtt_fbp[0] == NULL))
     {
-        rtt_fbp[0] = (lv_color_int_t *)instance->user_config[0].fb_virtual;
-        multi_mode = instance->user_config[0].multi_mode;
+        rtt_fbp[0] = (lv_color_int_t *)instance->dc_instance_p[0].fb_virtual;
+        multi_mode = instance->dc_instance_p[0].fb_virtual;
     }
     else
     {
-        rtt_fbp[1] = (lv_color_int_t *)instance->user_config[1].fb_virtual;
+        rtt_fbp[1] = (lv_color_int_t *) instance->dc_instance_p[1].fb_virtual;
     }
     return;
 

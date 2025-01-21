@@ -123,16 +123,19 @@ static int DhcpService_Is_Sucess()
 {
     struct netif *netif;
     char * ip_addr;
+    int ret = 0;
     for (int i = 0; i < MAC_NUM; i++)
     {
         netif = LwipPortGetByName(board_mac_config[i].lwip_mac_config.name);
         ip_addr = ipaddr_ntoa(&(netif->ip_addr));
 
         if(strcmp(ip_addr,board_mac_config[i].ipaddr) == 0)
-            return 0; 
+            printf("Eth%d dhcp service failed, please check the network configuration and physical connection status.\r\n", i);
+        else
+            ret++;
     }
-   
-    return 1;
+
+    return ret;
 }
 
 void LwipDhcpInitTask(void)

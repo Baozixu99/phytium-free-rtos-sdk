@@ -26,7 +26,7 @@
 #include <stdio.h>
 #include "FreeRTOS.h"
 #include "fparameters.h"
-
+#include "task.h"
 #include "pusb2_mass_storage_example.h"
 #include "pusb2_virtual_serial_example.h"
 
