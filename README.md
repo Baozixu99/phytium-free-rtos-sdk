@@ -2,13 +2,21 @@
 
 **v1.1.0** [ReleaseNote](./docs/ChangeLog.md)
 
+**如需Phytium全系CPU的软件适配支持，请联系 ``linan1284@phytium.com.cn``**
+
+[飞腾腾云S系列高性能服务器CPU](https://www.phytium.com.cn/homepage/production/list/0)
+
+[飞腾腾锐D系列高效能桌面CPU](https://www.phytium.com.cn/homepage/production/list/1)
+
+[飞腾腾珑E系列高端嵌入式CPU](https://www.phytium.com.cn/homepage/production/list/2)
+
 ## 1. 介绍
 
 本项目发布了Phytium系列CPU的FreeRTOS源代码，参考例程以及配置构建工具
 
 代码仓库整体共分为两个分支： 
 - master 分支：开发分支，用于保存最新的协作开发代码以及bug修复后的代码。其只要求保障新功能基本正确并且能够满足基本的使用需求，并没有经过系统性和复杂条件下的测试。 
-- release 分支：发布分支，包含核心启动代码、芯片外设驱动、用户使用例程和构建的脚本工具。用于保存经过系统性测试的代码并对外发布版本，默认下载此分支的代码。
+- release 分支：发布分支，包含核心启动代码、芯片外设驱动、用户使用例程和构建的脚本工具。用于保存经过系统性测试的代码并对外发布版本。
 
 ---
 

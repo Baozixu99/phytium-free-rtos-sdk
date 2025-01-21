@@ -1,3 +1,61 @@
+# Phytium FreeRTOS SDK 2025-01-20 ChangeLog
+
+Change Log since 2025-01-15
+
+## example
+
+- Change the media example to support new media driver
+
+## driver
+
+- Change the media example to support new sdk media driver
+
+- Change the gmac driver to support sdk gitee
+
+# Phytium FreeRTOS SDK 2025-01-15 ChangeLog
+
+Change Log since 2025-01-14
+
+## example
+
+- Refine dhcp and qspi examples
+
+## third-party
+
+- Add prvTaskExitError() function in aarch64 port
+
+# Phytium FreeRTOS SDK 2024-12-03 ChangeLog
+
+Change Log since 2024-10-15
+
+## example
+
+- Modify the openamp example to support MSDF(multi-core system deployment framework)
+
+# Phytium FreeRTOS SDK 2024-10-15 ChangeLog
+
+Change Log since 2024-10-15
+
+## third-party
+
+- Add polled letter-shell config
+
+## third-party
+
+- Add virtual timer as FreeRtos tick interrupt source 
+
+# Phytium FreeRTOS SDK 2024-10-15 ChangeLog
+
+Change Log since 2024-10-15
+
+## example
+
+- Add an https test
+
+## third-party
+
+- Add mbedtls encryption library
+
 # Phytium FreeRTOS SDK 2024-10-15 v1.1.0 ChangeLog
 
 Change Log since 2024-10-12

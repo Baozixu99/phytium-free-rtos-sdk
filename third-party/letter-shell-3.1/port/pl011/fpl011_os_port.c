@@ -49,7 +49,7 @@ static char data[64];
 #endif
 
 extern void FtFreertosUartIntrInit(FtFreertosUart *uart_p);
-
+#ifdef CONFIG_LETTER_SHELL_UART_INTERRUPT_MODE
 /**
  * @brief 用户shell写
  *
@@ -57,7 +57,6 @@ extern void FtFreertosUartIntrInit(FtFreertosUart *uart_p);
  */
 void LSUserShellWrite(char data)
 {
-    // FtFreertosUartBlcokingSend(&os_uart1, &data, 1);
     FPl011Send(&os_uart1.bsp_uart, &data, 1);
 }
 
@@ -101,3 +100,57 @@ void LSSerialWaitLoop(void)
     }
     vTaskDelete(NULL);
 }
+
+#elif defined CONFIG_LETTER_SHELL_UART_POLLED_MODE
+
+#define LS_UART_WAIT_LOOP_DELAY 5
+    /**
+ * @brief 用户shell写
+ *
+ * @param data 数据
+ */
+void LSUserShellWrite(char data)
+{
+    FPl011BlockSend(&os_uart1.bsp_uart, (u8 *)&data, 1);
+}
+
+/**
+ * @brief 用户shell读
+ *
+ * @param data 数据
+ * @return char 状态
+ */
+signed char LSUserShellRead(char *data)
+{
+    u32 length = 0;
+    length = FPl011Receive(&os_uart1.bsp_uart,(u8 *)data,1);
+    return (length > 0)? 1:0;
+}
+
+void LSSerialConfig(void)
+{
+    s32 ret = FT_SUCCESS;
+    const FPl011Config * config_p;
+    FPl011Config config_value;
+    memset(&os_uart1.bsp_uart, 0, sizeof(os_uart1.bsp_uart));
+    config_p = FPl011LookupConfig(LETTER_SHELL_UART_ID) ;
+    memcpy(&config_value, config_p, sizeof(FPl011Config)); 
+    /* 初始化PL011 */
+    ret = FPl011CfgInitialize(&os_uart1.bsp_uart, &config_value);
+    FASSERT(FT_SUCCESS == ret);
+    FPl011SetOptions(&os_uart1.bsp_uart, FPL011_OPTION_UARTEN | FPL011_OPTION_RXEN | FPL011_OPTION_TXEN | FPL011_OPTION_FIFOEN );
+}
+
+void LSSerialWaitLoop(void)
+{
+    char buf;
+    while (TRUE)
+    {
+        buf = FPl011BlockReceive(&os_uart1.bsp_uart);
+        shellHandler(&shell_object, buf);
+        vTaskDelay(LS_UART_WAIT_LOOP_DELAY);
+    }
+}
+#endif
+
+

@@ -15,7 +15,7 @@
 
 7. 例程介绍：
 
-- `openamp`：本例程演示了如何使用openamp库在多核片上运行。
+- `openamp`：本例程演示了如何使用openamp库在多核上运行。
 - `openamp_for_linux`：本例程演示了如何使用编译好的基于freertos的 openamp例程镜像，在linux系统加载下运行(需要linux系统支持)。
 
 > 注：建议学习顺序：先裸机standalone，再freertos，最后linux。

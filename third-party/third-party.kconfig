@@ -11,6 +11,17 @@ config USE_LWIP
         source "$(FREERTOS_SDK_DIR)/third-party/lwip-2.1.2/lwip.kconfig"
     endif
 
+config USE_MBEDTLS
+    bool
+    prompt "Use mbedtls"
+    default n
+    help
+        Include MBEDTLS for Network Protocol
+
+    if USE_MBEDTLS
+        source "$(FREERTOS_SDK_DIR)/third-party/mbedtls-3.6/mbedtls.kconfig"
+    endif    
+
 config USE_LETTER_SHELL
     bool
     prompt "Use letter shell"

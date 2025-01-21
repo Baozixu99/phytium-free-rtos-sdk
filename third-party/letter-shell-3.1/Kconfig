@@ -27,4 +27,19 @@ menu "Letter Shell Configuration"
         endif
 
     endchoice # LETTER_SHELL_USART_TYPE
+
+    choice
+        prompt "Uart Mode"
+        default LETTER_SHELL_UART_INTERRUPT_MODE
+
+    config LETTER_SHELL_UART_INTERRUPT_MODE
+        bool "Interrupt Mode"
+        help
+            "Use the interrupt mode for letter shell."
+
+    config LETTER_SHELL_UART_POLLED_MODE
+        bool "Polled Mode"
+        help
+            "Use the polled mode for letter shell ."
+    endchoice
 endmenu

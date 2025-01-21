@@ -26,8 +26,6 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "ftypes.h"
-#include "shell.h"
-#include "shell_port.h"
 #include "fmmu.h"
 #include "fio.h"
 #include "fkernel.h"

@@ -31,6 +31,11 @@
 /* CONFIG_BOOT_WITH_FLUSH_CACHE is not set */
 /* CONFIG_MMU_DEBUG_PRINTS is not set */
 /* end of Arm architecture configuration */
+
+/* multi-core system deployment framework */
+
+/* CONFIG_USE_MSDF is not set */
+/* end of multi-core system deployment framework */
 #define CONFIG_MMU_PAGE_SIZE 0x1000
 #define CONFIG_MAX_XLAT_TABLES 256
 /* end of Arch configuration */
@@ -130,11 +135,7 @@
 /* CONFIG_USE_PWM is not set */
 /* CONFIG_USE_IPC is not set */
 #define CONFIG_USE_MEDIA
-
-/* Media Configuration */
-
-#define CONFIG_ENABLE_FDC_DP_USE_LIB
-/* end of Media Configuration */
+#define CONFIG_USE_FMEDIA
 /* CONFIG_USE_SCMI_MHU is not set */
 /* CONFIG_USE_I2S is not set */
 /* CONFIG_USE_I3C is not set */
@@ -267,7 +268,18 @@
 /* Third-party configuration */
 
 /* CONFIG_USE_LWIP is not set */
-/* CONFIG_USE_LETTER_SHELL is not set */
+/* CONFIG_USE_MBEDTLS is not set */
+#define CONFIG_USE_LETTER_SHELL
+
+/* Letter Shell Configuration */
+
+#define CONFIG_LS_PL011_UART
+#define CONFIG_DEFAULT_LETTER_SHELL_USE_UART1
+/* CONFIG_DEFAULT_LETTER_SHELL_USE_UART0 is not set */
+/* CONFIG_DEFAULT_LETTER_SHELL_USE_UART2 is not set */
+#define CONFIG_LETTER_SHELL_UART_INTERRUPT_MODE
+/* CONFIG_LETTER_SHELL_UART_POLLED_MODE is not set */
+/* end of Letter Shell Configuration */
 /* CONFIG_USE_AMP is not set */
 /* CONFIG_USE_YMODEM is not set */
 /* CONFIG_USE_SFUD is not set */
@@ -299,6 +311,8 @@
 
 #define CONFIG_FREERTOS_OPTIMIZED_SCHEDULER
 #define CONFIG_FREERTOS_HZ 1000
+#define CONFIG_NON_SECURE_PHYSICAL_TIMER
+/* CONFIG_NON_SECURE_VIRTUAL_TIMER is not set */
 #define CONFIG_FREERTOS_MAX_PRIORITIES 32
 #define CONFIG_FREERTOS_KERNEL_INTERRUPT_PRIORITIES 13
 #define CONFIG_FREERTOS_MAX_API_CALL_INTERRUPT_PRIORITIES 11

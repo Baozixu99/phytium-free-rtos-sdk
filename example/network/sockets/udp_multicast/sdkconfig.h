@@ -58,6 +58,7 @@
 /* CONFIG_TARGET_FT2004 is not set */
 /* CONFIG_TARGET_D2000 is not set */
 /* CONFIG_TARGET_PD2308 is not set */
+/* CONFIG_TARGET_QEMU_VIRT is not set */
 #define CONFIG_SOC_NAME "phytiumpi"
 #define CONFIG_SOC_CORE_NUM 4
 #define CONFIG_F32BIT_MEMORY_ADDRESS 0x80000000
@@ -110,6 +111,7 @@
 #define CONFIG_USE_DEFAULT_INTERRUPT_CONFIG
 #define CONFIG_INTERRUPT_ROLE_MASTER
 /* CONFIG_INTERRUPT_ROLE_SLAVE is not set */
+/* CONFIG_INTERRUPT_ROLE_NONE is not set */
 /* end of Sdk common configuration */
 
 /* Drivers configuration */
@@ -490,6 +492,7 @@
 #define CONFIG_LWIP_PORT_DHCP_PRIORITY 5
 /* end of lwip port thread Configuration */
 /* end of LWIP Freertos Port Configuration */
+/* CONFIG_USE_MBEDTLS is not set */
 #define CONFIG_USE_LETTER_SHELL
 
 /* Letter Shell Configuration */
@@ -498,6 +501,8 @@
 #define CONFIG_DEFAULT_LETTER_SHELL_USE_UART1
 /* CONFIG_DEFAULT_LETTER_SHELL_USE_UART0 is not set */
 /* CONFIG_DEFAULT_LETTER_SHELL_USE_UART2 is not set */
+#define CONFIG_LETTER_SHELL_UART_INTERRUPT_MODE
+/* CONFIG_LETTER_SHELL_UART_POLLED_MODE is not set */
 /* end of Letter Shell Configuration */
 /* CONFIG_USE_AMP is not set */
 /* CONFIG_USE_YMODEM is not set */
@@ -518,6 +523,8 @@
 
 #define CONFIG_FREERTOS_OPTIMIZED_SCHEDULER
 #define CONFIG_FREERTOS_HZ 1000
+#define CONFIG_NON_SECURE_PHYSICAL_TIMER
+/* CONFIG_NON_SECURE_VIRTUAL_TIMER is not set */
 #define CONFIG_FREERTOS_MAX_PRIORITIES 32
 #define CONFIG_FREERTOS_KERNEL_INTERRUPT_PRIORITIES 11
 #define CONFIG_FREERTOS_MAX_API_CALL_INTERRUPT_PRIORITIES 11

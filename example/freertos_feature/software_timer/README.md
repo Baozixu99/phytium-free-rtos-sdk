@@ -42,6 +42,9 @@ FreeRTOS 提供的软件定时器支持单次模式和周期模式；
 
 - CONFIG_USE_LETTER_SHELL
 
+- CONFIG_NON_SECURE_PHYSICAL_TIMER 或 CONFIG_NON_SECURE_VIRTUAL_TIMER 选择使用非安全物理定时器或者虚拟定时器作为Tick中断源
+![tick_interrupt_source_config](./figs/tick_interrupt_source_config.png)
+
 本例子已经提供好具体的编译指令，以下进行介绍:
 - make                 将目录下的工程进行编译
 - make clean           将目录下的工程进行清理

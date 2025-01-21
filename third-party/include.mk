@@ -51,3 +51,7 @@ endif
 ifdef CONFIG_USE_CHERRY_USB
 include $(SDK_DIR)/third-party/cherryusb/include.mk
 endif
+
+ifdef CONFIG_USE_MBEDTLS
+include $(FREERTOS_SDK_DIR)/third-party/mbedtls-3.6/include.mk
+endif

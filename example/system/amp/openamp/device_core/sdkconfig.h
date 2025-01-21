@@ -37,14 +37,16 @@
 
 /* Soc configuration */
 
-#define CONFIG_TARGET_PHYTIUMPI
-/* CONFIG_TARGET_E2000Q is not set */
+/* CONFIG_TARGET_PHYTIUMPI is not set */
+#define CONFIG_TARGET_E2000Q
 /* CONFIG_TARGET_E2000D is not set */
 /* CONFIG_TARGET_E2000S is not set */
 /* CONFIG_TARGET_FT2004 is not set */
 /* CONFIG_TARGET_D2000 is not set */
 /* CONFIG_TARGET_PD2308 is not set */
-#define CONFIG_SOC_NAME "phytiumpi"
+/* CONFIG_TARGET_QEMU_VIRT is not set */
+#define CONFIG_SOC_NAME "e2000"
+#define CONFIG_TARGET_TYPE_NAME "q"
 #define CONFIG_SOC_CORE_NUM 4
 #define CONFIG_F32BIT_MEMORY_ADDRESS 0x80000000
 #define CONFIG_F32BIT_MEMORY_LENGTH 0x80000000
@@ -58,7 +60,7 @@
 
 /* Board Configuration */
 
-#define CONFIG_BOARD_NAME "firefly"
+#define CONFIG_BOARD_NAME "demo"
 /* CONFIG_USE_SPI_IOPAD is not set */
 /* CONFIG_USE_GPIO_IOPAD is not set */
 /* CONFIG_USE_CAN_IOPAD is not set */
@@ -68,7 +70,7 @@
 /* CONFIG_USE_TACHO_IOPAD is not set */
 /* CONFIG_USE_UART_IOPAD is not set */
 /* CONFIG_USE_THIRD_PARTY_IOPAD is not set */
-#define CONFIG_FIREFLY_DEMO_BOARD
+#define CONFIG_E2000Q_DEMO_BOARD
 
 /* IO mux configuration when board start up */
 
@@ -96,6 +98,7 @@
 #define CONFIG_USE_DEFAULT_INTERRUPT_CONFIG
 /* CONFIG_INTERRUPT_ROLE_MASTER is not set */
 #define CONFIG_INTERRUPT_ROLE_SLAVE
+/* CONFIG_INTERRUPT_ROLE_NONE is not set */
 /* end of Sdk common configuration */
 
 /* Drivers configuration */
@@ -260,6 +263,7 @@
 /* Third-party configuration */
 
 /* CONFIG_USE_LWIP is not set */
+/* CONFIG_USE_MBEDTLS is not set */
 /* CONFIG_USE_LETTER_SHELL is not set */
 #define CONFIG_USE_AMP
 #define CONFIG_USE_LIBMETAL
@@ -290,6 +294,8 @@
 
 #define CONFIG_FREERTOS_OPTIMIZED_SCHEDULER
 #define CONFIG_FREERTOS_HZ 1000
+#define CONFIG_NON_SECURE_PHYSICAL_TIMER
+/* CONFIG_NON_SECURE_VIRTUAL_TIMER is not set */
 #define CONFIG_FREERTOS_MAX_PRIORITIES 32
 #define CONFIG_FREERTOS_KERNEL_INTERRUPT_PRIORITIES 13
 #define CONFIG_FREERTOS_MAX_API_CALL_INTERRUPT_PRIORITIES 11

@@ -36,7 +36,15 @@
 #include "fcpu_info.h"
 #include "fassert.h"
 #include "fexception.h"
+#include "sdkconfig.h"
 
+#ifdef CONFIG_NON_SECURE_PHYSICAL_TIMER
+    #define USING_GENERIC_TIMER_ID GENERIC_TIMER_ID0
+    #define USING_GENERIC_TIMER_IRQ_ID GENERIC_TIMER_NS_IRQ_NUM
+#elif defined CONFIG_NON_SECURE_VIRTUAL_TIMER
+    #define USING_GENERIC_TIMER_ID GENERIC_TIMER_ID1
+    #define USING_GENERIC_TIMER_IRQ_ID GENERIC_VTIMER_IRQ_NUM
+#endif
 
 static volatile u32 is_in_irq = 0 ;
 
@@ -75,24 +83,24 @@ static u32 cntfrq; /* System frequency */
 void vConfigureTickInterrupt(void)
 {
     /* Disable the timer */
-    GenericTimerStop(GENERIC_TIMER_ID0);
+    GenericTimerStop(USING_GENERIC_TIMER_ID);
     /* Get system frequency */
     cntfrq = GenericTimerFrequecy();
 
     /* Set tick rate */
-    GenericTimerSetTimerValue(GENERIC_TIMER_ID0, cntfrq / configTICK_RATE_HZ);
-    GenericTimerInterruptEnable(GENERIC_TIMER_ID0);
+    GenericTimerSetTimerValue(USING_GENERIC_TIMER_ID, cntfrq / configTICK_RATE_HZ);
+    GenericTimerInterruptEnable(USING_GENERIC_TIMER_ID);
 
     /* Set as the lowest priority */
-    InterruptSetPriority(GENERIC_TIMER_NS_IRQ_NUM, configKERNEL_INTERRUPT_PRIORITY);
-    InterruptUmask(GENERIC_TIMER_NS_IRQ_NUM);
+    InterruptSetPriority(USING_GENERIC_TIMER_IRQ_ID, configKERNEL_INTERRUPT_PRIORITY);
+    InterruptUmask(USING_GENERIC_TIMER_IRQ_ID);
 
-    GenericTimerStart(GENERIC_TIMER_ID0);
+    GenericTimerStart(USING_GENERIC_TIMER_ID);
 }
 
 void vClearTickInterrupt(void)
 {
-    GenericTimerSetTimerValue(GENERIC_TIMER_ID0, cntfrq / configTICK_RATE_HZ);
+    GenericTimerSetTimerValue(USING_GENERIC_TIMER_ID, cntfrq / configTICK_RATE_HZ);
 }
 
 volatile unsigned int gCpuRuntime;
@@ -107,7 +115,7 @@ void vApplicationInterruptHandler(uint32_t ulICCIAR)
     ulInterruptID = ulICCIAR & 0x3FFUL;
 
     /* call handler function */
-    if (ulInterruptID == GENERIC_TIMER_NS_IRQ_NUM)
+    if (ulInterruptID == USING_GENERIC_TIMER_IRQ_ID)
     {
         /* Generic Timer */
         gCpuRuntime++;

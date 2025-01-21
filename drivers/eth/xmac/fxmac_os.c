@@ -25,6 +25,7 @@
 #include "fparameters.h"
 #include "fassert.h"
 #include "fxmac_os.h"
+#include "fxmac_phy.h"
 #include "fxmac.h"
 #include "fcache.h"
 #include "fxmac_bdring.h"

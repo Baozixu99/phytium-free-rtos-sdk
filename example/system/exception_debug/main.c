@@ -26,21 +26,23 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "ftypes.h"
+#include "sdkconfig.h"
+#ifdef CONFIG_USE_LETTER_SHELL
 #include "shell.h"
 #include "shell_port.h"
-#include "sdkconfig.h"
+#endif
 
 int main()
 {
     printf("Exception debug func, FT Date: %s, Time: %s\n", __DATE__, __TIME__);
     BaseType_t xReturn = pdPASS;
-
+#ifdef CONFIG_USE_LETTER_SHELL
     xReturn = LSUserShellTask();
     if (xReturn != pdPASS)
     {
         goto FAIL_EXIT;
     }
-
+#endif
     vTaskStartScheduler(); /* 启动任务，开启调度 */
 
     while (1); /* 正常不会执行到这里 */
