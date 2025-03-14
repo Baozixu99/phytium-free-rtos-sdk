@@ -34,6 +34,12 @@ CONFIG_GCC_CODE_MODEL_SMALL=y
 # CONFIG_MMU_DEBUG_PRINTS is not set
 # end of Arm architecture configuration
 
+#
+# multi-core system deployment framework
+#
+# CONFIG_USE_MSDF is not set
+# end of multi-core system deployment framework
+
 CONFIG_MMU_PAGE_SIZE=0x1000
 CONFIG_MAX_XLAT_TABLES=256
 # end of Arch configuration

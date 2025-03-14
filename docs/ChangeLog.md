@@ -1,3 +1,11 @@
+# Phytium FreeRTOS SDK 2025-02-19 ChangeLog
+
+Change Log since 2025-01-20
+
+## example
+
+- Simplify default configs of examples
+
 # Phytium FreeRTOS SDK 2025-01-20 ChangeLog
 
 Change Log since 2025-01-15

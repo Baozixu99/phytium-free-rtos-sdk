@@ -45,6 +45,11 @@
 /* CONFIG_BOOT_WITH_FLUSH_CACHE is not set */
 /* CONFIG_MMU_DEBUG_PRINTS is not set */
 /* end of Arm architecture configuration */
+
+/* multi-core system deployment framework */
+
+/* CONFIG_USE_MSDF is not set */
+/* end of multi-core system deployment framework */
 #define CONFIG_MMU_PAGE_SIZE 0x1000
 #define CONFIG_MAX_XLAT_TABLES 256
 /* end of Arch configuration */

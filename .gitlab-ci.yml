@@ -11,6 +11,10 @@ stages:
   - report_stage  # 测试报表生成阶段
   - post_stage    # 收尾阶段
 
+default:
+  before_script:
+    - export TERM=dumb
+
 # 所有soc覆盖编译启动
 all_soc_compile:
   stage: compile_stage

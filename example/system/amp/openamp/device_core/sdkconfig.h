@@ -31,22 +31,26 @@
 /* CONFIG_BOOT_WITH_FLUSH_CACHE is not set */
 /* CONFIG_MMU_DEBUG_PRINTS is not set */
 /* end of Arm architecture configuration */
+
+/* multi-core system deployment framework */
+
+/* CONFIG_USE_MSDF is not set */
+/* end of multi-core system deployment framework */
 #define CONFIG_MMU_PAGE_SIZE 0x1000
 #define CONFIG_MAX_XLAT_TABLES 256
 /* end of Arch configuration */
 
 /* Soc configuration */
 
-/* CONFIG_TARGET_PHYTIUMPI is not set */
-#define CONFIG_TARGET_E2000Q
+#define CONFIG_TARGET_PHYTIUMPI
+/* CONFIG_TARGET_E2000Q is not set */
 /* CONFIG_TARGET_E2000D is not set */
 /* CONFIG_TARGET_E2000S is not set */
 /* CONFIG_TARGET_FT2004 is not set */
 /* CONFIG_TARGET_D2000 is not set */
 /* CONFIG_TARGET_PD2308 is not set */
 /* CONFIG_TARGET_QEMU_VIRT is not set */
-#define CONFIG_SOC_NAME "e2000"
-#define CONFIG_TARGET_TYPE_NAME "q"
+#define CONFIG_SOC_NAME "phytiumpi"
 #define CONFIG_SOC_CORE_NUM 4
 #define CONFIG_F32BIT_MEMORY_ADDRESS 0x80000000
 #define CONFIG_F32BIT_MEMORY_LENGTH 0x80000000
@@ -60,7 +64,7 @@
 
 /* Board Configuration */
 
-#define CONFIG_BOARD_NAME "demo"
+#define CONFIG_BOARD_NAME "firefly"
 /* CONFIG_USE_SPI_IOPAD is not set */
 /* CONFIG_USE_GPIO_IOPAD is not set */
 /* CONFIG_USE_CAN_IOPAD is not set */
@@ -70,7 +74,7 @@
 /* CONFIG_USE_TACHO_IOPAD is not set */
 /* CONFIG_USE_UART_IOPAD is not set */
 /* CONFIG_USE_THIRD_PARTY_IOPAD is not set */
-#define CONFIG_E2000Q_DEMO_BOARD
+#define CONFIG_FIREFLY_DEMO_BOARD
 
 /* IO mux configuration when board start up */
 
