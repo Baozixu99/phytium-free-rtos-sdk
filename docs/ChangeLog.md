@@ -1,3 +1,11 @@
+# Phytium FreeRTOS SDK 2025-03-14 ChangeLog
+
+Change Log since 2025-02-19
+
+## example
+
+- Update the openamp example to support linux startup and shutdown freertos application
+
 # Phytium FreeRTOS SDK 2025-02-19 ChangeLog
 
 Change Log since 2025-01-20

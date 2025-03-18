@@ -62,3 +62,7 @@ config_phytiumpi_aarch32:
 
 menuconfig_core0:
 	$(MAKE) menuconfig
+
+scp:
+	scp /mnt/d/tftpboot/openamp_core0.elf root@192.168.4.51:/lib/firmware/
+	

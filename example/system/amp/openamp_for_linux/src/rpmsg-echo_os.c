@@ -13,7 +13,7 @@
  * 
  * FilePath: rpmsg-echo_os.c
  * Created Date: 2022-02-25 09:12:07
- * Last Modified: 2024-07-17 09:17:44
+ * Last Modified: 2025-03-17 10:25:19
  * Description:  This file is for This file is for a sample demonstration application that showcases usage of rpmsg.
  *               This application is meant to run on the remote CPU running freertos code.
  *               This application echoes back data that was sent to it by the master core.
@@ -56,7 +56,26 @@
 #define OPENAMP_SLAVE_INFO(format, ...)  FT_DEBUG_PRINT_I(OPENAMP_SLAVE_DEBUG_TAG, format, ##__VA_ARGS__)
 #define OPENAMP_SLAVE_DEBUG(format, ...) FT_DEBUG_PRINT_D(OPENAMP_SLAVE_DEBUG_TAG, format, ##__VA_ARGS__)
 
-#define SHUTDOWN_MSG				0xEF56A55A
+#define MAX_DATA_LENGTH       (RPMSG_BUFFER_SIZE / 2)
+
+#define DEVICE_CORE_START     0x0001U /* 开始任务 */
+#define DEVICE_CORE_SHUTDOWN  0x0002U /* 关闭核心 */
+#define DEVICE_CORE_CHECK     0x0003U /* 检查消息 */
+/************************** Variable Definitions *****************************/
+static volatile int shutdown_req = 0;
+
+/*******************例程全局变量***********************************************/
+struct remoteproc remoteproc_slave_00;
+static struct rpmsg_device *rpdev_slave_00 = NULL;
+
+/* 协议数据结构 */
+typedef struct {
+    uint32_t command; /* 命令字，占4个字节 */
+    uint16_t length;  /* 数据长度，占2个字节 */
+    char data[MAX_DATA_LENGTH];       /* 数据内容，动态长度 */
+} ProtocolData;
+
+static ProtocolData protocol_data;
 
 /************************** 资源表定义，与linux协商一致 **********/
 static struct remote_resource_table __resource resources __attribute__((used)) = {
@@ -120,36 +139,104 @@ struct remoteproc_priv slave_00_priv = {
 	.share_mem_attribute = SLAVE00_SHARE_BUFFER_ATTRIBUTE
 } ;
 
-/*******************例程全局变量***********************************************/
-struct remoteproc remoteproc_slave_00;
-static struct rpmsg_device *rpdev_slave_00 = NULL;
-static int shutdown_req;
-static char temp_data[RPMSG_BUFFER_SIZE];
 /************************** Function Prototypes ******************************/
+/*协议解析接口*/
+int parse_protocol_data(const char* input, size_t input_size, ProtocolData* output) 
+{
+
+    if (input_size < 6) { /* 确保最小长度（命令字+数据长度）*/
+        return -1; /* 数据太短 */
+    }
+
+    /* 提取命令字 */
+    output->command = *((uint32_t*)input);
+    input += 4;
+
+    /* 提取数据长度 */
+    output->length = *((uint16_t*)input);
+    input += 2;
+
+    /* 检查数据长度是否超出预定义最大长度 */
+    if (output->length > MAX_DATA_LENGTH) {
+        return -2; // 数据长度超出限制
+    }
+
+    /* 复制数据内容 */
+    memcpy(output->data, input, output->length);
+
+    return 0; /* 解析成功 */
+}
+
+/*协议组装接口*/
+int assemble_protocol_data(const ProtocolData* input, char* output, size_t* output_size) 
+{
+    /* 检查预期的输出大小是否超出最大长度 */
+    if (6 + input->length > MAX_DATA_LENGTH) {
+        return -1; /* 数据长度超出限制 */
+    }
+
+    *output_size = 6 + input->length; /* 命令字+长度+数据 */
+
+    /* 组装命令字 */
+    *((uint32_t*)output) = input->command;
+
+    /* 组装数据长度 */
+    *((uint16_t*)(output + 4)) = input->length;
+
+    /* 复制数据内容 */
+    memcpy(output + 6, input->data, input->length);
+
+    return 0; /* 组装成功 */
+}
+
 /*-----------------------------------------------------------------------------*
  *  RPMSG endpoint callbacks
  *-----------------------------------------------------------------------------*/
 static int rpmsg_endpoint_cb(struct rpmsg_endpoint *ept, void *data, size_t len, uint32_t src, void *priv)
 {
 	(void)priv;
-	(void)src;
-	/* On reception of a shutdown we signal the application to terminate */
-	if ((*(unsigned int *)data) == SHUTDOWN_MSG) {
-		OPENAMP_SLAVE_INFO("shutdown message is received.");
-		shutdown_req = 1;
-		return RPMSG_SUCCESS;
-	}
+    (void)src;
 
-    memset(temp_data,0,len) ;
-    memcpy(temp_data,data,len) ;
-	/* Send temp_data back to master */
-    /* 请勿直接对data指针对应的内存进行写操作，操作vring中remoteproc发送通道分配的内存，引发错误的问题*/
-	
-	/* Send data back to master */
-	if (rpmsg_send(ept, temp_data, len) < 0)
-		OPENAMP_SLAVE_ERROR("rpmsg_send failed!!!\r\n");
+    int ret;
+    (void)priv;
+    OPENAMP_SLAVE_INFO("src:0x%x",src);
+    ept->dest_addr = src;
 
-	return RPMSG_SUCCESS;
+    ret = parse_protocol_data((char *)data, len, &protocol_data);
+    if(ret != 0)
+    {
+        OPENAMP_SLAVE_ERROR("parse protocol data error,ret:%d",ret);
+        return RPMSG_SUCCESS;/* 解析失败，忽略数据 */
+    }
+    OPENAMP_SLAVE_INFO("command:0x%x,length:%d.",protocol_data.command,protocol_data.length);
+    switch (protocol_data.command)
+    {
+        case DEVICE_CORE_START:
+        {
+            break;
+        }
+        case DEVICE_CORE_SHUTDOWN:
+        {
+            shutdown_req = 1;
+            break;
+        }
+        case DEVICE_CORE_CHECK:
+        {
+            /* Send temp_data back to master */
+            /* 请勿直接对data指针对应的内存进行写操作，操作vring中remoteproc发送通道分配的内存，引发错误的问题*/
+            ret = rpmsg_send(ept, &protocol_data, len);
+            if (ret < 0)
+            {
+                OPENAMP_SLAVE_ERROR("rpmsg_send failed.\r\n");
+                return ret;
+            }
+            break;
+        }
+        default:
+            break;
+    }
+
+    return RPMSG_SUCCESS;
 }
 
 static void rpmsg_service_unbind(struct rpmsg_endpoint *ept)
@@ -183,8 +270,9 @@ static int FRpmsgEchoApp(struct rpmsg_device *rdev, void *priv)
     {
         platform_poll(priv);
         /* we got a shutdown request, exit */
-        if (shutdown_req)
+        if (shutdown_req || rproc_get_stop_flag())
         {
+	        rproc_clear_stop_flag();
             break;
         }
     }
@@ -257,19 +345,18 @@ int RpmsgEchoTask(void * args)
         if (ret)
         {
             OPENAMP_SLAVE_ERROR("Failed to running echoapp");
-            return platform_cleanup(&remoteproc_slave_00);
+            platform_cleanup(&remoteproc_slave_00);
         }
         platform_release_rpmsg_vdev(rpdev_slave_00, &remoteproc_slave_00);
         OPENAMP_SLAVE_INFO("Stopping application...");
         platform_cleanup(&remoteproc_slave_00);
-        return ret;
     }
     else
     {
         platform_cleanup(&remoteproc_slave_00);
         OPENAMP_SLAVE_ERROR("Failed to init remoteproc.\r\n");
     }
-    vTaskDelete(NULL);
+    FPsciCpuOff();
 }
 
 int rpmsg_echo_task(void)
