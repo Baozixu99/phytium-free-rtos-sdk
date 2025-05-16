@@ -174,7 +174,8 @@ static boolean DdmaSpiLoopbackWaitDmaEnd(void)
     boolean ret = TRUE;
     u32 ulNotifiedValue;
     u32 wait_bits = BIT(rx_chan_id) | BIT(tx_chan_id);
-    xTaskNotifyWait(pdFALSE, 0xffffffff, &ulNotifiedValue,WAIT_DMA_DONE_TICKS);
+
+    xTaskNotifyWait(pdFALSE, 0xffffffff, &ulNotifiedValue, WAIT_DMA_DONE_TICKS);
     if ((ulNotifiedValue & wait_bits) == wait_bits)
     {
         FDDMA_INFO("DDMA transfer success.");
@@ -276,19 +277,24 @@ static int DdmaSpiLoopbackCheckRecvData(u32 trans_len)
 }
 
 static void DdmaTask(void *pvParameters)
-{
+{   
+    ddma_trans_task = xTaskGetCurrentTaskHandle();
+
     int i=0;
     int ret = FFREERTOS_DDMA_OK;
     uint32_t notify_result;
-    ddma_trans_task = xTaskGetCurrentTaskHandle();
     uint32_t* trans_len_addr = (uint32_t*)pvParameters;
+
     u32 trans_len = *trans_len_addr;
     FASSERT_MSG((trans_len <= TX_RX_BUF_LEN) && (trans_len % 4 == 0), "Trans_len is wrong.");
+
+    /*set test mode */
     FFreeRTOSSpimConifg spim_config;
     spim_config.spi_mode = FFREERTOS_SPIM_MODE_0;
     spim_config.en_dma = TRUE;
-    /*set test mode */
     spim_config.inner_loopback = TRUE;
+
+    /* test loop */
     for(i = 0; i < LOOPBACK_TIMES; i++)
     {
         SpimDdmaInit(spim_config, trans_len);
@@ -298,12 +304,12 @@ static void DdmaTask(void *pvParameters)
             goto task_ret;
         }
         
+        vTaskDelay(100); /* insure RX is done */
         if(!DdmaSpiLoopbackWaitDmaEnd())
         {
             ret = FFREERTOS_DDMA_TRANSFER_FAIL;
             goto task_ret;
         }
-
 
         /* check recv data is right*/
         ret = DdmaSpiLoopbackCheckRecvData(trans_len);
@@ -315,6 +321,7 @@ static void DdmaTask(void *pvParameters)
     }
 
 task_ret:
+    SpimDdmaDeinit();
     xQueueSend(xQueue, &ret, 0);
     vTaskDelete(NULL);
 }

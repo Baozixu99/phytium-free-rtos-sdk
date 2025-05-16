@@ -111,7 +111,7 @@ FError FFreeRTOSSetupI2S(FFreeRTOSI2s *os_i2s_p)
     FASSERT(os_i2s_p);
     FI2s *ctrl = &os_i2s_p->i2s_ctrl;
     FError err = FT_SUCCESS;
-    err =  FI2sClkOutDiv(ctrl); /* 默认16-bits采集 */
+    err =  FI2sClkOutDiv(ctrl, FI2S_SAMPLE_RATE_CD); /* 默认16-bits采集 */
     if (FT_SUCCESS != err)
     {
         FI2S_ERROR("Set i2s failed, err: 0x%x!!!", err);

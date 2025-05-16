@@ -33,7 +33,7 @@ extern "C"
 #endif
 #if defined(CONFIG_E2000Q_DEMO_BOARD) || defined(CONFIG_E2000D_DEMO_BOARD)
 #define SFUD_FLASH_INDEX  SFUD_FSPIM2_INDEX
-#elif defined (CONFIG_FIREFLY_DEMO_BOARD)
+#else
 #define SFUD_FLASH_INDEX  SFUD_FSPIM0_INDEX
 #endif
 /***************************** Include Files *********************************/

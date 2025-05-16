@@ -35,14 +35,13 @@ extern "C"
 
 /************************** Constant Definitions *****************************/
 #if defined(CONFIG_FIREFLY_DEMO_BOARD)
-#define PWM_TEST_ID FPWM3_ID
+#define PWM_TEST_ID FPWM1_ID
 #define PWM_TEST_CHANNEL     FPWM_CHANNEL_0
 #elif defined(CONFIG_PD2308_DEMO_BOARD)
 #define PWM_TEST_ID FPWM0_ID
 #define PWM_TEST_CHANNEL     FPWM_CHANNEL_0
 #else
-#define PWM_TEST_ID FPWM2_ID
-#define PWM_TEST_CHANNEL     FPWM_CHANNEL_1
+#error "Please select a valid board"
 #endif
 
 /* pwm test */

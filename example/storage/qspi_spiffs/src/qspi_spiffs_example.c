@@ -71,7 +71,7 @@ enum
 #define FSPIFFS_DEBUG(format, ...)   FT_DEBUG_PRINT_D(FSPIFFS_DEBUG_TAG, format, ##__VA_ARGS__)
 
 /* spiffs start address and size */
-#if defined(CONFIG_E2000D_DEMO_BOARD) || defined(CONFIG_E2000Q_DEMO_BOARD) || defined(CONFIG_FIREFLY_DEMO_BOARD)
+#if defined(CONFIG_E2000D_DEMO_BOARD) || defined(CONFIG_E2000Q_DEMO_BOARD) || defined(CONFIG_FIREFLY_DEMO_BOARD) || defined(CONFIG_PD2308_DEMO_BOARD)
 #define FSPIFFS_START_ADDR      (3 * SZ_1M)
 #elif defined(CONFIG_FT2004_DSK_BOARD) || defined(CONFIG_D2000_TEST_BOARD)
 #define FSPIFFS_START_ADDR      (7 * SZ_1M)

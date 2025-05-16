@@ -13,6 +13,10 @@ ifdef CONFIG_FIREFLY_DEMO_BOARD
 USER_CSRC += src/i2c_ms_example.c
 endif
 
+ifdef CONFIG_PD2308_DEMO_BOARD
+USER_CSRC += src/i2c_ms_example.c
+endif
+
 ifdef CONFIG_E2000Q_DEMO_BOARD
 USER_CSRC += src/i2c_rtc_example.c
 endif
@@ -41,3 +45,4 @@ ifdef CONFIG_OUTPUT_BINARY
 	@cp ./$(IMAGE_OUT_NAME).bin $(USR_BOOT_DIR)/freertos.bin
 endif
 	@ls $(USR_BOOT_DIR)/$(BOOT_IMG_NAME).* -l
+	@$(MAKE) -s check_standalone_version

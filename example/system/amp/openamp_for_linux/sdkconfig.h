@@ -3,10 +3,10 @@
 
 /* Project Configuration */
 
-/*  Freertos Configuration */
+/*  FreeRTOS Configuration */
 
 #define CONFIG_TARGET_NAME "openamp_for_linux"
-/* end of  Freertos Configuration */
+/* end of  FreeRTOS Configuration */
 /* end of Project Configuration */
 #define CONFIG_USE_FREERTOS
 
@@ -17,31 +17,26 @@
 
 /* Arm architecture configuration */
 
-/* CONFIG_ARCH_ARMV8_AARCH64 is not set */
-#define CONFIG_ARCH_ARMV8_AARCH32
+#define CONFIG_ARCH_ARMV8_AARCH64
+/* CONFIG_ARCH_ARMV8_AARCH32 is not set */
 
 /* Compiler configuration */
 
 #define CONFIG_ARM_GCC_SELECT
 /* CONFIG_ARM_CLANG_SELECT is not set */
 #define CONFIG_TOOLCHAIN_NAME "gcc"
-#define CONFIG_TARGET_ARMV8_AARCH32
-#define CONFIG_ARCH_EXECUTION_STATE "aarch32"
-
-/* Fpu configuration */
-
-#define CONFIG_CRYPTO_NEON_FP_ARMV8
-/* CONFIG_VFPV4 is not set */
-/* CONFIG_VFPV4_D16 is not set */
-/* CONFIG_VFPV3 is not set */
-/* CONFIG_VFPV3_D16 is not set */
-#define CONFIG_ARM_MFPU "crypto-neon-fp-armv8"
-#define CONFIG_MFLOAT_ABI_HARD
-/* CONFIG_MFLOAT_ABI_SOFTFP is not set */
-#define CONFIG_ARM_MFLOAT_ABI "hard"
-/* end of Fpu configuration */
+#define CONFIG_TARGET_ARMV8_AARCH64
+#define CONFIG_ARCH_EXECUTION_STATE "aarch64"
+#define CONFIG_ARM_NEON
+#define CONFIG_ARM_CRC
+#define CONFIG_ARM_CRYPTO
+#define CONFIG_ARM_FLOAT_POINT
+/* CONFIG_GCC_CODE_MODEL_TINY is not set */
+#define CONFIG_GCC_CODE_MODEL_SMALL
+/* CONFIG_GCC_CODE_MODEL_LARGE is not set */
 /* end of Compiler configuration */
-#define CONFIG_USE_AARCH64_L1_TO_AARCH32
+/* CONFIG_BOOT_WITH_FLUSH_CACHE is not set */
+/* CONFIG_MMU_DEBUG_PRINTS is not set */
 /* end of Arm architecture configuration */
 
 /* multi-core system deployment framework */
@@ -49,22 +44,21 @@
 /* CONFIG_USE_MSDF is not set */
 /* end of multi-core system deployment framework */
 #define CONFIG_MMU_PAGE_SIZE 0x1000
-#define CONFIG_FMMU_NUM_L2_TABLES 256
+#define CONFIG_MAX_XLAT_TABLES 256
 /* CONFIG_ENABLE_GIC_ITS is not set */
 /* end of Arch configuration */
 
 /* Soc configuration */
 
-/* CONFIG_TARGET_PHYTIUMPI is not set */
-#define CONFIG_TARGET_E2000Q
+#define CONFIG_TARGET_PHYTIUMPI
+/* CONFIG_TARGET_E2000Q is not set */
 /* CONFIG_TARGET_E2000D is not set */
 /* CONFIG_TARGET_E2000S is not set */
 /* CONFIG_TARGET_FT2004 is not set */
 /* CONFIG_TARGET_D2000 is not set */
 /* CONFIG_TARGET_PD2308 is not set */
 /* CONFIG_TARGET_QEMU_VIRT is not set */
-#define CONFIG_SOC_NAME "e2000"
-#define CONFIG_TARGET_TYPE_NAME "q"
+#define CONFIG_SOC_NAME "phytiumpi"
 #define CONFIG_SOC_CORE_NUM 4
 #define CONFIG_F32BIT_MEMORY_ADDRESS 0x80000000
 #define CONFIG_F32BIT_MEMORY_LENGTH 0x80000000
@@ -78,7 +72,7 @@
 
 /* Board Configuration */
 
-#define CONFIG_BOARD_NAME "demo"
+#define CONFIG_BOARD_NAME "firefly"
 /* CONFIG_USE_SPI_IOPAD is not set */
 /* CONFIG_USE_GPIO_IOPAD is not set */
 /* CONFIG_USE_CAN_IOPAD is not set */
@@ -88,7 +82,7 @@
 /* CONFIG_USE_TACHO_IOPAD is not set */
 /* CONFIG_USE_UART_IOPAD is not set */
 /* CONFIG_USE_THIRD_PARTY_IOPAD is not set */
-#define CONFIG_E2000Q_DEMO_BOARD
+#define CONFIG_FIREFLY_DEMO_BOARD
 
 /* IO mux configuration when board start up */
 
@@ -198,88 +192,83 @@
 #define CONFIG_IMAGE_LOAD_ADDRESS 0xb0100000
 #define CONFIG_IMAGE_MAX_LENGTH 0x2000000
 #define CONFIG_HEAP_SIZE 1
-#define CONFIG_SVC_STACK_SIZE 0x1000
-#define CONFIG_SYS_STACK_SIZE 0x1000
-#define CONFIG_IRQ_STACK_SIZE 0x1000
-#define CONFIG_ABORT_STACK_SIZE 0x1000
-#define CONFIG_FIQ_STACK_SIZE 0x1000
-#define CONFIG_UNDEF_STACK_SIZE 0x1000
+#define CONFIG_STACK_SIZE 0x400
 /* end of Linker Options */
 /* end of Build setup */
 
 /* Component Configuration */
 
-/* Freertos Uart Drivers */
+/* FreeRTOS Uart Drivers */
 
 #define CONFIG_FREERTOS_USE_UART
-/* end of Freertos Uart Drivers */
+/* end of FreeRTOS Uart Drivers */
 
-/* Freertos Pwm Drivers */
+/* FreeRTOS Pwm Drivers */
 
 /* CONFIG_FREERTOS_USE_PWM is not set */
-/* end of Freertos Pwm Drivers */
+/* end of FreeRTOS Pwm Drivers */
 
-/* Freertos Qspi Drivers */
+/* FreeRTOS Qspi Drivers */
 
 /* CONFIG_FREERTOS_USE_QSPI is not set */
-/* end of Freertos Qspi Drivers */
+/* end of FreeRTOS Qspi Drivers */
 
-/* Freertos Wdt Drivers */
+/* FreeRTOS Wdt Drivers */
 
 /* CONFIG_FREERTOS_USE_WDT is not set */
-/* end of Freertos Wdt Drivers */
+/* end of FreeRTOS Wdt Drivers */
 
-/* Freertos Eth Drivers */
+/* FreeRTOS Eth Drivers */
 
 /* CONFIG_FREERTOS_USE_XMAC is not set */
 /* CONFIG_FREERTOS_USE_GMAC is not set */
-/* end of Freertos Eth Drivers */
+/* end of FreeRTOS Eth Drivers */
 
-/* Freertos Spim Drivers */
+/* FreeRTOS Spim Drivers */
 
 /* CONFIG_FREERTOS_USE_FSPIM is not set */
-/* end of Freertos Spim Drivers */
+/* end of FreeRTOS Spim Drivers */
 
-/* Freertos DMA Drivers */
+/* FreeRTOS DMA Drivers */
 
 /* CONFIG_FREERTOS_USE_FDDMA is not set */
 /* CONFIG_FREERTOS_USE_FGDMA is not set */
-/* end of Freertos DMA Drivers */
+/* end of FreeRTOS DMA Drivers */
 
-/* Freertos Adc Drivers */
+/* FreeRTOS Adc Drivers */
 
 /* CONFIG_FREERTOS_USE_ADC is not set */
-/* end of Freertos Adc Drivers */
+/* end of FreeRTOS Adc Drivers */
 
-/* Freertos Can Drivers */
+/* FreeRTOS Can Drivers */
 
 /* CONFIG_FREERTOS_USE_CAN is not set */
-/* end of Freertos Can Drivers */
+/* end of FreeRTOS Can Drivers */
 
-/* Freertos I2c Drivers */
+/* FreeRTOS I2c Drivers */
 
 /* CONFIG_FREERTOS_USE_I2C is not set */
-/* end of Freertos I2c Drivers */
+/* end of FreeRTOS I2c Drivers */
 
-/* Freertos Mio Drivers */
+/* FreeRTOS Mio Drivers */
 
 /* CONFIG_FREERTOS_USE_MIO is not set */
-/* end of Freertos Mio Drivers */
+/* end of FreeRTOS Mio Drivers */
 
-/* Freertos Timer Drivers */
+/* FreeRTOS Timer Drivers */
 
 /* CONFIG_FREERTOS_USE_TIMER is not set */
-/* end of Freertos Timer Drivers */
+/* end of FreeRTOS Timer Drivers */
 
-/* Freertos Media Drivers */
+/* FreeRTOS Media Drivers */
 
 /* CONFIG_FREERTOS_USE_MEDIA is not set */
-/* end of Freertos Media Drivers */
+/* end of FreeRTOS Media Drivers */
 
-/* Freertos I2s Drivers */
+/* FreeRTOS I2s Drivers */
 
 /* CONFIG_FREERTOS_USE_I2S is not set */
-/* end of Freertos I2s Drivers */
+/* end of FreeRTOS I2s Drivers */
 /* end of Component Configuration */
 
 /* Third-party configuration */

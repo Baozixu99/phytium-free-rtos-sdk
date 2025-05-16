@@ -4,11 +4,11 @@
 #
 
 
-mainmenu "Phytium Freertos Configuration"
+mainmenu "Phytium FreeRTOS Configuration"
 
 	menu "Project Configuration"
 
-		menu " Freertos Configuration"
+		menu " FreeRTOS Configuration"
 		config TARGET_NAME
 			string "Build Target Name"
 			default "openamp_for_linux"

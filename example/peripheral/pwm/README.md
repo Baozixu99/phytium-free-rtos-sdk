@@ -2,7 +2,7 @@
 
 ## 1. 例程介绍
 
-注:E2000共有8个PWM控制器(PWM0~PWM7)，每个PWM控制器对应两路CHANNEL
+注:飞腾派有2个PWM控制器，每个PWM控制器对应两路CHANNEL。
 
 PWM单通道测试例程 (pwm_single_channel_example.c)
 
@@ -35,36 +35,22 @@ PWM双通道测试例程 (pwm_dual_channel_example.c)
 
 本例程需要以下硬件，
 
-- E2000D/Q demo板，PhytiumPi
+- 飞腾派
 - 串口线和串口上位机
 - 逻辑分析仪/示波器
 - 杜邦线
+
 ### 2.1 硬件配置方法
 
-### 2.1.1 E2000
-- E2000 demo板需外接逻辑分析仪或示波器测试，方法如下
+PhytiumPI: 飞腾派有以下引脚可供PWM使用
 
-- 选择控制器PWM2的pwm5_dat_out(CHANNEL1)作为输出，对应开发板上J30引脚3
+| **引脚** | **控制器与通道** |
+| :------------: | :--------------------- |
+|   J1 PIN_32   | PWM1 channel0          |
 
-![e2000_pwm](./figs/e2000_pwm.png)
+GND为J1 PIN_39
 
-- 上图所示为E2000 J30组引脚，将pwm_out与GND与逻辑分析仪或示波器相连即可
-
-### 2.1.2 PhytiumPi
-- PhytiumPi需外接逻辑分析仪或示波器测试，方法如下
-
-PhytiumPI:飞腾派引出多个引脚可供PWM使用
-
-|   **引脚**    | **控制器与通道** |
-| :----------:  | :----------------- |
-|  J1 PIN_32    | PWM1 CHANNEL0 |
-|  J1 PIN_33    | PWM2 CHANNEL1 |
-|  J1 PIN_7     | PWM3 CHANNEL0 |
-|  J2 PIN_4     | PWM3 CHANNEL1 |
-|  J1 PIN_3     | PWM4 CHANNEL0 |
-|  J1 PIN_8     | PWM4 CHANNEL1 |
-|  J1 PIN_16    | PWM5 CHANNEL0 |
-|  J1 PIN_27    | PWM6 CHANNEL1 |
+使用逻辑分析仪/示波器连接channel引脚和GND，开始测试。
 
 ### 2.2 SDK配置方法
 
@@ -159,6 +145,6 @@ pwm双通道测试对应波形
 - 如默认用例无法使用或无波形输出，请根据不同的开发板，修改`pwm_common.h`文件中`PWM_TEST_ID`和`PWM_TEST_CHANNEL`两个宏定义，确保`FIOPadSetPwmMux`引脚复用设置正确
 - PWM双通道测试例程，默认使用两个通道观测。
 - PWM死区测试例程中，`PWM_TEST_CHANNEL`决定死区输入源，另一个CHANNEL作为输出源。
+- 飞腾派只支持单通道测试。
 
-- E2000 DEMO V0.8板无法使用PWM4至PWM7，故无法进行本用例
 ## 4. 修改历史记录

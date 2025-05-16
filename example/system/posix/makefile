@@ -27,3 +27,4 @@ ifdef CONFIG_OUTPUT_BINARY
 	@cp ./$(IMAGE_OUT_NAME).bin $(USR_BOOT_DIR)/$(BOOT_IMG_NAME).bin
 endif
 	@ls $(USR_BOOT_DIR)/$(BOOT_IMG_NAME).* -l
+	@$(MAKE) -s check_standalone_version

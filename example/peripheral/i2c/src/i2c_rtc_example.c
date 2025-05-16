@@ -66,7 +66,7 @@
 #define DAT_LENGTH 15
 static char data_r0[DAT_LENGTH];
 
-#define TIMER_OUT (pdMS_TO_TICKS(5000UL))
+#define TIMER_OUT (pdMS_TO_TICKS(8000UL))
 enum
 {
     I2C_RTC_TEST_SUCCESS = 0,
@@ -358,7 +358,7 @@ static void FFreeRTOSI2cRtcTask(void *pvParameters)
         task_res = I2C_RTC_WRITE_FAILURE;
         goto task_exit;
     }
-    for (int i = 0; i < 2; i++)
+    for (int i = 0; i < 5; i++)
     {
         ret = I2cRead(os_i2c_master);
         if (ret != FREERTOS_I2C_SUCCESS)

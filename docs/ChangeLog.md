@@ -1,3 +1,50 @@
+# Phytium FreeRTOS SDK 2025-05-16 ChangeLog
+
+Change Log since 2025-05-12
+
+## example
+
+- Modify pwm, i2c, timer_tacho examples
+
+## third-party
+
+- Improve SVC exception handling
+
+# Phytium FreeRTOS SDK 2025-05-08 ChangeLog
+
+Change Log since 2025-05-06
+
+## example
+
+- Add PD2308 configs to most examples
+- solve ddma example RX timeout problem
+
+# Phytium FreeRTOS SDK 2025-04-28 ChangeLog
+
+Change Log since 2025-04-25
+
+## tools
+
+- Added new makefile cmd to support AMP auto test
+
+# Phytium FreeRTOS SDK 2025-04-25 ChangeLog
+
+Change Log since 2025-04-24
+
+## install.py
+
+- Added standalone version check during environment deployment and image compilation
+
+# Phytium FreeRTOS SDK 2025-04-17 ChangeLog
+
+Change Log since 2025-03-19
+
+## third-party
+
+- Upgraded the FreeRTOS kernel to V11.1.0
+- Added FreeRTOS version information to the shell startup message
+- Standardized the FreeRTOS naming convention
+
 # Phytium FreeRTOS SDK 2025-03-14 ChangeLog
 
 Change Log since 2025-02-19

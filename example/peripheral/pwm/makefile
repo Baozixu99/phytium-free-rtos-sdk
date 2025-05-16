@@ -10,11 +10,9 @@ USER_CSRC := main.c
 USER_CSRC += src/cmd_pwm.c
 
 USER_CSRC += src/pwm_single_channel_example.c
-
-ifdef CONFIG_FIREFLY_DEMO_BOARD
 USER_CSRC += src/pwm_dead_band_example.c
 USER_CSRC += src/pwm_dual_channel_example.c
-endif
+
 			
 USER_ASRC := 
 USER_CXXSRC := 
@@ -36,3 +34,4 @@ ifdef CONFIG_OUTPUT_BINARY
 	@cp ./$(IMAGE_OUT_NAME).bin $(USR_BOOT_DIR)/freertos.bin
 endif
 	@ls $(USR_BOOT_DIR)/$(BOOT_IMG_NAME).* -l
+	@$(MAKE) -s check_standalone_version

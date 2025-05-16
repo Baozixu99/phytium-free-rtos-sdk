@@ -70,7 +70,7 @@ E2000Q对应的配置项是：
 - 在host侧完成配置
 >配置成E2000D，对于其它平台，使用对应的默认配置，如E2000d 32位:
 ```
-$ make load_kconfigl = e2000d_aarch32_demo_i2s
+$ make load_kconfig = e2000d_aarch32_demo_i2s
 ```
 
 - 在host侧完成构建
@@ -104,7 +104,7 @@ bootelf -p 0x90100000
 - 使用E2000 demo板测试时，使用命令：
 
 ```
-i2s init
+i2s example
 
 ```
 

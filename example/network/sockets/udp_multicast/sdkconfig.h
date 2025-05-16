@@ -52,6 +52,7 @@
 /* end of multi-core system deployment framework */
 #define CONFIG_MMU_PAGE_SIZE 0x1000
 #define CONFIG_MAX_XLAT_TABLES 256
+/* CONFIG_ENABLE_GIC_ITS is not set */
 /* end of Arch configuration */
 
 /* Soc configuration */
@@ -213,84 +214,84 @@
 
 /* Component Configuration */
 
-/* Freertos Uart Drivers */
+/* FreeRTOS Uart Drivers */
 
 #define CONFIG_FREERTOS_USE_UART
-/* end of Freertos Uart Drivers */
+/* end of FreeRTOS Uart Drivers */
 
-/* Freertos Pwm Drivers */
+/* FreeRTOS Pwm Drivers */
 
 /* CONFIG_FREERTOS_USE_PWM is not set */
-/* end of Freertos Pwm Drivers */
+/* end of FreeRTOS Pwm Drivers */
 
-/* Freertos Qspi Drivers */
+/* FreeRTOS Qspi Drivers */
 
 /* CONFIG_FREERTOS_USE_QSPI is not set */
-/* end of Freertos Qspi Drivers */
+/* end of FreeRTOS Qspi Drivers */
 
-/* Freertos Wdt Drivers */
+/* FreeRTOS Wdt Drivers */
 
 /* CONFIG_FREERTOS_USE_WDT is not set */
-/* end of Freertos Wdt Drivers */
+/* end of FreeRTOS Wdt Drivers */
 
-/* Freertos Eth Drivers */
+/* FreeRTOS Eth Drivers */
 
 #define CONFIG_FREERTOS_USE_XMAC
 /* CONFIG_FREERTOS_USE_GMAC is not set */
-/* end of Freertos Eth Drivers */
+/* end of FreeRTOS Eth Drivers */
 
-/* Freertos Spim Drivers */
+/* FreeRTOS Spim Drivers */
 
 /* CONFIG_FREERTOS_USE_FSPIM is not set */
-/* end of Freertos Spim Drivers */
+/* end of FreeRTOS Spim Drivers */
 
-/* Freertos DMA Drivers */
+/* FreeRTOS DMA Drivers */
 
 /* CONFIG_FREERTOS_USE_FDDMA is not set */
 /* CONFIG_FREERTOS_USE_FGDMA is not set */
-/* end of Freertos DMA Drivers */
+/* end of FreeRTOS DMA Drivers */
 
-/* Freertos Adc Drivers */
+/* FreeRTOS Adc Drivers */
 
 /* CONFIG_FREERTOS_USE_ADC is not set */
-/* end of Freertos Adc Drivers */
+/* end of FreeRTOS Adc Drivers */
 
-/* Freertos Can Drivers */
+/* FreeRTOS Can Drivers */
 
 /* CONFIG_FREERTOS_USE_CAN is not set */
-/* end of Freertos Can Drivers */
+/* end of FreeRTOS Can Drivers */
 
-/* Freertos I2c Drivers */
+/* FreeRTOS I2c Drivers */
 
 /* CONFIG_FREERTOS_USE_I2C is not set */
-/* end of Freertos I2c Drivers */
+/* end of FreeRTOS I2c Drivers */
 
-/* Freertos Mio Drivers */
+/* FreeRTOS Mio Drivers */
 
 /* CONFIG_FREERTOS_USE_MIO is not set */
-/* end of Freertos Mio Drivers */
+/* end of FreeRTOS Mio Drivers */
 
-/* Freertos Timer Drivers */
+/* FreeRTOS Timer Drivers */
 
 /* CONFIG_FREERTOS_USE_TIMER is not set */
-/* end of Freertos Timer Drivers */
+/* end of FreeRTOS Timer Drivers */
 
-/* Freertos Media Drivers */
+/* FreeRTOS Media Drivers */
 
 /* CONFIG_FREERTOS_USE_MEDIA is not set */
-/* end of Freertos Media Drivers */
+/* end of FreeRTOS Media Drivers */
 
-/* Freertos I2s Drivers */
+/* FreeRTOS I2s Drivers */
 
 /* CONFIG_FREERTOS_USE_I2S is not set */
-/* end of Freertos I2s Drivers */
+/* end of FreeRTOS I2s Drivers */
 /* end of Component Configuration */
 
 /* Third-party configuration */
 
 #define CONFIG_USE_LWIP
 
-/* LWIP Freertos Port Configuration */
+/* LWIP FreeRTOS Port Configuration */
 
 /* LWIP Configuration */
 
@@ -496,7 +497,7 @@
 #define CONFIG_LWIP_PORT_DHCP_STACKSIZE 4096
 #define CONFIG_LWIP_PORT_DHCP_PRIORITY 5
 /* end of lwip port thread Configuration */
-/* end of LWIP Freertos Port Configuration */
+/* end of LWIP FreeRTOS Port Configuration */
 /* CONFIG_USE_MBEDTLS is not set */
 #define CONFIG_USE_LETTER_SHELL
 

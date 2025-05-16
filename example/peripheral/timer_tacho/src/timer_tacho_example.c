@@ -38,11 +38,7 @@
 
 
 /************************** Constant Definitions *****************************/
-#ifdef CONFIG_FIREFLY_DEMO_BOARD
-    #define TACHO_INSTANCE_NUM 3U
-#else
-    #define TACHO_INSTANCE_NUM 12U
-#endif
+#define TACHO_INSTANCE_NUM 1
 
 #define TIMER_TACHO_TEST_TASK_PRIORITY  3
 

@@ -52,6 +52,9 @@ static const u32 output_pin_index = FGPIO_ID(FGPIO_CTRL_4, FGPIO_PIN_13);
 #elif defined(CONFIG_E2000D_DEMO_BOARD) || defined(CONFIG_E2000Q_DEMO_BOARD)
 static const u32 input_pin_index = FGPIO_ID(FGPIO_CTRL_4, FGPIO_PIN_11);
 static const u32 output_pin_index = FGPIO_ID(FGPIO_CTRL_4, FGPIO_PIN_12);
+#elif defined(CONFIG_PD2308_DEMO_BOARD)
+static const u32 input_pin_index = FGPIO_ID(FGPIO_CTRL_0, FGPIO_PIN_8);
+static const u32 output_pin_index = FGPIO_ID(FGPIO_CTRL_0, FGPIO_PIN_10);
 #elif defined(CONFIG_D2000_TEST_BOARD)
 static const u32 input_pin_index = FGPIO_ID(FGPIO_CTRL_1, FGPIO_PORT_A, FGPIO_PIN_6);
 static const u32 output_pin_index = FGPIO_ID(FGPIO_CTRL_1, FGPIO_PORT_A, FGPIO_PIN_7);

@@ -8,6 +8,7 @@ stages:
   - pre_stage     # 准备阶段
   - compile_stage # 编译阶段
   - test_stage    # 测试阶段
+  - loop_test_stage # 循环测试阶段
   - report_stage  # 测试报表生成阶段
   - post_stage    # 收尾阶段
 
@@ -161,6 +162,67 @@ system_test:
   allow_failure: true
   when: manual
 
+loop_test:
+  stage: loop_test_stage
+  script:
+    - sleep 1
+    - echo TEST_PROJECT_DIR = "$TEST_PROJECT_DIR"
+    - echo LOOP_COUNT = "$LOOP_COUNT"
+    - cd /home/gitlab-runner/test_tool
+    - python3 set_common_info.py /home/gitlab-runner/test_tool/phytium-test-tools/test_tool/config_info/common.json freertos
+    - cd /home/gitlab-runner/test_tool/phytium-test-tools/test_tool
+    - python3 gitlab_pipeline_board_test.py $CI_PROJECT_DIR $CI_PROJECT_DIR/example/$TEST_PROJECT_DIR $LOOP_COUNT
+  tags:
+    - test
+  allow_failure: true
+  when: manual
+
+loop_test1:
+  stage: loop_test_stage
+  script:
+    - sleep 1
+    - echo TEST_PROJECT_DIR1= "$TEST_PROJECT_DIR1"
+    - echo LOOP_COUNT1 = "$LOOP_COUNT1"
+    - cd /home/gitlab-runner/test_tool
+    - python3 set_common_info.py /home/gitlab-runner/test_tool/phytium-test-tools/test_tool/config_info/common.json freertos
+    - cd /home/gitlab-runner/test_tool/phytium-test-tools/test_tool
+    - python3 gitlab_pipeline_board_test.py $CI_PROJECT_DIR $CI_PROJECT_DIR/example/$TEST_PROJECT_DIR1 $LOOP_COUNT1
+  tags:
+    - test
+  allow_failure: true
+  when: manual
+  
+loop_test2:
+  stage: loop_test_stage
+  script:
+    - sleep 1
+    - echo TEST_PROJECT_DIR2 = "$TEST_PROJECT_DIR2"
+    - echo LOOP_COUNT2 = "$LOOP_COUNT2"
+    - cd /home/gitlab-runner/test_tool
+    - python3 set_common_info.py /home/gitlab-runner/test_tool/phytium-test-tools/test_tool/config_info/common.json freertos
+    - cd /home/gitlab-runner/test_tool/phytium-test-tools/test_tool
+    - python3 gitlab_pipeline_board_test.py $CI_PROJECT_DIR $CI_PROJECT_DIR/example/$TEST_PROJECT_DIR2 $LOOP_COUNT2
+  tags:
+    - test
+  allow_failure: true
+  when: manual
+
+loop_test3:
+  stage: loop_test_stage
+  script:
+    - sleep 1
+    - echo TEST_PROJECT_DIR3 = "$TEST_PROJECT_DIR3"
+    - echo LOOP_COUNT3 = "$LOOP_COUNT3"
+    - cd /home/gitlab-runner/test_tool
+    - python3 set_common_info.py /home/gitlab-runner/test_tool/phytium-test-tools/test_tool/config_info/common.json freertos
+    - cd /home/gitlab-runner/test_tool/phytium-test-tools/test_tool
+    - python3 gitlab_pipeline_board_test.py $CI_PROJECT_DIR $CI_PROJECT_DIR/example/$TEST_PROJECT_DIR3 $LOOP_COUNT3
+  tags:
+    - test
+  allow_failure: true
+  when: manual
+  
+  
   # 测试报表生成
 update_report:
   stage: report_stage

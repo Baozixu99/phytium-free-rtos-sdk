@@ -65,13 +65,13 @@ void vApplicationMallocFailedHook(void)
 }
 
 
-
-/*
-void vApplicationIdleHook(void)
+_WEAK void vApplicationTickHook(void)
 {
-
 }
-*/
+
+_WEAK void vApplicationIdleHook(void)
+{
+}
 
 u32 PlatformGetGicDistBase(void)
 {

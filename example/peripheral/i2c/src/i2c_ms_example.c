@@ -41,8 +41,13 @@
 #define FI2C_DEBUG(format, ...)   FT_DEBUG_PRINT_D(FI2C_DEBUG_TAG, format, ##__VA_ARGS__)
 
 #if defined(CONFIG_FIREFLY_DEMO_BOARD)
-#define I2C_MS_TEST_MASTER_DEVICE FMIO1_ID
-#define I2C_MS_TEST_SLAVE_DEVICE  FMIO2_ID
+    #define I2C_USE_MIO
+    #define I2C_MS_TEST_MASTER_ID  FMIO1_ID
+    #define I2C_MS_TEST_SLAVE_ID   FMIO2_ID
+#elif defined(CONFIG_PD2308_DEMO_BOARD)
+    #define I2C_USE_CONTROLLER
+    #define I2C_MS_TEST_MASTER_ID  FI2C0_ID
+    #define I2C_MS_TEST_SLAVE_ID   FI2C1_ID
 #endif
 
 /* write and read task delay in milliseconds */
@@ -370,8 +375,9 @@ static FError I2cWrite(FFreeRTOSI2c *os_i2c_write_p)
 static FError FFreeRTOSI2cInitSet(uint32_t id, uint32_t work_mode, uint32_t slave_address)
 {
     FError ret = FREERTOS_I2C_SUCCESS;
-
+#ifdef I2C_USE_MIO
     FIOPadSetMioMux(id);
+#endif
     /* init i2c controller */
     if (work_mode == FI2C_MASTER) /* 主机初始化默认使用poll模式 */
     {
@@ -423,7 +429,7 @@ static void FFreeRTOSI2cLoopbackTask(void *pvParameters)
     BaseType_t xReturn = pdPASS;
     int task_res = I2C_MS_TEST_SUCCESS;
     FIOMuxInit();
-    ret = FFreeRTOSI2cInitSet(I2C_MS_TEST_SLAVE_DEVICE, FI2C_SLAVE, MASTER_SLAVE_ADDR);
+    ret = FFreeRTOSI2cInitSet(I2C_MS_TEST_SLAVE_ID, FI2C_SLAVE, MASTER_SLAVE_ADDR);
     if (ret != FREERTOS_I2C_SUCCESS)
     {
         FI2C_ERROR("I2c FFreeRTOSI2cInitSet failed.\r\n");
@@ -431,7 +437,7 @@ static void FFreeRTOSI2cLoopbackTask(void *pvParameters)
         goto task_exit;
     }
     
-    ret = FFreeRTOSI2cInitSet(I2C_MS_TEST_MASTER_DEVICE, FI2C_MASTER, MASTER_SLAVE_ADDR);
+    ret = FFreeRTOSI2cInitSet(I2C_MS_TEST_MASTER_ID, FI2C_MASTER, MASTER_SLAVE_ADDR);
     if (ret != FREERTOS_I2C_SUCCESS)
     {
         FI2C_ERROR("I2c FFreeRTOSI2cInitSet failed.\r\n");

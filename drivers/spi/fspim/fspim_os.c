@@ -182,7 +182,7 @@ FFreeRTOSSpim *FFreeRTOSSpimInit(u32 id, const FFreeRTOSSpimConifg *input_config
     FASSERT_MSG((instance->evt = xEventGroupCreate()) != NULL, "Create event group failed!!!");
 
     FSpimOSSetupInterrupt(ctrl);
-    FSpimRegisterIntrruptHandler(ctrl, FSPIM_INTR_EVT_RX_DONE, FSpimOsAckTransDone, instance);
+    FSpimRegisterInterruptHandler(ctrl, FSPIM_INTR_EVT_RX_DONE, FSpimOsAckTransDone, instance);
 
     FSPIM_INFO("Init spi-%d success!!!", id);
 

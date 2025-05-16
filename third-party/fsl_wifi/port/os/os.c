@@ -440,7 +440,7 @@ void vApplicationIdleHook(void)
     }
 }
 
-/* Freertos handles this internally? */
+/* FreeRTOS handles this internally? */
 void os_thread_stackmark(char *name)
 {
     /* Nothing to-do */

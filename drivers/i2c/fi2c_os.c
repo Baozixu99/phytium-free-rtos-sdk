@@ -33,14 +33,16 @@
 #include "fi2c.h"
 #include "fi2c_hw.h"
 #include "fdebug.h"
+
+#ifdef CONFIG_PD2308_DEMO_BOARD
 #include "fio_mux.h"
-
-#include "fmio_hw.h"
-#include "fmio.h"
-
+static FFreeRTOSI2c os_i2c[FI2C_NUM] = {0};
+#else
+    #include "fio_mux.h"
+    #include "fmio_hw.h"
+    #include "fmio.h"
 static FFreeRTOSI2c os_i2c[FMIO_NUM] = {0};
-
-/* virtual eeprom memory */
+#endif
 
 /**
  * @name: FI2cOsSetupInterrupt
@@ -88,15 +90,19 @@ FFreeRTOSI2c *FFreeRTOSI2cInit(u32 instance_id, u32 work_mode, u32 slave_address
 
     FI2cConfig i2c_config;
 
-    /* E2000 use MIO -> I2C */
-    FASSERT(instance_id < FMIO_NUM);
-
     if (FT_COMPONENT_IS_READY == os_i2c[instance_id].i2c_device.is_ready)
     {
         vPrintf("I2c device %d is already initialized.\r\n", instance_id);
         return NULL;
     }
 
+#ifdef CONFIG_PD2308_DEMO_BOARD
+    i2c_config = *FI2cLookupConfig(instance_id);
+    FIOPadSetI2CMux(instance_id);
+    i2c_config.work_mode = work_mode;
+#else
+    /* E2000 use MIO -> I2C */
+    FASSERT(instance_id < FMIO_NUM);
     const FMioConfig *mio_config_p ;
     FMioCtrl pctrl;
     mio_config_p = FMioLookupConfig(instance_id);
@@ -123,6 +129,12 @@ FFreeRTOSI2c *FFreeRTOSI2cInit(u32 instance_id, u32 work_mode, u32 slave_address
     i2c_config.base_addr = pctrl.config.func_base_addr;
     i2c_config.irq_num = pctrl.config.irq_num;
     i2c_config.ref_clk_hz = FMIO_CLK_FREQ_HZ;
+    i2c_config.work_mode = FI2C_MASTER;
+    i2c_config.use_7bit_addr = TRUE;
+    i2c_config.speed_rate = FI2C_SPEED_STANDARD_RATE;
+    i2c_config.auto_calc = TRUE;
+#endif
+
     if (work_mode == FI2C_MASTER)/* 主机中断优先级高于从机接收 */
     {
         i2c_config.irq_prority = I2C_MASTER_IRQ_PRORITY;

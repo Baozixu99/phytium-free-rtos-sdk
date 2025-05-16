@@ -17,7 +17,9 @@
 #include <stdio.h>
 #include "stdarg.h"
 #include "shell_ext.h"
-
+/* FreeRTOS includes. */
+#include "FreeRTOS.h"
+#include "task.h"
 
 #if SHELL_USING_CMD_EXPORT == 1
 /**
@@ -133,10 +135,11 @@ static const char *shellText[] =
     "|_|      |_| |_| \\ __, | \\__|  |_|  \\__,_| |_| |_| |_|\r\n"
     "                   __/ |                              \r\n"
     "                  |___/                               \r\n"
-    "================ Freertos Letter Shell================\r\n"
+    "================ FreeRTOS Letter Shell================\r\n"
     "Build:       "__DATE__" "__TIME__"\r\n"
-    "Version:     "SHELL_VERSION"\r\n"
     "Platform:    "SHELL_PLATFORM""SHELL_ARCH"\r\n"
+    "Shell:       "SHELL_VERSION"\r\n"
+    "FreeRTOS:    "tskKERNEL_VERSION_NUMBER"\r\n"
 #if defined(CONFIG_USE_BAREMETAL_AMP)
     "Role:        "SHELL_AMP_ROLE"\r\n"
 #endif

@@ -42,7 +42,7 @@ static boolean is_sfud_ready = FALSE;
 static const sfud_flash *flash_instance = NULL;
 #if defined(CONFIG_E2000Q_DEMO_BOARD) || defined(CONFIG_E2000D_DEMO_BOARD)
 static const fsize_t flash_id = SFUD_FSPIM2_INDEX;
-#elif defined(CONFIG_FIREFLY_DEMO_BOARD)
+#else
 static const fsize_t flash_id = SFUD_FSPIM0_INDEX;
 #endif
 

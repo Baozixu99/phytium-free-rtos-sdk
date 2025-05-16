@@ -24,19 +24,11 @@ else:
 # get absoulte path current pwd to install sdk
 install_path, install_script = os.path.split(os.path.abspath(__file__))
 curr_path = os.getcwd()
-freertos_sdk_path = ''
-
-# in case user call this script not from current path
-if (curr_path != install_path):
-    print("Please cd to install script path first !!!")
-    exit()
-
 # get absolute path of sdk install dir
 freertos_sdk_path = install_path
-print("Standalone SDK at {}".format(freertos_sdk_path))
 
 # Add standalone sdk
-standalone_sdk_v="80df5a255579b1ff08bdfeb2c8c524e8301da9b5"
+standalone_sdk_v="04a921499ab0a8b181f4f8101c0ec03be07f954f"
 if (install_platform == windows_x64):
     standalone_path=freertos_sdk_path  + '\\standalone'
 else:
@@ -68,9 +60,28 @@ if not os.path.exists(standalone_path):
                                        /soc")
 
     os.system("git checkout {}".format(standalone_sdk_v))
-    print('Standalone sdk download is succeed')
+    print('Standalone SDK download is succeed')
 else:
-    print('Standalone sdk is exist')
+    # Check if the existing version matches the required version
+    current_path = os.getcwd()
+    os.chdir(standalone_path)
+    current_hash = os.popen('git rev-parse HEAD').read().strip()
+    os.chdir(current_path)
+    
+    if current_hash != standalone_sdk_v:
+        print(f"\033[93mWarning: Existing standalone SDK version ({current_hash}) doesn't match required version ({standalone_sdk_v})\033[0m")
+        print(f"\033[93mRecommend: Delete the existing standalone SDK and run install.py to download the required version\033[0m")
+        # Optionally, you could add code here to update the repository to the correct version
+        # os.chdir(standalone_path)
+        # os.system(f"git checkout {standalone_sdk_v}")
+        # os.chdir(current_path)
+        # print("Standalone SDK has been updated to the required version")
+        exit()
+    else:
+        # in case user call this script not from current path
+        if (curr_path != install_path):
+            exit()
+        print("Existing standalone SDK version matches the required version")
     pass
 
 ## STEP 2: display success message and enable environment

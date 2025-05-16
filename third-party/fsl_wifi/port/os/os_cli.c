@@ -12,7 +12,7 @@
 #include "fsl_wifi_config.h"
 #include <wm_os.h>
 
-/* Freertos does no size check on this buffer and hence kept higher than
+/* FreeRTOS does no size check on this buffer and hence kept higher than
  * minimal size that would be required */
 #define MAX_TASK_INFO_BUF 1024
 

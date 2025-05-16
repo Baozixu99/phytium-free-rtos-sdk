@@ -4,36 +4,37 @@
 
 本例程示范了freertos环境下的timer、tacho和capture的使用，包括timer控制器的初始化、定时、信号捕捉操作;
 程序启动后，创建timer、tacho或capture（两者使用同一IO，默认tacho，若想使用capture功能，则参照tacho测试步骤初始化即可）任务,分别测试定时功能，采样转换功能，以及脉冲计数触发功能;
-例程仅仅支持E2000上使用;
-E2000DQ上使用的demo板上的 PWM-IN12(tacho—in12) 进行测试。
-
+本测试例程使用飞腾派的TACH1进行测试。
 
 ## 2. 如何使用例程
 
 本例程需要用到
-- Phytium开发板（E2000DQ of demo板）
+- 飞腾派
 - [Phytium FreeRTOS SDK](https://gitee.com/phytium_embedded/phytium-free-rtos-sdk)
 - [Phytium standalone SDK](https://gitee.com/phytium_embedded/phytium-standalone-sdk)
 ### 2.1 硬件配置方法
 
 本例程支持的硬件平台包括
-- E2000DQ demo开发板
 - PhytiumPi 开发板
 
 对应的配置项是
 
-- CONFIG_TARGET_E2000D、 CONFIG_TARGET_E2000Q 
 - CONFIG_TARGET_PHYTIUMPI
 
 ### 2.1.1 硬件连线
 
-- E2000 pwm_in12使用1KHz的方波,也即J30上，右内侧第三脚接入示波器或其他信号源方波信号，如下图所示
+- 本测试可使用示波器的方波作为pwm输入，来验证功能的正确性
+- 如下图所示，右下角为示波器方波输出端口
+  ![oscilloscope](./figs/oscilloscope.jpg)
+- PhytiumPI: 飞腾派有以下引脚可供TACH使用
 
-![hardware_e2000](./figs/tacho_hdw.png)
+| **引脚** | **通道** |
+| :------------: | :------------- |
+|   J1 PIN_22   | TACH1          |
 
-- PHYTIUMPI 硬件连线
+GND为J1 PIN_39
 
-![hardware_phytiumpi](./figs/phytiumpi_tacho.png)
+示波器的方波输出端口连接飞腾派的J1 PIN_22，示波器的GND连接飞腾派的J1 PIN_39，开始测试。
 
 ### 2.2 SDK配置方法
 
@@ -60,13 +61,13 @@ E2000DQ上使用的demo板上的 PWM-IN12(tacho—in12) 进行测试。
 
 #### 2.3.1 构建过程
 
-本文档将以E2000Ddemo开发板为例，对于其它平台，使用对应的默认配置
+本文档将以飞腾派为例，对于其它平台，使用对应的默认配置
 
 - 在host端完成配置
 - 选择目标平台
 
 ```
-make load_kconfig LOAD_CONFIG_NAME=e2000d_aarch64_demo_timer
+make load_kconfig LOAD_CONFIG_NAME=pd2308_aarch64_demo_tacho
 ```
 
 - 选择例程需要的配置
@@ -105,11 +106,9 @@ bootelf -p 0x90100000
 
 - 系统进入后，创建timer初始化任务，创建tacho初始化任务，注册中断服务函数，创建两个功能的任务函数。
 
-- E2000
+- 飞腾派
 
-![e2000d](./figs/timer_capture.png)
-
-![e2000d](./figs/timer_tacho.png)
+![timer_tacho](./figs/timer_tacho.png)
 
 - 图中我们使用timer id 0 作为定时器任务的控制器,time in 的数字表示进入循环定时中断服务的次数。
 - RPM表示转速
@@ -118,7 +117,6 @@ bootelf -p 0x90100000
 
 - 若出现风扇中断异常，需确认连接是否正确，确保风扇波形不低于报警中断的最低设置转速。
 
-- 由于timer控制器的数量远多余pwm_in IO口数值，所以尽量使用id 15后面的定时控制器来做普通定时器。
 
 ## 4. 修改历史记录
 v0.1.0 init

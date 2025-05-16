@@ -35,11 +35,6 @@ void PwmExampleTaskEntry()
 {
     /* example functions */
     FFreeRTOSPwmSingleChannelTaskCreate();
-#ifdef CONFIG_FIREFLY_DEMO_BOARD
-    FFreeRTOSPwmDeadBandTaskCreate();
-
-    FFreeRTOSPwmDualChannelTaskCreate();
-#endif
     /* end flag */
     printf("[test_end]\r\n");
     vTaskDelete(NULL);

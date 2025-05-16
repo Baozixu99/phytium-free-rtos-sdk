@@ -1,4 +1,4 @@
-menu "LWIP Freertos Port Configuration"
+menu "LWIP FreeRTOS Port Configuration"
 
     source "$(STANDALONE_DIR)/third-party/lwip-2.1.2/Kconfig"
     

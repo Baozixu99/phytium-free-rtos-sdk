@@ -32,7 +32,11 @@
 #define FF_DEBUG(format, ...)   FT_DEBUG_PRINT_D(FF_DEBUG_TAG, format, ##__VA_ARGS__)
 #define FF_WARN(format, ...)    FT_DEBUG_PRINT_W(FF_DEBUG_TAG, format, ##__VA_ARGS__)
 
-#define FUSB_FATFS_ID            FUSB3_ID_0
+#ifdef CONFIG_CHERRY_USB_PORT_XHCI_PCIE
+    #define FUSB_FATFS_ID           0U
+#else
+    #define FUSB_FATFS_ID           FUSB3_ID_0
+#endif
 
 typedef struct
 {
@@ -90,7 +94,11 @@ static DSTATUS usb_disk_initialize(
 
     if (FALSE == disk->init_ok)
     {
+#ifdef CONFIG_CHERRY_USB_PORT_XHCI_PCIE
+        (void)usbh_initialize(disk->id, 0U); /* start a task to emurate usb hub and attached usb disk */
+#else
         (void)usbh_initialize(disk->id, usb_hc_get_register_base(disk->id)); /* start a task to emurate usb hub and attached usb disk */
+#endif
         while (TRUE)
         {
             if (NULL != usbh_find_class_instance(disk->disk_name))

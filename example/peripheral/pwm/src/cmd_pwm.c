@@ -46,12 +46,10 @@ static void PwmCmdUsage(void)
     printf("Usage:\r\n");
     printf("pwm single_channel\r\n");
     printf("-- run pwm single channel at controller \r\n");
-#ifdef CONFIG_FIREFLY_DEMO_BOARD
     printf("pwm dead_band\r\n");
     printf("-- run pwm dead band example at controller \r\n");
     printf("pwm dual_channel\r\n");
     printf("-- run pwm dual channel at controller \r\n");
-#endif
 }
 
 static int PwmCmdEntry(int argc, char *argv[])
@@ -68,7 +66,6 @@ static int PwmCmdEntry(int argc, char *argv[])
     {
         ret = FFreeRTOSPwmSingleChannelTaskCreate();
     }
-#ifdef CONFIG_FIREFLY_DEMO_BOARD
     if (!strcmp(argv[1], "dead_band"))
     {
         ret = FFreeRTOSPwmDeadBandTaskCreate();
@@ -78,7 +75,6 @@ static int PwmCmdEntry(int argc, char *argv[])
     {
         ret = FFreeRTOSPwmDualChannelTaskCreate();
     }
-#endif
 
     return ret;
 }

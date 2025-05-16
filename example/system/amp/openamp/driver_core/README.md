@@ -122,7 +122,7 @@ rpmsg-design:
 
 > `<font size="1">`描述输入输出情况，列出存在哪些输入，对应的输出是什么（建议附录相关现象图片）`</font><br />`
 
-#### aarch64 程序测试 （freeRTOS 间）
+#### aarch64 程序测试 （FreeRTOS 间）
 
 以E2000Q为例
 
@@ -161,7 +161,7 @@ rpmsg-design:
 
 ![Test64_Results](./fig/Test64_Results.png)
 
-#### aarch32 程序测试 （freeRTOS 间）
+#### aarch32 程序测试 （FreeRTOS 间）
 
 以E2000Q为例
 

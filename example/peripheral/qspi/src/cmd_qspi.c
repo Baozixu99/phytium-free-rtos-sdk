@@ -24,7 +24,6 @@
 #include "qspi_example.h"
 #include <string.h>
 #include <stdio.h>
-#include "projdefs.h"
 #include "FreeRTOS.h"
 #include "sdkconfig.h"
 

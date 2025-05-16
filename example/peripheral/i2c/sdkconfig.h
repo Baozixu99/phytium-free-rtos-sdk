@@ -36,8 +36,12 @@
 
 /* CONFIG_USE_MSDF is not set */
 /* end of multi-core system deployment framework */
+#define CONFIG_MMU_PAGE_SIZE_4K
+/* CONFIG_MMU_PAGE_SIZE_16K is not set */
+/* CONFIG_MMU_PAGE_SIZE_64K is not set */
 #define CONFIG_MMU_PAGE_SIZE 0x1000
 #define CONFIG_MAX_XLAT_TABLES 256
+/* CONFIG_ENABLE_GIC_ITS is not set */
 /* end of Arch configuration */
 
 /* Soc configuration */
@@ -49,6 +53,7 @@
 /* CONFIG_TARGET_FT2004 is not set */
 /* CONFIG_TARGET_D2000 is not set */
 /* CONFIG_TARGET_PD2308 is not set */
+/* CONFIG_TARGET_PS2316 is not set */
 /* CONFIG_TARGET_QEMU_VIRT is not set */
 #define CONFIG_SOC_NAME "phytiumpi"
 #define CONFIG_SOC_CORE_NUM 4
@@ -99,6 +104,8 @@
 /* CONFIG_LOG_EXTRA_INFO is not set */
 /* CONFIG_LOG_DISPALY_CORE_NUM is not set */
 /* CONFIG_BOOTUP_DEBUG_PRINTS is not set */
+#define CONFIG_USE_NS_GTIMER
+/* CONFIG_USE_VIRTUAL_GTIMER is not set */
 #define CONFIG_USE_DEFAULT_INTERRUPT_CONFIG
 #define CONFIG_INTERRUPT_ROLE_MASTER
 /* CONFIG_INTERRUPT_ROLE_SLAVE is not set */
@@ -197,77 +204,77 @@
 
 /* Component Configuration */
 
-/* Freertos Uart Drivers */
+/* FreeRTOS Uart Drivers */
 
 #define CONFIG_FREERTOS_USE_UART
-/* end of Freertos Uart Drivers */
+/* end of FreeRTOS Uart Drivers */
 
-/* Freertos Pwm Drivers */
+/* FreeRTOS Pwm Drivers */
 
 /* CONFIG_FREERTOS_USE_PWM is not set */
-/* end of Freertos Pwm Drivers */
+/* end of FreeRTOS Pwm Drivers */
 
-/* Freertos Qspi Drivers */
+/* FreeRTOS Qspi Drivers */
 
 /* CONFIG_FREERTOS_USE_QSPI is not set */
-/* end of Freertos Qspi Drivers */
+/* end of FreeRTOS Qspi Drivers */
 
-/* Freertos Wdt Drivers */
+/* FreeRTOS Wdt Drivers */
 
 /* CONFIG_FREERTOS_USE_WDT is not set */
-/* end of Freertos Wdt Drivers */
+/* end of FreeRTOS Wdt Drivers */
 
-/* Freertos Eth Drivers */
+/* FreeRTOS Eth Drivers */
 
 /* CONFIG_FREERTOS_USE_XMAC is not set */
 /* CONFIG_FREERTOS_USE_GMAC is not set */
-/* end of Freertos Eth Drivers */
+/* end of FreeRTOS Eth Drivers */
 
-/* Freertos Spim Drivers */
+/* FreeRTOS Spim Drivers */
 
 /* CONFIG_FREERTOS_USE_FSPIM is not set */
-/* end of Freertos Spim Drivers */
+/* end of FreeRTOS Spim Drivers */
 
-/* Freertos DMA Drivers */
+/* FreeRTOS DMA Drivers */
 
 /* CONFIG_FREERTOS_USE_FDDMA is not set */
 /* CONFIG_FREERTOS_USE_FGDMA is not set */
-/* end of Freertos DMA Drivers */
+/* end of FreeRTOS DMA Drivers */
 
-/* Freertos Adc Drivers */
+/* FreeRTOS Adc Drivers */
 
 /* CONFIG_FREERTOS_USE_ADC is not set */
-/* end of Freertos Adc Drivers */
+/* end of FreeRTOS Adc Drivers */
 
-/* Freertos Can Drivers */
+/* FreeRTOS Can Drivers */
 
 /* CONFIG_FREERTOS_USE_CAN is not set */
-/* end of Freertos Can Drivers */
+/* end of FreeRTOS Can Drivers */
 
-/* Freertos I2c Drivers */
+/* FreeRTOS I2c Drivers */
 
 #define CONFIG_FREERTOS_USE_I2C
-/* end of Freertos I2c Drivers */
+/* end of FreeRTOS I2c Drivers */
 
-/* Freertos Mio Drivers */
+/* FreeRTOS Mio Drivers */
 
 #define CONFIG_FREERTOS_USE_MIO
-/* end of Freertos Mio Drivers */
+/* end of FreeRTOS Mio Drivers */
 
-/* Freertos Timer Drivers */
+/* FreeRTOS Timer Drivers */
 
 /* CONFIG_FREERTOS_USE_TIMER is not set */
-/* end of Freertos Timer Drivers */
+/* end of FreeRTOS Timer Drivers */
 
-/* Freertos Media Drivers */
+/* FreeRTOS Media Drivers */
 
 /* CONFIG_FREERTOS_USE_MEDIA is not set */
-/* end of Freertos Media Drivers */
+/* end of FreeRTOS Media Drivers */
 
-/* Freertos I2s Drivers */
+/* FreeRTOS I2s Drivers */
 
 /* CONFIG_FREERTOS_USE_I2S is not set */
-/* end of Freertos I2s Drivers */
+/* end of FreeRTOS I2s Drivers */
 /* end of Component Configuration */
 
 /* Third-party configuration */

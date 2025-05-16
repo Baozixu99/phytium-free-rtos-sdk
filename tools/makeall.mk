@@ -48,3 +48,10 @@ include $(SDK_DIR)/tools/build/menuconfig/menuconfig.mk
 amp_make:
 	$(PYTHON) $(SDK_PYTHON_TOOLS_DIR)/amp_parse_config.py
 	cp ./packed_image.elf $(USR_BOOT_DIR)/freertos.elf
+
+amp_make_t:
+	$(PYTHON) $(SDK_PYTHON_TOOLS_DIR)/amp_parse_config.py test
+	cp ./packed_image.elf $(USR_BOOT_DIR)/freertos.elf
+
+check_standalone_version:
+	$(PYTHON) $(FREERTOS_SDK_DIR)/install.py

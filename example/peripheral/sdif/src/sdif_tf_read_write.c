@@ -43,10 +43,10 @@
 #define FSD_INFO(format, ...)    FT_DEBUG_PRINT_I(FSD_EXAMPLE_TAG, format, ##__VA_ARGS__)
 #define FSD_DEBUG(format, ...)   FT_DEBUG_PRINT_D(FSD_EXAMPLE_TAG, format, ##__VA_ARGS__)
 
-#ifdef CONFIG_TARGET_PHYTIUMPI
-#define SD_CONTROLLER_ID       FSDIO0_ID
+#if defined(CONFIG_FIREFLY_DEMO_BOARD) || defined(CONFIG_PD2308_DEMO_BOARD)
+#define SD_CONTROLLER_ID       FSDIF0_ID
 #else
-#define SD_CONTROLLER_ID       FSDIO1_ID
+#define SD_CONTROLLER_ID       FSDIF1_ID
 #endif
 
 /* user-define */
@@ -202,7 +202,7 @@ int FFreeRTOSTfWriteRead(void)
     memset(&s_inst_config, 0, sizeof(s_inst_config));
     memset(&s_inst, 0, sizeof(s_inst));
 
-    s_inst_config.hostId = FSDIF1_ID;
+    s_inst_config.hostId = SD_CONTROLLER_ID;
     s_inst_config.hostType = kSDMMCHOST_TYPE_FSDIF;
     s_inst_config.cardType = kSDMMCHOST_CARD_TYPE_MICRO_SD;
     s_inst_config.enableDMA = SD_WORK_DMA;
