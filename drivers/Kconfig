@@ -3,6 +3,15 @@ menu "FreeRTOS Uart Drivers"
         bool
         prompt "Use FreeRTOS uart driver"
         default n
+        select USE_SERIAL
+        select ENABLE_Pl011_UART
+        
+    config FREERTOS_USE_SERIAL_V2
+        bool
+        prompt "Use FreeRTOS serial v2 driver"
+        default n
+        select USE_SERIAL
+        select USE_SERIAL_V2
 endmenu
 
 menu "FreeRTOS Pwm Drivers"
@@ -44,6 +53,12 @@ menu "FreeRTOS Eth Drivers"
         bool
         prompt "Use FreeRTOS gmac driver"
         default n
+
+    config FREERTOS_USE_XMAC_V2
+        select ENABLE_FXMAC_V2
+        bool
+        prompt "Use Freertos xmac v2 driver"
+        default n        
 endmenu
 
 menu "FreeRTOS Spim Drivers"
@@ -53,6 +68,13 @@ menu "FreeRTOS Spim Drivers"
         default n
         select USE_SPI
         select USE_FSPIM
+
+    config FREERTOS_USE_FSPIM_V2
+        bool
+        prompt "Use Freertos spim v2 driver"
+        default n
+        select USE_SPI
+        select USE_FSPIM_V2
 endmenu
 
 menu "FreeRTOS DMA Drivers"
@@ -90,6 +112,12 @@ menu "FreeRTOS I2c Drivers"
         bool
         prompt "Use FreeRTOS i2c driver"
         default n
+    
+    config FREERTOS_USE_FI2C_V2
+        bool
+        prompt "Use Freertos i2c v2 driver"
+        default n
+        select USE_FI2C_V2
 endmenu
 
 menu "FreeRTOS Mio Drivers"
@@ -119,5 +147,3 @@ menu "FreeRTOS I2s Drivers"
         prompt "Use FreeRTOS i2s driver"
         default n
 endmenu
-
-

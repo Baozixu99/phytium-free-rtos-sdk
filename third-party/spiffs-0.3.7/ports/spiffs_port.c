@@ -1,16 +1,19 @@
 /*
- * Copyright : (C) 2022 Phytium Information Technology, Inc.
- * All Rights Reserved.
+ * Copyright (C) 2022, Phytium Technology Co., Ltd.   All Rights Reserved.
  *
- * This program is OPEN SOURCE software: you can redistribute it and/or modify it
- * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,
- * either version 1.0 of the License, or (at your option) any later version.
+ * Licensed under the BSD 3-Clause License (the "License"); you may not use
+ * this file except in compliance with the License. You may obtain a copy of
+ * the License at
  *
- * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the Phytium Public License for more details.
+ *     https://opensource.org/licenses/BSD-3-Clause
  *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  *
+ * 
  * FilePath: spiffs_port.c
  * Date: 2022-02-10 14:53:42
  * LastEditTime: 2022-02-18 08:24:47
@@ -33,6 +36,9 @@
 
 #include "spiffs_port.h"
 #ifdef CONFIG_SPIFFS_ON_FSPIM_SFUD
+    #include "fspim_spiffs_port.h"
+#endif
+#ifdef CONFIG_SPIFFS_ON_FSPIM_V2_SFUD
     #include "fspim_spiffs_port.h"
 #endif
 #ifdef CONFIG_SPIFFS_ON_FQSPI_SFUD
@@ -75,7 +81,7 @@ int FSpiffsInitialize(FSpiffs *const instance, FSpiffsPortType type)
 {
 
     FSpiffsSemCreate();
-#ifdef CONFIG_SPIFFS_ON_FSPIM_SFUD
+#if defined(CONFIG_SPIFFS_ON_FSPIM_SFUD) || defined(CONFIG_SPIFFS_ON_FSPIM_V2_SFUD)
     FASSERT(FSPIFFS_PORT_TO_FSPIM == type);
     return FSpiffsSpimInitialize(instance);
 #endif
@@ -88,7 +94,7 @@ int FSpiffsInitialize(FSpiffs *const instance, FSpiffsPortType type)
 void FSpiffsDeInitialize(FSpiffs *const instance)
 {
     FSpiffsSemDelete();
-#ifdef CONFIG_SPIFFS_ON_FSPIM_SFUD
+#if defined(CONFIG_SPIFFS_ON_FSPIM_SFUD) || defined(CONFIG_SPIFFS_ON_FSPIM_V2_SFUD)
     FSpiffsSpimDeInitialize(instance);
     return;
 #endif
@@ -99,7 +105,7 @@ void FSpiffsDeInitialize(FSpiffs *const instance)
 
 const spiffs_config *FSpiffsGetDefaultConfig(void)
 {
-#ifdef CONFIG_SPIFFS_ON_FSPIM_SFUD
+#if defined(CONFIG_SPIFFS_ON_FSPIM_SFUD) || defined(CONFIG_SPIFFS_ON_FSPIM_V2_SFUD)
     return FSpiffsSpimGetDefaultConfig();
 #endif
 #ifdef CONFIG_SPIFFS_ON_FQSPI_SFUD

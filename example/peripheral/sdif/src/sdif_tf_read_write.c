@@ -1,14 +1,17 @@
 /*
- * Copyright : (C) 2022 Phytium Information Technology, Inc.
- * All Rights Reserved.
+ * Copyright (C) 2022, Phytium Technology Co., Ltd.   All Rights Reserved.
  *
- * This program is OPEN SOURCE software: you can redistribute it and/or modify it
- * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,
- * either version 1.0 of the License, or (at your option) any later version.
+ * Licensed under the BSD 3-Clause License (the "License"); you may not use
+ * this file except in compliance with the License. You may obtain a copy of
+ * the License at
  *
- * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the Phytium Public License for more details.
+ *     https://opensource.org/licenses/BSD-3-Clause
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  *
  *
  * FilePath: sdif_tf_read_write.c
@@ -43,10 +46,10 @@
 #define FSD_INFO(format, ...)    FT_DEBUG_PRINT_I(FSD_EXAMPLE_TAG, format, ##__VA_ARGS__)
 #define FSD_DEBUG(format, ...)   FT_DEBUG_PRINT_D(FSD_EXAMPLE_TAG, format, ##__VA_ARGS__)
 
-#if defined(CONFIG_FIREFLY_DEMO_BOARD) || defined(CONFIG_PD2308_DEMO_BOARD)
-#define SD_CONTROLLER_ID       FSDIF0_ID
+#ifdef CONFIG_TARGET_PHYTIUMPI
+#define SD_CONTROLLER_ID       FSDIO0_ID
 #else
-#define SD_CONTROLLER_ID       FSDIF1_ID
+#define SD_CONTROLLER_ID       FSDIO1_ID
 #endif
 
 /* user-define */
@@ -202,12 +205,19 @@ int FFreeRTOSTfWriteRead(void)
     memset(&s_inst_config, 0, sizeof(s_inst_config));
     memset(&s_inst, 0, sizeof(s_inst));
 
-    s_inst_config.hostId = SD_CONTROLLER_ID;
+#if defined(CONFIG_E2000D_DEMO_BOARD) || defined(CONFIG_E2000Q_DEMO_BOARD)
+    s_inst_config.hostId = FSDIF1_ID;
+#else
+    s_inst_config.hostId = FSDIF0_ID;
+#endif
+#if defined(CONFIG_FSL_SDMMC_USE_FSDIF)
     s_inst_config.hostType = kSDMMCHOST_TYPE_FSDIF;
+#elif defined(CONFIG_FSL_SDMMC_USE_FSDIF_V2)
+    s_inst_config.hostType = kSDMMCHOST_TYPE_FSDIF_V2;
+#endif
     s_inst_config.cardType = kSDMMCHOST_CARD_TYPE_MICRO_SD;
     s_inst_config.enableDMA = SD_WORK_DMA;
     s_inst_config.enableIrq = SD_WORK_IRQ;
-    s_inst_config.timeTuner = FSdifGetTimingSetting;
     s_inst_config.endianMode = kSDMMCHOST_EndianModeLittle;
     s_inst_config.maxTransSize = SD_MAX_RW_BLK * SD_BLOCK_SIZE;
     s_inst_config.defBlockSize = SD_BLOCK_SIZE;

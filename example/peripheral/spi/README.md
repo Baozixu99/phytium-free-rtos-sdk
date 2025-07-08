@@ -9,7 +9,7 @@
 ## 2. 如何使用例程
 
 本例程需要用到
-- Phytium开发板(E2000D/E2000Q/PhytiumPi)
+- Phytium开发板(E2000D Demo/E2000Q Demo/PhytiumPi/PD2408 Test A/PD2408 Test B)
 - [Phytium FreeRTOS SDK](https://gitee.com/phytium_embedded/phytium-free-rtos-sdk)
 - [Phytium Standalone SDK](https://gitee.com/phytium_embedded/phytium-standalone-sdk)
 - Flash芯片
@@ -18,13 +18,15 @@
 
 本例程支持的硬件平台包括
 
-- E2000D，E2000Q，PhytiumPi
+- E2000D demo板，E2000Q demo板，PhytiumPi, PD2408 Test A/B板
 
 对应的配置项是，
 
-- CONFIG_TARGET_E2000D
-- CONFIG_TARGET_E2000Q
-- CONFIG_TARGET_PHYTIUMPI
+- CONFIG_E2000D_DEMO_BOARD
+- CONFIG_E2000Q_DEMO_BOARD
+- CONFIG_PHYTIUMPI_FIREFLY_BOARD
+- CONFIG_PD2408_TEST_A_BOARD
+- CONFIG_PD2408_TEST_B_BOARD
 
 ### 2.1.1 E2000
 - E2000 demo板需使用杜邦线外接Flash进行测试，方法如下
@@ -40,6 +42,17 @@
 
 - 上图为PhytiumPi开发板J1与SPI引脚对应图，将flash芯片使用外接连接即可
 
+### 2.1.3 PD2408
+- PD2408 Test A/B 板需使用杜邦线外接Flash进行测试，方法如下
+
+![pd2408_spi_flash](./figs/pd2408_to_flash.png)
+
+- 上图为PD2408开发板J83与SPI引脚对应图，将flash芯片使用外接连接即可。
+
+- test A板J83对应SPI0控制器， J84对应SPI1控制器。
+
+- 对于SPI1控制器，测试时，需要手动开启cs拨码开关。假如使用cs0，则需将cs0拨码开关拨至on。
+
 ### 2.2 SDK配置方法
 
 本例程需要，
@@ -51,8 +64,8 @@
 对应的配置项是，
 
 - CONFIG_USE_LETTER_SHELL
-- CONFIG_USE_S25FS256
-- CONFIG_FREERTOS_USE_QSPI
+- CONFIG_USE_SFUD
+- CONFIG_USE_SPI
 
 本例子已经提供好具体的编译指令，以下进行介绍:
 - make 将目录下的工程进行编译

@@ -1,3 +1,99 @@
+# Phytium FreeRTOS SDK 2025-07-07 ChangeLog
+
+Change Log since 2025-07-07
+
+## example
+
+- update readme and configs of fatfs, spim_spiffs,nested_interrupt, posix, pwm, qspi, spi for pd2408 platform
+
+## driver
+
+- repair spi v2 driver bug
+
+# Phytium FreeRTOS SDK 2025-07-07 ChangeLog
+
+Change Log since 2025-07-03
+
+## example
+- update network configs and readme
+
+# Phytium FreeRTOS SDK 2025-07-03 ChangeLog
+
+Change Log since 2025-07-02
+
+## example
+
+- Add D3000M configuration for each use case in the feature module, improve the README documentation, and complete testing
+
+# Phytium FreeRTOS SDK 2025-06-30 ChangeLog
+
+Change Log since 2025-06-26
+
+## example
+
+- Update the AMP, ATOMIC, EXCEPTION_DEBUG, GPIO, SDIF, and WDT configs, along with the README, for the PD2408 platform
+- Update GPIO, SDIF code for the PD2408 platform
+
+# Phytium FreeRTOS SDK 2025-06-23 ChangeLog
+
+Change Log since 2025-06-19
+
+## example
+
+- update configs and readme
+
+## drivers
+
+- update fxmac v2 driver
+
+# Phytium FreeRTOS SDK 2025-06-19 ChangeLog
+
+Change Log since 2025-06-19
+
+## example
+
+- add D3000M example config
+
+# Phytium FreeRTOS SDK 2025-06-19 ChangeLog
+
+Change Log since 2025-06-17
+
+## drivers
+
+- add fspim v2 driver
+- add fxmac v2 driver
+- add fi2c v2 driver
+- add fserial v2 driver
+
+# example
+
+- add fi2c v2 example
+- update usb example
+- update sd example
+
+## third-party
+
+- Add sfud/fspim_v2 port
+- Add lwip fxmac v2 port
+
+# Phytium FreeRTOS SDK 2025-06-17 ChangeLog
+
+Change Log since 2025-06-17
+
+- rename soc
+
+# Phytium FreeRTOS SDK 2025-05-27 ChangeLog
+
+Change Log since 2025-05-16
+
+- Modify FXmacPhyReconnect
+
+# Phytium FreeRTOS SDK 2025-05-16 ChangeLog
+
+Change Log since 2025-05-12
+
+- Replaced with new BSD 3-Clause copyright notice
+
 # Phytium FreeRTOS SDK 2025-05-16 ChangeLog
 
 Change Log since 2025-05-12

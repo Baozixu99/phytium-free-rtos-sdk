@@ -36,6 +36,9 @@
 
 /* CONFIG_USE_MSDF is not set */
 /* end of multi-core system deployment framework */
+#define CONFIG_MMU_PAGE_SIZE_4K
+/* CONFIG_MMU_PAGE_SIZE_16K is not set */
+/* CONFIG_MMU_PAGE_SIZE_64K is not set */
 #define CONFIG_MMU_PAGE_SIZE 0x1000
 #define CONFIG_MAX_XLAT_TABLES 256
 /* CONFIG_ENABLE_GIC_ITS is not set */
@@ -43,21 +46,21 @@
 
 /* Soc configuration */
 
-#define CONFIG_TARGET_PHYTIUMPI
-/* CONFIG_TARGET_E2000Q is not set */
-/* CONFIG_TARGET_E2000D is not set */
-/* CONFIG_TARGET_E2000S is not set */
-/* CONFIG_TARGET_FT2004 is not set */
-/* CONFIG_TARGET_D2000 is not set */
+/* CONFIG_TARGET_PE2204 is not set */
+/* CONFIG_TARGET_PE2202 is not set */
+/* CONFIG_TARGET_PE2201 is not set */
+/* CONFIG_TARGET_PD1904 is not set */
+/* CONFIG_TARGET_PD2008 is not set */
 /* CONFIG_TARGET_PD2308 is not set */
+/* CONFIG_TARGET_PS2316 is not set */
+#define CONFIG_TARGET_PD2408
 /* CONFIG_TARGET_QEMU_VIRT is not set */
-#define CONFIG_SOC_NAME "phytiumpi"
-#define CONFIG_SOC_CORE_NUM 4
+#define CONFIG_SOC_NAME "pd2408"
+#define CONFIG_SOC_CORE_NUM 8
 #define CONFIG_F32BIT_MEMORY_ADDRESS 0x80000000
 #define CONFIG_F32BIT_MEMORY_LENGTH 0x80000000
 #define CONFIG_F64BIT_MEMORY_ADDRESS 0x2000000000
 #define CONFIG_F64BIT_MEMORY_LENGTH 0x800000000
-#define CONFIG_TARGET_E2000
 #define CONFIG_DEFAULT_DEBUG_PRINT_UART1
 /* CONFIG_DEFAULT_DEBUG_PRINT_UART0 is not set */
 /* CONFIG_DEFAULT_DEBUG_PRINT_UART2 is not set */
@@ -65,21 +68,20 @@
 
 /* Board Configuration */
 
-#define CONFIG_BOARD_NAME "firefly"
+#define CONFIG_BOARD_NAME "test_a"
 /* CONFIG_USE_SPI_IOPAD is not set */
 /* CONFIG_USE_GPIO_IOPAD is not set */
-/* CONFIG_USE_CAN_IOPAD is not set */
 /* CONFIG_USE_QSPI_IOPAD is not set */
 /* CONFIG_USE_PWM_IOPAD is not set */
-/* CONFIG_USE_MIO_IOPAD is not set */
 /* CONFIG_USE_TACHO_IOPAD is not set */
 /* CONFIG_USE_UART_IOPAD is not set */
 /* CONFIG_USE_THIRD_PARTY_IOPAD is not set */
-#define CONFIG_FIREFLY_DEMO_BOARD
+#define CONFIG_PD2408_TEST_A_BOARD
 
 /* IO mux configuration when board start up */
 
 /* end of IO mux configuration when board start up */
+/* CONFIG_PD2408_TEST_B_BOARD is not set */
 /* CONFIG_CUS_DEMO_BOARD is not set */
 
 /* Build project name */
@@ -100,6 +102,8 @@
 /* CONFIG_LOG_EXTRA_INFO is not set */
 /* CONFIG_LOG_DISPALY_CORE_NUM is not set */
 /* CONFIG_BOOTUP_DEBUG_PRINTS is not set */
+#define CONFIG_USE_NS_GTIMER
+/* CONFIG_USE_VIRTUAL_GTIMER is not set */
 #define CONFIG_USE_DEFAULT_INTERRUPT_CONFIG
 #define CONFIG_INTERRUPT_ROLE_MASTER
 /* CONFIG_INTERRUPT_ROLE_SLAVE is not set */
@@ -118,16 +122,17 @@
 /* Usart Configuration */
 
 #define CONFIG_ENABLE_Pl011_UART
+/* CONFIG_USE_SERIAL_V2 is not set */
 /* end of Usart Configuration */
 /* CONFIG_USE_GPIO is not set */
 #define CONFIG_USE_ETH
 
 /* Eth Configuration */
 
-#define CONFIG_ENABLE_FXMAC
+/* CONFIG_ENABLE_FXMAC is not set */
 /* CONFIG_ENABLE_FGMAC is not set */
-#define CONFIG_FXMAC_PHY_COMMON
-/* CONFIG_FXMAC_PHY_YT is not set */
+#define CONFIG_ENABLE_FXMAC_V2
+/* CONFIG_ENABLE_E1000E is not set */
 /* end of Eth Configuration */
 /* CONFIG_USE_CAN is not set */
 /* CONFIG_USE_I2C is not set */
@@ -147,6 +152,8 @@
 /* CONFIG_USE_SCMI_MHU is not set */
 /* CONFIG_USE_I2S is not set */
 /* CONFIG_USE_I3C is not set */
+#define CONFIG_USE_MSG
+/* CONFIG_USE_DEVICE is not set */
 /* end of Drivers configuration */
 
 /* Build setup */
@@ -223,13 +230,15 @@
 
 /* FreeRTOS Eth Drivers */
 
-#define CONFIG_FREERTOS_USE_XMAC
+/* CONFIG_FREERTOS_USE_XMAC is not set */
 /* CONFIG_FREERTOS_USE_GMAC is not set */
+#define CONFIG_FREERTOS_USE_XMAC_V2
 /* end of FreeRTOS Eth Drivers */
 
 /* FreeRTOS Spim Drivers */
 
 /* CONFIG_FREERTOS_USE_FSPIM is not set */
+/* CONFIG_FREERTOS_USE_FSPIM_V2 is not set */
 /* end of FreeRTOS Spim Drivers */
 
 /* FreeRTOS DMA Drivers */
@@ -284,8 +293,10 @@
 
 /* LWIP Port Configuration */
 
-#define CONFIG_LWIP_FXMAC
+/* CONFIG_LWIP_FXMAC is not set */
+#define CONFIG_LWIP_FXMAC_V2
 /* CONFIG_LWIP_FGMAC is not set */
+/* CONFIG_LWIP_E1000E is not set */
 /* CONFIG_LWIP_FSDIF is not set */
 /* end of LWIP Port Configuration */
 /* CONFIG_LWIP_NO_SYS is not set */

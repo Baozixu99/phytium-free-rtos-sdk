@@ -49,8 +49,8 @@ CANFD过滤功能测试例程 (canfd_id_filter_example.c)
 
 对应的配置项是，
 
-- CONFIG_TARGET_E2000D
-- CONFIG_TARGET_E2000Q
+- CONFIG_E2000D_DEMO_BOARD
+- CONFIG_E2000Q_DEMO_BOARD
 
 ### 2.2 SDK配置方法
 

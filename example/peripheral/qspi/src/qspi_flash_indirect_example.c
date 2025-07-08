@@ -1,14 +1,17 @@
 /*
- * Copyright : (C) 2022 Phytium Information Technology, Inc.
- * All Rights Reserved.
+ * Copyright (C) 2023, Phytium Technology Co., Ltd.   All Rights Reserved.
  *
- * This program is OPEN SOURCE software: you can redistribute it and/or modify it
- * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,
- * either version 1.0 of the License, or (at your option) any later version.
+ * Licensed under the BSD 3-Clause License (the "License"); you may not use
+ * this file except in compliance with the License. You may obtain a copy of
+ * the License at
  *
- * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the Phytium Public License for more details.
+ *     https://opensource.org/licenses/BSD-3-Clause
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  *
  *
  * FilePath: qspi_flash_indirect_example.c
@@ -41,7 +44,7 @@
 /* write and read task delay in milliseconds */
 #define TASK_DELAY_MS 1000UL
 /* Offset 1M from flash maximum capacity*/
-#define FLASH_WR_OFFSET SZ_1M
+#define  FLASH_WR_OFFSET 0x100
 /* write and read cs channel */
 #define QSPI_CS_CHANNEL 0
 #define TIMER_OUT (pdMS_TO_TICKS(5000UL))
@@ -69,11 +72,11 @@ static FError QspiInit(void)
     FError ret = FQSPI_SUCCESS;
     /*init iomux*/
     FIOMuxInit();
-    FIOPadSetQspiMux(QSPI_TEST_ID, FQSPI_CS_0);
+    FIOPadSetQspiMux(QSPI_TEST_ID, QSPI_CS_CHANNEL);
 
     /* init qspi controller */
     os_qspi_ctrl_p = FFreeRTOSQspiInit(QSPI_TEST_ID);
-    flash_wr_start = os_qspi_ctrl_p->qspi_ctrl.flash_size - FLASH_WR_OFFSET;
+    flash_wr_start = os_qspi_ctrl_p->qspi_ctrl.flash_size[QSPI_CS_CHANNEL] - FLASH_WR_OFFSET;
     if (os_qspi_ctrl_p == NULL)
     {
         FQSPI_ERROR("FFreeRTOSQspiInit failed.\n");
@@ -140,7 +143,7 @@ static FError QspiWrite(void)
         FQSPI_ERROR("Failed to erase sectors. return value: 0x%x\r\n", ret);
         return ret;
     }
-    write_addr = os_qspi_ctrl_p->qspi_ctrl.flash_size - FLASH_WR_OFFSET;
+    write_addr = os_qspi_ctrl_p->qspi_ctrl.flash_size[QSPI_CS_CHANNEL] - FLASH_WR_OFFSET;
     /* Write norflash data */
     while (array_index < sizeof(wr_buf))
     {

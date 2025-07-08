@@ -1,14 +1,17 @@
 /*
- * Copyright : (C) 2022 Phytium Information Technology, Inc.
- * All Rights Reserved.
+ * Copyright (C) 2022, Phytium Technology Co., Ltd.   All Rights Reserved.
  *
- * This program is OPEN SOURCE software: you can redistribute it and/or modify it
- * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,
- * either version 1.0 of the License, or (at your option) any later version.
+ * Licensed under the BSD 3-Clause License (the "License"); you may not use
+ * this file except in compliance with the License. You may obtain a copy of
+ * the License at
  *
- * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the Phytium Public License for more details.
+ *     https://opensource.org/licenses/BSD-3-Clause
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  *
  *
  * FilePath: gpio_intr_example.c
@@ -46,7 +49,7 @@
 /**************************** Type Definitions *******************************/
 
 /************************** Variable Definitions *****************************/
-#if defined(CONFIG_FIREFLY_DEMO_BOARD)
+#if defined(CONFIG_PHYTIUMPI_FIREFLY_BOARD)
 static const u32 input_pin_index = FGPIO_ID(FGPIO_CTRL_0, FGPIO_PIN_0);
 static const u32 output_pin_index = FGPIO_ID(FGPIO_CTRL_4, FGPIO_PIN_13);
 #elif defined(CONFIG_E2000D_DEMO_BOARD) || defined(CONFIG_E2000Q_DEMO_BOARD)
@@ -58,6 +61,12 @@ static const u32 output_pin_index = FGPIO_ID(FGPIO_CTRL_0, FGPIO_PIN_10);
 #elif defined(CONFIG_D2000_TEST_BOARD)
 static const u32 input_pin_index = FGPIO_ID(FGPIO_CTRL_1, FGPIO_PORT_A, FGPIO_PIN_6);
 static const u32 output_pin_index = FGPIO_ID(FGPIO_CTRL_1, FGPIO_PORT_A, FGPIO_PIN_7);
+#elif defined(CONFIG_PD2408_TEST_A_BOARD)
+static const u32 input_pin_index = FGPIO_ID(FGPIO_CTRL_0, FGPIO_PIN_14);
+static const u32 output_pin_index = FGPIO_ID(FGPIO_CTRL_0, FGPIO_PIN_7);
+#elif defined(CONFIG_PD2408_TEST_B_BOARD)
+static const u32 input_pin_index = FGPIO_ID(FGPIO_CTRL_1, FGPIO_PIN_7);
+static const u32 output_pin_index = FGPIO_ID(FGPIO_CTRL_1, FGPIO_PIN_8);
 #endif
 
 static FGpioIrqType irq_type = FGPIO_IRQ_TYPE_LEVEL_HIGH;

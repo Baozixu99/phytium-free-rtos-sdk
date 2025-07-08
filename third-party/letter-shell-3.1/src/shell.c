@@ -86,13 +86,13 @@ enum
 #endif
 };
 
-#if defined(CONFIG_TARGET_FT2004)
+#if defined(CONFIG_TARGET_PD1904)
     #define SHELL_PLATFORM      "FT2000/4  "
-#elif defined(CONFIG_TARGET_D2000)
+#elif defined(CONFIG_TARGET_PD2008)
     #define SHELL_PLATFORM      "D2000  "
-#elif defined(CONFIG_TARGET_E2000Q)
+#elif defined(CONFIG_TARGET_PE2204)
     #define SHELL_PLATFORM      "E2000Q  "
-#elif defined(CONFIG_TARGET_E2000D)
+#elif defined(CONFIG_TARGET_PE2202)
     #define SHELL_PLATFORM      "E2000D  "
 #elif defined(CONFIG_TARGET_E2000S)
     #define SHELL_PLATFORM      "E2000S  "
@@ -100,6 +100,22 @@ enum
     #define SHELL_PLATFORM      "PHYTIUMPI  "
 #else
     #define SHELL_PLATFORM      "Unkonwn  "
+#endif
+
+#if defined(CONFIG_E2000Q_DEMO_BOARD)
+#define SHELL_BOARD         "E2000Q-DEMO-BOARD  "
+#elif defined(CONFIG_E2000D_DEMO_BOARD)
+#define SHELL_BOARD         "E2000D-DEMO-BOARD  "
+#elif defined(CONFIG_PHYTIUMPI_FIREFLY_BOARD)
+#define SHELL_BOARD         "FIREFLY-BOARD  "
+#elif defined(CONFIG_FT2004_DSK_BOARD)
+#define SHELL_BOARD         "FT2004-DSK-BOARD  "
+#elif defined(CONFIG_D2000_TEST_BOARD)
+#define SHELL_BOARD         "D2000-TEST-BOARD  "
+#elif defined(CONFIG_PD2308_DEMO_BOARD)
+#define SHELL_BOARD         "PD2308-DEMO-BOARD  "
+#else
+#define SHELL_BOARD         "Customization-BOARD  "
 #endif
 
 #if defined(CONFIG_TARGET_ARMV8_AARCH32)
@@ -137,8 +153,9 @@ static const char *shellText[] =
     "                  |___/                               \r\n"
     "================ FreeRTOS Letter Shell================\r\n"
     "Build:       "__DATE__" "__TIME__"\r\n"
+    "Version:       "SHELL_VERSION"\r\n"
+    "Board:       "SHELL_BOARD"\r\n"
     "Platform:    "SHELL_PLATFORM""SHELL_ARCH"\r\n"
-    "Shell:       "SHELL_VERSION"\r\n"
     "FreeRTOS:    "tskKERNEL_VERSION_NUMBER"\r\n"
 #if defined(CONFIG_USE_BAREMETAL_AMP)
     "Role:        "SHELL_AMP_ROLE"\r\n"

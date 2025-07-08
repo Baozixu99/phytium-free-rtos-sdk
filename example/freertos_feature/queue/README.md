@@ -13,26 +13,23 @@
 ## 2. 如何使用例程
 
 本例程需要用到
-- Phytium开发板（FT2000-4/D2000/E2000D/E2000Q/PHYTIUMPI）
+- Phytium开发板（D2000 TEST、FT2000/4 DSK、E2000D/Q DEMO、PD2308 DEMO、PD2408 TEST_A/TEST_B、PhytiumPi）
 - [Phytium FreeRTOS SDK](https://gitee.com/phytium_embedded/phytium-free-rtos-sdk)
 - [Phytium standalone SDK](https://gitee.com/phytium_embedded/phytium-standalone-sdk)
 ### 2.1 硬件配置方法
 
 本例程支持的硬件平台包括
+- D2000 TEST、FT2000/4 DSK、E2000D/Q DEMO、PD2308 DEMO、PD2408 TEST_A/TEST_B、PhytiumPi开发板
 
-- FT2000-4
-- D2000
-- E2000D
-- E2000Q
-- PHYTIUMPI
-
-对应的配置项是，
-
-- CONFIG_TARGET_FT2004
-- CONFIG_TARGET_D2000
-- CONFIG_TARGET_E2000D
-- CONFIG_TARGET_E2000Q
-- CONFIG_TARGET_PHYTIUMPI
+对应的配置项是
+- CONFIG_FT2004_DSK_BOARD
+- CONFIG_D2000_TEST_BOARD
+- CONFIG_E2000D_DEMO_BOARD
+- CONFIG_E2000Q_DEMO_BOARD
+- CONFIG_PD2308_DEMO_BOARD
+- CONFIG_PD2408_TEST_A_BOARD
+- CONFIG_PD2408_TEST_B_BOARD
+- CONFIG_PHYTIUMPI_FIREFLY_BOARD
 
 ### 2.2 SDK配置方法
 
@@ -101,9 +98,4 @@ bootelf -p 0x90100000
 
 ## 3. 如何解决问题
 
-
 ## 4. 修改历史记录
-
-
-
-

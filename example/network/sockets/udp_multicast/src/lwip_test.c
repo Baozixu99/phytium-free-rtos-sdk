@@ -1,14 +1,17 @@
 /*
- * Copyright : (C) 2022 Phytium Information Technology, Inc.
- * All Rights Reserved.
+ * Copyright (C) 2022, Phytium Technology Co., Ltd.   All Rights Reserved.
  *
- * This program is OPEN SOURCE software: you can redistribute it and/or modify it
- * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,
- * either version 1.0 of the License, or (at your option) any later version.
+ * Licensed under the BSD 3-Clause License (the "License"); you may not use
+ * this file except in compliance with the License. You may obtain a copy of
+ * the License at
  *
- * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the Phytium Public License for more details.
+ *     https://opensource.org/licenses/BSD-3-Clause
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  *
  *
  * FilePath: lwip_test.c
@@ -269,10 +272,18 @@ static int LwipDeviceSet(int argc, char *argv[])
         {
             input_config.lwip_mac_config.driver_type = LWIP_PORT_TYPE_XMAC;
         }
-        else
+        else if (driver_type == 1)
         {
             input_config.lwip_mac_config.driver_type = LWIP_PORT_TYPE_GMAC;
         }
+        else if(driver_type == 2)
+        {
+            input_config.lwip_mac_config.driver_type = LWIP_PORT_TYPE_XMAC_V2;
+        }
+        else if(driver_type == 3)
+        {
+            input_config.lwip_mac_config.driver_type = LWIP_PORT_TYPE_E1000E;
+        } 
         
         LwipTest(&input_config);
     }
@@ -301,8 +312,8 @@ static int LwipDeviceSet(int argc, char *argv[])
     }
     else
     {
-        printf("Please enter lwip probe <dirver id> <device id> <interface id> <dhcp_en> <ipaddr> <gateway> <netmask> \r\n") ;
-        printf("        -- driver id is driver type set, 0 is xmac ,1 is gmac \r\n");
+        printf("Please enter lwip probe <driver id> <device id> <interface id> <dhcp_en> <ipaddr> <gateway> <netmask> \r\n") ;
+        printf("        -- driver id is driver type set, 0 is xmac, 1 is gmac, 2 is xmac_v2, 3 is e1000 \r\n");
         printf("        -- device id is mac instance number \r\n");
         printf("        -- interface id is media independent interface  , 0 is rgmii ,1 is sgmii \r\n");
         printf("        -- dhcp_en is dhcp function set ,1 is enable ,0 is disable .But this depends on whether the protocol stack supports it ");

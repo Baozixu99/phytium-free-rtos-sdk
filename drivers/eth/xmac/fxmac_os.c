@@ -1,14 +1,17 @@
 /*
- * Copyright : (C) 2022 Phytium Information Technology, Inc.
- * All Rights Reserved.
+ * Copyright (C) 2022, Phytium Technology Co., Ltd.   All Rights Reserved.
  *
- * This program is OPEN SOURCE software: you can redistribute it and/or modify it
- * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,
- * either version 1.0 of the License, or (at your option) any later version.
+ * Licensed under the BSD 3-Clause License (the "License"); you may not use
+ * this file except in compliance with the License. You may obtain a copy of
+ * the License at
  *
- * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the Phytium Public License for more details.
+ *     https://opensource.org/licenses/BSD-3-Clause
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  *
  *
  * FilePath: fxmac_os.c
@@ -55,7 +58,9 @@ extern void sys_sem_signal(sys_sem_t *sem);
 static FXmacOs fxmac_os_instace[FXMAC_NUM] =
 {
         [FXMAC0_ID] = {0},
+#if defined(FXMAC1_ID)        
         [FXMAC1_ID] = {0},
+#endif
 #if defined(FXMAC2_ID)
         [FXMAC2_ID] = {0},
 #endif
@@ -164,7 +169,7 @@ void FXmacProcessSentBds(FXmacOs *instance_p, FXmacBdRing *txring, u32 cnt)
         temp = (u32 *)curbdpntr;
         *temp = 0; /* Word 0 */
         temp++;
-        if (bdindex == (FXMAX_TX_PBUFS_LENGTH - 1))
+        if (bdindex == (FXMAC_TX_PBUFS_LENGTH - 1))
         {
             *temp = 0xC0000000; /* Word 1 ,used/Wrap – marks last descriptor in transmit buffer descriptor list.*/
         }
@@ -372,7 +377,7 @@ void SetupRxBds(FXmacOs *instance_p, FXmacBdRing *rxring)
 
         bdindex = FXMAC_BD_TO_INDEX(rxring, rxbd);
         temp = (u32 *)rxbd;
-        if (bdindex == (FXMAX_RX_PBUFS_LENGTH - 1))
+        if (bdindex == (FXMAC_RX_PBUFS_LENGTH - 1))
         {
             *temp = 0x00000002;
         }
@@ -434,7 +439,7 @@ void FXmacRecvHandler(void *arg)
 
     while (1)
     {
-        bd_processed = FXmacBdRingFromHwRx(rxring, FXMAX_RX_PBUFS_LENGTH, &rxbdset);
+        bd_processed = FXmacBdRingFromHwRx(rxring, FXMAC_RX_PBUFS_LENGTH, &rxbdset);
         if (bd_processed <= 0)
         {
             break;
@@ -553,7 +558,7 @@ FError FXmacInitDma(FXmacOs *instance_p)
     /* Create the RxBD ring */
     status = FXmacBdRingCreate(rxringptr, (uintptr)instance_p->buffer.rx_bdspace,
                                (uintptr)instance_p->buffer.rx_bdspace, BD_ALIGNMENT,
-                               FXMAX_RX_PBUFS_LENGTH);
+                               FXMAC_RX_PBUFS_LENGTH);
 
     if (status != FT_SUCCESS)
     {
@@ -574,7 +579,7 @@ FError FXmacInitDma(FXmacOs *instance_p)
     /* Create the TxBD ring */
     status = FXmacBdRingCreate(txringptr, (uintptr)instance_p->buffer.tx_bdspace,
                                (uintptr)instance_p->buffer.tx_bdspace, BD_ALIGNMENT,
-                               FXMAX_TX_PBUFS_LENGTH);
+                               FXMAC_TX_PBUFS_LENGTH);
 
     if (status != FT_SUCCESS)
     {
@@ -591,7 +596,7 @@ FError FXmacInitDma(FXmacOs *instance_p)
     /*
      * Allocate RX descriptors, 1 RxBD at a time.
      */
-    for (i = 0; i < FXMAX_RX_PBUFS_LENGTH; i++)
+    for (i = 0; i < FXMAC_RX_PBUFS_LENGTH; i++)
     {
         if (instance_p->feature & FXMAC_OS_CONFIG_JUMBO)
         {
@@ -631,7 +636,7 @@ FError FXmacInitDma(FXmacOs *instance_p)
         bdindex = FXMAC_BD_TO_INDEX(rxringptr, rxbd);
         temp = (u32 *)rxbd;
         *temp = 0;
-        if (bdindex == (FXMAX_RX_PBUFS_LENGTH - 1))
+        if (bdindex == (FXMAC_RX_PBUFS_LENGTH - 1))
         {
             *temp = 0x00000002;
         }
@@ -663,7 +668,7 @@ static void FreeOnlyTxPbufs(FXmacOs *instance_p)
     u32 index;
     struct pbuf *p;
 
-    for (index = 0; index < (FXMAX_TX_PBUFS_LENGTH); index++)
+    for (index = 0; index < (FXMAC_TX_PBUFS_LENGTH); index++)
     {
         if (instance_p->buffer.tx_pbufs_storage[index] != 0)
         {
@@ -681,7 +686,7 @@ static void FreeOnlyRxPbufs(FXmacOs *instance_p)
     u32 index;
     struct pbuf *p;
 
-    for (index = 0; index < (FXMAX_RX_PBUFS_LENGTH); index++)
+    for (index = 0; index < (FXMAC_RX_PBUFS_LENGTH); index++)
     {
         if (instance_p->buffer.rx_pbufs_storage[index] != 0)
         {
@@ -828,7 +833,7 @@ void FXmacErrorHandler(void *arg, u8 direction, u32 error_word)
                 if (error_word & FXMAC_TXSR_FRAMERX_MASK)
                 {
                     FXMAC_OS_XMAC_PRINT_I("Transmit collision.");
-                    FXmacProcessSentBds(instance_p, txring, FXMAX_TX_PBUFS_LENGTH);
+                    FXmacProcessSentBds(instance_p, txring, FXMAC_TX_PBUFS_LENGTH);
                 }
                 break;
         }
@@ -1315,7 +1320,7 @@ FError FXmacOsTx(FXmacOs *instance_p, void *pbuf)
     p = (struct pbuf *)pbuf;
 
     txring = &(FXMAC_GET_TXRING(instance_p->instance));
-    FXmacProcessSentBds(instance_p, txring,FXMAX_TX_PBUFS_LENGTH);
+    FXmacProcessSentBds(instance_p, txring,FXMAC_TX_PBUFS_LENGTH);
  
     if (IsTxSpaceAvailable(instance_p))
     {

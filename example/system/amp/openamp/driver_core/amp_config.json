@@ -22,52 +22,70 @@
         {
             "config0":[
                 {
-                    "bootstrap":["./",2,1,"e2000q_aarch64_demo_openamp_driver_core.config"],
-                    "path0":["../device_core",10000,0,"e2000q_aarch64_demo_openamp_device_core.config"]
+                    "bootstrap":["./",2,1,"pe2204_aarch64_demo_openamp_driver_core.config"],
+                    "path0":["../device_core",10000,0,"pe2204_aarch64_demo_openamp_device_core.config"]
                 }
             ],
             "config1":[
                 {
-                    "bootstrap":["./",2,1,"e2000q_aarch32_demo_openamp_driver_core.config"],
-                    "path0":["../device_core",10000,0,"e2000q_aarch32_demo_openamp_device_core.config"]
+                    "bootstrap":["./",2,1,"pe2204_aarch32_demo_openamp_driver_core.config"],
+                    "path0":["../device_core",10000,0,"pe2204_aarch32_demo_openamp_device_core.config"]
                 }
             ],
             "config2":[
                 {
-                    "bootstrap":["./",0,1,"e2000d_aarch64_demo_openamp_driver_core.config"],
-                    "path0":["../device_core",10000,0,"e2000d_aarch64_demo_openamp_device_core.config"]
+                    "bootstrap":["./",0,1,"pe2202_aarch64_demo_openamp_driver_core.config"],
+                    "path0":["../device_core",10000,0,"pe2202_aarch64_demo_openamp_device_core.config"]
                 }
             ],
             "config3":[
                 {
-                    "bootstrap":["./",0,1,"e2000d_aarch32_demo_openamp_driver_core.config"],
-                    "path0":["../device_core",10000,0,"e2000d_aarch32_demo_openamp_device_core.config"]
+                    "bootstrap":["./",0,1,"pe2202_aarch32_demo_openamp_driver_core.config"],
+                    "path0":["../device_core",10000,0,"pe2202_aarch32_demo_openamp_device_core.config"]
                 }
             ],
             "config4":[
                 {
-                    "bootstrap":["./",2,1,"phytiumpi_aarch64_firefly_openamp_driver_core.config"],
-                    "path0":["../device_core",10000,0,"phytiumpi_aarch64_firefly_openamp_device_core.config"]
+                    "bootstrap":["./",2,1,"pe2202_aarch64_phytiumpi_openamp_driver_core.config"],
+                    "path0":["../device_core",10000,0,"pe2202_aarch64_phytiumpi_openamp_device_core.config"]
                 }
             ],
             "config5":[
                 {
-                    "bootstrap":["./",2,1,"phytiumpi_aarch32_firefly_openamp_driver_core.config"],
-                    "path0":["../device_core",10000,0,"phytiumpi_aarch32_firefly_openamp_device_core.config"]
+                    "bootstrap":["./",2,1,"pe2202_aarch32_phytiumpi_openamp_driver_core.config"],
+                    "path0":["../device_core",10000,0,"pe2202_aarch32_phytiumpi_openamp_device_core.config"]
                 }
             ],
             "config6":[
                 {
-                    "bootstrap":["./",0,1,"d2000_aarch64_test_openamp_driver_core.config"],
-                    "path0":["../device_core",10000,0,"d2000_aarch64_test_openamp_device_core.config"]
+                    "bootstrap":["./",0,1,"pd2008_aarch64_test_openamp_driver_core.config"],
+                    "path0":["../device_core",10000,0,"pd2008_aarch64_test_openamp_device_core.config"]
                 }
             ],
             "config7":[
                 {
-                    "bootstrap":["./",0,1,"d2000_aarch32_test_openamp_driver_core.config"],
-                    "path0":["../device_core",10000,0,"d2000_aarch32_test_openamp_device_core.config"]
+                    "bootstrap":["./",0,1,"pd2008_aarch32_test_openamp_driver_core.config"],
+                    "path0":["../device_core",10000,0,"pd2008_aarch32_test_openamp_device_core.config"]
+                }
+            ],
+            "config8":[
+                {
+                    "bootstrap":["./",0,1,"pd2308_aarch64_demo_openamp_driver_core.config"],
+                    "path0":["../device_core",10000,0,"pd2308_aarch64_demo_openamp_device_core.config"]
+                }
+            ],
+            "config9":[
+                {
+                    "bootstrap":["./",0,1,"pd2408_aarch64_test_a_openamp_driver_core.config"],
+                    "path0":["../device_core",10000,0,"pd2408_aarch64_test_a_openamp_device_core.config"]
+                }
+            ],
+            "config10":[
+                {
+                    "bootstrap":["./",0,1,"pd2408_aarch64_test_b_openamp_driver_core.config"],
+                    "path0":["../device_core",10000,0,"pd2408_aarch64_test_b_openamp_device_core.config"]
                 }
             ]
-        }    
+        }
     }
 ]

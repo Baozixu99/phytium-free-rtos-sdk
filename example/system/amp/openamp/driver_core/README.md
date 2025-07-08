@@ -25,7 +25,7 @@
 
 1. 例程结构介绍：
 
-- 本例程主要提供了D2000/E2000/firefly开发板 freertos系统的openamp驱动测试例程
+- 本例程主要为D2000 TEST、E2000 D/Q DEMO、PD2308 DEMO、PD2408 TEST_A/TEST_B、PhytiumPi开发板上的freertos系统提供openamp驱动测试支持
 
 #### 系统架构
 
@@ -58,8 +58,10 @@ rpmsg-design:
 
 > `<font size="1">`哪些硬件平台是支持的，需要哪些外设，例程与开发板哪些IO口相关等（建议附录开发板照片，展示哪些IO口被引出）`</font><br />`
 
-1. 准备一块d2000 或者 E2000Q/D 或者 firefly 开发板
-2. 将串口连接好电脑，波特率设为 115200-8-1-N
+本例程支持的硬件平台包括
+  - D2000 TEST、E2000 D/Q DEMO、PD2308 DEMO、PD2408 TEST_A/TEST_B、PhytiumPi开发板
+
+将串口连接好电脑，波特率设为 115200-8-1-N
 
 ### 2.2 SDK配置方法
 
@@ -124,16 +126,16 @@ rpmsg-design:
 
 #### aarch64 程序测试 （FreeRTOS 间）
 
-以E2000Q为例
+以E2000Q DEMO为例
 
 1. 在编译环境下，切换至 phytium-free-rtos-sdk/example/system/amp/openamp/driver_core 目录
 
 - 1.1 输入` make clean ` 清理 `./` 目录下的编译结果
 - 1.2 输入` make amp_make AMP_CONFIG=config0 ` 编译config0配置项代码，并且生成对应的elf 文件
 
-2. 使用串口连接E2000开发板 ，并且打开串口终端工具
+2. 使用串口连接E2000Q DEMO开发板 ，并且打开串口终端工具
 
-- 2.1 复位开发板之后，将E2000开发板的网络与tftp 服务器在同一局域网中
+- 2.1 复位开发板之后，将E2000Q DEMO开发板的网络与tftp 服务器在同一局域网中
 - 2.2  在板子串口终端工具下输入以下命令
 
 ```
@@ -163,16 +165,16 @@ rpmsg-design:
 
 #### aarch32 程序测试 （FreeRTOS 间）
 
-以E2000Q为例
+以E2000Q DEMO为例
 
 1. 在编译环境下，切换至 phytium-free-rtos-sdk/example/system/amp/openamp/driver_core 目录
 
 - 1.1 输入` make clean ` 清理 `./` 目录下的编译结果
 - 1.2 输入` make amp_make AMP_CONFIG=config1 ` 编译config1配置项代码，并且生成对应的elf 文件
 
-2. 使用串口连接E2000开发板 ，并且打开串口终端工具
+2. 使用串口连接E2000Q DEMO开发板，并且打开串口终端工具
 
-- 2.1 复位开发板之后，将E2000开发板的网络与tftp 服务器在同一局域网中
+- 2.1 复位开发板之后，将E2000Q DEMO开发板的网络与tftp服务器在同一局域网中
 - 2.2  在板子串口终端工具下输入以下命令
 
 ```

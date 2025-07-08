@@ -2,8 +2,13 @@ SHELL_CSRCS = shell.c \
 				shell_cmd_list.c \
 				shell_companion.c \
 				shell_ext.c \
-				shell_port.c \
-				fpl011_os_port.c
+				shell_port.c
+
+ifdef CONFIG_LS_SERIAL_V2
+SHELL_CSRCS += fserial_msg_os_port.c
+else
+SHELL_CSRCS += fpl011_os_port.c
+endif
 
 SHELL_CSRCS += cmd_bootelf.c \
 				cmd_codeloader.c \
@@ -16,4 +21,3 @@ SHELL_CSRCS += cmd_bootelf.c \
 				cmd_version.c \
 				cmd_ps.c \
 				cmd_mmu.c
-

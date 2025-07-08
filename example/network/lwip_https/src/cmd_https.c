@@ -1,19 +1,22 @@
 /*
- * Copyright : (C) 2023 Phytium Information Technology, Inc.
- * All Rights Reserved.
- * 
- * This program is OPEN SOURCE software: you can redistribute it and/or modify it
- * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,
- * either version 1.0 of the License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the Phytium Public License for more details.
+ * Copyright (C) 2024, Phytium Technology Co., Ltd.   All Rights Reserved.
+ *
+ * Licensed under the BSD 3-Clause License (the "License"); you may not use
+ * this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ *     https://opensource.org/licenses/BSD-3-Clause
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  * 
  * 
  * FilePath: cmd_https.c
  * Created Date: 2024-9-29 11:06:40
- * Last Modified: 2024-09-29 15:52:43
+ * Last Modified: 2025-05-20 10:27:20
  * Description:  This file is for https example cmd catalogue.
  * 
  * Modify History:

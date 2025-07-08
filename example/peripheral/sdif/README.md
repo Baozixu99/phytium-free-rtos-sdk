@@ -14,7 +14,7 @@ SD卡的通信依赖三种数据格式：命令包，响应包，数据包，控
 ## 2. 如何使用例程
 
 本例程需要用到
-- Phytium开发板（E2000D/E2000Q/PhytiumPi）
+- Phytium开发板（E2000 D/Q DEMO、PD2308 DEMO、PD2408 TEST_A）
 - [Phytium FreeRTOS SDK](https://gitee.com/phytium_embedded/phytium-free-rtos-sdk)
 - [Phytium Standalone SDK](https://gitee.com/phytium_embedded/phytium-standalone-sdk)
 
@@ -24,15 +24,18 @@ SD卡的通信依赖三种数据格式：命令包，响应包，数据包，控
 
 本例程支持的硬件平台包括
 
-- E2000D
-- E2000Q
+- E2000 D/Q DEMO
+- PD2308 DEMO
+- PD2408 TEST_A
 
 对应的配置项是，
 
-- CONFIG_TARGET_E2000D
-- CONFIG_TARGET_E2000Q
+- CONFIG_E2000D_DEMO_BOARD
+- CONFIG_E2000Q_DEMO_BOARD
+- CONFIG_PD2308_DEMO_BOARD
+- CONFIG_PD2408_TEST_A_BOARD
 
-本例程在 E2000 DEMO 板上完成测试，DOMO板上 SD-1控制器连接TF卡，SD-0控制器连接eMMC
+本例程在E2000 Q DEMO上完成测试，DOMO板上 SD-1控制器连接TF卡，SD-0控制器连接eMMC
 
 ### 2.2 SDK配置方法
 
@@ -48,11 +51,10 @@ SD卡的通信依赖三种数据格式：命令包，响应包，数据包，控
 - CONFIG_USE_SDMMC_CMD
 
 本例子已经提供好具体的编译指令，以下进行介绍:
-- make load_e2000q_aarch64  将预设64bit e2000q 下的配置加载至工程中
-- make load_e2000q_aarch32  将预设32bit e2000q 下的配置加载至工程中
 - make                      将目录下的工程进行编译
 - make clean                将目录下的工程进行清理
 - make image                将目录下的工程进行编译，并将生成的elf 复制到目标地址
+- make list_kconfig         当前工程支持哪些配置文件
 - make menuconfig           配置目录下的参数变量
 - make backup_kconfig       将目录下的sdkconfig 备份到./configs下
 
@@ -65,11 +67,9 @@ SD卡的通信依赖三种数据格式：命令包，响应包，数据包，控
 #### 2.3.1 构建过程
 
 - 在host侧完成配置
-> 配置成 e2000q，对于其它平台，使用对于的默认配置，如,
-
-- 选择目标平台
+使用待测试平台对应的默认配置，例如在E2000 Q DEMO开发板上测试aarch64程序：
 ```
-make load_kconfig LOAD_CONFIG_NAME=e2000q_aarch64_demo_sdio
+make load_kconfig LOAD_CONFIG_NAME=pe2204_aarch64_demo_sdif
 ```
 
 - 选择例程需要的配置
@@ -123,7 +123,7 @@ sd emmc
 
 ## 3. 如何解决问题
 
-Q: 在飞腾派上使用例程
-A：部分版本的飞腾派上没有emmc，作为外插的sd口连接控制器0，由于 tf 卡中存储了固件和文件系统，此例程的读写可能会损害启动文件，不建议直接使用此例程，关于 tf 卡的使用可以参考 storage 中的 fatfs 例程使用特定分区内的文件系统
+Q: 在PhytiumPi使用例程
+A：部分版本的PhytiumPi上没有emmc，作为外插的sd口连接控制器0，由于 tf 卡中存储了固件和文件系统，此例程的读写可能会损害启动文件，不建议直接使用此例程，关于 tf 卡的使用可以参考 storage 中的 fatfs 例程使用特定分区内的文件系统c
 
 ## 4. 修改历史记录

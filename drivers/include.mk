@@ -21,16 +21,25 @@ ifdef CONFIG_USE_FQSPI
 endif #CONFIG_USE_QSPI
 
 # usart
-ifdef CONFIG_ENABLE_Pl011_UART
+ifdef CONFIG_FREERTOS_USE_UART
 	BUILD_INC_PATH_DIR += $(OS_DRV_CUR_DIR)/serial/fpl011
 endif #CONFIG_ENABLE_Pl011_UART
+
+ifdef CONFIG_FREERTOS_USE_SERIAL_V2
+	BUILD_INC_PATH_DIR += $(OS_DRV_CUR_DIR)/serial/fserial_v2_0
+endif #CONFIG_USE_SERIAL_V2
 
 # spi
 ifdef CONFIG_USE_FSPIM
 	BUILD_INC_PATH_DIR += $(OS_DRV_CUR_DIR)/spi/fspim
 endif
 
+ifdef CONFIG_USE_FSPIM_V2
+	BUILD_INC_PATH_DIR += $(OS_DRV_CUR_DIR)/spi/fspim_v2_0
+endif
 
+
+# eth
 ifdef CONFIG_ENABLE_FGMAC
 	BUILD_INC_PATH_DIR += $(OS_DRV_CUR_DIR)/eth/gmac
 endif #CONFIG_ENABLE_FGMAC
@@ -40,6 +49,10 @@ ifdef CONFIG_ENABLE_FXMAC
 	BUILD_INC_PATH_DIR += $(OS_DRV_CUR_DIR)/eth/xmac
 endif
 
+ifdef CONFIG_ENABLE_FXMAC_V2
+	BUILD_INC_PATH_DIR += $(OS_DRV_CUR_DIR)/eth/xmac_v2_0
+endif
+
 # can
 ifdef CONFIG_USE_FCAN
 	BUILD_INC_PATH_DIR += $(OS_DRV_CUR_DIR)/can
@@ -47,9 +60,12 @@ endif
 
 # i2c
 ifdef CONFIG_USE_FI2C
-	BUILD_INC_PATH_DIR += $(OS_DRV_CUR_DIR)/i2c
+	BUILD_INC_PATH_DIR += $(OS_DRV_CUR_DIR)/i2c/fi2c
 endif
 
+ifdef CONFIG_USE_FI2C_V2
+	BUILD_INC_PATH_DIR += $(OS_DRV_CUR_DIR)/i2c/fi2c_v2_0
+endif
 
 #wdt
 ifdef CONFIG_USE_FWDT

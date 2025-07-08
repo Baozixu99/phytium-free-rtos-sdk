@@ -9,7 +9,7 @@
 ## 2. 如何使用例程
 
 本例程需要用到
-- Phytium开发板（E2000D/E2000Q/PhytiumPi）
+- Phytium开发板（E2000D/E2000Q/PhytiumPi/PD2408 TEST A/PD2408 TEST B）
 - [Phytium FreeRTOS SDK](https://gitee.com/phytium_embedded/phytium-free-rtos-sdk)
 - [Phytium standalone SDK](https://gitee.com/phytium_embedded/phytium-standalone-sdk)
 
@@ -18,14 +18,15 @@
 ### 2.1 硬件配置方法
 
 本例程支持的硬件平台包括
-- E2000D、E2000Q、PhytiumPi开发板
+- E2000D、E2000Q、PhytiumPi、PD2408开发板
 
 注：为防止破坏固件Phytium目前仅支持使用RAM测试
 
 对应的配置项是
-- CONFIG_TARGET_E2000D
-- CONFIG_TARGET_E2000Q
-- CONFIG_TARGET_PHYTIUMPI
+- CONFIG_E2000D_DEMO_BOARD
+- CONFIG_E2000Q_DEMO_BOARD
+- CONFIG_PHYTIUMPI_FIREFLY_BOARD
+- CONFIG_PD2408_TEST_A_BOARD
 
 ### 2.2 SDK配置方法
 
@@ -70,6 +71,7 @@ setenv serverip 192.168.4.50
 setenv gatewayip 192.168.4.1 
 tftpboot 0x90100000 freertos.elf
 bootelf -p 0x90100000
+go 0x80100000
 ```
 
 ### 2.4 输出与实验现象
@@ -98,9 +100,18 @@ bootelf -p 0x90100000
 ![](./figures/test_3.png)
 ![](./figures/test_4.png)
 
+### 2.5 输出与实验现象 (PD2408)
+
+- shell中输入命令 fatfs test，启动测试
+
+![pd2408_test1](./figures/pd2408_test1.png)
+
+![pd2408_test2](./figures/pd2408_test2.png)
+
+![pd2408_test3](./figures/pd2408_test3.png)
+
 ## 3. 如何解决问题
 
 1. fatfs_example.c中定义了WAIT_TIMEOUT变量，决定Task最长阻塞时间。如果测试时间过长，超过了WAIT_TIMEOUT, 那么程序会报告failure。可选择增大WAIT_TIMEOUT或减少测试时读写的字节数解决这一问题。
 
 2. 关闭CONFIG_FATFS_USB配置的同时，需要关闭Use CherryUSB，否则编译会报错。
- 

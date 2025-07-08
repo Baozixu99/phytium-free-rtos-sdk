@@ -14,7 +14,7 @@ Asynchronous exception包含越界访问地址空间Memory access violation一�
 
 本例程需要用到
 
-- Phytium开发板（FT2000-4/D2000/E2000D/E2000Q/PHYTIUMPI）
+- Phytium开发板（D2000 TEST、FT2000/4 DSK、E2000 D/Q DEMO、PD2308 DEMO、PD2408 TEST_A/TEST_B、PhytiumPi）
 - [Phytium FreeRTOS SDK](https://gitee.com/phytium_embedded/phytium-free-rtos-sdk)
 - [Phytium standalone SDK](https://gitee.com/phytium_embedded/phytium-standalone-sdk)
 
@@ -22,19 +22,18 @@ Asynchronous exception包含越界访问地址空间Memory access violation一�
 
 本例程支持的硬件平台包括
 
-- FT2000-4
-- D2000
-- E2000D
-- E2000Q
-- PHYTIUMPI
+- D2000 TEST、FT2000/4 DSK、E2000 D/Q DEMO、PD2308 DEMO、PD2408 TEST_A/TEST_B、PhytiumPi开发板
 
 对应的配置项是，
 
-- CONFIG_TARGET_FT2004
-- CONFIG_TARGET_D2000
-- CONFIG_TARGET_E2000D
-- CONFIG_TARGET_E2000Q
-- CONFIG_TARGET_PHYTIUMPI
+- CONFIG_FT2004_DSK_BOARD
+- CONFIG_D2000_TEST_BOARD
+- CONFIG_E2000D_DEMO_BOARD
+- CONFIG_E2000Q_DEMO_BOARD
+- CONFIG_PD2308_DEMO_BOARD
+- CONFIG_PD2408_TEST_A_BOARD
+- CONFIG_PD2408_TEST_B_BOARD
+- CONFIG_PHYTIUMPI_FIREFLY_BOARD
 
 ### 2.2 SDK配置方法
 
@@ -66,15 +65,12 @@ Asynchronous exception包含越界访问地址空间Memory access violation一�
 
 - 在host侧完成配置
 
-> 配置成ft2004，对于其它平台，使用对于的默认配置，如D2000 `make load_kconfig LOAD_CONFIG_NAME=d2000_aarch64_TEST_exception`
-
-- 选择目标平台
-
+使用待测试平台对应的默认配置，例如在E2000D DEMO开发板上测试aarch64程序：
 ```
-make load_kconfig LOAD_CONFIG_NAME=e2000d_aarch64_demo_exception
+make load_kconfig LOAD_CONFIG_NAME=pe2202_aarch64_demo_exception
 ```
 
-- 选择例程需要的配置
+- 选择例程需要的配置.
 
 ```
 make menuconfig

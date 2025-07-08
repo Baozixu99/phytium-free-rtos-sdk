@@ -1,14 +1,17 @@
 /*
- * Copyright : (C) 2022 Phytium Information Technology, Inc.
- * All Rights Reserved.
+ * Copyright (C) 2022, Phytium Technology Co., Ltd.   All Rights Reserved.
  *
- * This program is OPEN SOURCE software: you can redistribute it and/or modify it
- * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,
- * either version 1.0 of the License, or (at your option) any later version.
+ * Licensed under the BSD 3-Clause License (the "License"); you may not use
+ * this file except in compliance with the License. You may obtain a copy of
+ * the License at
  *
- * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the Phytium Public License for more details.
+ *     https://opensource.org/licenses/BSD-3-Clause
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  *
  *
  * FilePath: fxmac_os.h
@@ -40,13 +43,13 @@ extern "C" {
 #define FREERTOS_XMAC_PARAM_ERROR FT_CODE_ERR(ErrModPort, 0, 0x2)
 #define FREERTOS_XMAC_NO_VALID_SPACE FT_CODE_ERR(ErrModPort, 0, 0x3)
 
-#define FXMAX_RX_BDSPACE_LENGTH    0x20000 /* default set 128KB*/
-#define FXMAX_TX_BDSPACE_LENGTH    0x20000 /* default set 128KB*/
+#define FXMAC_RX_BDSPACE_LENGTH    0x20000 /* default set 128KB*/
+#define FXMAC_TX_BDSPACE_LENGTH    0x20000 /* default set 128KB*/
 
-#define FXMAX_TX_PBUFS_LENGTH       64
-#define FXMAX_RX_PBUFS_LENGTH       64
+#define FXMAC_TX_PBUFS_LENGTH       64
+#define FXMAC_RX_PBUFS_LENGTH       64
 
-#define FXMAX_MAX_HARDWARE_ADDRESS_LENGTH 6
+#define FXMAC_MAX_HARDWARE_ADDRESS_LENGTH 6
 
 #define XMAC_PHY_RESET_ENABLE 1
 #define XMAC_PHY_RESET_DISABLE 0
@@ -93,11 +96,11 @@ typedef enum
 
 typedef struct
 {
-    u8 rx_bdspace[FXMAX_RX_BDSPACE_LENGTH] __attribute__((aligned(128))); /* 接收bd 缓冲区 */
-    u8 tx_bdspace[FXMAX_RX_BDSPACE_LENGTH] __attribute__((aligned(128))); /* 发送bd 缓冲区 */
+    u8 rx_bdspace[FXMAC_RX_BDSPACE_LENGTH] __attribute__((aligned(128))); /* 接收bd 缓冲区 */
+    u8 tx_bdspace[FXMAC_TX_BDSPACE_LENGTH] __attribute__((aligned(128))); /* 发送bd 缓冲区 */
 
-    uintptr rx_pbufs_storage[FXMAX_RX_PBUFS_LENGTH];
-    uintptr tx_pbufs_storage[FXMAX_TX_PBUFS_LENGTH];
+    uintptr rx_pbufs_storage[FXMAC_RX_PBUFS_LENGTH];
+    uintptr tx_pbufs_storage[FXMAC_TX_PBUFS_LENGTH];
 
 } FXmacNetifBuffer;
 
@@ -125,7 +128,7 @@ typedef struct
     u32 feature;
 
     struct LwipPort *stack_pointer; /* Docking data stack data structure */
-    u8 hwaddr[FXMAX_MAX_HARDWARE_ADDRESS_LENGTH];
+    u8 hwaddr[FXMAC_MAX_HARDWARE_ADDRESS_LENGTH];
     void * netif; /* Pointing to the netif */
 } FXmacOs;
 

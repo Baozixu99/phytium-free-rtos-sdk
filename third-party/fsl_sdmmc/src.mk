@@ -13,6 +13,10 @@ ifdef CONFIG_FSL_SDMMC_USE_FSDIF
 ABSOLUTE_CFILES += $(abspath $(wildcard $(FSL_SDMMC_BM_DIR)/host/fsdif/*.c))
 endif
 
+ifdef CONFIG_FSL_SDMMC_USE_FSDIF_V2
+ABSOLUTE_CFILES += $(abspath $(wildcard $(FSL_SDMMC_BM_DIR)/host/fsdif_v2_0/*.c))
+endif
+
 ifdef CONFIG_FSL_SDMMC_USE_FSDMMC
 ABSOLUTE_CFILES += $(abspath $(wildcard $(FSL_SDMMC_BM_DIR)/host/fsdmmc/*.c))
 endif

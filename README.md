@@ -46,146 +46,54 @@
 
 ## 3. 硬件参考
 
-### 3.1 FT2000-4
-
-FT-2000/4 是一款面向桌面应用的高性能通用 4 核处理器。每 2 个核构成 1 个处理器核簇（Cluster），并共享 L2 Cache。主要技术特征如下：
-
-- 兼容 ARM v8 64 位指令系统，兼容 32 位指令
-- 支持单精度、双精度浮点运算指令
-- 支持 ASIMD 处理指令
-- 集成 2 个 DDR4 通道，可对 DDR 存储数据进行实时加密
-- 集成 34 Lane PCIE3.0 接口：2 个 X16（每个可拆分成 2 个 X8），2 个 X1
-- 集成 2 个 GMAC，RGMII 接口，支持 10/100/1000 自适应
-- 集成 1 个 SD 卡控制器，兼容 SD 2.0 规范
-- 集成 加密计算单元
-- 集成 4 个 UART，32 个 GPIO，4 个 I2C，1 个 QSPI，2 个通 用 SPI，2 个 WDT，16 个外部中断（和 GPIO 共用 IO）
-- 集成温度传感器
-
-### 3.2 D2000
-
-D2000 是一款面向桌面应用的高性能通用 8 核处理器。每 2 个核构成 1 个处理器核簇（Cluster），并共享 L2 Cache。存储系统包含 Cache 子系统和 DDR，I/O 系统包含 PCIe、高速 IO 子系统、千兆位以太网 GMAC 和低速 IO 子系统，主要技术特征如下，
-
-- 兼容 ARM v8 64 位指令系统，兼容 32 位指令
-- 支持单精度、双精度浮点运算指令
-- 支持 ASIMD 处理指令
-- 集成 2 个 DDR 通道，支持 DDR4 和 LPDDR4，可对 DDR 存储数据进行实时加密
-- 集成 34 Lane PCIE3.0 接口：2 个 X16（每个可拆分成 2 个 X8），2 个 X1
-- 集成 2 个 GMAC，RGMII 接口，支持 10/100/1000 自适应
-- 集成 1 个 SD 卡控制器，兼容 SD 2.0 规范
-- 集成 1 个 HDAudio，支持音频输出，可同时支持最多 4 个 Codec
-- 集成 SM2、SM3、SM4、SM9 模块
-- 集成 4 个 UART，32 个 GPIO，4 个 I2C，1 个 QSPI，2 个通用 SPI，2 个 WDT，16 个外部中断（和 GPIO 共用 IO）
-- 集成 2 个温度传感器
-
-### 3.3 E2000Q
-
-- E2000Q 集成2个FTC664核和2个FTC310核。主要技术特征如下：
-
-- 兼容ARM v8 64 位指令系统，兼容32 位指令
-- 集成 1 路 16 通道 General DMA 和 1 路 8 通道 Device DMA
-- 支持单精度、双精度浮点运算指令
-- 两个 FTC664 核各包含 1MB 私有 L2 Cache,由两个 FTC310 核组成的Cluster 内含 256KB 共享的 L2 Cache
-- 集成1个DDR4 通道
-- 集成6Lane PCIE3.0 接口（X4+2*X1 、X2+4*X2、6*X1）
-- 集成4个1000M以太网控制器，支持2路SGMII接口和2路SGMII/RGMII接口
-- 集成3路USB2.0(OTG)和2路USB3.0(兼容 2.0)
-- 集成2路SATA3.0模块
-- 2路 DisplayPort1.4 接口
-- 集成常用低速接口：WDT、QSPI、PWM、Nand、SD/SDIO/eMMC 、SPI_M、UART、I2C、I2S、MIO、CAN-FD、GPIO、LocalBus、Timer
-
-### 3.4 E2000D
-
-- E2000D 集成 2 个 FTC310 核。主要技术特征如下：
-
-- 兼容ARM v8 64 位指令系统，兼容32 位指令
-- 集成 1 路 16 通道 General DMA 和 1 路 8 通道 Device DMA
-- 支持单精度、双精度浮点运算指令
-- L2 Cache 有256KB
-- 集成1个DDR4 通道
-- 集成4 Lane PCIE3.0 接口（4X1）
-- 集成4个1000M以太网控制器，支持 2 路 SGMII 接口和 2 路 SGMII/RGMII 接口
-- 集成3路USB2.0(OTG)和2路USB3.0(兼容 2.0)
-- 集成2路SATA3.0模块
-- 2路 DisplayPort1.4 接口
-- 集成常用低速接口：WDT，QSPI，PWM，Nand，SD/SDIO/eMMC ，SPI_M，UART，I2C，MIO，CAN-FD，GPIO，LocalBus，Timer
-
-### 3.5 E2000S
-
-- E2000S 集成 1 个 FTC310 核，单核结构。主要技术特征如下：
-
-- 兼容ARM v8 64 位指令系统，兼容32 位指令
-- 集成 1 路 16 通道 General DMA 和 1 路 8 通道 Device DMA
-- 支持单精度、双精度浮点运算指令
-- L2 Cache 有256KB
-- 集成1个DDR4 通道
-- 集成2 Lane PCIE3.0 接口（2X1）
-- 集成3个1000M以太网控制器，支持1路SGMII接口和2路RGMII/RMII接口
-- 集成1路USB2.0(Device)和2路USB2.0(OTG)
-- 2路 DisplayPort1.4 接口
-- 集成常用低速接口：WDT、DMAC、PWM、QSPI、SD/SDIO/eMMC、SPI Master、UART、I2C、MIO、I3C、PMBUS、GPIO、SGPIO、One-Wire、Timer、One-Wire
-
-### 3.6 PHYTIUMPI
-
-- PHYTIUMPI 集成2个FTC664核和2个FTC310核。主要技术特征如下：
-- FTC664 核主频可达 1.8GHz，FTC310 核主频可达 1.5GHz
-- 兼容ARM v8 64 位指令系统，兼容32 位指令
-- 集成 1 路 16 通道 General DMA 和 1 路 8 通道 Device DMA
-- 支持单精度、双精度浮点运算指令
-- 集成1个DDR4 通道
-- 集成1路 Mini-PCIe，支持 AI、5G\4G 等模组
-- 集成2个1000M以太网控制器，支持2路SGMII接口和2路SGMII/RGMII接口
-- 集成3路USB2.0(OTG)和2路USB3.0(兼容 2.0)
-- 1路 HDMI 接口
-- 集成常用低速接口：WDT、QSPI、PWM、SD/SDIO/eMMC 、SPI_M、UART、I2C、I2S、MIO、CAN-FD、GPIO、LocalBus、Timer
-
----
+参考[phytium standalone sdk README.md 3. 硬件参考](https://gitee.com/phytium_embedded/phytium-standalone-sdk/blob/master/README.md#3-%E7%A1%AC%E4%BB%B6%E5%8F%82%E8%80%83)
 
 ## 4. 例程支持情况
 
 | Feature            | Platform Supported                        | Platform Developing                  | Component              |
 | -------------------| ------------------------------------------| ------------------------------------ | ---------------------- |
-| EVENTGROUP         | FT2000/4 <br>D2000 <br>E2000 <br>PHYTIUMPI|                                      | eventgroup           |
-| INTERRUPT          | FT2000/4 <br>E2000 <br>D2000 <br>PHYTIUMPI|                                      | interrupt                |
-| QUEUE              | FT2000/4 <br>D2000 <br>E2000 <br>PHYTIUMPI|                                      | queue           |
-| RESOURCE           | FT2000/4 <br>E2000 <br>D2000 <br>PHYTIUMPI|                                      | resource                |
-| SOFTWARE_TIMER     | FT2000/4 <br>D2000 <br>E2000 <br>PHYTIUMPI|                                      | software_timer           |
-| TASK               | FT2000/4 <br>E2000 <br>D2000 <br>PHYTIUMPI|                                      | task                |
-| TASK_NOTIFY        | FT2000/4 <br>D2000 <br>E2000 <br>PHYTIUMPI|                                      | task_notify           |
+| EVENTGROUP         | PD1904 <br>PD2008 <br>PE220X |                                      | eventgroup           |
+| INTERRUPT          | PD1904 <br>PE220X <br>PD2008 |                                      | interrupt                |
+| QUEUE              | PD1904 <br>PD2008 <br>PE220X |                                      | queue           |
+| RESOURCE           | PD1904 <br>PE220X <br>PD2008 |                                      | resource                |
+| SOFTWARE_TIMER     | PD1904 <br>PD2008 <br>PE220X |                                      | software_timer           |
+| TASK               | PD1904 <br>PE220X <br>PD2008 |                                      | task                |
+| TASK_NOTIFY        | PD1904 <br>PD2008 <br>PE220X |                                      | task_notify           |
 
 | Network            | Platform Supported                        | Platform Developing                  | Component              |
 | -------------------| ------------------------------------------| ------------------------------------ | ---------------------- |
-| LWIP               | FT2000/4 <br>D2000 <br>E2000 <br>PHYTIUMPI|                                      | lwip_startup           |
-| UDP                | FT2000/4 <br>E2000 <br>D2000 <br>PHYTIUMPI|                                      | sockets/udp_multicast  |
+| LWIP               | PD1904 <br>PD2008 <br>PE220X  <br>PD2408|                                      | lwip_startup           |
+| UDP                | PD1904 <br>PE220X <br>PD2008  <br>PD2408|                                      | sockets/udp_multicast  |
 
 | Peripherals                    | Platform Supported                        | Platform Developing                  | Component            |
 | ------------------------------ | ------------------------------------------| ------------------------------------ | -------------------- |
-| ADC                            |                                           | E2000                                | adc                  |
-| CAN                            | FT2000/4 <br>E2000 <br>D2000              |                                      | can/can              |
-| DDMA                           | E2000 <br>PHYTIUMPI                       |                                      | dma/ddma             |
-| GDMA                           | E2000 <br>PHYTIUMPI                       |                                      | dma/gdma             |
-| GPIO                           | E2000 <br>PHYTIUMPI                       |                                      | gpio                 |
-| I2C                            | E2000 <br>PHYTIUMPI                       | FT2004/D2000                         | i2c                  |
-| MEDIA                          | E2000 <br>PHYTIUMPI                       |                                      | media                |
-| QSPI (Nor Flash)               | E2000 <br>D2000 <br>FT2000/4              |                                      | qspi                 |
-| SPI                            | E2000 <br>PHYTIUMPI                       |                                      | spi                  |
-| TIMER & TACHO                  | E2000 <br>PHYTIUMPI                       |                                      | timer&tacho          |
-| SDIF                           | E2000 <br>PHYTIUMPI                       |                                      | sd                   |
-| PWM                            | E2000 <br>PHYTIUMPI                       |                                      | pwm                  |
-| USB                            | E2000 <br>PHYTIUMPI                       |                                      | usb                  |
-| WDT                            | FT2000/4 <br>D2000 <br>E2000 <br>PHYTIUMPI|                                      | wdt                  |
+| ADC                            |                                           | PE220X                                | adc                  |
+| CAN                            | PD1904 <br>PE220X <br>PD2008              |                                      | can/can              |
+| DDMA                           | PE220X                        |                                      | dma/ddma             |
+| GDMA                           | PE220X                        |                                      | dma/gdma             |
+| GPIO                           | PE220X  <br>PD2408                    |                                      | gpio                 |
+| I2C                            | PE220X  <br>PD2408                      | FT2004/PD2008                         | i2c                  |
+| MEDIA                          | PE220X                        |                                      | media                |
+| QSPI (Nor Flash)               | PE220X <br>PD2008 <br>PD1904 <br>PD2408              |                                      | qspi                 |
+| SPI                            | PE220X  <br>PD2408                      |                                      | spi                  |
+| TIMER & TACHO                  | PE220X                        |                                      | timer&tacho          |
+| SDIF                           | PE220X  <br>PD2408                     |                                      | sd                   |
+| PWM                            | PE220X  <br>PD2408                      |                                      | pwm                  |
+| USB(Host/Device)                | PE220X <br>PD2408                       |                                      | usb                  |
+| WDT                            | PD1904 <br>PD2008 <br>PE220X |                                      | wdt                  |
 
 | Storage            | Platform Supported                        | Platform Developing                  | Component              |
 | -------------------| ------------------------------------------| ------------------------------------ | ---------------------- |
-| FATFS              | E2000                                     |                                      | fatfs           |
-| QSPI_SPIFFS        | FT2000/4 <br>E2000 <br>D2000              |                                      | qspi_spiffs                |
-| SPIM_SPIFFS        | E2000 <br>PHYTIUMPI                       |                                      | spim_spiffs           |
+| FATFS              | PE220X <br>PD2408                                |                                      | fatfs           |
+| QSPI_SPIFFS        | PD1904 <br>PE220X <br>PD2008              |                                      | qspi_spiffs                |
+| SPIM_SPIFFS        | PE220X <br>PD2408                        |                                      | spim_spiffs           |
 
 | System             | Platform Supported                        | Platform Developing                  | Component              |
 | -------------------| ------------------------------------------| ------------------------------------ | ---------------------- |
-| AMP                | E2000 <br>PHYTIUMPI                       | D2000 <br>FT2000/4                   | amp/openamp            |
-| ATOMIC             | FT2000/4 <br>D2000 <br>E2000 <br>PHYTIUMPI|                                      | atomic            |
-| EXCEPTION_DEBUG    | FT2000/4 <br>D2000 <br>E2000 <br>PHYTIUMPI|                                      | exception_debug        |
-| NESTED_INTERRUPT   | FT2000/4 <br>D2000 <br>E2000 <br>PHYTIUMPI|                                      | nested_interrupt       |
+| AMP                | PE220X <br>PD2408                        | PD2008 <br>PD1904                   | amp/openamp            |
+| ATOMIC             | PD1904 <br>PD2008 <br>PE220X  <br>PD2408|                                      | atomic            |
+| EXCEPTION_DEBUG    | PD1904 <br>PD2008 <br>PE220X  <br>PD2408|                                      | exception_debug        |
+| NESTED_INTERRUPT   | PD1904 <br>PD2008 <br>PE220X  <br>PD2408|                                      | nested_interrupt       |
 
 ---
 ## 5. 参考资料

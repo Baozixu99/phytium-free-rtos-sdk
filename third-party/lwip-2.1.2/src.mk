@@ -11,6 +11,10 @@ ifdef CONFIG_USE_FREERTOS
 		CSRCS_RELATIVE_FILES += $(wildcard ports/fxmac/*.c)
 	endif
 
+	ifdef CONFIG_LWIP_FXMAC_V2
+		CSRCS_RELATIVE_FILES += $(wildcard ports/fxmac_v2_0/*.c)
+	endif	
+
 endif
 
 

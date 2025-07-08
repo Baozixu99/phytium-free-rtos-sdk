@@ -1,14 +1,17 @@
 /*
- * Copyright : (C) 2022 Phytium Information Technology, Inc.
- * All Rights Reserved.
+ * Copyright (C) 2023, Phytium Technology Co., Ltd.   All Rights Reserved.
  *
- * This program is OPEN SOURCE software: you can redistribute it and/or modify it
- * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,
- * either version 1.0 of the License, or (at your option) any later version.
+ * Licensed under the BSD 3-Clause License (the "License"); you may not use
+ * this file except in compliance with the License. You may obtain a copy of
+ * the License at
  *
- * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the Phytium Public License for more details.
+ *     https://opensource.org/licenses/BSD-3-Clause
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  *
  *
  * FilePath: qspi_dual_flash_stack_example.c
@@ -43,7 +46,7 @@
 #define TIMER_OUT (pdMS_TO_TICKS(5000UL))
 #define QSPI_DUAL_FLASH_TEST_TASK_PRIORITY 3
 /* Offset 1M from flash maximum capacity*/
-#define FLASH_WR_OFFSET SZ_1M
+#define FLASH_WR_OFFSET 0x100
 /* write and read start address */
 static u32 flash_wr_start = 0;
 
@@ -155,7 +158,7 @@ static FError QspiInit(void)
 
     /* init qspi controller */
     os_qspi_ctrl_p = FFreeRTOSQspiInit(QSPI_TEST_ID);
-    flash_wr_start = os_qspi_ctrl_p->qspi_ctrl.flash_size - FLASH_WR_OFFSET;
+    flash_wr_start = os_qspi_ctrl_p->qspi_ctrl.flash_size[FQSPI_CS_0] - FLASH_WR_OFFSET;
     if (os_qspi_ctrl_p == NULL)
     {
         FQSPI_ERROR("FFreeRTOSQspiInit failed.\n");

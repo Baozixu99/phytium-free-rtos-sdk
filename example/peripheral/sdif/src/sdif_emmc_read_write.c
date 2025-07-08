@@ -1,14 +1,17 @@
 /*
- * Copyright : (C) 2022 Phytium Information Technology, Inc.
- * All Rights Reserved.
+ * Copyright (C) 2022, Phytium Technology Co., Ltd.   All Rights Reserved.
  *
- * This program is OPEN SOURCE software: you can redistribute it and/or modify it
- * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,
- * either version 1.0 of the License, or (at your option) any later version.
+ * Licensed under the BSD 3-Clause License (the "License"); you may not use
+ * this file except in compliance with the License. You may obtain a copy of
+ * the License at
  *
- * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the Phytium Public License for more details.
+ *     https://opensource.org/licenses/BSD-3-Clause
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  *
  *
  * FilePath: sdif_emmc_read_write.c
@@ -204,15 +207,18 @@ int FFreeRTOSEmmcWriteRead(void)
     memset(&s_inst, 0, sizeof(s_inst));
 
     s_inst_config.hostId = FSDIF0_ID;
+#if defined(CONFIG_FSL_SDMMC_USE_FSDIF)
     s_inst_config.hostType = kSDMMCHOST_TYPE_FSDIF;
+#elif defined(CONFIG_FSL_SDMMC_USE_FSDIF_V2)
+    s_inst_config.hostType = kSDMMCHOST_TYPE_FSDIF_V2;
+#endif
     s_inst_config.cardType = kSDMMCHOST_CARD_TYPE_EMMC;
     s_inst_config.enableDMA = SD_WORK_DMA;
     s_inst_config.enableIrq = SD_WORK_IRQ;
-    s_inst_config.timeTuner = FSdifGetTimingSetting;
     s_inst_config.endianMode = kSDMMCHOST_EndianModeLittle;
     s_inst_config.maxTransSize = SD_MAX_RW_BLK * SD_BLOCK_SIZE;
     s_inst_config.defBlockSize = SD_BLOCK_SIZE;
-    s_inst_config.cardClock = FSDIF_CLK_SPEED_100_MHZ;
+    s_inst_config.cardClock = SD_CLOCK_100MHZ;
 
     /* 创建主要操作任务 */
     xReturn = xTaskCreate((TaskFunction_t)SdifEmmcReadWriteTask,

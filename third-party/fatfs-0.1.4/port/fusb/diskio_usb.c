@@ -32,10 +32,10 @@
 #define FF_DEBUG(format, ...)   FT_DEBUG_PRINT_D(FF_DEBUG_TAG, format, ##__VA_ARGS__)
 #define FF_WARN(format, ...)    FT_DEBUG_PRINT_W(FF_DEBUG_TAG, format, ##__VA_ARGS__)
 
-#ifdef CONFIG_CHERRY_USB_PORT_XHCI_PCIE
-    #define FUSB_FATFS_ID           0U
+#ifdef  CONFIG_TARGET_PD2408
+#define FUSB_FATFS_ID            FUSB_ID_1
 #else
-    #define FUSB_FATFS_ID           FUSB3_ID_0
+#define FUSB_FATFS_ID            FUSB3_ID_0
 #endif
 
 typedef struct
@@ -85,6 +85,7 @@ static DSTATUS usb_disk_initialize(
 {
     DSTATUS status = STA_NOINIT;
     ff_usb_disk *disk = &usb_disk;
+    struct usbh_msc *msc_class;
     int retries = 10000;
 
     if (FF_DRV_NOT_USED == disk->pdrv)
@@ -94,14 +95,11 @@ static DSTATUS usb_disk_initialize(
 
     if (FALSE == disk->init_ok)
     {
-#ifdef CONFIG_CHERRY_USB_PORT_XHCI_PCIE
-        (void)usbh_initialize(disk->id, 0U); /* start a task to emurate usb hub and attached usb disk */
-#else
         (void)usbh_initialize(disk->id, usb_hc_get_register_base(disk->id)); /* start a task to emurate usb hub and attached usb disk */
-#endif
         while (TRUE)
         {
-            if (NULL != usbh_find_class_instance(disk->disk_name))
+            msc_class = usbh_find_class_instance(disk->disk_name);
+            if (NULL != msc_class)
             {
                 break;
             }
@@ -112,10 +110,17 @@ static DSTATUS usb_disk_initialize(
                 return STA_NOINIT;
             }
 
-            vTaskDelay(10); /* may need to wait while for usb disk emuration */
+            vTaskDelay(100); /* may need to wait while for usb disk emuration */
         }
 
-        disk->init_ok = TRUE;
+        if (usbh_msc_scsi_init(msc_class) < 0) 
+        {
+            printf("scsi_init error\r\n");
+        } 
+        else 
+        {
+            disk->init_ok = TRUE;
+        }
     }
 
     status &= ~STA_NOINIT;

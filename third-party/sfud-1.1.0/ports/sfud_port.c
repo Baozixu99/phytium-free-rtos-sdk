@@ -42,6 +42,9 @@
 #ifdef CONFIG_SFUD_CTRL_FSPIM
 #include "fspim_sfud_core.h"
 #endif
+#ifdef CONFIG_SFUD_CTRL_FSPIM_V2
+#include "fspim_msg_sfud.h"
+#endif
 #ifdef CONFIG_SFUD_CTRL_FQSPI
 #include "fqspi_sfud_core.h"
 #endif
@@ -121,6 +124,16 @@ sfud_err sfud_spi_port_init(sfud_flash *flash)
         if (result == SFUD_SUCCESS)
         {
             SFUD_INFO("FSpimProbe success flash.index=%d.", flash->index);
+            goto ret;
+        }
+    }
+#endif
+#ifdef CONFIG_SFUD_CTRL_FSPIM_V2
+    {
+        result = FSpimMsgProbe(flash);
+        if (result == SFUD_SUCCESS)
+        {
+            SFUD_INFO("FSpimMsgProbe success flash.index=%d.", flash->index);
             goto ret;
         }
     }

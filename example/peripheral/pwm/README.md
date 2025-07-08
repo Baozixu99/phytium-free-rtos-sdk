@@ -2,7 +2,7 @@
 
 ## 1. 例程介绍
 
-注:飞腾派有2个PWM控制器，每个PWM控制器对应两路CHANNEL。
+注:飞腾派有2个PWM控制器，PD2408有1个PWM控制器，每个PWM控制器对应两路CHANNEL。
 
 PWM单通道测试例程 (pwm_single_channel_example.c)
 
@@ -35,7 +35,7 @@ PWM双通道测试例程 (pwm_dual_channel_example.c)
 
 本例程需要以下硬件，
 
-- 飞腾派
+- 飞腾派、PD2308 demo或PD2408 TEST A/B开发板
 - 串口线和串口上位机
 - 逻辑分析仪/示波器
 - 杜邦线
@@ -49,6 +49,17 @@ PhytiumPI: 飞腾派有以下引脚可供PWM使用
 |   J1 PIN_32   | PWM1 channel0          |
 
 GND为J1 PIN_39
+
+PD2408 test_b: 有以下引脚可供PWM使用
+| **引脚** | **控制器与通道** |
+| :------------: | :--------------------- |
+|   J121 PIN_3   | PWM0 channel0          |
+|   J121 PIN_1   | GND                    |
+
+pd2408引脚如下图所示
+
+![pd2408_test](./figs/pd2408_test.png)
+
 
 使用逻辑分析仪/示波器连接channel引脚和GND，开始测试。
 

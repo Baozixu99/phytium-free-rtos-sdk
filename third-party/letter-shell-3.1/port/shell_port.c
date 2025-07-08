@@ -1,14 +1,17 @@
 /*
- * Copyright : (C) 2022 Phytium Information Technology, Inc.
- * All Rights Reserved.
+ * Copyright (C) 2022, Phytium Technology Co., Ltd.   All Rights Reserved.
  *
- * This program is OPEN SOURCE software: you can redistribute it and/or modify it
- * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,
- * either version 1.0 of the License, or (at your option) any later version.
+ * Licensed under the BSD 3-Clause License (the "License"); you may not use
+ * this file except in compliance with the License. You may obtain a copy of
+ * the License at
  *
- * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the Phytium Public License for more details.
+ *     https://opensource.org/licenses/BSD-3-Clause
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  *
  *
  * FilePath: shell_port.c
@@ -38,26 +41,52 @@ u32 shell_last_result = 0;
 char shell_buffer[4096];
 extern void LSUserShellWrite(char data);
 extern signed char LSUserShellRead(char *data);
+
+#if defined(CONFIG_LETTER_SHELL_UART_INTERRUPT_MODE) || defined(CONFIG_LETTER_SHELL_UART_POLLED_MODE)
 extern void LSSerialConfig();
 extern void LSSerialWaitLoop();
+#endif
+
+#if defined (CONFIG_LETTER_SHELL_UART_MSG_INTR_MODE) || defined (CONFIG_LETTER_SHELL_UART_MSG_POLLED_MODE)
+extern void LSSerialMsgConfig();
+extern void LSSerialMsgWaitLoop();
+#endif
 
 
 void LSUserShellTaskCreate(void *args)
 {
     BaseType_t ret;
+#if defined(CONFIG_LETTER_SHELL_UART_INTERRUPT_MODE) || defined(CONFIG_LETTER_SHELL_UART_POLLED_MODE)
     LSSerialConfig();
+#endif
+
+#if defined(CONFIG_LETTER_SHELL_UART_MSG_INTR_MODE) || defined(CONFIG_LETTER_SHELL_UART_MSG_POLLED_MODE)
+    LSSerialMsgConfig();
+#endif
+
     shell_object.echo = 1;
     shell_object.write = LSUserShellWrite;
     shell_object.read = LSUserShellRead;
     shellInit(&shell_object, shell_buffer, 4096);
 
-
+#if defined(CONFIG_LETTER_SHELL_UART_INTERRUPT_MODE) || defined(CONFIG_LETTER_SHELL_UART_POLLED_MODE)
     ret = xTaskCreate((TaskFunction_t)LSSerialWaitLoop,  /* 任务入口函数 */
                       (const char *)"LSSerialWaitLoop",/* 任务名字 */
                       1024,  /* 任务栈大小 */
                       (void *)NULL,/* 任务入口函数参数 */
                       (UBaseType_t)2,  /* 任务的优先级 */
                       NULL); /* 任务控制块指针 */
+#endif
+
+#if defined(CONFIG_LETTER_SHELL_UART_MSG_INTR_MODE) || defined(CONFIG_LETTER_SHELL_UART_MSG_POLLED_MODE)
+    ret = xTaskCreate((TaskFunction_t)LSSerialMsgWaitLoop,  /* 任务入口函数 */
+                      (const char *)"LSSerialMsgWaitLoop",/* 任务名字 */
+                      1024,  /* 任务栈大小 */
+                      (void *)NULL,/* 任务入口函数参数 */
+                      (UBaseType_t)2,  /* 任务的优先级 */
+                      NULL); /* 任务控制块指针 */
+
+#endif
 
     FASSERT_MSG(ret == pdPASS, "LSUserShellTask create is failed");
 

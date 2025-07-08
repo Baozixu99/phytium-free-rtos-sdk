@@ -95,7 +95,6 @@ void BOARD_WIFI_BT_Config(void *host, sdio_int_t cardInt)
     s_inst_config.cardType = kSDMMCHOST_CARD_TYPE_SDIO;
     s_inst_config.enableDMA = TRUE;
     s_inst_config.enableIrq = TRUE;
-    s_inst_config.timeTuner = FSdifGetTimingSetting;
     s_inst_config.endianMode = kSDMMCHOST_EndianModeLittle;
     s_inst_config.maxTransSize = 8 * 256U;
     s_inst_config.defBlockSize = 256U;

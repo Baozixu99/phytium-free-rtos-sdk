@@ -19,6 +19,13 @@ ifdef CONFIG_LWIP_FXMAC
 				$(LWIP_FREERTOS_CUR_DIR)/lwip-2.1.2/ports
 endif
 
+ifdef CONFIG_LWIP_FXMAC_V2
+	INC_DIR +=  $(LWIP_FREERTOS_CUR_DIR)/lwip-2.1.2/ports/fxmac_v2_0 \
+				$(LWIP_FREERTOS_CUR_DIR)/lwip-2.1.2/ports
+	SRC_DIR +=  $(LWIP_FREERTOS_CUR_DIR)/lwip-2.1.2/ports/fxmac_v2_0 \
+				$(LWIP_FREERTOS_CUR_DIR)/lwip-2.1.2/ports
+endif
+
 INC_DIR +=  $(LWIP_FREERTOS_CUR_DIR)/lwip-2.1.2/ports/arch
 SRC_DIR +=  $(LWIP_FREERTOS_CUR_DIR)/lwip-2.1.2/ports/arch
 

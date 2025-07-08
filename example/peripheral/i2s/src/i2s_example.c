@@ -1,14 +1,17 @@
 /*
- * Copyright : (C) 2022 Phytium Information Technology, Inc.
- * All Rights Reserved.
+ * Copyright (C) 2024, Phytium Technology Co., Ltd.   All Rights Reserved.
  *
- * This program is OPEN SOURCE software: you can redistribute it and/or modify it
- * under the terms of the Phytium Public License as published by the Phytium Technology Co.,Ltd,
- * either version 1.0 of the License, or (at your option) any later version.
+ * Licensed under the BSD 3-Clause License (the "License"); you may not use
+ * this file except in compliance with the License. You may obtain a copy of
+ * the License at
  *
- * This program is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the Phytium Public License for more details.
+ *     https://opensource.org/licenses/BSD-3-Clause
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  *
  *
  * FilePath: i2s_example.h
@@ -35,14 +38,24 @@
 #include "ferror_code.h"
 #include "fcache.h"
 
+#include "fdevice.h"
 #include "fi2s_os.h"
 #include "fddma_os.h"
 #include "fddma.h"
 #include "fddma_bdl.h"
-#include "fes8336.h"
 #include "fi2s.h"
 #include "fi2s_hw.h"
 /************************** Constant Definitions *****************************/
+#include "fes8336.h"
+static FEs8336Controller fes8336 =
+{
+    .fes8336_device.name = "es8336",
+    .dev_type = DEV_TYPE_MIO,
+    .controller_id = FMIO14_ID,
+};
+static const u32 ddma_ctrl_id = FDDMA2_I2S_ID;
+static const u32 i2s_ctrl_id = FI2S0_ID;
+
 static FFreeRTOSI2s *os_i2s = NULL;
 static FFreeRTOSDdma *ddma = NULL;
 static FFreeRTOSDdmaConfig ddma_config;
@@ -181,7 +194,14 @@ static FError I2sWaitTransferDone(void)
 static FError I2sPlayback(void)
 {
     FError ret = FT_SUCCESS;
-    FEs8336Startup();
+
+    ret = FDeviceOpen(&fes8336.fes8336_device, FDEVICE_FLAG_RDWR);
+    if (FT_SUCCESS != ret)
+    {
+        printf("ES8336 dev open failed.\r\n");
+        return ret;
+    }
+
     ret = FFreeRTOSDdmaBDLStartChannel(ddma, tx_chan_id);
     if (ret != FT_SUCCESS)
     {
@@ -196,7 +216,14 @@ exit:
 static FError I2sReceive(void)
 {
     FError ret = FT_SUCCESS;
-    FEs8336Startup();
+    
+    ret = FDeviceOpen(&fes8336.fes8336_device, FDEVICE_FLAG_RDWR);
+    if (FT_SUCCESS != ret)
+    {
+        printf("ES8336 dev open failed.\r\n");
+        return ret;
+    }
+
     FFreeRTOSDdmaBDLStartChannel(ddma, rx_chan_id);
     if (ret != FT_SUCCESS)
     {
@@ -288,25 +315,48 @@ exit:
 static FError I2sInit(void)
 {
     FError ret = FT_SUCCESS;
+    u32 volumel = 0x1;
+    u32 word_length = AUDIO_PCM_STREAM_WORD_LENGTH_16; /* 16-bits word length */
     /*先初始化es8336*/
     FIOMuxInit();
     FIOPadSetI2sMux();
-    ret = FEs8336Init(); /* es8336初始化，I2C slave设置 */
-    if (ret != FT_SUCCESS)
-    {
-        FI2S_ERROR("Init es8336 failed.");
-        goto exit;
-    }
-    FEs8336RegsProbe(); /* 寄存器默认值 */
 
-    ret = FEs8336SetFormat(FI2S_WORLD_LENGTH_16); /* 设置ES8336工作模式 */
-    if (ret != FT_SUCCESS)
+    ret = FEs8336DevRegister(&fes8336.fes8336_device); 
+    if (FT_SUCCESS != ret)
     {
-        FI2S_ERROR("Init es8336 failed.");
-        goto exit;
+        printf("ES8336 dev register failed.\r\n");
+        return ret;
     }
 
-    os_i2s = FFreeRTOSI2sInit(FI2S0_ID);
+    ret = FDeviceInit(&fes8336.fes8336_device);
+    if (FT_SUCCESS != ret)
+    {
+        printf("ES8336 dev init failed.\r\n");
+        return ret;
+    }
+
+    ret = FDeviceOpen(&fes8336.fes8336_device, FDEVICE_FLAG_RDWR);
+    if (FT_SUCCESS != ret)
+    {
+        printf("ES8336 dev open failed.\r\n");
+        return ret;
+    }
+
+    ret = FDeviceControl(&fes8336.fes8336_device, FES8336_SET_FORMAT, &word_length); /* 设置ES8336工作模式 */
+    if (FT_SUCCESS != ret)
+    {
+        printf("Set the ES8336 word length failed.\r\n");
+        return ret;
+    }
+    
+    ret = FDeviceControl(&fes8336.fes8336_device, FES8336_SET_VOLUMEL, &volumel); /* 设置ES8336工作模式 */
+    if (FT_SUCCESS != ret)
+    {
+        printf("Set the ES8336 volumel failed.\r\n");
+        return ret;
+    }
+
+    os_i2s = FFreeRTOSI2sInit(i2s_ctrl_id);
     if (os_i2s == NULL)
     {
         FI2S_ERROR("Init i2s failed.");

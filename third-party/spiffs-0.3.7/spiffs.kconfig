@@ -8,6 +8,14 @@ config SPIFFS_ON_FSPIM_SFUD
     select SFUD_CTRL_FSPIM
     default n
 
+config SPIFFS_ON_FSPIM_V2_SFUD
+    bool
+    prompt "Use FSPIM_V2(SFUD)"        
+    select USE_SPI
+    select USE_FSPIM_V2
+    select SFUD_CTRL_FSPIM_V2
+    default n
+
 config SPIFFS_ON_FQSPI_SFUD
     bool
     prompt "Use FQSPI(SFUD)"        

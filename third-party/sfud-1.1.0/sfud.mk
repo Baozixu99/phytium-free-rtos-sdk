@@ -17,4 +17,9 @@ ifdef CONFIG_USE_FREERTOS
 		INC_DIR += $(THIRD_PARTY_CUR_DIR)/sfud-1.1.0/ports/fqspi
 		SRC_DIR += $(THIRD_PARTY_CUR_DIR)/sfud-1.1.0/ports/fqspi	
 	endif
+
+	ifdef CONFIG_SFUD_CTRL_FSPIM_V2
+		INC_DIR += $(THIRD_PARTY_CUR_DIR)/sfud-1.1.0/ports/fspim_v2_0
+		SRC_DIR += $(THIRD_PARTY_CUR_DIR)/sfud-1.1.0/ports/fspim_v2_0	
+	endif
 endif #CONFIG_USE_FREERTOS

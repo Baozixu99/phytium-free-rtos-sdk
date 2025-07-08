@@ -27,8 +27,8 @@
 
 本例程需要以下硬件，
 
-- E2000D/Q Demo板，FT2000/4开发板，D2000开发板，PhytiumPi
-- 串口线和串口上位机
+- E2000D/Q Demo板，FT2000/4开发板，D2000开发板，PhytiumPi，PD2408 Test a/b板
+- 网线、串口线、路由器和串口上位机
 
 ### 2.1 硬件配置方法
 
@@ -120,7 +120,7 @@ bootelf -p 0x90100000
 
 #### 2.4.1 Https client测试例程 (https_example.c)
 
-首先在主机端tools目录下启动https服务器
+首先在主机端tools目录下启动https服务器，ssl_server是一个服务端程序
 
 ![https_server](./fig/https_server.png)
 

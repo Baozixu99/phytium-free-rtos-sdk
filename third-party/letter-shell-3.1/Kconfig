@@ -6,12 +6,15 @@ menu "Letter Shell Configuration"
             Select Usart Driver for Letter Shell
 
         config LS_PL011_UART
-            select USE_SERIAL
             select FREERTOS_USE_UART
             bool "PL011"
 
-        if LS_PL011_UART
-            choice LETTER_SHELL_USE_UART_INSTANCE
+        config LS_SERIAL_V2
+            select FREERTOS_USE_SERIAL_V2
+            depends on TARGET_PD2408
+            bool "Serial V2"
+
+        choice LETTER_SHELL_USE_UART_INSTANCE
             prompt "Select Debug uart instance"
             default DEFAULT_LETTER_SHELL_USE_UART1
             help
@@ -23,8 +26,6 @@ menu "Letter Shell Configuration"
             config DEFAULT_LETTER_SHELL_USE_UART2
                 bool "Use uart2"
             endchoice # SHELL_USE_UART
-
-        endif
 
     endchoice # LETTER_SHELL_USART_TYPE
 
@@ -41,5 +42,18 @@ menu "Letter Shell Configuration"
         bool "Polled Mode"
         help
             "Use the polled mode for letter shell ."
+
+    config LETTER_SHELL_UART_MSG_INTR_MODE
+        bool "Msg Intr Mode"
+        depends on TARGET_PD2408
+        help
+            "Use Msg Intr mode for letter shell."
+
+    config LETTER_SHELL_UART_MSG_POLLED_MODE
+        bool "Msg Polled Mode"
+        depends on TARGET_PD2408
+        help
+            "Use Msg polled mode for letter shell."
     endchoice
+    
 endmenu

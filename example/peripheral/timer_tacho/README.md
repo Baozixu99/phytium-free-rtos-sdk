@@ -9,24 +9,24 @@
 ## 2. 如何使用例程
 
 本例程需要用到
-- 飞腾派
+- Phytium开发板（PD2308 DEMO、PhytiumPi）
 - [Phytium FreeRTOS SDK](https://gitee.com/phytium_embedded/phytium-free-rtos-sdk)
 - [Phytium standalone SDK](https://gitee.com/phytium_embedded/phytium-standalone-sdk)
 ### 2.1 硬件配置方法
 
 本例程支持的硬件平台包括
-- PhytiumPi 开发板
+- PD2308 DEMO、PhytiumPi开发板
 
 对应的配置项是
-
-- CONFIG_TARGET_PHYTIUMPI
+- CONFIG_PD2308_DEMO_BOARD
+- CONFIG_PHYTIUMPI_FIREFLY_BOARD
 
 ### 2.1.1 硬件连线
 
 - 本测试可使用示波器的方波作为pwm输入，来验证功能的正确性
 - 如下图所示，右下角为示波器方波输出端口
   ![oscilloscope](./figs/oscilloscope.jpg)
-- PhytiumPI: 飞腾派有以下引脚可供TACH使用
+- PhytiumPi: 飞腾派有以下引脚可供TACH使用
 
 | **引脚** | **通道** |
 | :------------: | :------------- |
@@ -67,7 +67,7 @@ GND为J1 PIN_39
 - 选择目标平台
 
 ```
-make load_kconfig LOAD_CONFIG_NAME=pd2308_aarch64_demo_tacho
+make load_kconfig LOAD_CONFIG_NAME=pe2204_aarch64_phytiumpi_timer
 ```
 
 - 选择例程需要的配置
@@ -105,8 +105,6 @@ bootelf -p 0x90100000
 ### 2.4 输出与实验现象
 
 - 系统进入后，创建timer初始化任务，创建tacho初始化任务，注册中断服务函数，创建两个功能的任务函数。
-
-- 飞腾派
 
 ![timer_tacho](./figs/timer_tacho.png)
 
