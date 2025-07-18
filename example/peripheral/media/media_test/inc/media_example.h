@@ -31,6 +31,8 @@
 
 #include "ftypes.h"
 #include "fdcdp.h"
+#include "ferror_code.h"
+
 
 #ifdef __cplusplus
 extern "C"
@@ -45,14 +47,15 @@ typedef struct
     u8 reserve;
 } GraphicsTest;
 
+/*select the channel*/
+u8 FMediaChannelIsSelected(u32 channel_index);
+
 /*create the media demo*/
-FError FMediaDisplayDemo(void);
+FError FMediaDisplayDemo(index);
 
 /*create the media init task*/
 BaseType_t FFreeRTOSMediaCreate(void);
 
-/*deinit the media*/
-void FFreeRTOSMediaChannelDeinit(u32 id);
 
 #ifdef __cplusplus
 }

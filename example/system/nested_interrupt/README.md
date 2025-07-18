@@ -67,12 +67,12 @@
 
 - 在host侧完成配置
 
-> 配置成ft2004，对于其它平台，使用对于的默认配置，如D2000 `make load_kconfig LOAD_CONFIG_NAME=d2000_aarch32_test_nested_interrupt`
+> 配置成ft2004，对于其它平台，使用对于的默认配置，如D2000 `make load_kconfig LOAD_CONFIG_NAME=pd2008_aarch64_test_nested_interrupt`
 
 - 选择目标平台
 
 ```
-make load_kconfig LOAD_CONFIG_NAME=ft2004_aarch64_dsk_nested_interrupt
+make load_kconfig LOAD_CONFIG_NAME=pd2008_aarch64_test_nested_interrupt
 ```
 
 - 选择例程需要的配置

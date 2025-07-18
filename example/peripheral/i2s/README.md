@@ -68,9 +68,9 @@ E2000Q对应的配置项是：
 ><font size="1">描述构建、烧录下载镜像的过程，列出相关的命令</font><br />
 
 - 在host侧完成配置
->配置成E2000D，对于其它平台，使用对应的默认配置，如E2000d 32位:
+>配置成E2000Q demo，对于其它平台，使用对应的默认配置
 ```
-$ make load_kconfig = e2000d_aarch32_demo_i2s
+$ make load_kconfig = pe2204_aarch64_demo_i2s
 ```
 
 - 在host侧完成构建

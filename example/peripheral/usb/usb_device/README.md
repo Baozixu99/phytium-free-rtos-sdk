@@ -44,10 +44,7 @@ PD2408 上提供了 USB 3.0 OTG 控制器，本例程通过 CherryUSB，支持�
 - make 将目录下的工程进行编译
 - make clean  将目录下的工程进行清理
 - make boot   将目录下的工程进行编译，并将生成的elf 复制到目标地址
-- make load_e2000d_aarch64  将预设64bit e2000d 下的配置加载至工程中
-- make load_e2000d_aarch32  将预设32bit e2000d 下的配置加载至工程中
-- make load_e2000q_aarch64  将预设64bit e2000q 下的配置加载至工程中
-- make load_e2000q_aarch32  将预设32bit e2000q 下的配置加载至工程中
+- make load_kconfig LOAD_CONFIG_NAME=<kconfig configuration files>  将预设配置加载至工程中
 - make menuconfig   配置目录下的参数变量
 - make backup_kconfig 将目录下的sdkconfig 备份到./configs下
 
@@ -63,7 +60,7 @@ PD2408 上提供了 USB 3.0 OTG 控制器，本例程通过 CherryUSB，支持�
 
 - 选择目标平台和例程需要的配置
 ```
-make load_e2000d_aarch64
+- make load_kconfig LOAD_CONFIG_NAME=<kconfig configuration files>  将预设配置加载至工程中
 ```
 
 - 进行编译

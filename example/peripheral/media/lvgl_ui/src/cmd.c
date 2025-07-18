@@ -41,7 +41,7 @@
 #include "lv_obj.h"
 #include "lv_conf.h"
 #include "lv_indev_create.h"
-#include "lv_indev_test.h"
+#include "media_common.h"
 
 static void FFreeRTOSMediaCmdUsage(void)
 {
@@ -64,7 +64,6 @@ static int MediaCmdEntry(int argc, char *argv[])
 {
     u32 id ;
     u32 usb_id = 0;
-    u32 channel;
     static boolean inited = FALSE;
     if (argc < 2)
     {
@@ -74,7 +73,6 @@ static int MediaCmdEntry(int argc, char *argv[])
     if (!strcmp(argv[1], "init"))
     {
             BaseType_t task_ret = FFreeRTOSMediaInitCreate();
-  
             if (pdPASS != task_ret)
             {
                 return -2;
@@ -154,13 +152,11 @@ static int MediaCmdEntry(int argc, char *argv[])
             printf("please ensure the media has been inited \r\n");
             return -2;
         }
-        if (argc < 3)
+        BaseType_t task_ret =  FFreeRTOSMediaDeinit();
+        if (pdPASS != task_ret)
         {
             return -2;
         }
-
-        channel = (uint8_t)simple_strtoul(argv[2], NULL, 10);
-        FFreeRTOSMediaChannelDeinit(channel);
     }
 
     if (!strcmp(argv[1], "lsusb"))

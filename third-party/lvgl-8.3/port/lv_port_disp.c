@@ -43,7 +43,7 @@
 #include "lv_conf.h"
 #include "../lvgl.h"
 
-static lv_color_int_t *rtt_fbp[FDCDP_INSTANCE_NUM] ;
+static lv_color_int_t *rtt_fbp[FDP_INSTANCE_NUM] ;
 static u32 multi_mode;
 
 

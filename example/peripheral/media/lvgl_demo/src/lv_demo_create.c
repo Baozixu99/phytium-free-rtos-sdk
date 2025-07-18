@@ -36,8 +36,8 @@
 #include "fkernel.h"
 
 #include "lv_demo_create.h"
-#include "lv_demo_test.h"
 #include "lv_port_disp.h"
+#include "media_common.h"
 
 #if LV_USE_DEMO_BENCHMARK
     #include "lv_demo_benchmark.h"
@@ -50,6 +50,18 @@
 #if LV_USE_DEMO_WIDGETS
     #include "lv_demo_widgets.h"
 #endif
+
+/*通道组合*/
+#define CHANNEL_NONE     0x0  /*不选择*/
+#define CHANNEL_DP_0        0x1  /*通道0*/
+#define CHANNEL_DP_1        0x2  /*通道1*/
+#define CHANNEL_DP_2        0x4  /*通道2*/
+#define CHANNEL_DP_0_1      (CHANNEL_DP_0 | CHANNEL_DP_1)    /*通道0 1*/
+#define CHANNEL_DP_0_2      (CHANNEL_DP_0 | CHANNEL_DP_2)    /*通道0 2*/
+#define CHANNEL_DP_1_2      (CHANNEL_DP_1 | CHANNEL_DP_2)    /*通道1 2*/
+#define CHANNEL_DP_ALL      (CHANNEL_DP_0 | CHANNEL_DP_1 | CHANNEL_DP_2)  /*通道0 1 2*/
+
+static u32 channel_mask = CHANNEL_DP_0_1;  /* 默认选择双通道*/
 /************************** Constant Definitions *****************************/
 #define LVGL_HEART_TIMER_PERIOD        (pdMS_TO_TICKS(1UL))
 #define LVGL_CONTINUE_TIMER             10000000
@@ -59,6 +71,7 @@ static TaskHandle_t demo_task;
 static TaskHandle_t lvgl_init_task;
 static TaskHandle_t init_task;
 static TaskHandle_t hpd_task ;
+static FFreeRTOSMedia os_media;
 
 extern void FFreeRTOSDispdEnableUpdate(void);
 extern void FFreeRTOSDispdDisableUpdate(void);
@@ -169,7 +182,25 @@ static void FFreeRTOSLVGLDemoTask(void)
     }
 }
 
-
+/**
+ * @name: FFreeRTOSLVGLConfigTask
+ * @msg:  config the lvgl
+ * @return Null
+ */
+void FFreeRTOSLVGLConfigTask(void)
+{
+    u32 index;
+    lv_init();
+    FFreeRTOSPortInit();
+    for (index = 0; index < FDP_INSTANCE_NUM; index ++)
+    {
+        if (channel_mask & BIT(index))
+        {
+            FMediaDispFramebuffer(&os_media.dcdp_ctrl);
+        }
+    }
+    vTaskDelete(NULL);
+}
 
 /**
  * @name: FFreeRTOSMediaInitCreate
@@ -182,17 +213,17 @@ BaseType_t FFreeRTOSMediaInitCreate(void)
     /* enter critical region */
     taskENTER_CRITICAL();
     /* Media init task */
-    xReturn = xTaskCreate((TaskFunction_t)FFreeRTOSMediaDeviceInit,  /* 任务入口函数 */
-                          (const char *)"FFreeRTOSMediaDeviceInit",  /* 任务名字 */
+    xReturn = xTaskCreate((TaskFunction_t)FMediaInitTask,  /* 任务入口函数 */
+                          (const char *)"FMediaInitTask",  /* 任务名字 */
                           1024,                         /* 任务栈大小 */
-                          NULL,                   /* 任务入口函数参数 */
+                           &os_media,                              /* 任务入口函数参数 */
                           (UBaseType_t)configMAX_PRIORITIES - 2,                       /* 任务的优先级 */
                           (TaskHandle_t *)&init_task); /* 任务控制 */
     /* Hpd task control */
-    xReturn = xTaskCreate((TaskFunction_t)FFreeRTOSMediaHpdHandle, /* 任务入口函数 */
-                          (const char *)"FFreeRTOSMediaHpdHandle", /* 任务名字 */
+    xReturn = xTaskCreate((TaskFunction_t)FFreeRTOSMediaHpdTask, /* 任务入口函数 */
+                          (const char *)"FFreeRTOSMediaHpdTask", /* 任务名字 */
                           1024,                        /* 任务栈大小 */
-                          NULL,                   /* 任务入口函数参数 */
+                          &os_media,                             /* 任务入口函数参数 */
                           (UBaseType_t)configMAX_PRIORITIES - 1,                      /* 任务的优先级 */
                           (TaskHandle_t *)&hpd_task);
     /* exit critical region */
@@ -200,6 +231,25 @@ BaseType_t FFreeRTOSMediaInitCreate(void)
     return xReturn;
 }
 
+
+/* create media test*/
+BaseType_t FFreeRTOSMediaDeinit(void)
+{
+
+    BaseType_t xReturn = pdPASS; /* 定义一个创建信息返回值，默认为 pdPASS */
+    /* enter critical region */
+    taskENTER_CRITICAL();
+    /* Media init task */
+    xReturn = xTaskCreate((TaskFunction_t)FFreeRTOSMediaChannelDeinit, /* 任务入口函数 */
+                          (const char *)"FMediaDeInitTask", /* 任务名字 */
+                          1024,                         /* 任务栈大小 */
+                          &os_media,                    /* 任务入口函数参数 */
+                          (UBaseType_t)configMAX_PRIORITIES - 2,                       /* 任务的优先级 */
+                          (TaskHandle_t *)&init_task);
+                              /* exit critical region */
+    taskEXIT_CRITICAL();
+    return xReturn;
+}
 
 /**
  * @name: FFreeRTOSlVGLConfigCreate

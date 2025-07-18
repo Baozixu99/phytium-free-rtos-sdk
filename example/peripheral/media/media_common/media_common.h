@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023, Phytium Technology Co., Ltd.   All Rights Reserved.
+ * Copyright (C) 2025, Phytium Technology Co., Ltd.   All Rights Reserved.
  *
  * Licensed under the BSD 3-Clause License (the "License"); you may not use
  * this file except in compliance with the License. You may obtain a copy of
@@ -13,40 +13,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * FilePath: lv_demo_test.h
- * Date: 2023-02-05 18:27:47
- * LastEditTime: 2023-07-07 11:02:47
- * Description:  This file is for providing the lvgl demo config
  *
- * Modify History:
+ * FilePath: media_common.h
+ * Date: 2022-08-25 16:22:40
+ * LastEditTime: 2022-07-07 15:40:40
+ * Description:  This file is for defining the config and  functions
+ *
+ * Modify History:
  *  Ver   Who        Date         Changes
  * ----- ------  -------- --------------------------------------
- *  1.0  Wangzq     2023/03/20  Modify the format and establish the version
- *  1.1  Wangzq     2023/07/07  change the third-party and driver relation 
+ * 1.0  Wangzq     2022/12/20  Modify the format and establish the version
  */
 
-#ifndef LV_DEMO_TEST_H
-#define LV_DEMO_TEST_H
-
-#ifdef __cplusplus
-extern "C" {
-#endif
+#ifndef MEDIA_COMMON_H
+#define MEDIA_COMMON_H
 
 #include "ftypes.h"
-#include "fparameters.h"
+#include "fdcdp.h"
 #include "ferror_code.h"
+#include "fmedia_os.h"
 
-
-/*deinit the media*/
-void FFreeRTOSMediaChannelDeinit(u32 id);
-/*lvgl config task*/
-void FFreeRTOSLVGLConfigTask(void );
-/*handle the hpd event*/
-void FFreeRTOSMediaHpdHandle(void);
-/*enable the Dc and Dp*/
-void FFreeRTOSMediaDeviceInit(void);
 #ifdef __cplusplus
-} /*extern "C"*/
+extern "C"
+{
+#endif
+/*hpd task*/
+void FFreeRTOSMediaHpdTask(FFreeRTOSMedia *os_media);
+/*init the media*/
+FError FMediaInitTask(FFreeRTOSMedia *os_media);
+/*deinit the media*/
+void FFreeRTOSMediaChannelDeinit(FFreeRTOSMedia *os_media);
+
+#ifdef __cplusplus
+}
 #endif
 
-#endif /*LV_PORT_DISP_TEMPL_H*/
+#endif // !

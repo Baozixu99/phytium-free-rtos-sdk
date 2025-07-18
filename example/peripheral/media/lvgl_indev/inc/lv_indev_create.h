@@ -58,6 +58,12 @@ BaseType_t FFreeRTOSListUsbDev(int argc, char *argv[]);
 /*init the media*/
 BaseType_t FFreeRTOSMediaInitCreate(void);
 
+/*deinit the media*/
+BaseType_t FFreeRTOSMediaDeinit(void);
+
+/*lvgl config*/
+void FFreeRTOSLVGLConfigTask(void);
+
 /*set the lvgl init task*/
 BaseType_t FFreeRTOSlVGLConfigCreate(void);
 

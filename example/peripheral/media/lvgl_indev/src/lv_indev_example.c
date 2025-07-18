@@ -32,7 +32,6 @@
 #include "task.h"
 
 #include "../lvgl.h"
-#include "lv_indev_test.h"
 #include "lv_indev_port.h"
 #include "lv_port_disp.h"
 #include "lv_spinbox.h"

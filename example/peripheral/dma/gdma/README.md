@@ -60,11 +60,11 @@ GDMA (Generic Direct Memory Access) 用于将数据从一个内存地址复制�
 #### 2.3.1 构建过程
 
 - 在host侧完成配置
-> 配置成 e2000q，对于其它平台，使用对应的的默认配置，如,
+> 配置成 e2000q demo，对于其它平台，使用对应的的默认配置，如,
 
 - 选择目标平台
 ```
-make load_kconfig LOAD_CONFIG_NAME=e2000q_aarch64_demo_gdma
+make load_kconfig LOAD_CONFIG_NAME=pe2204_aarch32_demo_gdma
 ```
 
 - 选择例程需要的配置

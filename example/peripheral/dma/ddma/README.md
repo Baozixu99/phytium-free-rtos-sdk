@@ -74,11 +74,11 @@ Phytium Pi接线方法：杜邦线连接下图所示得19号引脚和21号引脚
 #### 2.3.1 构建过程
 
 - 在host侧完成配置
-> 配置成 e2000q，对于其它平台，使用对应的默认配置，如：
+> 配置成 e2000q demo，对于其它平台，使用对应的默认配置，如：
 
 - 选择目标平台
 ```
-make load_kconfig LOAD_CONFIG_NAME=e2000q_aarch64_demo_ddma
+make load_kconfig LOAD_CONFIG_NAME=pe2204_aarch64_demo_ddma
 ```
 
 - 选择例程需要的配置

@@ -35,7 +35,7 @@ LVGL (Light and Versatile Graphics Library) 是最流行的免费开源嵌入式
 
 本例程所需的硬件设备包括
 
-- 通过DP线将显示器与E2000板卡连接
+- 通过DP线将显示器与E2000D/Q DEMO、PhytiumPi开发板连接
 - 利用串口调试线连接板卡和调试电脑，波特率设为 115200-8-1-N
 
 ### 2.2 SDK配置方法
@@ -64,9 +64,9 @@ LVGL (Light and Versatile Graphics Library) 是最流行的免费开源嵌入式
 
 - 在host侧完成配置
 
->配置成E2000，对于其它平台，使用对应的默认配置
+>配置成E2000Q demo，对于其它平台，使用对应的默认配置
 ```
-make load_kconfig LOAD_CONFIG_NAME=e2000q_aarch64_demo_media
+make load_kconfig LOAD_CONFIG_NAME=pe2204_aarch64_demo_media
 make menuconfig
 make image
 ```

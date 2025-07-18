@@ -8,13 +8,16 @@ BOOT_IMG_NAME      ?= freertos
 
 USER_CSRC := main.c
 USER_CSRC += $(wildcard  src/*.c)
-USER_CSRC += $(wildcard  ../common/*.c)
+USER_CSRC += $(wildcard  ../media_common/*.c)
 			
 USER_ASRC := 
 USER_CXXSRC := 
 
+USER_INCLUDE += $(PROJECT_DIR)
+
 USER_INCLUDE := $(PROJECT_DIR)	\
 				$(PROJECT_DIR)/inc \
+				$(PROJECT_DIR)/../media_common
 
 
 include $(FREERTOS_SDK_DIR)/tools/makeall.mk

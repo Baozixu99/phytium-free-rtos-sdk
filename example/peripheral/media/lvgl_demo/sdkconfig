@@ -70,6 +70,7 @@ CONFIG_TARGET_PE220X=y
 CONFIG_DEFAULT_DEBUG_PRINT_UART1=y
 # CONFIG_DEFAULT_DEBUG_PRINT_UART0 is not set
 # CONFIG_DEFAULT_DEBUG_PRINT_UART2 is not set
+# CONFIG_UART_INIT_NOT_CLR_INTR is not set
 # end of Soc configuration
 
 #
@@ -156,7 +157,8 @@ CONFIG_ENABLE_Pl011_UART=y
 # CONFIG_USE_PWM is not set
 # CONFIG_USE_IPC is not set
 CONFIG_USE_MEDIA=y
-CONFIG_USE_FMEDIA=y
+CONFIG_USE_FMEDIA_V1=y
+# CONFIG_USE_FMEDIA_V2 is not set
 # CONFIG_USE_SCMI_MHU is not set
 # CONFIG_USE_I2S is not set
 # CONFIG_USE_I3C is not set
@@ -227,6 +229,7 @@ CONFIG_STACK_SIZE=0x400
 # FreeRTOS Uart Drivers
 #
 CONFIG_FREERTOS_USE_UART=y
+# CONFIG_FREERTOS_USE_SERIAL_V2 is not set
 # end of FreeRTOS Uart Drivers
 
 #
@@ -252,12 +255,14 @@ CONFIG_FREERTOS_USE_UART=y
 #
 # CONFIG_FREERTOS_USE_XMAC is not set
 # CONFIG_FREERTOS_USE_GMAC is not set
+# CONFIG_FREERTOS_USE_XMAC_V2 is not set
 # end of FreeRTOS Eth Drivers
 
 #
 # FreeRTOS Spim Drivers
 #
 # CONFIG_FREERTOS_USE_FSPIM is not set
+# CONFIG_FREERTOS_USE_FSPIM_V2 is not set
 # end of FreeRTOS Spim Drivers
 
 #
@@ -283,6 +288,7 @@ CONFIG_FREERTOS_USE_UART=y
 # FreeRTOS I2c Drivers
 #
 # CONFIG_FREERTOS_USE_I2C is not set
+# CONFIG_FREERTOS_USE_FI2C_V2 is not set
 # end of FreeRTOS I2c Drivers
 
 #

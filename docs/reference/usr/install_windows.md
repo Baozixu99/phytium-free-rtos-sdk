@@ -18,7 +18,7 @@ python .\install.py
 ```
 cd .\example\template
 make list_kconfig
-make load_kconfig LOAD_CONFIG_NAME=e2000d_aarch64_demo_eg
+make load_kconfig LOAD_CONFIG_NAME=pe220x_aarch64_demo_eg
 make menuconfig
 make clean
 make all

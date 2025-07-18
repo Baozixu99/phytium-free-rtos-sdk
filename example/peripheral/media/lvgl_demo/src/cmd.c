@@ -35,7 +35,6 @@
 #include "shell_port.h"
 
 #include "lv_demo_create.h"
-#include "lv_demo_test.h"
 static void FFreeRTOSMediaCmdUsage(void)
 {
     printf("Usage:\r\n");
@@ -104,12 +103,11 @@ static int MediaCmdEntry(int argc, char *argv[])
             printf("please ensure the media has been inited \r\n");
             return -2;
         }
-        if (argc >= 3)
+        BaseType_t task_ret =  FFreeRTOSMediaDeinit();
+        if (pdPASS != task_ret)
         {
-            id = (u32)simple_strtoul(argv[2], NULL, 10);
+            return -2;
         }
-        FFreeRTOSMediaChannelDeinit(id);
-
     }
 
     return 0;

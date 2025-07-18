@@ -33,9 +33,9 @@ src           --> 用户源文件*
 - make list_kconfig 当前工程支持哪些配置文件
 - make load_kconfig LOAD_CONFIG_NAME=[kconfig configuration files] 将预设配置加载至工程中
 
->例如：配置成E2000D，使用对应的默认配置，如E2000d 32位:
+>例如：配置成E2000D demo，使用对应的默认配置，如E2000d 32位:
 ```
-$ make load_kconfig LOAD_CONFIG_NAME=e2000d_aarch32_demo_i2c
+$ make load_kconfig LOAD_CONFIG_NAME=pe2202_aarch32_demo_i2c
 ```
 
 - 编译应用工程, 生成`*.bin`或者`*.elf`文件用于下载到开发板(bin文件生成配置可选，使用make menuconfig 具体使用可参考standalone SDK手册)

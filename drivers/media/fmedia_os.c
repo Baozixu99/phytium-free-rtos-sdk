@@ -48,22 +48,24 @@
 /**
  * @name: FFreeRTOSMediaHwInit
  * @msg:  init the media,dc and dp
- * @param  {u32} channel is the dc channel
  * @param  {FFreeRTOSMedia*} instance is the driver instance
+ * @param  {u32} index is the dp index
  * @param  {u32} width is the width
  * @param  {u32} height is the height
  * @return err code information, 0 indicates success，others indicates failed
  */
-FFreeRTOSMedia *FFreeRTOSMediaHwInit(FFreeRTOSMedia *instance, u32 width, u32 height)
+FFreeRTOSMedia *FFreeRTOSMediaHwInit(FFreeRTOSMedia *instance, u32 index, u32 width, u32 height)
 {
     FError ret = FT_SUCCESS;
-    u32 index;
 
-    for (index = 0; index < FDCDP_INSTANCE_NUM; index ++)
+    ret = FDcDpInitial(&instance->dcdp_ctrl, index, width, height);
+    if(FT_SUCCESS != ret)
     {
-        ret = FDcDpInitial(&instance->dcdp_ctrl, index, width, height);
+        FMEDIA_ERROR("FDcDpInitial failed, ret = %d", ret);
+        return NULL;
     }
-    if((instance->dcdp_ctrl.is_initialized[0]) | (instance->dcdp_ctrl.is_initialized[1]))
+
+    if((instance->dcdp_ctrl.is_initialized[index]) == FDCDP_IS_INITIALIZED)
     {
         ret = FDP_SUCCESS;
     }

@@ -42,21 +42,13 @@ extern "C" {
 #include "lvgl-8.3/lvgl.h"
 #endif
 
-typedef struct
-{
-    u32 channel;
-    u32 width;
-    u32 height;
-    u32 multi_mode;
-    u32 color_depth;
-    u32 refresh_rate;
-} InputParm;
-
 /*create the media demo init task*/
 BaseType_t FFreeRTOSlVGLDemoCreate(void);
 
 /*create the media init task*/
 BaseType_t FFreeRTOSMediaInitCreate(void );
+
+BaseType_t FFreeRTOSMediaDeinit(void);
 
 /*create the lvgl config task*/
 BaseType_t FFreeRTOSlVGLConfigCreate(void);

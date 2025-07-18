@@ -37,13 +37,25 @@
 #include "../lvgl.h"
 #include "lv_indev_create.h"
 #include "lv_indev_port.h"
-#include "lv_indev_test.h"
 #include "lv_port_disp.h"
 #include "lv_indev_example.h"
+#include "media_common.h"
+
 
 #include "usbh_core.h"
 #include "usbh_hid.h"
 
+/*通道组合*/
+#define CHANNEL_NONE     0x0  /*不选择*/
+#define CHANNEL_DP_0        0x1  /*通道0*/
+#define CHANNEL_DP_1        0x2  /*通道1*/
+#define CHANNEL_DP_2        0x4  /*通道2*/
+#define CHANNEL_DP_0_1      (CHANNEL_DP_0 | CHANNEL_DP_1)    /*通道0 1*/
+#define CHANNEL_DP_0_2      (CHANNEL_DP_0 | CHANNEL_DP_2)    /*通道0 2*/
+#define CHANNEL_DP_1_2      (CHANNEL_DP_1 | CHANNEL_DP_2)    /*通道1 2*/
+#define CHANNEL_DP_ALL      (CHANNEL_DP_0 | CHANNEL_DP_1 | CHANNEL_DP_2)  /*通道0 1 2*/
+
+static u32 channel_mask = CHANNEL_DP_0_1;  /* 默认选择双通道*/
 /************************** Variable Definitions *****************************/
 #define LVGL_CONTINUE_TIMER             10000000
 #define LVGL_HEART_TIMER_PERIOD        (pdMS_TO_TICKS(1UL))
@@ -56,6 +68,7 @@ static TaskHandle_t init_ms_task;
 static TaskHandle_t init_task;
 static TaskHandle_t lvgl_init_task;
 static TaskHandle_t hpd_task ;
+static FFreeRTOSMedia os_media;
 /************************** functions Definitions *****************************/
 static void LvglHeartTimerCallback(TimerHandle_t xTimer)
 {
@@ -99,6 +112,27 @@ static void FFreeRTOSLVGLDemoTask(void *args)
 BaseType_t FFreeRTOSListUsbDev(int argc, char *argv[])
 {
     return lsusb(argc, argv);
+}
+
+/**
+ * @name: FFreeRTOSLVGLConfigTask
+ * @msg:  config the lvgl
+ * @param  {void *} pvParameters is the parameters of demo
+ * @return Null
+ */
+void FFreeRTOSLVGLConfigTask(void)
+{
+    u32 index;
+    lv_init();
+    FFreeRTOSPortInit();
+    for (index = 0; index < FDP_INSTANCE_NUM; index ++)
+    {
+        if (channel_mask & BIT(index))
+        {
+            FMediaDispFramebuffer(&os_media.dcdp_ctrl);
+        }
+    }
+    vTaskDelete(NULL);
 }
 
 BaseType_t FFreeRTOSInitKbCreate(u32 id)
@@ -149,20 +183,39 @@ BaseType_t FFreeRTOSMediaInitCreate(void )
     /* enter critical region */
     taskENTER_CRITICAL();
     /* Media init task */
-    xReturn = xTaskCreate((TaskFunction_t)FFreeRTOSMediaDeviceInit,  /* 任务入口函数 */
-                          (const char *)"FFreeRTOSMediaDeviceInit",  /* 任务名字 */
+    xReturn = xTaskCreate((TaskFunction_t)FMediaInitTask,  /* 任务入口函数 */
+                          (const char *)"FMediaInitTask",  /* 任务名字 */
                          1024,                         /* 任务栈大小 */
-                          NULL,                   /* 任务入口函数参数 */
+                          &os_media,                   /* 任务入口函数参数 */
                           (UBaseType_t)configMAX_PRIORITIES - 2,                       /* 任务的优先级 */
                           (TaskHandle_t *)&init_task); /* 任务控制 */
     /* Hpd task control */
-    xReturn = xTaskCreate((TaskFunction_t)FFreeRTOSMediaHpdHandle, /* 任务入口函数 */
-                          (const char *)"FFreeRTOSMediaHpdHandle", /* 任务名字 */
+    xReturn = xTaskCreate((TaskFunction_t)FFreeRTOSMediaHpdTask, /* 任务入口函数 */
+                          (const char *)"FFreeRTOSMediaHpdTask", /* 任务名字 */
                          1024,                        /* 任务栈大小 */
-                          NULL,                   /* 任务入口函数参数 */
+                          &os_media,                   /* 任务入口函数参数 */
                           (UBaseType_t)configMAX_PRIORITIES - 1,                      /* 任务的优先级 */
                           (TaskHandle_t *)&hpd_task);
     /* exit critical region */
+    taskEXIT_CRITICAL();
+    return xReturn;
+}
+
+/* create media test*/
+BaseType_t FFreeRTOSMediaDeinit(void)
+{
+
+    BaseType_t xReturn = pdPASS; /* 定义一个创建信息返回值，默认为 pdPASS */
+    /* enter critical region */
+    taskENTER_CRITICAL();
+    /* Media init task */
+    xReturn = xTaskCreate((TaskFunction_t)FFreeRTOSMediaChannelDeinit, /* 任务入口函数 */
+                          (const char *)"FMediaDeInitTask", /* 任务名字 */
+                          1024,                         /* 任务栈大小 */
+                          &os_media,                    /* 任务入口函数参数 */
+                          (UBaseType_t)configMAX_PRIORITIES - 2,                       /* 任务的优先级 */
+                          (TaskHandle_t *)&init_task);
+                              /* exit critical region */
     taskEXIT_CRITICAL();
     return xReturn;
 }

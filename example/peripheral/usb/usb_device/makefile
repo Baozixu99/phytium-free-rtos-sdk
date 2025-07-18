@@ -47,26 +47,12 @@ endif
 mk_pusb3lib:
 	$(CROSS_COMPILE)ar rcs $(SDK_DIR)/third-party/cherryusb/port/pusb3/libpusb3_dc_a64.a ./build/cherryusb/fpusb3/*.o
 
-all_libs:
-	@rm $(SDK_DIR)/third-party/cherryusb/port/pusb2/libpusb2_dc_a64.c -f
-	make load_kconfig LOAD_CONFIG_NAME=e2000q_aarch64_demo_pusb2_no_log
-	make clean image mk_pusb2lib
-	@rm $(SDK_DIR)/third-party/cherryusb/port/pusb2/libpusb2_dc_a32_hardfp.c -f
-	make load_kconfig LOAD_CONFIG_NAME=e2000q_aarch32_demo_pusb2_hardfp_no_log
-	make clean image mk_pusb2lib
-	@rm $(SDK_DIR)/third-party/cherryusb/port/pusb2/libpusb2_dc_a32_softfp*.c -f
-	make load_kconfig LOAD_CONFIG_NAME=e2000q_aarch32_demo_pusb2_softfp_no_log
-	make clean image mk_pusb2lib
-	@rm $(SDK_DIR)/third-party/cherryusb/port/pusb3/libpusb3_dc_a64.c -f
-	make load_kconfig LOAD_CONFIG_NAME=pd2408_aarch64_demo_pusb3_no_log
-	make clean image mk_pusb3lib
-
 all_images:
-	make load_kconfig LOAD_CONFIG_NAME=e2000q_aarch64_demo_pusb2_lib
+	make load_kconfig LOAD_CONFIG_NAME=pe2204_aarch64_demo_pusb2_lib
 	make clean image
-	make load_kconfig LOAD_CONFIG_NAME=e2000q_aarch32_demo_pusb2_hardfp_lib
+	make load_kconfig LOAD_CONFIG_NAME=pe2204_aarch32_demo_pusb2_hardfp_lib
 	make clean image
-	make load_kconfig LOAD_CONFIG_NAME=e2000q_aarch32_demo_pusb2_softfp_lib
+	make load_kconfig LOAD_CONFIG_NAME=pe2204_aarch32_demo_pusb2_softfp_lib
 	make clean image
 	make load_kconfig LOAD_CONFIG_NAME=pd2408_aarch64_demo_pusb3_lib
 	make clean image

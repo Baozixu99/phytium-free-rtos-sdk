@@ -71,7 +71,7 @@
 - 选择目标平台
 
 ```
-make load_kconfig LOAD_CONFIG_NAME=e2000d_aarch64_demo_lwip_iperf
+make load_kconfig LOAD_CONFIG_NAME=pe2202_aarch64_demo_lwip_iperf
 ```
 
 - 选择例程需要的配置

@@ -35,6 +35,7 @@
 #include "shell_port.h"
 
 #include "media_example.h"
+#include "media_common.h"
 
 
 static void FFreeRTOSMediaCmdUsage(void)
@@ -59,7 +60,6 @@ static int MediaCmdEntry(int argc, char *argv[])
     }
     if (!strcmp(argv[1], "init"))
     {
- 
         BaseType_t task_ret = FFreeRTOSMediaCreate();
 
         if (pdPASS != task_ret)
@@ -68,15 +68,6 @@ static int MediaCmdEntry(int argc, char *argv[])
         }
         inited = TRUE;
     }
-    if (!strcmp(argv[1], "demo"))
-    {
-        if (inited != TRUE)
-        {
-            printf("please ensure the media has been inited \r\n");
-            return -2;
-        }
-        FMediaDisplayDemo();
-    }
     if (!strcmp(argv[1], "deinit"))
     {
         if (inited != TRUE)
@@ -84,13 +75,19 @@ static int MediaCmdEntry(int argc, char *argv[])
             printf("please ensure the media has been inited \r\n");
             return -2;
         }
-        if (argc >= 3)
+
+        BaseType_t task_ret = FFreeRTOSMediaDeinit();
+
+        if (pdPASS != task_ret)
         {
-            id = (u32)simple_strtoul(argv[2], NULL, 10);
+            return -2;
         }
-        FFreeRTOSMediaChannelDeinit(id);
     }
 
+    if (!strcmp(argv[1], "demo"))
+    {
+        FMediaDisplayDemo();
+    }
     return 0;
 }
 

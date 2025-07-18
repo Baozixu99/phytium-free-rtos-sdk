@@ -51,7 +51,7 @@ CherryUSB 是一个用于嵌入式系统 USB 协议栈，支持运行在Host模�
 
 - 选择目标平台和例程需要的配置
 ```
-make load_kconfig LOAD_CONFIG_NAME=e2000d_aarch64_demo_cherry_usb
+make load_kconfig LOAD_CONFIG_NAME=pe2204_aarch64_demo_pusb2
 ```
 
 - 进行编译
@@ -167,7 +167,7 @@ usbh kbd 0 /dev/input1
 - 加载飞腾派配置，然后编译镜像
 
 ```
-make load_kconfig LOAD_CONFIG_NAME=phytiumpi_aarch64_firefly_cherry_usb
+make load_kconfig LOAD_CONFIG_NAME=pe2204_aarch64_demo_pusb2
 ```
 
 - 连接 USB 设备到 XHCI 0，注意不要连错，只有靠板子正面一侧的蓝色插槽对应的是 XHCI 控制器

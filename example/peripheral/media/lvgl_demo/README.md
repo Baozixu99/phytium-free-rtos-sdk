@@ -6,8 +6,8 @@
 
 DC 是一个显示控制器，主要完成将 CPU/GPU/VPU 处理后的图像数据，按照 Display 协议处理后送给 DP PHY 接入显示器。
 
-本司E2000系列型号芯片采用DisplayPort1.4协议，兼容 DisplayPort1.4/Embedded DisplayPort1.3 协议。
-本例程主要展示本司E2000系列以及phytiumpi芯片DC显示驱动功能以及lvgl中benchmark, stress以及widgets例程的操作。
+本司PE220X系列型号芯片采用DisplayPort1.4协议，兼容 DisplayPort1.4/Embedded DisplayPort1.3 协议。
+本例程主要展示本司PE220X系列以及phytiumpi芯片DC显示驱动功能以及lvgl中benchmark, stress以及widgets例程的操作。
 
 lvgl中benchmark是一个基准测试，用来测试硬件平台的性能和驱动支持buufer刷新能力，主要是测试屏幕刷新的流畅度以及帧率。
 
@@ -28,7 +28,7 @@ lvgl中widgets属于组件测试，将lvgl中库组件组合运行，此demo属�
 
 本例程需要用到
 
-- Phytium开发板（E2000开发板或phytiumpi））
+- Phytium开发板（E2000D/Q DEMO、PhytiumPi开发板）
 - 显示器及连接线
 - [Phytium Standalone SDK](https://gitee.com/phytium_embedded/phytium-standalone-sdk)
 
@@ -73,9 +73,9 @@ lvgl中widgets属于组件测试，将lvgl中库组件组合运行，此demo属�
 
 - 在host侧完成配置
 
->配置成E2000，对于其它平台，使用对应的默认配置
+>配置成E2000Q demo，对于其它平台，使用对应的默认配置
 ```
-make load_kconfig LOAD_CONFIG_NAME=e2000q_aarch64_demo_media 
+make load_kconfig LOAD_CONFIG_NAME=pe2204_aarch64_demo_media 
 make menuconfig
 make image
 ```

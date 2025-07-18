@@ -73,12 +73,12 @@ posix测试用例 (posix_example.c)
 
 - 在host侧完成配置
 
-> 配置成E2000D，对于其它平台，使用对于的默认配置，如E2000Q `make load_kconfig LOAD_CONFIG_NAME=e2000q_aarch64_demo_posix`
+> 配置成E2000D demo，对于其它平台，使用对于的默认配置，如E2000Q `make load_kconfig LOAD_CONFIG_NAME=pe2204_aarch64_demo_posix`
 
 - 选择目标平台
 
 ```
-make load_kconfig LOAD_CONFIG_NAME=e2000d_aarch64_demo_posix
+make load_kconfig LOAD_CONFIG_NAME=pe2204_aarch64_demo_posix
 ```
 
 - 选择例程需要的配置

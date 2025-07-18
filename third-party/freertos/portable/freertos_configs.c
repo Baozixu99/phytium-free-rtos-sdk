@@ -1,12 +1,4 @@
 /*
- * @Author: zhangyan 1422953826@qq.com
- * @Date: 2025-05-20 10:01:56
- * @LastEditors: zhangyan 1422953826@qq.com
- * @LastEditTime: 2025-05-20 11:03:03
- * @FilePath: \phytium-free-rtos-sdk\third-party\freertos\portable\freertos_configs.c
- * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
- */
-/*
  * Copyright (C) 2022, Phytium Technology Co., Ltd.   All Rights Reserved.
  *
  * Licensed under the BSD 3-Clause License (the "License"); you may not use

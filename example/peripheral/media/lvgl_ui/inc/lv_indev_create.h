@@ -43,6 +43,12 @@ extern "C" {
 #include "lvgl-8.3/lvgl.h"
 #endif
 
+/*the lvgl demo*/
+void lv_demo_indev(void);
+
+/*lvgl config*/
+void FFreeRTOSLVGLConfigTask(void);
+
 /*create the media demo init task*/
 BaseType_t FFreeRTOSDemoCreate(void);
 
@@ -57,6 +63,9 @@ BaseType_t FFreeRTOSListUsbDev(int argc, char *argv[]);
 
 /*init the media*/
 BaseType_t FFreeRTOSMediaInitCreate(void);
+
+/*deinit the media*/
+BaseType_t FFreeRTOSMediaDeinit(void);
 
 /*set the lvgl init task*/
 BaseType_t FFreeRTOSlVGLConfigCreate(void);

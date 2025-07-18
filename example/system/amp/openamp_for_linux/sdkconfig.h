@@ -73,6 +73,7 @@
 #define CONFIG_DEFAULT_DEBUG_PRINT_UART1
 /* CONFIG_DEFAULT_DEBUG_PRINT_UART0 is not set */
 /* CONFIG_DEFAULT_DEBUG_PRINT_UART2 is not set */
+#define CONFIG_UART_INIT_NOT_CLR_INTR
 /* end of Soc configuration */
 
 /* Board Configuration */
@@ -211,6 +212,7 @@
 /* FreeRTOS Uart Drivers */
 
 #define CONFIG_FREERTOS_USE_UART
+/* CONFIG_FREERTOS_USE_SERIAL_V2 is not set */
 /* end of FreeRTOS Uart Drivers */
 
 /* FreeRTOS Pwm Drivers */
@@ -232,11 +234,13 @@
 
 /* CONFIG_FREERTOS_USE_XMAC is not set */
 /* CONFIG_FREERTOS_USE_GMAC is not set */
+/* CONFIG_FREERTOS_USE_XMAC_V2 is not set */
 /* end of FreeRTOS Eth Drivers */
 
 /* FreeRTOS Spim Drivers */
 
 /* CONFIG_FREERTOS_USE_FSPIM is not set */
+/* CONFIG_FREERTOS_USE_FSPIM_V2 is not set */
 /* end of FreeRTOS Spim Drivers */
 
 /* FreeRTOS DMA Drivers */
@@ -258,6 +262,7 @@
 /* FreeRTOS I2c Drivers */
 
 /* CONFIG_FREERTOS_USE_I2C is not set */
+/* CONFIG_FREERTOS_USE_FI2C_V2 is not set */
 /* end of FreeRTOS I2c Drivers */
 
 /* FreeRTOS Mio Drivers */
