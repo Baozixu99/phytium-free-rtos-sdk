@@ -7,7 +7,7 @@
 /*
  * This is a sample demonstration application that showcases usage of rpmsg
  * This application is meant to run on the remote CPU running baremetal code.
- * This application echoes back data that was sent to it by the master core.
+ * This application echoes back data that was sent to it by the driver core.
  */
 
 #include <stdio.h>
@@ -17,10 +17,10 @@
 #include "rpmsg_service.h"
 #include "fdebug.h"
 
-#define     NO_COPY_SLAVE_DEBUG_TAG "    SLAVE_04"
-#define     NO_COPY_SLAVE_DEBUG_I(format, ...) FT_DEBUG_PRINT_I( NO_COPY_SLAVE_DEBUG_TAG, format, ##__VA_ARGS__)
-#define     NO_COPY_SLAVE_DEBUG_W(format, ...) FT_DEBUG_PRINT_W( NO_COPY_SLAVE_DEBUG_TAG, format, ##__VA_ARGS__)
-#define     NO_COPY_SLAVE_DEBUG_E(format, ...) FT_DEBUG_PRINT_E( NO_COPY_SLAVE_DEBUG_TAG, format, ##__VA_ARGS__)
+#define     NO_COPY_DEVICE_DEBUG_TAG "    DEVICE_04"
+#define     NO_COPY_DEVICE_DEBUG_I(format, ...) FT_DEBUG_PRINT_I( NO_COPY_DEVICE_DEBUG_TAG, format, ##__VA_ARGS__)
+#define     NO_COPY_DEVICE_DEBUG_W(format, ...) FT_DEBUG_PRINT_W( NO_COPY_DEVICE_DEBUG_TAG, format, ##__VA_ARGS__)
+#define     NO_COPY_DEVICE_DEBUG_E(format, ...) FT_DEBUG_PRINT_E( NO_COPY_DEVICE_DEBUG_TAG, format, ##__VA_ARGS__)
 
 #define SHUTDOWN_MSG	0xEF56A55A
 
@@ -49,14 +49,14 @@ static int rpmsg_endpoint_cb(struct rpmsg_endpoint *ept, void *data, size_t len,
 
 	/* On reception of a shutdown we signal the application to terminate */
 	if ((*(unsigned int *)data) == SHUTDOWN_MSG) {
-		NO_COPY_SLAVE_DEBUG_I("shutdown message is received.\r\n");
+		NO_COPY_DEVICE_DEBUG_I("shutdown message is received.\r\n");
 		shutdown_req = 1;
 		return RPMSG_SUCCESS;
 	}
 
 	rpmsg_node = metal_allocate_memory(sizeof(*rpmsg_node));
 	if (!rpmsg_node) {
-		NO_COPY_SLAVE_DEBUG_E("rpmsg_node allocation failed\r\n");
+		NO_COPY_DEVICE_DEBUG_E("rpmsg_node allocation failed\r\n");
 		return -1;
 	}
 	rpmsg_hold_rx_buffer(ept, data);
@@ -80,7 +80,7 @@ static int rpmsg_endpoint_cb(struct rpmsg_endpoint *ept, void *data, size_t len,
 static void rpmsg_service_unbind(struct rpmsg_endpoint *ept)
 {
 	(void)ept;
-	NO_COPY_SLAVE_DEBUG_I("unexpected Remote endpoint destroy\r\n");
+	NO_COPY_DEVICE_DEBUG_I("unexpected Remote endpoint destroy\r\n");
 	shutdown_req = 1;
 }
 
@@ -94,7 +94,7 @@ static int app(struct rpmsg_device *rdev, void *priv)
 	struct rpmsg_rcv_msg *rpmsg_node;
 	shutdown_req = 0;
 	/* Initialize RPMSG framework */
-	NO_COPY_SLAVE_DEBUG_I("Try to create rpmsg endpoint.\r\n");
+	NO_COPY_DEVICE_DEBUG_I("Try to create rpmsg endpoint.\r\n");
 
 	rpmsg_list = NULL;
 	ret = rpmsg_create_ept(&lept, rdev, RPMSG_SERVICE_NAME,
@@ -102,11 +102,11 @@ static int app(struct rpmsg_device *rdev, void *priv)
 			       rpmsg_endpoint_cb,
 			       rpmsg_service_unbind);
 	if (ret) {
-		NO_COPY_SLAVE_DEBUG_E("Failed to create endpoint.\r\n");
+		NO_COPY_DEVICE_DEBUG_E("Failed to create endpoint.\r\n");
 		return -1;
 	}
 
-	NO_COPY_SLAVE_DEBUG_I("Successfully created rpmsg endpoint.\r\n");
+	NO_COPY_DEVICE_DEBUG_I("Successfully created rpmsg endpoint.\r\n");
 	while (1) {
 		platform_poll(priv);
 		/* we got a shutdown request, exit */
@@ -114,11 +114,11 @@ static int app(struct rpmsg_device *rdev, void *priv)
 			break;
 		}
 		while (rpmsg_list) {
-			/* Send data back to master */
+			/* Send data back to driver */
 			ret = rpmsg_send(rpmsg_list->ept, rpmsg_list->data,
 					 rpmsg_list->len);
 			if (ret < 0) {
-				NO_COPY_SLAVE_DEBUG_E("rpmsg_send failed\r\n");
+				NO_COPY_DEVICE_DEBUG_E("rpmsg_send failed\r\n");
 				return ret;
 			}
 			rpmsg_release_rx_buffer(rpmsg_list->ept,
@@ -143,16 +143,16 @@ int rpmsg_nocopy_echo(struct rpmsg_device *rdev, void *priv)
     metal_assert(priv);
 	int ret;
 
-	NO_COPY_SLAVE_DEBUG_I("Starting rpmsg_nocopy_echo application...\r\n");
+	NO_COPY_DEVICE_DEBUG_I("Starting rpmsg_nocopy_echo application...\r\n");
 
 	ret = app(rdev, priv);
 	if (ret != 0)
     {
-        NO_COPY_SLAVE_DEBUG_E("Rpmsg_nocopy_echo application error,code:0x%x",ret);
+        NO_COPY_DEVICE_DEBUG_E("Rpmsg_nocopy_echo application error,code:0x%x",ret);
         return ret;
     }
 
-	NO_COPY_SLAVE_DEBUG_I("Stopping rpmsg_nocopy_echo application...\r\n");
+	NO_COPY_DEVICE_DEBUG_I("Stopping rpmsg_nocopy_echo application...\r\n");
 
 	return ret;
 }

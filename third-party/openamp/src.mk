@@ -12,6 +12,8 @@ ABSOLUTE_CFILES += $(wildcard $(OPENAMP_C_DIR)/lib/*.c \
 						$(OPENAMP_C_DIR)/lib/remoteproc/*.c \
 						$(OPENAMP_C_DIR)/lib/rpmsg/*.c \
 						$(OPENAMP_C_DIR)/lib/service/rpmsg/rpc/*.c \
-						$(OPENAMP_C_DIR)/lib/virtio/*.c )
+						$(OPENAMP_C_DIR)/lib/utils/*.c \
+						$(OPENAMP_C_DIR)/lib/virtio/*.c \
+						$(OPENAMP_C_DIR)/openamp-system-reference/examples/legacy_apps/machine/phytium/*.c )
 
 endif #CONFIG_USE_OPENAMP

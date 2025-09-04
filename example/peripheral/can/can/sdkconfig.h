@@ -66,6 +66,7 @@
 #define CONFIG_DEFAULT_DEBUG_PRINT_UART1
 /* CONFIG_DEFAULT_DEBUG_PRINT_UART0 is not set */
 /* CONFIG_DEFAULT_DEBUG_PRINT_UART2 is not set */
+/* CONFIG_UART_INIT_NOT_CLR_INTR is not set */
 /* end of Soc configuration */
 
 /* Board Configuration */
@@ -108,6 +109,8 @@
 /* CONFIG_BOOTUP_DEBUG_PRINTS is not set */
 #define CONFIG_USE_NS_GTIMER
 /* CONFIG_USE_VIRTUAL_GTIMER is not set */
+#define CONFIG_SLEEP_USE_NS_GTIMER
+/* CONFIG_SLEEP_USE_VIRTUAL_GTIMER is not set */
 #define CONFIG_USE_DEFAULT_INTERRUPT_CONFIG
 #define CONFIG_INTERRUPT_ROLE_MASTER
 /* CONFIG_INTERRUPT_ROLE_SLAVE is not set */
@@ -206,6 +209,7 @@
 /* FreeRTOS Uart Drivers */
 
 #define CONFIG_FREERTOS_USE_UART
+/* CONFIG_FREERTOS_USE_SERIAL_V2 is not set */
 /* end of FreeRTOS Uart Drivers */
 
 /* FreeRTOS Pwm Drivers */
@@ -227,11 +231,13 @@
 
 /* CONFIG_FREERTOS_USE_XMAC is not set */
 /* CONFIG_FREERTOS_USE_GMAC is not set */
+/* CONFIG_FREERTOS_USE_XMAC_V2 is not set */
 /* end of FreeRTOS Eth Drivers */
 
 /* FreeRTOS Spim Drivers */
 
 /* CONFIG_FREERTOS_USE_FSPIM is not set */
+/* CONFIG_FREERTOS_USE_FSPIM_V2 is not set */
 /* end of FreeRTOS Spim Drivers */
 
 /* FreeRTOS DMA Drivers */
@@ -253,6 +259,7 @@
 /* FreeRTOS I2c Drivers */
 
 /* CONFIG_FREERTOS_USE_I2C is not set */
+/* CONFIG_FREERTOS_USE_FI2C_V2 is not set */
 /* end of FreeRTOS I2c Drivers */
 
 /* FreeRTOS Mio Drivers */

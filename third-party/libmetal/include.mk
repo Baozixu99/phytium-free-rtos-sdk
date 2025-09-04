@@ -8,12 +8,12 @@ ifdef CONFIG_USE_FREERTOS
 
 endif
 
-	BUILD_INC_PATH_DIR +=  $(SDK_DIR)/third-party/libmetal \
-				$(SDK_DIR)/third-party/libmetal/metal/compiler/gcc 
+	BUILD_INC_PATH_DIR +=  	$(SDK_DIR)/third-party/libmetal \
+							$(SDK_DIR)/third-party/libmetal/metal/compiler/gcc 
 
 
 ifdef CONFIG_TARGET_ARMV8_AARCH32
-	BUILD_INC_PATH_DIR +=  $(SDK_DIR)/third-party/libmetal/metal/processor/arm 
+	BUILD_INC_PATH_DIR +=  $(SDK_DIR)/third-party/libmetal/metal/processor/generic
 endif
 
 ifdef CONFIG_TARGET_ARMV8_AARCH64

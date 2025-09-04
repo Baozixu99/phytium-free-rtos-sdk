@@ -30,7 +30,7 @@
 #### 系统架构
 
 - 角色介绍：管理核作为交互管理的核心，主要进行任务分配，也承担一部分的任务反馈功能，性能核作为任务的运算执行核心，主要承担接受管理核的指令和任务运算的工作。
-- 本例程中 `driver_core` 目录下的程序为管理核（模拟）程序、`device_core`目录下为性能核（模拟）程序。管理核程序功能为初始化创建platform和rpmsg_device（主VIRTIO_DEV_MASTER），创建成功后，创建管理endpoint节点与性能核构建通信机制。性能核功能为初始化创建platform和与管理核绑定的rpmsg_device（从VIRTIO_DEV_SLAVE），创建成功后，创建监听endpoint节点接收管理核的命令来运行相关的例程。
+- 本例程中 `driver_core` 目录下的程序为管理核（模拟）程序、`device_core`目录下为性能核（模拟）程序。管理核程序功能为初始化创建platform和rpmsg_device（主VIRTIO_DEV_DRIVER），创建成功后，创建管理endpoint节点与性能核构建通信机制。性能核功能为初始化创建platform和与管理核绑定的rpmsg_device（从VIRTIO_DEV_DEVICE），创建成功后，创建监听endpoint节点接收管理核的命令来运行相关的例程。
 - 核心的分配以及架构参考amp_config.json文件(具体描述参考 `Phytium-Standalone-SDK/example/system/amp/README.md` 的介绍)
 - common目录下为公共配置文件，方便管理核和性能核共用，也方便了解使用的资源以及修改配置。
 - rpmsg 创建流程以及参考文档

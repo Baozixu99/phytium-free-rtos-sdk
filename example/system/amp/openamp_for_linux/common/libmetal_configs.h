@@ -41,12 +41,12 @@ extern "C" {
 /* 备用 */
 /* #define KICK_SGI_NUM_10           10 */
 
-/* device name for slave 00 */
-#define SLAVE_00_KICK_DEV_NAME "slave_00_kick"
-#define SLAVE_00_SGI            KICK_SGI_NUM_9 /* 采用SGI9中断进行消息提醒，需要与linux协商好 */
+/* device name for device 00 */
+#define DEVICE_00_KICK_DEV_NAME "device_00_kick"
+#define DEVICE_00_SGI            KICK_SGI_NUM_9 /* 采用SGI9中断进行消息提醒，需要与linux协商好 */
 /* 备用 */
-/* #define SLAVE_01_KICK_DEV_NAME "slave_01_kick" */
-/* #define SLAVE_01_SGI            KICK_SGI_NUM_10 */
+/* #define DEVICE_01_KICK_DEV_NAME "device_01_kick" */
+/* #define DEVICE_01_SGI            KICK_SGI_NUM_10 */
 
 #if defined __cplusplus
 }

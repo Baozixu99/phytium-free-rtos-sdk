@@ -28,6 +28,8 @@
 
 #include "fcache.h"
 #include "fsleep.h"
+#include "fgeneric_timer.h"
+#include "fparameters.h"
 
 /* cache */
 void FDriverDCacheRangeFlush(uintptr_t adr,size_t len)
@@ -64,3 +66,7 @@ void FDriverSdelay(u32 sec)
     fsleep_seconds(sec);
 }
 
+u64 FDriverGetTimerTick(void)
+{
+    return GenericTimerRead(GENERIC_TIMER_ID0);
+}

@@ -6,7 +6,7 @@
  * This is a sample demonstration application that showcases usage of rpmsg
  * This application is meant to run on the remote CPU running baremetal code.
  * This application allows to check the compatibility with running on
- * the master CPU. For this it echo MSG_LIMIT time message sent by the rpmsg
+ * the driver CPU. For this it echo MSG_LIMIT time message sent by the rpmsg
  * sample client available in distribution.
  */
 
@@ -17,10 +17,10 @@
 #include "rpmsg_service.h"
 #include "fdebug.h"
 
-#define     VIRTIO_DEV_SLAVE_DEBUG_TAG "    SLAVE_02"
-#define     VIRTIO_DEV_SLAVE_DEBUG_I(format, ...) FT_DEBUG_PRINT_I( VIRTIO_DEV_SLAVE_DEBUG_TAG, format, ##__VA_ARGS__)
-#define     VIRTIO_DEV_SLAVE_DEBUG_W(format, ...) FT_DEBUG_PRINT_W( VIRTIO_DEV_SLAVE_DEBUG_TAG, format, ##__VA_ARGS__)
-#define     VIRTIO_DEV_SLAVE_DEBUG_E(format, ...) FT_DEBUG_PRINT_E( VIRTIO_DEV_SLAVE_DEBUG_TAG, format, ##__VA_ARGS__)
+#define     VIRTIO_DEV_DEVICE_DEBUG_TAG "    DEVICE_02"
+#define     VIRTIO_DEV_DEVICE_DEBUG_I(format, ...) FT_DEBUG_PRINT_I( VIRTIO_DEV_DEVICE_DEBUG_TAG, format, ##__VA_ARGS__)
+#define     VIRTIO_DEV_DEVICE_DEBUG_W(format, ...) FT_DEBUG_PRINT_W( VIRTIO_DEV_DEVICE_DEBUG_TAG, format, ##__VA_ARGS__)
+#define     VIRTIO_DEV_DEVICE_DEBUG_E(format, ...) FT_DEBUG_PRINT_E( VIRTIO_DEV_DEVICE_DEBUG_TAG, format, ##__VA_ARGS__)
 
 #define MSG_LIMIT	100
 
@@ -37,15 +37,15 @@ static int rpmsg_endpoint_cb(struct rpmsg_endpoint *ept, void *data, size_t len,
 	(void)src;
 	char payload[RPMSG_BUFFER_SIZE];
 
-	/* Send data back MSG_LIMIT time to master */
+	/* Send data back MSG_LIMIT time to driver */
 	memset(payload, 0, RPMSG_BUFFER_SIZE);
 	memcpy(payload, data, len);
 	if (++count <= MSG_LIMIT) 
 	{
-		VIRTIO_DEV_SLAVE_DEBUG_I("echo message number %u: %s\r\n",(unsigned int)count, payload);
+		VIRTIO_DEV_DEVICE_DEBUG_I("echo message number %u: %s\r\n",(unsigned int)count, payload);
 		if (rpmsg_send(ept, (char *)data, len) < 0) 
 		{
-			VIRTIO_DEV_SLAVE_DEBUG_E("rpmsg_send failed\r\n");
+			VIRTIO_DEV_DEVICE_DEBUG_E("rpmsg_send failed\r\n");
 			shutdown_req = 1;
 		}
 	}
@@ -55,7 +55,7 @@ static int rpmsg_endpoint_cb(struct rpmsg_endpoint *ept, void *data, size_t len,
 static void rpmsg_service_unbind(struct rpmsg_endpoint *ept)
 {
 	(void)ept;
-	VIRTIO_DEV_SLAVE_DEBUG_I("unexpected Remote endpoint destroy\r\n");
+	VIRTIO_DEV_DEVICE_DEBUG_I("unexpected Remote endpoint destroy\r\n");
 	shutdown_req = 1;
 }
 
@@ -68,17 +68,17 @@ static int app(struct rpmsg_device *rdev, void *priv)
 	shutdown_req = 0;
 	count = 0;
 	/* Initialize RPMSG framework */
-	VIRTIO_DEV_SLAVE_DEBUG_I("Try to create rpmsg endpoint.\r\n");
+	VIRTIO_DEV_DEVICE_DEBUG_I("Try to create rpmsg endpoint.\r\n");
 
 	ret = rpmsg_create_ept(&lept, rdev, RPMSG_SERVICE_NAME,
 			       RPMSG_ADDR_ANY, RPMSG_ADDR_ANY,
 			       rpmsg_endpoint_cb, rpmsg_service_unbind);
 	if (ret) {
-		VIRTIO_DEV_SLAVE_DEBUG_E("Failed to create endpoint.\r\n");
+		VIRTIO_DEV_DEVICE_DEBUG_E("Failed to create endpoint.\r\n");
 		return -1;
 	}
 
-	VIRTIO_DEV_SLAVE_DEBUG_I("Successfully created rpmsg endpoint.\r\n");
+	VIRTIO_DEV_DEVICE_DEBUG_I("Successfully created rpmsg endpoint.\r\n");
 	while (1) {
 		platform_poll(priv);
 
@@ -102,16 +102,16 @@ int rpmsg_sample_echo(struct rpmsg_device *rdev, void *priv)
     metal_assert(priv);
 	int ret;
 	
-	VIRTIO_DEV_SLAVE_DEBUG_I("Starting rpmsg_sample_echo application...\r\n");
+	VIRTIO_DEV_DEVICE_DEBUG_I("Starting rpmsg_sample_echo application...\r\n");
 
 	ret = app(rdev, priv);
 	if (ret != 0)
     {
-        VIRTIO_DEV_SLAVE_DEBUG_E("Rpmsg_sample_echo application error,code:0x%x",ret);
+        VIRTIO_DEV_DEVICE_DEBUG_E("Rpmsg_sample_echo application error,code:0x%x",ret);
         return ret;
     }
 
-	VIRTIO_DEV_SLAVE_DEBUG_I("Stopping rpmsg_sample_echo application...\r\n");
+	VIRTIO_DEV_DEVICE_DEBUG_I("Stopping rpmsg_sample_echo application...\r\n");
 
 	return ret;
 }

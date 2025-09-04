@@ -34,6 +34,7 @@
 #include "fassert.h"
 #include "fkernel.h"
 #include "fdebug.h"
+#include "fgeneric_timer.h"
 #include "sdkconfig.h"
 
 /***************************** Include Files *********************************/
@@ -85,6 +86,57 @@ void FDriverSdelay(u32 sec);
 #ifndef FT_DEBUG_PRINT_V
 #define FT_DEBUG_PRINT_V(TAG, format, ...)
 #endif
+
+u64 FDriverGetTimerTick(void);
+
+
+/**
+ * @name: TICKS_TO_SECONDS
+ * @msg:  将tick数转换为秒（整数除法，向下取整）
+ * @param {u64} tick, tick计数值
+ * @return {u64} 对应的秒数
+ */
+#define TICKS_TO_SECONDS() ((u64)(GenericTimerRead(0)) / GenericTimerFrequecy())
+
+/**
+ * @name: TICKS_TO_MILLISECONDS
+ * @msg:  将tick数转换为毫秒（避免乘法溢出的安全计算）
+ * @param {u64} tick, tick计数值
+ * @return {u64} 对应的毫秒数
+ */
+#define TICKS_TO_MILLISECONDS()                           \
+    ({                                                    \
+        u64 __freq = GenericTimerFrequecy();              \
+        u64 __quot = (u64)(GenericTimerRead(0)) / __freq; \
+        u64 __rem = (u64)(GenericTimerRead(0)) % __freq;  \
+        (__quot * 1000) + (__rem * 1000) / __freq;        \
+    })
+
+/**
+ * @name: MSEC_TO_TICKS
+ * @msg:  将毫秒转换为定时器 tick 值（向下取整）
+ * @param {u64} ms, 毫秒时间值
+ * @return {u64} 对应的定时器 tick 值
+ */
+#define MSEC_TO_TICKS(ms) ((u64)(((ms)*GenericTimerFrequecy()) / 1000))
+
+/**
+ * @name: SEC_TO_TICKS
+ * @msg:  将秒转换为定时器 tick 值
+ * @param {u64} s, 秒时间值
+ * @return {u64} 对应的定时器 tick 值
+ */
+#define SEC_TO_TICKS(s)   ((u64)((s)*GenericTimerFrequecy()))
+
+/**
+ * @name: USEC_TO_TICKS
+ * @msg:  将微秒转换为定时器 tick 值（向下取整）
+ * @param {u64} us, 微秒时间值
+ * @return {u64} 对应的定时器 tick 值
+ */
+#define USEC_TO_TICKS(us) ((u64)(((us)*GenericTimerFrequecy()) / 1000000))
+
+
 
 #ifdef __cplusplus
 }

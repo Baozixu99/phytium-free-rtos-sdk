@@ -37,7 +37,7 @@ extern "C" {
 
 /* 从核发送消息时，需要指定发送的cpu的核号，用来确定软件中断的发送到哪个核上 */
 
-#define MASTER_CORE_MASK              255 /* 采用协商好的方式，给所有核心都发送中断，注意：openamp 的freeRTOS 接口层PhytiumProcNotify()做了区分 */
+#define DRIVER_CORE_MASK              255 /* 采用协商好的方式，给所有核心都发送中断，注意：openamp 的freeRTOS 接口层PhytiumProcNotify()做了区分 */
 
 #if defined __cplusplus
 }

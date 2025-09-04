@@ -42,9 +42,9 @@ extern "C"
 #define KICK_SGI_NUM_2            2
 #define KICK_SGI_NUM_3            3
 #define KICK_SGI_NUM_4            4
-/* device name for slave 00 */
-#define SLAVE_00_KICK_DEV_NAME "slave_00_kick"
-#define SLAVE_00_SGI            KICK_SGI_NUM_1
+/* device name for device 00 */
+#define DEVICE_00_KICK_DEV_NAME "device_00_kick"
+#define DEVICE_00_SGI            KICK_SGI_NUM_1
 
 #ifdef __cplusplus
 }

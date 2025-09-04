@@ -19,7 +19,7 @@
  * Last Modified: 2025-03-17 10:25:19
  * Description:  This file is for This file is for a sample demonstration application that showcases usage of rpmsg.
  *               This application is meant to run on the remote CPU running freertos code.
- *               This application echoes back data that was sent to it by the master core.
+ *               This application echoes back data that was sent to it by the driver core.
  * 
  * Modify History: 
  *  Ver   Who        Date         Changes
@@ -53,23 +53,26 @@
 
 /**************************** Type Definitions *******************************/
 
-#define OPENAMP_SLAVE_DEBUG_TAG "OPENAMP_SLAVE"
-#define OPENAMP_SLAVE_ERROR(format, ...) FT_DEBUG_PRINT_E(OPENAMP_SLAVE_DEBUG_TAG, format, ##__VA_ARGS__)
-#define OPENAMP_SLAVE_WARN(format, ...)  FT_DEBUG_PRINT_W(OPENAMP_SLAVE_DEBUG_TAG, format, ##__VA_ARGS__)
-#define OPENAMP_SLAVE_INFO(format, ...)  FT_DEBUG_PRINT_I(OPENAMP_SLAVE_DEBUG_TAG, format, ##__VA_ARGS__)
-#define OPENAMP_SLAVE_DEBUG(format, ...) FT_DEBUG_PRINT_D(OPENAMP_SLAVE_DEBUG_TAG, format, ##__VA_ARGS__)
+#define OPENAMP_DEVICE_DEBUG_TAG "OPENAMP_DEVICE"
+#define OPENAMP_DEVICE_ERROR(format, ...) FT_DEBUG_PRINT_E(OPENAMP_DEVICE_DEBUG_TAG, format, ##__VA_ARGS__)
+#define OPENAMP_DEVICE_WARN(format, ...)  FT_DEBUG_PRINT_W(OPENAMP_DEVICE_DEBUG_TAG, format, ##__VA_ARGS__)
+#define OPENAMP_DEVICE_INFO(format, ...)  FT_DEBUG_PRINT_I(OPENAMP_DEVICE_DEBUG_TAG, format, ##__VA_ARGS__)
+#define OPENAMP_DEVICE_DEBUG(format, ...) FT_DEBUG_PRINT_D(OPENAMP_DEVICE_DEBUG_TAG, format, ##__VA_ARGS__)
 
 #define MAX_DATA_LENGTH       (RPMSG_BUFFER_SIZE / 2)
 
 #define DEVICE_CORE_START     0x0001U /* 开始任务 */
 #define DEVICE_CORE_SHUTDOWN  0x0002U /* 关闭核心 */
 #define DEVICE_CORE_CHECK     0x0003U /* 检查消息 */
+
+/* External functions */
+extern int init_system();
 /************************** Variable Definitions *****************************/
 static volatile int shutdown_req = 0;
 
 /*******************例程全局变量***********************************************/
-struct remoteproc remoteproc_slave_00;
-static struct rpmsg_device *rpdev_slave_00 = NULL;
+struct remoteproc remoteproc_device_00;
+static struct rpmsg_device *rpdev_device_00 = NULL;
 
 /* 协议数据结构 */
 typedef struct {
@@ -102,44 +105,44 @@ static struct remote_resource_table __resource resources __attribute__((used)) =
 	},
     
 	/* Vring rsc entry - part of vdev rsc entry */
-	{SLAVE00_TX_VRING_ADDR, VRING_ALIGN, SLAVE00_VRING_NUM, 1, 0},
-	{SLAVE00_RX_VRING_ADDR, VRING_ALIGN, SLAVE00_VRING_NUM, 2, 0},
+	{DEVICE00_TX_VRING_ADDR, VRING_ALIGN, DEVICE00_VRING_NUM, 1, 0},
+	{DEVICE00_RX_VRING_ADDR, VRING_ALIGN, DEVICE00_VRING_NUM, 2, 0},
 };
 
 /********** 共享内存定义，与linux协商一致 **********/
-static metal_phys_addr_t poll_phys_addr = SLAVE00_KICK_IO_ADDR;
+static metal_phys_addr_t poll_phys_addr = DEVICE00_KICK_IO_ADDR;
 struct metal_device kick_driver_00 = {
-    .name = SLAVE_00_KICK_DEV_NAME,
+    .name = DEVICE_00_KICK_DEV_NAME,
 	.bus = NULL,
     .num_regions = 1,
 	.regions = {
 		{
-			.virt = (void *)SLAVE00_KICK_IO_ADDR,
+			.virt = (void *)DEVICE00_KICK_IO_ADDR,
 			.physmap = &poll_phys_addr,
 			.size = 0x1000,
 			.page_shift = -1UL,
 			.page_mask = -1UL,
-			.mem_flags = SLAVE00_SOURCE_TABLE_ATTRIBUTE,
+			.mem_flags = DEVICE00_SOURCE_TABLE_ATTRIBUTE,
 			.ops = {NULL},
 		}
 	},
     .irq_num = 1,/* Number of IRQs per device */
-	.irq_info = (void *)SLAVE_00_SGI,
+	.irq_info = (void *)DEVICE_00_SGI,
 } ;
 
-struct remoteproc_priv slave_00_priv = {
-    .kick_dev_name =           SLAVE_00_KICK_DEV_NAME  ,
+struct remoteproc_priv device_00_priv = {
+    .kick_dev_name =           DEVICE_00_KICK_DEV_NAME  ,
 	.kick_dev_bus_name =        KICK_BUS_NAME ,
-    .cpu_id        =  MASTER_CORE_MASK,/* 给所有core发送中断 */
+    .cpu_id        =  DRIVER_CORE_MASK,/* 给所有core发送中断 */
 
-	.src_table_attribute = SLAVE00_SOURCE_TABLE_ATTRIBUTE ,
+	.src_table_attribute = DEVICE00_SOURCE_TABLE_ATTRIBUTE ,
 	
 	/* |rx vring|tx vring|share buffer| */
-	.share_mem_va = SLAVE00_SHARE_MEM_ADDR ,
-	.share_mem_pa = SLAVE00_SHARE_MEM_ADDR ,
-	.share_buffer_offset = SLAVE00_VRING_SIZE ,
-	.share_mem_size = SLAVE00_SHARE_MEM_SIZE ,
-	.share_mem_attribute = SLAVE00_SHARE_BUFFER_ATTRIBUTE
+	.share_mem_va = DEVICE00_SHARE_MEM_ADDR ,
+	.share_mem_pa = DEVICE00_SHARE_MEM_ADDR ,
+	.share_buffer_offset = DEVICE00_VRING_SIZE ,
+	.share_mem_size = DEVICE00_SHARE_MEM_SIZE ,
+	.share_mem_attribute = DEVICE00_SHARE_BUFFER_ATTRIBUTE
 } ;
 
 /************************** Function Prototypes ******************************/
@@ -202,16 +205,16 @@ static int rpmsg_endpoint_cb(struct rpmsg_endpoint *ept, void *data, size_t len,
 
     int ret;
     (void)priv;
-    OPENAMP_SLAVE_INFO("src:0x%x",src);
+    OPENAMP_DEVICE_INFO("src:0x%x",src);
     ept->dest_addr = src;
 
     ret = parse_protocol_data((char *)data, len, &protocol_data);
     if(ret != 0)
     {
-        OPENAMP_SLAVE_ERROR("parse protocol data error,ret:%d",ret);
+        OPENAMP_DEVICE_ERROR("parse protocol data error,ret:%d",ret);
         return RPMSG_SUCCESS;/* 解析失败，忽略数据 */
     }
-    OPENAMP_SLAVE_INFO("command:0x%x,length:%d.",protocol_data.command,protocol_data.length);
+    OPENAMP_DEVICE_INFO("command:0x%x,length:%d.",protocol_data.command,protocol_data.length);
     switch (protocol_data.command)
     {
         case DEVICE_CORE_START:
@@ -225,12 +228,12 @@ static int rpmsg_endpoint_cb(struct rpmsg_endpoint *ept, void *data, size_t len,
         }
         case DEVICE_CORE_CHECK:
         {
-            /* Send temp_data back to master */
+            /* Send temp_data back to driver */
             /* 请勿直接对data指针对应的内存进行写操作，操作vring中remoteproc发送通道分配的内存，引发错误的问题*/
             ret = rpmsg_send(ept, &protocol_data, len);
             if (ret < 0)
             {
-                OPENAMP_SLAVE_ERROR("rpmsg_send failed.\r\n");
+                OPENAMP_DEVICE_ERROR("rpmsg_send failed.\r\n");
                 return ret;
             }
             break;
@@ -245,7 +248,7 @@ static int rpmsg_endpoint_cb(struct rpmsg_endpoint *ept, void *data, size_t len,
 static void rpmsg_service_unbind(struct rpmsg_endpoint *ept)
 {
 	(void)ept;
-	OPENAMP_SLAVE_INFO("unexpected Remote endpoint destroy.");
+	OPENAMP_DEVICE_INFO("unexpected Remote endpoint destroy.");
 	shutdown_req = 1;
 }
 
@@ -255,19 +258,19 @@ static void rpmsg_service_unbind(struct rpmsg_endpoint *ept)
 static int FRpmsgEchoApp(struct rpmsg_device *rdev, void *priv)
 {
     int ret = 0;
-    struct rpmsg_endpoint lept;
+    struct rpmsg_endpoint lept = {0};
     shutdown_req = 0;
     /* Initialize RPMSG framework */
-    OPENAMP_SLAVE_INFO("Try to create rpmsg endpoint.\r\n");
+    OPENAMP_DEVICE_INFO("Try to create rpmsg endpoint.\r\n");
 
     ret = rpmsg_create_ept(&lept, rdev, RPMSG_SERVICE_NAME, 0, RPMSG_ADDR_ANY, rpmsg_endpoint_cb, rpmsg_service_unbind);
     if (ret)
     {
-        OPENAMP_SLAVE_ERROR("Failed to create endpoint. %d \r\n", ret);
+        OPENAMP_DEVICE_ERROR("Failed to create endpoint. %d \r\n", ret);
         return -1;
     }
 
-    OPENAMP_SLAVE_INFO("Successfully created rpmsg endpoint.\r\n");
+    OPENAMP_DEVICE_INFO("Successfully created rpmsg endpoint.\r\n");
 
     while (1)
     {
@@ -289,38 +292,38 @@ static int FRpmsgEchoApp(struct rpmsg_device *rdev, void *priv)
 /*-----------------------------------------------------------------------------*
  *  Application entry point
  *-----------------------------------------------------------------------------*/
-int slave_init(void)
+int device_init(void)
 {
     init_system();  // Initialize the system resources and environment
     
-    if (!platform_create_proc(&remoteproc_slave_00, &slave_00_priv, &kick_driver_00)) 
+    if (!platform_create_proc(&remoteproc_device_00, &device_00_priv, &kick_driver_00)) 
     {
-        OPENAMP_SLAVE_ERROR("Failed to create remoteproc instance for slave 00\r\n");
+        OPENAMP_DEVICE_ERROR("Failed to create remoteproc instance for device 00\r\n");
         return -1;  // Return with an error if creation fails
     }
     
-    remoteproc_slave_00.rsc_table = &resources;
+    remoteproc_device_00.rsc_table = &resources;
 
-    if (platform_setup_src_table(&remoteproc_slave_00,remoteproc_slave_00.rsc_table)) 
+    if (platform_setup_src_table(&remoteproc_device_00,remoteproc_device_00.rsc_table)) 
     {
-        OPENAMP_SLAVE_ERROR("Failed to setup src table for slave 00\r\n");
+        OPENAMP_DEVICE_ERROR("Failed to setup src table for device 00\r\n");
         return -1;  // Return with an error if setup fails
     }
     
-    OPENAMP_SLAVE_INFO("Setup resource tables for the created remoteproc instances is over \r\n");
+    OPENAMP_DEVICE_INFO("Setup resource tables for the created remoteproc instances is over \r\n");
 
-    if (platform_setup_share_mems(&remoteproc_slave_00)) 
+    if (platform_setup_share_mems(&remoteproc_device_00)) 
     {
-        OPENAMP_SLAVE_ERROR("Failed to setup shared memory for slave 00\r\n");
+        OPENAMP_DEVICE_ERROR("Failed to setup shared memory for device 00\r\n");
         return -1;  // Return with an error if setup fails
     }
 
-    OPENAMP_SLAVE_INFO("Setup shared memory regions for both remoteproc instances is over \r\n");
+    OPENAMP_DEVICE_INFO("Setup shared memory regions for both remoteproc instances is over \r\n");
 
-    rpdev_slave_00 = platform_create_rpmsg_vdev(&remoteproc_slave_00, 0, VIRTIO_DEV_SLAVE, NULL, NULL);
-    if (!rpdev_slave_00) 
+    rpdev_device_00 = platform_create_rpmsg_vdev(&remoteproc_device_00, 0, VIRTIO_DEV_DEVICE, NULL, NULL);
+    if (!rpdev_device_00) 
     {
-        OPENAMP_SLAVE_ERROR("Failed to create rpmsg vdev for slave 00\r\n");
+        OPENAMP_DEVICE_ERROR("Failed to create rpmsg vdev for device 00\r\n");
         return -1;  // Return with an error if creation fails
     }
 
@@ -341,23 +344,23 @@ int RpmsgEchoTask(void * args)
 	printf("Patch: %d)\r\n", metal_ver_patch());
 
 	/* Initialize platform */
-	OPENAMP_SLAVE_INFO("start application...");
-	if(!slave_init())
+	OPENAMP_DEVICE_INFO("start application...");
+	if(!device_init())
     {
-        FRpmsgEchoApp(rpdev_slave_00,&remoteproc_slave_00) ;
+        FRpmsgEchoApp(rpdev_device_00,&remoteproc_device_00) ;
         if (ret)
         {
-            OPENAMP_SLAVE_ERROR("Failed to running echoapp");
-            platform_cleanup(&remoteproc_slave_00);
+            OPENAMP_DEVICE_ERROR("Failed to running echoapp");
+            platform_cleanup(&remoteproc_device_00);
         }
-        platform_release_rpmsg_vdev(rpdev_slave_00, &remoteproc_slave_00);
-        OPENAMP_SLAVE_INFO("Stopping application...");
-        platform_cleanup(&remoteproc_slave_00);
+        platform_release_rpmsg_vdev(rpdev_device_00, &remoteproc_device_00);
+        OPENAMP_DEVICE_INFO("Stopping application...");
+        platform_cleanup(&remoteproc_device_00);
     }
     else
     {
-        platform_cleanup(&remoteproc_slave_00);
-        OPENAMP_SLAVE_ERROR("Failed to init remoteproc.\r\n");
+        platform_cleanup(&remoteproc_device_00);
+        OPENAMP_DEVICE_ERROR("Failed to init remoteproc.\r\n");
     }
     FPsciCpuOff();
 }
@@ -375,7 +378,7 @@ int rpmsg_echo_task(void)
     
     if(ret != pdPASS)
     {
-        OPENAMP_SLAVE_ERROR("Failed to create a rpmsg_echo task. \r\n");
+        OPENAMP_DEVICE_ERROR("Failed to create a rpmsg_echo task. \r\n");
         return -1;
     }
     return 0;

@@ -4,8 +4,8 @@
 
 /* This is a sample demonstration application that showcases usage of remoteproc
 and rpmsg APIs on the remote core. This application is meant to run on the remote CPU 
-running baremetal code. This application receives two matrices from the master, 
-multiplies them and returns the result to the master core. */
+running baremetal code. This application receives two matrices from the driver, 
+multiplies them and returns the result to the driver core. */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,10 +17,10 @@ multiplies them and returns the result to the master core. */
 #include "rpmsg_service.h"
 #include "fdebug.h"
 
-#define     MAT_MULT_MASTER_DEBUG_TAG "    MASTER_03"
-#define     MAT_MULT_MASTER_DEBUG_I(format, ...) FT_DEBUG_PRINT_I( MAT_MULT_MASTER_DEBUG_TAG, format, ##__VA_ARGS__)
-#define     MAT_MULT_MASTER_DEBUG_W(format, ...) FT_DEBUG_PRINT_W( MAT_MULT_MASTER_DEBUG_TAG, format, ##__VA_ARGS__)
-#define     MAT_MULT_MASTER_DEBUG_E(format, ...) FT_DEBUG_PRINT_E( MAT_MULT_MASTER_DEBUG_TAG, format, ##__VA_ARGS__)
+#define     MAT_MULT_DRIVER_DEBUG_TAG "    DRIVER_03"
+#define     MAT_MULT_DRIVER_DEBUG_I(format, ...) FT_DEBUG_PRINT_I( MAT_MULT_DRIVER_DEBUG_TAG, format, ##__VA_ARGS__)
+#define     MAT_MULT_DRIVER_DEBUG_W(format, ...) FT_DEBUG_PRINT_W( MAT_MULT_DRIVER_DEBUG_TAG, format, ##__VA_ARGS__)
+#define     MAT_MULT_DRIVER_DEBUG_E(format, ...) FT_DEBUG_PRINT_E( MAT_MULT_DRIVER_DEBUG_TAG, format, ##__VA_ARGS__)
 
 #define	MAX_SIZE      6
 #define NUM_MATRIX    2
@@ -55,7 +55,7 @@ static void matrix_print(struct _matrix *m)
 	unsigned int i, j;
 
 	/* Generate two random matrices */
-	MAT_MULT_MASTER_DEBUG_I("Printing matrix... \r\n");
+	MAT_MULT_DRIVER_DEBUG_I("Printing matrix... \r\n");
 
 	for (i = 0; i < m->size; ++i) {
 		for (j = 0; j < m->size; ++j)
@@ -76,7 +76,7 @@ static void generate_matrices(int num_matrices,
 		/* Initialize workload */
 		p_matrix[i].size = matrix_size;
 
-		MAT_MULT_MASTER_DEBUG_I("Input matrix %d \r\n", i);
+		MAT_MULT_DRIVER_DEBUG_I("Input matrix %d \r\n", i);
 		for (j = 0; j < matrix_size; j++) {
 			printf("\r\n");
 			for (k = 0; k < matrix_size; k++) {
@@ -121,7 +121,7 @@ static int rpmsg_endpoint_cb(struct rpmsg_endpoint *ept, void *data,
 	(void)priv;
 	(void)src;
 	if (len != sizeof(struct _matrix)) {
-		MAT_MULT_MASTER_DEBUG_E("Received matrix is of invalid len: %d:%lu\r\n",
+		MAT_MULT_DRIVER_DEBUG_E("Received matrix is of invalid len: %d:%lu\r\n",
 			(int)sizeof(struct _matrix), (unsigned long)len);
 		err_cnt++;
 		return RPMSG_SUCCESS;
@@ -136,10 +136,10 @@ static int rpmsg_endpoint_cb(struct rpmsg_endpoint *ept, void *data,
 		}
 	}
 	if (err_cnt) {
-		MAT_MULT_MASTER_DEBUG_E("Result mismatched...\r\n");
-		MAT_MULT_MASTER_DEBUG_E("Expected matrix:\r\n");
+		MAT_MULT_DRIVER_DEBUG_E("Result mismatched...\r\n");
+		MAT_MULT_DRIVER_DEBUG_E("Expected matrix:\r\n");
 		matrix_print(&e_matrix);
-		MAT_MULT_MASTER_DEBUG_E("Actual matrix:\r\n");
+		MAT_MULT_DRIVER_DEBUG_E("Actual matrix:\r\n");
 		matrix_print(r_matrix);
 	} else {
 		result_returned = 1;
@@ -151,7 +151,7 @@ static void rpmsg_service_unbind(struct rpmsg_endpoint *ept)
 {
 	(void)ept;
 	rpmsg_destroy_ept(&lept);
-	MAT_MULT_MASTER_DEBUG_I("echo test: service is destroyed\r\n");
+	MAT_MULT_DRIVER_DEBUG_I("echo test: service is destroyed\r\n");
 	ept_deleted = 1;
 }
 
@@ -159,7 +159,7 @@ static void rpmsg_name_service_bind_cb(struct rpmsg_device *rdev,
 				       const char *name, uint32_t dest)
 {
 	if (strcmp(name, RPMSG_SERVICE_NAME))
-		MAT_MULT_MASTER_DEBUG_E("Unexpected name service %s.\r\n", name);
+		MAT_MULT_DRIVER_DEBUG_E("Unexpected name service %s.\r\n", name);
 	else
 		(void)rpmsg_create_ept(&lept, rdev, RPMSG_SERVICE_NAME,
 				       RPMSG_ADDR_ANY, dest,
@@ -178,24 +178,24 @@ static int app (struct rpmsg_device *rdev, void *priv)
 
 	ept_deleted = 0;
 
-	MAT_MULT_MASTER_DEBUG_I("Compute thread unblocked ..\r\n");
-	MAT_MULT_MASTER_DEBUG_I("It will generate two random matrices.\r\n");
-	MAT_MULT_MASTER_DEBUG_I("Send to the remote and get the computation result back.\r\n");
-	MAT_MULT_MASTER_DEBUG_I("It will then check if the result is expected.\r\n");
+	MAT_MULT_DRIVER_DEBUG_I("Compute thread unblocked ..\r\n");
+	MAT_MULT_DRIVER_DEBUG_I("It will generate two random matrices.\r\n");
+	MAT_MULT_DRIVER_DEBUG_I("Send to the remote and get the computation result back.\r\n");
+	MAT_MULT_DRIVER_DEBUG_I("It will then check if the result is expected.\r\n");
 
 	/* Create RPMsg endpoint */
 	ret = rpmsg_create_ept(&lept, rdev, RPMSG_SERVICE_NAME,
 			       RPMSG_ADDR_ANY, RPMSG_ADDR_ANY,
 			       rpmsg_endpoint_cb, rpmsg_service_unbind);
 	if (ret) {
-		MAT_MULT_MASTER_DEBUG_E("Failed to create RPMsg endpoint.\r\n");
+		MAT_MULT_DRIVER_DEBUG_E("Failed to create RPMsg endpoint.\r\n");
 		return ret;
 	}
 
 	while (!is_rpmsg_ept_ready(&lept))
 		platform_poll(priv);
 
-	MAT_MULT_MASTER_DEBUG_I("RPMSG endpoint is binded with remote.\r\n");
+	MAT_MULT_DRIVER_DEBUG_I("RPMSG endpoint is binded with remote.\r\n");
 	err_cnt = 0;
 	srand(time(NULL));
 	for (c = 0; c < 200; c++) {
@@ -205,10 +205,10 @@ static int app (struct rpmsg_device *rdev, void *priv)
 		ret = rpmsg_send(&lept, i_matrix, sizeof(i_matrix));
 
 		if (ret < 0) {
-			MAT_MULT_MASTER_DEBUG_I("Error sending data...\r\n");
+			MAT_MULT_DRIVER_DEBUG_I("Error sending data...\r\n");
 			break;
 		}
-		MAT_MULT_MASTER_DEBUG_I("Matrix multiply: sent : %lu\r\n",
+		MAT_MULT_DRIVER_DEBUG_I("Matrix multiply: sent : %lu\r\n",
 			(unsigned long)sizeof(i_matrix));
 		do {
 			platform_poll(priv);
@@ -218,13 +218,13 @@ static int app (struct rpmsg_device *rdev, void *priv)
 			break;
 	}
 
-	MAT_MULT_MASTER_DEBUG_I("**********************************\r\n");
-	MAT_MULT_MASTER_DEBUG_I(" Test Results: Error count = %d \r\n", err_cnt);
-	MAT_MULT_MASTER_DEBUG_I("**********************************\r\n");
+	MAT_MULT_DRIVER_DEBUG_I("**********************************\r\n");
+	MAT_MULT_DRIVER_DEBUG_I(" Test Results: Error count = %d \r\n", err_cnt);
+	MAT_MULT_DRIVER_DEBUG_I("**********************************\r\n");
 
 	/* Detroy RPMsg endpoint */
 	rpmsg_destroy_ept(&lept);
-	MAT_MULT_MASTER_DEBUG_I("Quitting application .. Matrix multiplication end\r\n");
+	MAT_MULT_DRIVER_DEBUG_I("Quitting application .. Matrix multiplication end\r\n");
 
 	return 0;
 }
@@ -235,15 +235,15 @@ int matrix_multiply(struct rpmsg_device *rdev, void *priv)
     metal_assert(priv);
 	int ret;
 
-	MAT_MULT_MASTER_DEBUG_I("Starting matrix_multiply application...\r\n");
+	MAT_MULT_DRIVER_DEBUG_I("Starting matrix_multiply application...\r\n");
 	ret = app(rdev, priv);
 	if (ret != 0)
     {
-        MAT_MULT_MASTER_DEBUG_E("Matrix_multiply application error,code:0x%x",ret);
+        MAT_MULT_DRIVER_DEBUG_E("Matrix_multiply application error,code:0x%x",ret);
         return ret;
     }
 
-	MAT_MULT_MASTER_DEBUG_I("Stopping matrix_multiply application...\r\n");
+	MAT_MULT_DRIVER_DEBUG_I("Stopping matrix_multiply application...\r\n");
 
 	return ret;
 }

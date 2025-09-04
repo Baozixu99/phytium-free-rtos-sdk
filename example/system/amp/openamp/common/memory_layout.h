@@ -35,22 +35,22 @@ extern "C"
 {
 #endif
 
-/*slave core0*/
-#define SLAVE00_IMAGE_NUM                0          /*镜像位置与amp_config.json中编译排序对应*/
-#define SLAVE00_SOURCE_TABLE_ADDR        0xc0000000
-#define SLAVE00_SOURCE_TABLE_SIZE        SLAVE00_KICK_IO_ADDR - SLAVE00_SOURCE_TABLE_ADDR
-#define SLAVE00_KICK_IO_ADDR             0xc0020000
-#define SLAVE00_KICK_IO_SIZE             SLAVE00_SHARE_MEM_ADDR - SLAVE00_KICK_IO_ADDR
+/*device core0*/
+#define DEVICE00_IMAGE_NUM                0          /*镜像位置与amp_config.json中编译排序对应*/
+#define DEVICE00_SOURCE_TABLE_ADDR        0xc0000000
+#define DEVICE00_SOURCE_TABLE_SIZE        DEVICE00_KICK_IO_ADDR - DEVICE00_SOURCE_TABLE_ADDR
+#define DEVICE00_KICK_IO_ADDR             0xc0020000
+#define DEVICE00_KICK_IO_SIZE             DEVICE00_SHARE_MEM_ADDR - DEVICE00_KICK_IO_ADDR
 /* MEM = |tx vring|rx vring|share buffer| */
-#define SLAVE00_SHARE_MEM_ADDR           0xc1000000
-#define SLAVE00_SHARE_MEM_SIZE           0x1000000
-#define SLAVE00_VRING_SIZE               (SLAVE00_SHARE_MEM_SIZE >> 2)
-#define SLAVE00_VRING_NUM                0x100
-#define SLAVE00_TX_VRING_ADDR            0xc1000000
-#define SLAVE00_RX_VRING_ADDR            (SLAVE00_TX_VRING_ADDR + SLAVE00_VRING_SIZE/2)
+#define DEVICE00_SHARE_MEM_ADDR           0xc1000000
+#define DEVICE00_SHARE_MEM_SIZE           0x1000000
+#define DEVICE00_VRING_SIZE               (DEVICE00_SHARE_MEM_SIZE >> 2)
+#define DEVICE00_VRING_NUM                0x100
+#define DEVICE00_TX_VRING_ADDR            0xc1000000
+#define DEVICE00_RX_VRING_ADDR            (DEVICE00_TX_VRING_ADDR + DEVICE00_VRING_SIZE/2)
 
-#define SLAVE00_SOURCE_TABLE_ATTRIBUTE   (MT_NORMAL|MT_P_RW_U_NA)
-#define SLAVE00_SHARE_BUFFER_ATTRIBUTE   (MT_NORMAL|MT_P_RW_U_NA)
+#define DEVICE00_SOURCE_TABLE_ATTRIBUTE   (MT_NORMAL|MT_P_RW_U_NA)
+#define DEVICE00_SHARE_BUFFER_ATTRIBUTE   (MT_NORMAL|MT_P_RW_U_NA)
 
 #ifdef __cplusplus
 }

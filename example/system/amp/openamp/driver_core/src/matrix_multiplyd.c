@@ -4,8 +4,8 @@
 
 /* This is a sample demonstration application that showcases usage of remoteproc
 and rpmsg APIs on the remote core. This application is meant to run on the remote CPU
-running baremetal code. This applicationr receives two matrices from the master,
-multiplies them and returns the result to the master core. */
+running baremetal code. This applicationr receives two matrices from the driver,
+multiplies them and returns the result to the driver core. */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,10 +15,10 @@ multiplies them and returns the result to the master core. */
 #include "platform_info.h"
 #include "fdebug.h"
 
-#define     MAT_MULT_SLAVE_DEBUG_TAG "    SLAVE_03"
-#define     MAT_MULT_SLAVE_DEBUG_I(format, ...) FT_DEBUG_PRINT_I( MAT_MULT_SLAVE_DEBUG_TAG, format, ##__VA_ARGS__)
-#define     MAT_MULT_SLAVE_DEBUG_W(format, ...) FT_DEBUG_PRINT_W( MAT_MULT_SLAVE_DEBUG_TAG, format, ##__VA_ARGS__)
-#define     MAT_MULT_SLAVE_DEBUG_E(format, ...) FT_DEBUG_PRINT_E( MAT_MULT_SLAVE_DEBUG_TAG, format, ##__VA_ARGS__)
+#define     MAT_MULT_DEVICE_DEBUG_TAG "    DEVICE_03"
+#define     MAT_MULT_DEVICE_DEBUG_I(format, ...) FT_DEBUG_PRINT_I( MAT_MULT_DEVICE_DEBUG_TAG, format, ##__VA_ARGS__)
+#define     MAT_MULT_DEVICE_DEBUG_W(format, ...) FT_DEBUG_PRINT_W( MAT_MULT_DEVICE_DEBUG_TAG, format, ##__VA_ARGS__)
+#define     MAT_MULT_DEVICE_DEBUG_E(format, ...) FT_DEBUG_PRINT_E( MAT_MULT_DEVICE_DEBUG_TAG, format, ##__VA_ARGS__)
 
 #define	MAX_SIZE		6
 #define NUM_MATRIX		2
@@ -67,7 +67,7 @@ static int rpmsg_endpoint_cb(struct rpmsg_endpoint *ept, void *data, size_t len,
 	(void)src;
 
 	if ((*(unsigned int *)data) == SHUTDOWN_MSG) {
-		MAT_MULT_SLAVE_DEBUG_I("shutdown message is received.\r\n");
+		MAT_MULT_DEVICE_DEBUG_I("shutdown message is received.\r\n");
 		shutdown_req = 1;
 		return RPMSG_SUCCESS;
 	}
@@ -76,9 +76,9 @@ static int rpmsg_endpoint_cb(struct rpmsg_endpoint *ept, void *data, size_t len,
 	/* Process received data and multiple matrices. */
 	Matrix_Multiply(&matrix_array[0], &matrix_array[1], &matrix_result);
 
-	/* Send the result of matrix multiplication back to master. */
+	/* Send the result of matrix multiplication back to driver. */
 	if (rpmsg_send(ept, &matrix_result, sizeof(matrix)) < 0) {
-		MAT_MULT_SLAVE_DEBUG_E("rpmsg_send failed\r\n");
+		MAT_MULT_DEVICE_DEBUG_E("rpmsg_send failed\r\n");
 	}
 	return RPMSG_SUCCESS;
 }
@@ -86,7 +86,7 @@ static int rpmsg_endpoint_cb(struct rpmsg_endpoint *ept, void *data, size_t len,
 static void rpmsg_service_unbind(struct rpmsg_endpoint *ept)
 {
 	(void)ept;
-	MAT_MULT_SLAVE_DEBUG_E("Endpoint is destroyed\r\n");
+	MAT_MULT_DEVICE_DEBUG_E("Endpoint is destroyed\r\n");
 	shutdown_req = 1;
 }
 
@@ -103,11 +103,11 @@ static int app(struct rpmsg_device *rdev, void *priv)
 			       rpmsg_endpoint_cb,
 			       rpmsg_service_unbind);
 	if (ret) {
-		MAT_MULT_SLAVE_DEBUG_E("Failed to create endpoint.\r\n");
+		MAT_MULT_DEVICE_DEBUG_E("Failed to create endpoint.\r\n");
 		return -1;
 	}
 
-	MAT_MULT_SLAVE_DEBUG_I("Waiting for events...\r\n");
+	MAT_MULT_DEVICE_DEBUG_I("Waiting for events...\r\n");
 	while(1) {
 		platform_poll(priv);
 		/* we got a shutdown request, exit */
@@ -125,21 +125,21 @@ static int app(struct rpmsg_device *rdev, void *priv)
  *-----------------------------------------------------------------------------*/
 int matrix_multiplyd(struct rpmsg_device *rdev, void *priv)
 {
-	MAT_MULT_SLAVE_DEBUG_I("Starting application...\r\n");
+	MAT_MULT_DEVICE_DEBUG_I("Starting application...\r\n");
 
 	metal_assert(rdev);
     metal_assert(priv);
 	int ret;
 
-	MAT_MULT_SLAVE_DEBUG_I("Starting matrix_multiplyd application...\r\n");
+	MAT_MULT_DEVICE_DEBUG_I("Starting matrix_multiplyd application...\r\n");
 	ret = app(rdev, priv);
 	if (ret != 0)
     {
-        MAT_MULT_SLAVE_DEBUG_E("Matrix_multiplyd application error,code:0x%x",ret);
+        MAT_MULT_DEVICE_DEBUG_E("Matrix_multiplyd application error,code:0x%x",ret);
         return ret;
     }
 
-	MAT_MULT_SLAVE_DEBUG_I("Stopping matrix_multiplyd application...\r\n");
+	MAT_MULT_DEVICE_DEBUG_I("Stopping matrix_multiplyd application...\r\n");
 
 	return ret;
 }

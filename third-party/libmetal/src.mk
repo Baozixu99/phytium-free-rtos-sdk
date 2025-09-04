@@ -1,21 +1,13 @@
 ifdef CONFIG_USE_LIBMETAL
 
+LIBMETAL_DIR = $(abspath $(SDK_DIR)/third-party/libmetal)
 
 ifdef CONFIG_USE_FREERTOS
 
 	CSRCS_RELATIVE_FILES += $(wildcard metal/system/freertos/ft_platform/*.c)
-
-	ifdef CONFIG_TARGET_ARMV8_AARCH32
-		CSRCS_RELATIVE_FILES += $(wildcard metal/system/freertos/*.c)
-	endif
-
-	ifdef CONFIG_TARGET_ARMV8_AARCH64
-		CSRCS_RELATIVE_FILES += $(wildcard metal/system/freertos/*.c)
-	endif
+	ABSOLUTE_CFILES += $(wildcard $(LIBMETAL_DIR)/metal/system/freertos/*.c)
 
 endif
-
-LIBMETAL_DIR = $(abspath $(SDK_DIR)/third-party/libmetal)
 
 ABSOLUTE_CFILES +=$(wildcard $(LIBMETAL_DIR)/metal/*.c)
 

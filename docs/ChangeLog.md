@@ -1,3 +1,31 @@
+# Phytium FreeRTOS SDK 2025-09-04 ChangeLog
+
+Change Log since 2025-09-03
+
+## example
+
+- update network example configs
+
+# Phytium FreeRTOS SDK 2025-08-11 ChangeLog
+
+Change Log since 2025-08-06
+
+## example
+
+- update OpenAMP example
+
+## Third-party
+
+- update OpenAMP to V1.8.0
+
+# Phytium FreeRTOS SDK 2025-08-06 ChangeLog
+
+Change Log since 2025-07-22
+
+## third-party
+
+- update FreeRTOS-Kernel to V11.2.0
+
 # Phytium FreeRTOS SDK 2025-07-18 ChangeLog
 
 Change Log since 2025-07-18

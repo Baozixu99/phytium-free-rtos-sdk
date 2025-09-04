@@ -40,25 +40,25 @@ extern "C"
 /*记录当前系统中有多少个remoteproc设备*/
 static u32 remoteproc_online_mask = 0 ;
 
-#define MASTER_DRIVER_EPT_ADDR    (0x3 + 1024)
-#define SLAVE_DEVICE_00_EPT_ADDR   (0x4 + 1024)
+#define DRIVER_EPT_ADDR    (0x3 + 1024)
+#define DEVICE_00_EPT_ADDR   (0x4 + 1024)
 
 #define RPMSG_SERVICE_00_NAME          "rpmsg_service_name_00"
 
 /* 从核发送消息时，需要指定发送的cpu的核号，用来确定软件中断的发送到哪个核上 */
 #if defined(CONFIG_TARGET_PE2204)
-#define MASTER_DRIVER_CORE              2 /* 与amp_config.json中的管理（主）核配置保持一致 */
+#define DRIVER_CORE              2 /* 与amp_config.json中的管理（主）核配置保持一致 */
 #else
-#define MASTER_DRIVER_CORE              0 /* 与amp_config.json中的管理（主）核配置保持一致 */
+#define DRIVER_CORE              0 /* 与amp_config.json中的管理（主）核配置保持一致 */
 #endif
 
 /* 主核发送消息时，需要指定接收的cpu的核号，用来确定软件中断的发送到哪个核上，以及主核指定启动镜像在那个核心上运行 */
 #if defined(CONFIG_TARGET_PD2008)
-#define SLAVE_DEVICE_CORE_00            4
+#define DEVICE_CORE_00            4
 #elif defined(CONFIG_TARGET_PE2204)
-#define SLAVE_DEVICE_CORE_00            0
+#define DEVICE_CORE_00            0
 #else
-#define SLAVE_DEVICE_CORE_00            1
+#define DEVICE_CORE_00            1
 #endif
 
 #ifdef __cplusplus
