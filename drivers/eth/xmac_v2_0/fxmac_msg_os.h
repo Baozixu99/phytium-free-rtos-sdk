@@ -46,8 +46,8 @@ extern "C" {
 #define FXMAC_MSG_RX_BDSPACE_LENGTH    0x20000 /* default set 128KB*/
 #define FXMAC_MSG_TX_BDSPACE_LENGTH    0x20000 /* default set 128KB*/
 
-#define FXMAC_MSG_TX_PBUFS_LENGTH       64
-#define FXMAC_MSG_RX_PBUFS_LENGTH       64
+#define FXMAC_MSG_TX_PBUFS_LENGTH       128
+#define FXMAC_MSG_RX_PBUFS_LENGTH       128
 
 #define FXMAC_MSG_MAX_HARDWARE_ADDRESS_LENGTH 6
 

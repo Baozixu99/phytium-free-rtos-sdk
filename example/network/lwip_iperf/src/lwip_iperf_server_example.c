@@ -48,6 +48,7 @@
 #include "lwip/tcpip.h"
 #include "lwip/inet.h"
 #include "lwiperf.h"
+#include "net_pcie_common.h"
 
 #define LWIPERF_TCP_LISTEN_PORT 5001
 
@@ -71,17 +72,6 @@ enum
     LWIP_IPERF_SERVER_EXAMPLE_INIT_FAILURE = 2,
 };
 static QueueHandle_t xQueue = NULL;
-
-typedef struct
-{
-    UserConfig lwip_mac_config;
-    u32 dhcp_en;
-    char*  ipaddr;
-    char*  netmask; 
-    char*  gw;
-    unsigned char mac_address[6];
-    struct netif netif;
-} BoardMacConfig;
 
 static BoardMacConfig board_mac_config[MAC_NUM] = 
  {
@@ -107,36 +97,21 @@ static BoardMacConfig board_mac_config[MAC_NUM] =
     #endif
 };
 
-
-
-static void SetIP(ip_addr_t* ipaddr,ip_addr_t* gw,ip_addr_t* netmask,u32 mac_id)
-{
-    
-    if(inet_aton(board_mac_config[mac_id].ipaddr,ipaddr)==0)
-        printf("The addr of ipaddr is wrong\r\n");      
-    if(inet_aton(board_mac_config[mac_id].gw,gw)==0)
-        printf("The addr of gw is wrong\r\n");
-    if(inet_aton(board_mac_config[mac_id].netmask,netmask)==0)
-        printf("The addr of netmask is wrong\r\n");
-
-}
-
 void LwipIperfServerTestTask(void)
 {
     int task_res = LWIP_IPERF_SERVER_EXAMPLE_SUCCESS;
     /* mac init */
     for (int i = 0; i < MAC_NUM; i++)
     {
-       
         struct netif *netif_p = NULL;
         ip_addr_t ipaddr,netmask, gw;
         board_mac_config[i].lwip_mac_config.name[0] = ETH_NAME_PREFIX;
         itoa(board_mac_config[i].lwip_mac_config.mac_instance, &(board_mac_config[i].lwip_mac_config.name[1]), 10);
 
         /* mac ip addr set: char* -> ip_addr_t */
-        SetIP(&ipaddr,&gw,&netmask,i);
-    /* ******************************************************************* */
+        SetIP(&ipaddr,&gw,&netmask,board_mac_config[i]);
 
+        /*********************************************************************/
         netif_p= &board_mac_config[i].netif;
         /* Add network interface to the netif_list, and set it as default */
         if (!LwipPortAdd(netif_p, &ipaddr, &netmask, &gw, board_mac_config[i].mac_address, (UserConfig *)&board_mac_config[i]))
@@ -163,8 +138,15 @@ void LwipIperfServerTestTask(void)
             /* 当netif链接关闭时，必须调用该函数 */
             netif_set_down(netif_p);
         }
-
     }
+
+    /* init pcie & msi net */
+    if (FNetPcieMsiInit() != FT_SUCCESS)
+    {
+        FNET_ERROR("Net Pcie msi init failed, please check if the e1000e is "
+                   "successfully connected");
+    }
+
     printf("Network setup complete.\n");
     
     printf("Now start iperf sever \r\n");
@@ -172,6 +154,7 @@ void LwipIperfServerTestTask(void)
                                   NULL, NULL))
     {
         printf("Start iperf server success !!! \r\n");
+        task_res = LWIP_IPERF_SERVER_EXAMPLE_SUCCESS;
     }
     else
     {   

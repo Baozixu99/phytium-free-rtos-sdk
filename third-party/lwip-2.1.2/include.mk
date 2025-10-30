@@ -21,6 +21,10 @@ BUILD_INC_PATH_DIR +=  $(THIRDP_CUR_DIR)/lwip-2.1.2/ports
 		BUILD_INC_PATH_DIR +=  $(THIRDP_CUR_DIR)/lwip-2.1.2/ports/fxmac_v2_0
 	endif	
 
+	ifdef CONFIG_LWIP_E1000E
+		BUILD_INC_PATH_DIR +=  $(THIRDP_CUR_DIR)/lwip-2.1.2/ports/e1000e
+	endif
+
 endif
 
 BUILD_INC_PATH_DIR += $(SDK_DIR)/third-party/lwip-2.1.2 \

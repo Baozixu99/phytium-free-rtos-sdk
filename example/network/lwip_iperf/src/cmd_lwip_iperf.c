@@ -40,7 +40,7 @@
 
 #include "lwip_iperf_client_example.h"
 #include "lwip_iperf_server_example.h"
-
+#include "net_pcie_common.h"
 
 
 
@@ -58,11 +58,13 @@ static void  LwipIperfExampleCheckState(void)
     {
         case CLIENT_EXAMPLE_RUNNING:
             printf("Lwip iperf client example is running, we need to deinitialize it first! \r\n");
+            LwipIperfE1000EClientDeinit();
             LwipIperfClientDeinit();
             init_flag_mask=EXAMPLE_IDLE;
             break;
         case SERVER_EXAMPLE_RUNNING:
             printf("Lwip iperf server example is running, we need to deinitialize it first! \r\n");
+            LwipIperfE1000EServerDeinit();
             LwipIperfServerDeinit();
             init_flag_mask=EXAMPLE_IDLE;
             break;

@@ -110,15 +110,18 @@ volatile unsigned int gCpuRuntime;
 
 void vApplicationInterruptHandler(uint32_t ulICCIAR)
 {
-    int ulInterruptID;
     is_in_irq ++;
-    /* Interrupts cannot be re-enabled until the source of the interrupt is
-    cleared. The ID of the interrupt is obtained by bitwise ANDing the ICCIAR
-    value with 0x3FF. */
-    ulInterruptID = ulICCIAR & 0x3FFUL;
+    
+    if (ulICCIAR < 8192)
+    {
+        /* Interrupts cannot be re-enabled until the source of the interrupt is
+        cleared. The ID of the interrupt is obtained by bitwise ANDing the ICCIAR
+        value with 0x3FF. */
+        ulICCIAR = ulICCIAR & 0x3FFUL;
+    }
 
     /* call handler function */
-    if (ulInterruptID == USING_GENERIC_TIMER_IRQ_ID)
+    if (ulICCIAR == USING_GENERIC_TIMER_IRQ_ID)
     {
         /* Generic Timer */
         gCpuRuntime++;
@@ -126,7 +129,7 @@ void vApplicationInterruptHandler(uint32_t ulICCIAR)
     }
     else
     {
-        FExceptionInterruptHandler((void *)(uintptr)ulInterruptID);
+        FExceptionInterruptHandler((void *)(uintptr)ulICCIAR);
     }
     is_in_irq --;
 }

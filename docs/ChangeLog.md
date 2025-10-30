@@ -1,3 +1,23 @@
+# Phytium FreeRTOS SDK 2025-10-28 v1.2.0 ChangeLog
+
+Change Log since 2025-10-22
+
+## docs
+
+- update changelog,release note, and readme
+
+# Phytium FreeRTOS SDK 2025-10-22 ChangeLog
+
+Change Log since 2025-09-04
+
+## driver
+
+- add e1000e
+
+## example
+
+- support e1000e iperf test
+
 # Phytium FreeRTOS SDK 2025-09-04 ChangeLog
 
 Change Log since 2025-09-03
@@ -81,7 +101,7 @@ Change Log since 2025-07-02
 
 ## example
 
-- Add D3000M configuration for each use case in the feature module, improve the README documentation, and complete testing
+- Add PD2408 configuration for each use case in the feature module, improve the README documentation, and complete testing
 
 # Phytium FreeRTOS SDK 2025-06-30 ChangeLog
 
@@ -110,7 +130,7 @@ Change Log since 2025-06-19
 
 ## example
 
-- add D3000M example config
+- add PD2408 example config
 
 # Phytium FreeRTOS SDK 2025-06-19 ChangeLog
 

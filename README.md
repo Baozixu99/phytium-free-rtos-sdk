@@ -1,6 +1,6 @@
 # Phytium-FreeRTOS-SDK
 
-**v1.1.0** [ReleaseNote](./docs/ChangeLog.md)
+**v1.2.0** [ReleaseNote](./docs/ChangeLog.md)
 
 **如需Phytium全系CPU的软件适配支持，请联系 ``linan1284@phytium.com.cn``**
 
@@ -52,48 +52,51 @@
 
 | Feature            | Platform Supported                        | Platform Developing                  | Component              |
 | -------------------| ------------------------------------------| ------------------------------------ | ---------------------- |
-| EVENTGROUP         | PD1904 <br>PD2008 <br>PE220X |                                      | eventgroup           |
-| INTERRUPT          | PD1904 <br>PE220X <br>PD2008 |                                      | interrupt                |
-| QUEUE              | PD1904 <br>PD2008 <br>PE220X |                                      | queue           |
-| RESOURCE           | PD1904 <br>PE220X <br>PD2008 |                                      | resource                |
-| SOFTWARE_TIMER     | PD1904 <br>PD2008 <br>PE220X |                                      | software_timer           |
-| TASK               | PD1904 <br>PE220X <br>PD2008 |                                      | task                |
-| TASK_NOTIFY        | PD1904 <br>PD2008 <br>PE220X |                                      | task_notify           |
+| EVENTGROUP         | PD1904 <br>PD2008 <br>PE220X <br>PD2308 <br>PD2408 |                                      | eventgroup           |
+| INTERRUPT          | PD1904 <br>PE220X <br>PD2008 <br>PD2308 <br>PD2408 |                                      | interrupt                |
+| QUEUE              | PD1904 <br>PD2008 <br>PE220X <br>PD2308 <br>PD2408 |                                      | queue           |
+| RESOURCE           | PD1904 <br>PE220X <br>PD2008 <br>PD2308 <br>PD2408 |                                      | resource                |
+| SOFTWARE_TIMER     | PD1904 <br>PD2008 <br>PE220X <br>PD2308 <br>PD2408 |                                      | software_timer           |
+| TASK               | PD1904 <br>PE220X <br>PD2008 <br>PD2308 <br>PD2408 |                                      | task                |
+| TASK_NOTIFY        | PD1904 <br>PD2008 <br>PE220X <br>PD2308 <br>PD2408 |                                      | task_notify           |
 
 | Network            | Platform Supported                        | Platform Developing                  | Component              |
 | -------------------| ------------------------------------------| ------------------------------------ | ---------------------- |
-| LWIP               | PD1904 <br>PD2008 <br>PE220X  <br>PD2408|                                      | lwip_startup           |
-| UDP                | PD1904 <br>PE220X <br>PD2008  <br>PD2408|                                      | sockets/udp_multicast  |
+| LWIP               | PD1904 <br>PD2008 <br>PE220X <br>PD2308 <br>PD2408 |                                      | lwip_startup           |
+| UDP                | PD1904 <br>PE220X <br>PD2008 <br>PD2308 <br>PD2408 |                                      | sockets/udp_multicast  |
+| WLAN               | PE220X                                             |                                      | wlan/wlan_hostapd      |
 
-| Peripherals                    | Platform Supported                        | Platform Developing                  | Component            |
-| ------------------------------ | ------------------------------------------| ------------------------------------ | -------------------- |
-| ADC                            |                                           | PE220X                                | adc                  |
-| CAN                            | PD1904 <br>PE220X <br>PD2008              |                                      | can/can              |
-| DDMA                           | PE220X                        |                                      | dma/ddma             |
-| GDMA                           | PE220X                        |                                      | dma/gdma             |
-| GPIO                           | PE220X  <br>PD2408                    |                                      | gpio                 |
-| I2C                            | PE220X  <br>PD2408                      | FT2004/PD2008                         | i2c                  |
-| MEDIA                          | PE220X                        |                                      | media                |
-| QSPI (Nor Flash)               | PE220X <br>PD2008 <br>PD1904 <br>PD2408              |                                      | qspi                 |
-| SPI                            | PE220X  <br>PD2408                      |                                      | spi                  |
-| TIMER & TACHO                  | PE220X                        |                                      | timer&tacho          |
-| SDIF                           | PE220X  <br>PD2408                     |                                      | sd                   |
-| PWM                            | PE220X  <br>PD2408                      |                                      | pwm                  |
-| USB(Host/Device)                | PE220X <br>PD2408                       |                                      | usb                  |
-| WDT                            | PD1904 <br>PD2008 <br>PE220X |                                      | wdt                  |
+| Peripherals                    | Platform Supported                                 | Platform Developing                  | Component            |
+| ------------------------------ | ---------------------------------------------------| ------------------------------------ | -------------------- |
+| ADC                            |                                                    | PE220X                               | adc                  |
+| CAN                            | PD1904 <br>PE220X <br>PD2308 <br>PD2008            |                                      | can/can              |
+| DDMA                           | PE220X <br>PD2308                                  |                                      | dma/ddma             |
+| GDMA                           | PE220X <br>PD2008                                  |                                      | dma/gdma             |
+| GPIO                           | PE220X <br>PD2008 <br>PD2308 <br>PD2408            |                                      | gpio                 |
+| I2C                            | PE220X <br>PD2308 <br>PD2408                       | FT2004/PD2008                        | i2c                  |
+| I2S                            | PE220X                                             |                                      | i2s                  |
+| MEDIA                          | PE220X                                             |                                      | media                |
+| QSPI (Nor Flash)               | PE220X <br>PD2008 <br>PD1904 <br>PD2408            |                                      | qspi                 |
+| SPI                            | PE220X <br>PD2308 <br>PD2408                       |                                      | spi                  |
+| TIMER & TACHO                  | PE220X <br>PD2308                                  |                                      | timer&tacho          |
+| SDIF                           | PE220X <br>PD2408                                  |                                      | sd                   |
+| PWM                            | PE2204 <br>PD2308 <br>PD2408                       |                                      | pwm                  |
+| USB(Host/Device)               | PE220X <br>PD2408                                  |                                      | usb                  |
+| WDT                            | PD1904 <br>PD2008 <br>PD2308 <br>PE220X <br>PD2408 |                                      | wdt                  |
 
 | Storage            | Platform Supported                        | Platform Developing                  | Component              |
 | -------------------| ------------------------------------------| ------------------------------------ | ---------------------- |
-| FATFS              | PE220X <br>PD2408                                |                                      | fatfs           |
-| QSPI_SPIFFS        | PD1904 <br>PE220X <br>PD2008              |                                      | qspi_spiffs                |
-| SPIM_SPIFFS        | PE220X <br>PD2408                        |                                      | spim_spiffs           |
+| FATFS              | PE220X <br>PD2308 <br>PD2408              |                                      | fatfs           |
+| QSPI_SPIFFS        | PD1904 <br>PD2308 <br>PE220X <br>PD2008   |                                      | qspi_spiffs                |
+| SPIM_SPIFFS        | PE220X  <br>PD2308 <br>PD2408             |                                      | spim_spiffs           |
 
-| System             | Platform Supported                        | Platform Developing                  | Component              |
-| -------------------| ------------------------------------------| ------------------------------------ | ---------------------- |
-| AMP                | PE220X <br>PD2408                        | PD2008 <br>PD1904                   | amp/openamp            |
-| ATOMIC             | PD1904 <br>PD2008 <br>PE220X  <br>PD2408|                                      | atomic            |
-| EXCEPTION_DEBUG    | PD1904 <br>PD2008 <br>PE220X  <br>PD2408|                                      | exception_debug        |
-| NESTED_INTERRUPT   | PD1904 <br>PD2008 <br>PE220X  <br>PD2408|                                      | nested_interrupt       |
+| System             | Platform Supported                                 | Platform Developing                  | Component              |
+| -------------------| ---------------------------------------------------| ------------------------------------ | ---------------------- |
+| AMP                | PE220X <br>PD2008 <br>PD2308 <br>PD2408            |  <br>PD1904                         | amp/openamp            |
+| ATOMIC             | PD1904 <br>PD2008 <br>PE220X <br>PD2308 <br>PD2408 |                                      | atomic            |
+| EXCEPTION_DEBUG    | PD1904 <br>PD2008 <br>PE220X <br>PD2308 <br>PD2408 |                                      | exception_debug        |
+| NESTED_INTERRUPT   | PD1904 <br>PD2008 <br>PE220X <br>PD2308 <br>PD2408 |                                      | nested_interrupt       |
+| POSIX              | PD1904 <br>PD2008 <br>PE220X <br>PD2308 <br>PD2408 |                                      | posix                |
 
 ---
 ## 5. 参考资料
@@ -122,4 +125,4 @@ liushengming1118@phytium.com.cn
 
 ## 7. 许可协议
 
-Phytium Public License 1.0 (PPL-1.0)
+[Phytium Public License](./LICENSE)

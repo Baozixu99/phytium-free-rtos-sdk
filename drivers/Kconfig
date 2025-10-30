@@ -58,6 +58,12 @@ menu "FreeRTOS Eth Drivers"
         select ENABLE_FXMAC_V2
         bool
         prompt "Use Freertos xmac v2 driver"
+        default n  
+        
+    config FREERTOS_USE_E1000E
+        select ENABLE_E1000E
+        bool
+        prompt "Use Freertos e1000e driver"
         default n        
 endmenu
 
