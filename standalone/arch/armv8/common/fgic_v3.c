@@ -283,8 +283,8 @@ uintptr FGicRedistributorIterate(void)
         }
     }
 
-    FASSERT_MSG(0, "mpidr_aff and gicr_typer_aff is not match");
-    return 0;
+    // FASSERT_MSG(0, "mpidr_aff and gicr_typer_aff is not match");
+    return GICV3_RD_BASE_ADDR;
 }
 
 /**

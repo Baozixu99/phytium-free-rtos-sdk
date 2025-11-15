@@ -531,7 +531,14 @@ UBaseType_t uxPortSetInterruptMask( void )
          *
          * FreeRTOS maintains separate thread and ISR API functions to ensure
          * interrupt entry is as fast and simple as possible. */
-    configASSERT(InterruptGetCurrentPriority() >= (uint32_t)(configMAX_API_CALL_INTERRUPT_PRIORITY << portPRIORITY_SHIFT));
+    
+    #if defined( GUEST )
+        /* In virtualized environment (Hypervisor Guest OS), ICC_RPR_EL1 may not work correctly.
+         * Temporarily disable this check. TODO: Fix Hypervisor ICC_RPR_EL1 emulation */
+        // configASSERT(InterruptGetCurrentPriority() >= (uint32_t)(configMAX_API_CALL_INTERRUPT_PRIORITY << portPRIORITY_SHIFT));
+    #else
+        configASSERT(InterruptGetCurrentPriority() >= (uint32_t)(configMAX_API_CALL_INTERRUPT_PRIORITY << portPRIORITY_SHIFT));
+    #endif
 
         /* Priority grouping:  The interrupt controller (GIC) allows the bits
          * that define each interrupt's priority to be split between bits that

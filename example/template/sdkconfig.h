@@ -42,6 +42,7 @@
 #define CONFIG_MMU_PAGE_SIZE 0x1000
 #define CONFIG_MAX_XLAT_TABLES 256
 /* CONFIG_ENABLE_GIC_ITS is not set */
+/* CONFIG_ENABLE_GDB_STUB is not set */
 /* end of Arch configuration */
 
 /* Soc configuration */
@@ -196,8 +197,8 @@
 
 #define CONFIG_DEFAULT_LINKER_SCRIPT
 /* CONFIG_USER_DEFINED_LD is not set */
-#define CONFIG_IMAGE_LOAD_ADDRESS 0x80100000
-#define CONFIG_IMAGE_MAX_LENGTH 0x2000000
+#define CONFIG_IMAGE_LOAD_ADDRESS 0xB0400000
+#define CONFIG_IMAGE_MAX_LENGTH 0x30000000
 #define CONFIG_HEAP_SIZE 1
 #define CONFIG_STACK_SIZE 0x400
 /* end of Linker Options */
@@ -231,6 +232,7 @@
 /* CONFIG_FREERTOS_USE_XMAC is not set */
 /* CONFIG_FREERTOS_USE_GMAC is not set */
 /* CONFIG_FREERTOS_USE_XMAC_V2 is not set */
+/* CONFIG_FREERTOS_USE_E1000E is not set */
 /* end of FreeRTOS Eth Drivers */
 
 /* FreeRTOS Spim Drivers */

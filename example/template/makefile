@@ -16,7 +16,7 @@ USER_INCLUDE := $(PROJECT_DIR)
 
 include $(FREERTOS_SDK_DIR)/tools/makeall.mk
 
-USR_BOOT_DIR		?= /mnt/d/tftpboot
+USR_BOOT_DIR		?= ./tftpboot
 
 image:
 	@$(MAKE) -s clean
