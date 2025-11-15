@@ -1,0 +1,109 @@
+menu "Soc configuration"
+
+    choice
+        prompt "Soc select"
+        default TARGET_PE2204
+
+
+        config TARGET_PE2204
+            bool "PE2204"
+
+        config TARGET_PE2202
+            bool "PE2202"
+
+        config TARGET_PE2201
+            bool "PE2201"
+
+        config TARGET_PD1904
+            bool "PD1904"
+
+        config TARGET_PD2008
+            bool "PD2008"
+
+        config TARGET_PD2308
+            bool "PD2308"
+        
+        config TARGET_PS2316
+            bool "PS2316"
+
+        config TARGET_PD2408
+            bool "PD2408"
+            
+        config TARGET_QEMU_VIRT
+            bool "qemu_virt_64"
+    endchoice
+
+
+    config SOC_NAME
+        string
+        default "pe220x" if TARGET_PE2204 || TARGET_PE2202 || TARGET_PE2201
+        default "pd1904"  if TARGET_PD1904
+        default "pd2008"   if TARGET_PD2008
+        default "pd2308"   if TARGET_PD2308
+        default "pd2408"   if TARGET_PD2408
+        default "ps2316"   if TARGET_PS2316
+        default "qemu_virt_64" if TARGET_QEMU_VIRT
+
+    config TARGET_TYPE_NAME
+        string
+        depends on TARGET_PE2204 || TARGET_PE2202 || TARGET_PE2201
+        default "pe2202" if TARGET_PE2202
+        default "pe2204" if TARGET_PE2204
+        default "pe2201" if TARGET_PE2201
+        default ""
+
+    config SOC_CORE_NUM
+        int
+        default 4 if TARGET_PE2204 || TARGET_PD1904
+        default 2 if TARGET_PE2202
+        default 1 if TARGET_PE2201
+        default 8 if TARGET_PD2008 || TARGET_PD2308 || TARGET_PD2408
+        default 4 if TARGET_QEMU_VIRT
+        default 16 if TARGET_PS2316
+        default 0
+
+
+    config  F32BIT_MEMORY_ADDRESS    
+        hex
+        default 0x80000000 if TARGET_PE2204 || TARGET_PD1904 || TARGET_PE2202 || TARGET_PE2201 || TARGET_PD2008  || TARGET_PD2308 || TARGET_PD2408 || TARGET_PS2316 || TARGET_QEMU_VIRT
+
+    config  F32BIT_MEMORY_LENGTH
+        hex
+        default 0x80000000 if TARGET_PE2204 || TARGET_PD1904 || TARGET_PE2202 || TARGET_PE2201 || TARGET_PD2008  || TARGET_PD2308 || TARGET_PD2408 || TARGET_PS2316 || TARGET_QEMU_VIRT
+
+    config  F64BIT_MEMORY_ADDRESS    
+        hex
+        default 0x2000000000 if TARGET_PE2204 || TARGET_PD1904 || TARGET_PE2202 || TARGET_PE2201 || TARGET_PD2008  || TARGET_PD2308 || TARGET_PD2408 || TARGET_PS2316 || TARGET_QEMU_VIRT
+
+    config  F64BIT_MEMORY_LENGTH     
+        hex 
+        default 0x800000000 if TARGET_PE2204 || TARGET_PD1904 || TARGET_PE2202 || TARGET_PE2201 || TARGET_PD2008  || TARGET_PD2308 || TARGET_PD2408 || TARGET_PS2316 || TARGET_QEMU_VIRT
+
+
+    config TARGET_PE220X
+            bool
+            default y if TARGET_PE2204 || TARGET_PE2202 || TARGET_PE2201 
+
+
+    # debug print
+
+    choice DEBUG_PRINT_UART
+    prompt "Select debug uart instance"
+    default DEFAULT_DEBUG_PRINT_UART1
+    help
+        Select arch for build
+    config DEFAULT_DEBUG_PRINT_UART1
+        bool "Use uart1"
+    config DEFAULT_DEBUG_PRINT_UART0
+        bool "Use uart0"
+    config DEFAULT_DEBUG_PRINT_UART2
+        bool "Use uart2"
+    endchoice # DEBUG_PRINT_UART
+
+    config UART_INIT_NOT_CLR_INTR
+        bool "uart init not clear intr flag(openamp for linux)"
+        default n
+        help
+            Enable uart init function for print,but not clear intr flag.
+
+endmenu

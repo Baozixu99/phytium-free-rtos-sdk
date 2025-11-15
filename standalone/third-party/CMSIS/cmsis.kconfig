@@ -1,0 +1,79 @@
+menu "CMSIS Configuration"
+
+    config USE_CMSIS_DSP
+    bool
+    prompt "Using CMSIS DSP"
+    default n
+    if USE_CMSIS_DSP
+        config CMSIS_DSP_MATH_NEON
+        select ARM_NEON
+        bool
+        prompt "Using CMSIS DSP math neon"
+
+        config CMSIS_DSP_BASIC_MATH_FUNCTIONS
+        bool
+        prompt "Using CMSIS DSP basic math functions"
+
+        config CMSIS_DSP_BAYES_FUNCTIONS
+        bool
+        prompt "Using CMSIS DSP bayes functions"
+
+        config CMSIS_DSP_COMMON_TABLES
+        bool
+        prompt "Using CMSIS DSP common functions"
+
+        config CMSIS_DSP_COMPLEX_MATH_FUNCTIONS
+        bool
+        prompt "Using CMSIS DSP complex math functions"
+
+        config CMSIS_DSP_CONTROLLER_FUNCTIONS
+        bool
+        prompt "Using CMSIS DSP controller functions"
+
+        config CMSIS_DSP_DISTANCE_FUNCTIONS
+        bool
+        prompt "Using CMSIS DSP distance functions"
+
+        config CMSIS_DSP_FAST_MATH_FUNCTIONS
+        bool
+        prompt "Using CMSIS DSP fast math functions"
+
+        config CMSIS_DSP_FILTERING_FUNCTIONS
+        bool
+        prompt "Using CMSIS DSP filtering functions"
+
+        config CMSIS_DSP_INTERPOLATION_FUNCTIONS
+        bool
+        prompt "Using CMSIS DSP interpolation functions"
+
+        config CMSIS_DSP_MATRIX_FUNCTIONS
+        bool
+        prompt "Using CMSIS DSP matrtx functions"
+
+        config CMSIS_DSP_QUATERNION_MATH_FUNCTIONS
+        bool
+        prompt "Using CMSIS DSP quaternion math functions"
+
+        config CMSIS_DSP_STATISTICS_FUNCTIONS
+        bool
+        prompt "Using CMSIS DSP statistics functions"
+
+        config CMSIS_DSP_SUPPORT_FUNCTIONS
+        bool
+        prompt "Using CMSIS DSP support functions"
+
+        config CMSIS_DSP_SVM_FUNCTIONS
+        bool
+        prompt "Using CMSIS DSP SVM functions"
+
+        config CMSIS_DSP_TRANSFORM_FUNCTIONS
+        bool
+        prompt "Using CMSIS DSP Transform functions"
+
+        config CMSIS_DSP_WINDOW_FUNCTIONS
+        bool
+        prompt "Using CMSIS DSP Window functions"
+
+    endif
+
+endmenu

@@ -1,0 +1,8 @@
+config USE_FI3C
+    bool
+    prompt "Use FI3C"
+    default n
+    help
+        Include FI3C driver component
+	
+	

@@ -1,0 +1,167 @@
+/*
+ * Copyright (C) 2022, Phytium Technology Co., Ltd.   All Rights Reserved.
+ *
+ * Licensed under the BSD 3-Clause License (the "License"); you may not use
+ * this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ *     https://opensource.org/licenses/BSD-3-Clause
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *  
+ * 
+ * FilePath: cmd_md.c
+ * Date: 2022-02-10 14:53:43
+ * LastEditTime: 2022-02-25 11:47:34
+ * Description:  This files is for md command implmentation
+ * 
+ * Modify History: 
+ *  Ver   Who        Date         Changes
+ * ----- ------     --------    --------------------------------------
+ * 1.0   zhugengyu  2021/9/6    init commit
+ */
+
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <sys/_stdint.h>
+#include "../src/shell.h"
+#include "fio.h"
+#include "ftypes.h"
+
+static void MdCmdUsage()
+{
+    printf("usage:\r\n");
+    printf("    md [-b|-w|-l|-q] address [-c count]\r\n");
+}
+
+static int MdCmdEntry(int argc, char *argv[])
+{
+    uintptr addr = 0;
+    char buf[16];
+    int n = 64, size = 1;
+    int i, len;
+    u8 b;
+    u16 w;
+    u32 l;
+    u64 q;
+
+    if (argc < 2)
+    {
+        MdCmdUsage();
+        return -1;
+    }
+
+    for (i = 1; i < argc; i++)
+    {
+        if (!strcmp(argv[i], "-b"))
+        {
+            size = 1;
+        }
+        else if (!strcmp(argv[i], "-w"))
+        {
+            size = 2;
+        }
+        else if (!strcmp(argv[i], "-l"))
+        {
+            size = 4;
+        }
+        else if (!strcmp(argv[i], "-q"))
+        {
+            size = 8;
+        }
+        else if (!strcmp(argv[i], "-c") && (argc > i + 1))
+        {
+            n = strtoul(argv[i + 1], NULL, 0);
+            i++;
+        }
+        else if (*argv[i] == '-')
+        {
+            MdCmdUsage();
+            return (-1);
+        }
+        else if (*argv[i] != '-' && strcmp(argv[i], "-") != 0)
+        {
+            addr = strtoul(argv[i], NULL, 0);
+        }
+    }
+
+    if (size == 1)
+    {
+        addr &= ~((uintptr)0x0);
+    }
+    else if (size == 2)
+    {
+        addr &= ~((uintptr)0x1);
+    }
+    else if (size == 4)
+    {
+        addr &= ~((uintptr)0x3);
+    }
+    else if (size == 8)
+    {
+        addr &= ~((uintptr)0x7);
+    }
+    n = n * size;
+
+    while (n > 0)
+    {
+        len = (n > 16) ? 16 : n;
+        printf("%p: ", (void *)addr);
+        if (size == 1)
+        {
+            for (i = 0; i < len; i += size)
+            {
+                FtOut8((uintptr)(&buf[i]), (b = FtIn8(addr + i)));
+                printf(" %02x", b);
+            }
+        }
+        else if (size == 2)
+        {
+            for (i = 0; i < len; i += size)
+            {
+                FtOut16((uintptr)(&buf[i]), (w = FtIn16(addr + i)));
+                printf(" %04x", w);
+            }
+        }
+        else if (size == 4)
+        {
+            for (i = 0; i < len; i += size)
+            {
+                FtOut32((uintptr)(&buf[i]), (l = FtIn32(addr + i)));
+                printf(" %08" PRIx32, l);
+            }
+        }
+        else if (size == 8)
+        {
+            for (i = 0; i < len; i += size)
+            {
+                FtOut64((uintptr)(&buf[i]), (q = FtIn64(addr + i)));
+                printf(" %016" PRIx64, q);
+            }
+        }
+        printf("%*s", (16 - len) * 2 + (16 - len) / size + 4, "");
+        for (i = 0; i < len; i++)
+        {
+            if ((buf[i] < 0x20) || (buf[i] > 0x7e))
+            {
+                printf(".");
+            }
+            else
+            {
+                printf("%c", buf[i]);
+            }
+        }
+        addr += len;
+        n -= len;
+        printf("\r\n");
+    }
+
+    return 0;
+}
+
+SHELL_EXPORT_CMD(SHELL_CMD_TYPE(SHELL_TYPE_CMD_MAIN), md, MdCmdEntry, dump a memory region);

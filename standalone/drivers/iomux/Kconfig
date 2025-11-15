@@ -1,0 +1,9 @@
+config ENABLE_IOCTRL
+    bool
+    default y if TARGET_PD1904 || TARGET_PD2008
+    prompt "Enable ioctrl"
+
+config ENABLE_IOPAD
+    bool
+    default y if TARGET_PE2204 || TARGET_PE2202 || TARGET_PE2201 
+    prompt "Enable iopad"

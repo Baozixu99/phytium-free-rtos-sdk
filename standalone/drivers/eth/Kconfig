@@ -1,0 +1,33 @@
+
+menu "Eth Configuration"
+    config ENABLE_FXMAC
+        bool
+        prompt "Use FXMAC"
+        default n
+    
+    config ENABLE_FGMAC
+        bool
+        prompt "Use FGMAC"
+        default n
+
+    config ENABLE_FXMAC_V2
+        bool
+        prompt "Use FXMAC_V2"
+        depends on USE_MSG
+        default n 
+
+    config ENABLE_E1000E
+        bool
+        prompt "Use E1000E"
+        default n
+
+    if  ENABLE_FGMAC
+        source "$(STANDALONE_DIR)/drivers/eth/fgmac/Kconfig"
+    endif
+
+    if  ENABLE_FXMAC
+        source "$(STANDALONE_DIR)/drivers/eth/fxmac/Kconfig"
+    endif
+    
+endmenu
+

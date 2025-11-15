@@ -1,0 +1,9 @@
+config ENABLE_FSEMAPHORE
+    bool
+    prompt "Use FSemaphore"
+    default n
+    depends on TARGET_PE2201 || TARGET_PE2202 || TARGET_PE2204 
+    help
+        Select FSemaphore driver component
+	
+	

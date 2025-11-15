@@ -1,0 +1,11 @@
+config USE_FMEDIA_V1
+    bool "Use FMEDIA_V1"
+    select FMEDIA_CORE  
+    help
+        Include FMEDIA_V1 driver component
+
+config USE_FMEDIA_V2
+    bool "Use FMEDIA_V2"
+    select FMEDIA_CORE  
+    help
+        Include FMEDIA_V2 driver component

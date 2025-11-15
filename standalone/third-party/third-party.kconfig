@@ -1,0 +1,210 @@
+
+menu "Third-party configuration"
+config USE_GMSSL
+    bool
+    prompt "Use gmssl"
+    default n
+    help
+        Include GMSSL for Openssl branch Protocol
+
+    if USE_GMSSL
+        source "$SDK_DIR/third-party/GmSSL-3.1.1/gmssl.kconfig"
+    endif
+
+config USE_LWIP
+    bool
+    prompt "Use lwip"
+    default n
+    help
+        Include LWIP for Network Protocol
+
+    if USE_LWIP
+        source "$SDK_DIR/third-party/lwip-2.1.2/lwip.kconfig"
+    endif
+
+config USE_LETTER_SHELL
+    bool
+    prompt "Use letter shell"
+    default n
+    help
+        Include Litter Shell for User Interactive
+
+    if USE_LETTER_SHELL
+        source "$SDK_DIR/third-party/letter-shell-3.1/Kconfig"
+    endif
+
+config USE_AMP
+    bool
+    prompt "Use asymmetric multi-processing"
+    default n
+    help
+        Include OpenAMP framework
+
+    if USE_AMP
+        config USE_LIBMETAL
+            bool
+            prompt "Use libmetal"
+            help
+                Include Libmetal
+
+        source "$SDK_DIR/third-party/openamp/ports/Kconfig"
+
+    endif
+
+config USE_YMODEM
+    bool
+    prompt "Use ymodem"
+    default n
+    help
+        Include Ymodem
+
+
+config USE_SFUD
+    bool
+    prompt "Use sfud(spi flash library)"
+    default n
+    help
+        Include JEDEC SFDP standard serial (SPI) flash universal driver library
+
+    if USE_SFUD
+        source "$SDK_DIR/third-party/sfud-1.1.0/Kconfig"
+    endif
+    
+
+config USE_FATFS_0_1_4
+    bool
+    prompt "Use fatfs(0.1.4)"
+    default n
+    help
+        Include FATFS
+
+    if USE_FATFS_0_1_4
+        source "$SDK_DIR/third-party/fatfs-0.1.4/fatfs.kconfig"
+    endif
+
+
+
+config USE_SPIFFS
+    bool
+    default n
+    prompt "Use spiffs"
+    help
+        Include Spiffs as SPI Flash File System
+
+    if USE_SPIFFS
+        source "$SDK_DIR/third-party/spiffs-0.3.7/Kconfig"
+    endif
+
+config USE_LITTLE_FS
+    bool
+    default n
+    prompt "Use littlefs"
+    help
+        Include Littlefs as SPI Flash File System
+
+    if USE_LITTLE_FS
+        source "$SDK_DIR/third-party/littlefs-2.4.2/Kconfig"
+    endif
+
+    
+config USE_LVGL
+    bool
+    default n
+    prompt "Use lvgl"
+    help
+        Include USE_LVGL
+    
+
+config USE_FREEMODBUS
+    bool
+    default n
+    prompt "Use freemodbus"
+    help
+        Include FreeMODBUS as MODBUS Protocol
+
+    if USE_FREEMODBUS
+        source "$SDK_DIR/third-party/freemodbus-v1.6/freemodbus.kconfig"
+    endif
+
+config USE_CRYPTO_PLUS_PLUS
+    bool
+    default n
+    depends on ENABLE_CXX
+    prompt "Use Crypto++"
+    help
+        Include Crypto++ as Crypto library
+
+config USE_FSL_SDMMC
+    bool
+    default n
+    prompt "Use fsl-sdmmc"
+    help
+        Include FSL SDMMC as SDMMC Protocol
+
+    if USE_FSL_SDMMC
+        source "$SDK_DIR/third-party/fsl_sdmmc/fsl_sdmmc.kconfig"
+    endif
+    
+config USE_MICROPYTHON
+    bool
+    default n
+    prompt "Use micropython"
+    help
+        Include USE_MICROPYTHON
+
+config USE_TINYMAIX
+    bool
+    default n
+    prompt "Use TinyMaix"
+    help
+        Include TinyMaix AI inference framework
+
+    if USE_TINYMAIX
+        source "$SDK_DIR/third-party/TinyMaix/tinymaix.kconfig"
+    endif
+
+config USE_CHERRY_USB
+    bool
+    default n
+    prompt "Use CherryUSB"
+    help
+        Include CherryUSB framework
+
+    if USE_CHERRY_USB
+        source "$SDK_DIR/third-party/cherryusb/cherryusb.kconfig"
+    endif
+
+config USE_CMSIS
+    bool
+    default n
+    prompt "Use CMSIS"
+    help
+        Include CMSIS framework
+
+    if USE_CMSIS
+        source "$SDK_DIR/third-party/CMSIS/cmsis.kconfig"
+    endif
+
+config USE_ACPICA
+    bool
+    default n
+    prompt "Use ACPICA"
+    help
+        Include ACPICA framework
+
+    if USE_ACPICA
+        source "$SDK_DIR/third-party/acpica/acpica.kconfig"
+    endif
+
+config USE_CJSON
+    bool
+    default n
+    prompt "Use cJSON"
+    help
+        Include cJSON framework
+
+    if USE_CJSON
+        source "$SDK_DIR/third-party/cJSON-1.7.19/cjson.kconfig"
+    endif
+
+endmenu

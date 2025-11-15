@@ -1,0 +1,6 @@
+menu "cJSON configuration"
+    config USE_CJSON_UTILS
+        bool
+        prompt "Use cJSON Utils"        
+        default n
+endmenu

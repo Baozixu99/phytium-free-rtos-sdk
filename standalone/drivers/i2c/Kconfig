@@ -1,0 +1,12 @@
+config USE_FI2C
+    bool
+    prompt "Use FI2C"
+    default n
+    help
+        Include FI2C driver component
+config USE_FI2C_V2
+        bool
+        prompt "USE FI2C_V2"
+        default n	
+    help
+        Include FI2C USE_FI2C_v2 driver component	

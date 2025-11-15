@@ -1,0 +1,16 @@
+
+menu "Usart Configuration"
+    config ENABLE_Pl011_UART
+        bool
+        prompt "Use Pl011 uart"
+        default y
+    config USE_SERIAL_V2
+        bool
+        prompt "USE SERIAL_V2"
+        depends on TARGET_PD2408
+        default n	
+    help
+        Include SERIAL_V2 driver component
+endmenu
+
+

@@ -1,0 +1,32 @@
+ifdef CONFIG_E2000D_DEMO_BOARD
+	BUILD_INC_PATH_DIR += $(SDK_DIR)/board/e2000d_demo
+endif
+
+ifdef CONFIG_E2000Q_DEMO_BOARD
+	BUILD_INC_PATH_DIR += $(SDK_DIR)/board/e2000q_demo
+endif
+
+ifdef CONFIG_PHYTIUMPI_FIREFLY_BOARD
+	BUILD_INC_PATH_DIR += $(SDK_DIR)/board/phytiumpi_firefly
+endif
+
+ifdef CONFIG_D2000_TEST_BOARD
+	BUILD_INC_PATH_DIR += $(SDK_DIR)/board/d2000_test
+endif
+
+ifdef CONFIG_FT2004_DSK_BOARD
+	BUILD_INC_PATH_DIR += $(SDK_DIR)/board/ft2004_dsk
+endif
+
+ifdef CONFIG_PD2308_DEMO_BOARD
+	BUILD_INC_PATH_DIR += $(SDK_DIR)/board/pd2308_demo
+endif
+
+ifdef CONFIG_PD2408_TEST_A_BOARD
+	BUILD_INC_PATH_DIR += $(SDK_DIR)/board/pd2408_test_a
+endif
+ifdef CONFIG_PD2408_TEST_B_BOARD
+	BUILD_INC_PATH_DIR += $(SDK_DIR)/board/pd2408_test_b
+endif
+
+BUILD_INC_PATH_DIR += $(SDK_DIR)/board/port

@@ -1,0 +1,11 @@
+ifdef CONFIG_USE_FDEVICE
+DRIVERS_CSRCS += fdevice.c
+endif
+
+ifdef CONFIG_USE_FES8336
+DRIVERS_CSRCS += fes8336.c
+endif
+
+ifdef CONFIG_USE_FES8388
+DRIVERS_CSRCS += fes8388.c
+endif

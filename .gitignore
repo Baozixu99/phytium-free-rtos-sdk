@@ -70,7 +70,7 @@ dkms.conf
 .vscode-ctags
 
 # Standalone sdk
-standalone
+#standalone
 sdk
 phytium-standalone-sdk
 

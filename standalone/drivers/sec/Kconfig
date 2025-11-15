@@ -1,0 +1,11 @@
+menu "SEC Configuration"
+config ENABLE_FRND
+        bool
+        prompt "Use FRND"
+        default n
+
+config ENABLE_FSHA
+        bool
+        prompt "Use FSHA"
+        default n
+endmenu

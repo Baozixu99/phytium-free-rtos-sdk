@@ -1,0 +1,87 @@
+menu "CherryUSB Configuration"
+    choice CHERRY_USB_PORT_TYPE
+        prompt "Select USB controller"
+        help
+            Select Port Type for CherryUSB
+
+        if !USE_BAREMETAL
+        config CHERRY_USB_PORT_XHCI_PLATFROM
+            bool "XHCI(Platform)"
+            select CHERRY_USB_PORT_XHCI
+
+        config CHERRY_USB_PORT_XHCI_PCIE
+            bool "XHCI(PCIe)"
+            select CHERRY_USB_PORT_XHCI
+        endif
+
+        config CHERRY_USB_PORT_PUSB2
+            bool "PUSB2"
+
+        config CHERRY_USB_PORT_PUSB3
+            bool "PUSB3"
+
+    endchoice # CHERRY_USB_PORT_TYPE
+
+    config CHERRY_USB_PORT_XHCI
+        bool
+
+    choice CHERRY_USB_WORK_MODE
+        prompt "Select USB mode"
+        help
+            Select Work Mode for CherryUSB
+
+        if !USE_BAREMETAL
+        config CHERRYUSB_HOST
+            bool "Host"
+        endif
+
+        if !CHERRY_USB_PORT_XHCI
+        config CHERRYUSB_DEVICE
+            bool "Device"
+        endif
+
+    endchoice #CHERRY_USB_WORK_MODE
+
+if CHERRYUSB_HOST
+    config CHERRY_USB_HOST_HUB
+        bool "Enable HUB(Host)"
+        default y  
+
+    config CHERRY_USB_HOST_MSC
+        bool "Enable MSC(Host)"
+        default n
+
+    config CHERRY_USB_HOST_HID
+        bool "Enable HID(Host)"
+        default n 
+endif #CHERRYUSB_HOST
+
+if CHERRYUSB_DEVICE
+    config CHERRY_USB_DEVICE_MSC
+        bool "MSC(Device)"
+
+    config CHERRY_USB_DEVICE_CDC
+        bool "CDC(Device)"
+
+    config CHERRY_USB_DEVICE_HID
+        bool "HID(Device)"
+
+    config CHERRY_USB_DEVICE_VEDIO
+        bool "Vedio(Device)"
+endif #CHERRYUSB_DEVICE
+
+choice CHERRY_USB_PORT_IMPLEMENT
+    prompt "Select CherryUSB implement type"
+    help
+        Select implement type for CherryUSB
+    default CHERRY_USB_PORT_STATIC_LIB
+
+    config CHERRY_USB_PORT_SOURCE_CODE
+        bool "Souce code"
+
+    config CHERRY_USB_PORT_STATIC_LIB
+        bool "Static libraries"
+
+endchoice
+
+endmenu

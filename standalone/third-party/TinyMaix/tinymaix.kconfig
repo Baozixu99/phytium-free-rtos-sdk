@@ -1,0 +1,65 @@
+menu "TinyMaix configuration"
+
+    choice
+        prompt "Arch Type"
+            default TINYMAIX_USING_ARCH_CPU
+        help
+            Select the arch type
+
+        config TINYMAIX_USING_ARCH_CPU
+            bool "Default, pure cpu compute"
+
+        config TINYMAIX_USING_ARCH_ARM_NEON
+            bool "ARM Cortex A7, etc"
+
+
+    endchoice
+
+    config TINYMAIX_USING_ARCK_TYPE
+        int
+        default 0    if TINYMAIX_USING_ARCH_CPU
+        default 1    if TINYMAIX_USING_ARCH_ARM_SIMD
+        default 2    if TINYMAIX_USING_ARCH_ARM_NEON
+
+    choice
+        prompt "Option Level"
+            default TINYMAIX_USING_OPT0
+        help
+            Select the option level
+
+        config TINYMAIX_USING_OPT0
+            bool "Default, least code and buf"
+
+        config TINYMAIX_USING_OPT1
+            bool "Opt for speed, need more code and buf"
+
+        config TINYMAIX_USING_OPT2
+            bool "TODO"
+    endchoice
+
+    config TINYMAIX_USING_OPTION_LEVEL
+        int
+        default 0    if TINYMAIX_USING_OPT0
+        default 1    if TINYMAIX_USING_OPT1
+        default 2    if TINYMAIX_USING_OPT2
+
+    choice
+        prompt "Model Type"
+            default TINYMAIX_USING_MODULE_INT8
+        help
+            Select the option level
+
+        config TINYMAIX_USING_MODULE_INT8
+            bool "Default, module int8"
+
+        config TINYMAIX_USING_MODULE_FP32
+            bool "Module FP32"
+
+    endchoice
+
+    config TINYMAIX_USING_MODULE_TYPE
+        int
+        default 0    if TINYMAIX_USING_MODULE_INT8
+        default 2    if TINYMAIX_USING_MODULE_FP32
+
+endmenu

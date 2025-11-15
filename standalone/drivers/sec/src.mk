@@ -1,0 +1,12 @@
+ifdef CONFIG_ENABLE_FRND
+DRIVERS_CSRCS += 
+endif
+
+ifdef CONFIG_ENABLE_FSHA
+DRIVERS_CSRCS += 
+endif
+
+
+
+
+

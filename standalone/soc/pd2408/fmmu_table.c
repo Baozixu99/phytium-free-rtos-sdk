@@ -1,0 +1,48 @@
+/*
+ * Copyright (C) 2023, Phytium Technology Co., Ltd.   All Rights Reserved.
+ *
+ * Licensed under the BSD 3-Clause License (the "License"); you may not use
+ * this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ *     https://opensource.org/licenses/BSD-3-Clause
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+ * 
+ * FilePath: fmmu_table.c
+ * Date: 2024-06-24 10:33:28
+ * LastEditTime: 2024-06-24 10:33:28
+ * Description:  This file is for
+ *
+ * Modify History:
+ *  Ver   Who        Date         Changes
+ * ----- ------     --------    --------------------------------------
+ * 1.0   wangzq    2024/06/24      init commit
+ */
+
+#include "fmmu.h"
+
+const struct ArmMmuRegion mmu_regions[] = {
+    MMU_REGION_FLAT_ENTRY("DEVICE_REGION", 0x00, 0x40000000, MT_DEVICE_NGNRNE | MT_P_RW_U_NA | MT_NS),
+
+    MMU_REGION_FLAT_ENTRY("PCIE_CONFIG_REGION", 0x40000000, 0x10000000,
+                          MT_DEVICE_NGNRNE | MT_P_RW_U_NA | MT_NS),
+
+    MMU_REGION_FLAT_ENTRY("PCIE_CONFIG_REGION", 0x50000000, 0x30000000,
+                          MT_DEVICE_NGNRNE | MT_P_RW_U_NA | MT_NS),
+
+#ifdef __aarch64__
+    MMU_REGION_FLAT_ENTRY("PCIE_MEM64_REGION", 0x1000000000, 0x1000000000,
+                          MT_DEVICE_NGNRNE | MT_P_RW_U_NA | MT_NS),
+#endif
+};
+
+const struct ArmMmuConfig mmu_config = {
+    .num_regions = ARRAY_SIZE(mmu_regions),
+    .mmu_regions = mmu_regions,
+};

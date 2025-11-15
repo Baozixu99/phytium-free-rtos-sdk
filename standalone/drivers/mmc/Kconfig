@@ -1,0 +1,23 @@
+config ENABLE_FSDMMC
+    bool
+    prompt "Use FSdmmc"
+    default n
+    depends on USE_SDMMC
+    help
+        Select FSdmmc driver component
+	
+config ENABLE_FSDIF
+    bool
+    prompt "Use FSdif"
+    default n
+    depends on USE_SDMMC
+    help
+        Select FSdif driver component
+
+config ENABLE_FSDIF_V2
+    bool
+    prompt "Use FSdif(v2)"
+    default n
+    depends on USE_SDMMC
+    help
+        Select FSdif driver v2 component

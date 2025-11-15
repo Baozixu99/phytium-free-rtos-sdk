@@ -1,0 +1,1 @@
+BUILD_INC_PATH_DIR +=  $(SDK_DIR)/drivers/port

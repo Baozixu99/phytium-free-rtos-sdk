@@ -1,0 +1,30 @@
+
+menu "I2S Configuration"
+    config USE_ES8336
+        bool
+        prompt "USE ES8336"
+        depends on  TARGET_PE2202 || TARGET_PE2204 
+        default n
+    
+    config USE_ES8388
+        bool
+        prompt "USE ES8388"
+        depends on  TARGET_PD2308
+        default n
+
+    config USE_FI2S
+        bool
+        prompt "USE FI2S"
+        default n
+
+        config USE_FI2S_V2
+        bool
+        prompt "USE FI2S V2"
+        default n
+
+    config USE_CODEC_V2
+        bool
+        prompt "USE CODEC V2"
+        default n
+endmenu
+

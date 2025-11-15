@@ -1,0 +1,14 @@
+ifdef CONFIG_ENABLE_SCMI_MHU
+DRIVERS_CSRCS += \
+    fmhu.c\
+    fmhu_g.c\
+    fmhu_intr.c\
+    fscmi.c\
+    fscmi_base.c\
+    fscmi_perf.c\
+    fscmi_clock.c\
+    fscmi_power.c\
+    fscmi_reset.c\
+    fscmi_sensors.c
+endif
+

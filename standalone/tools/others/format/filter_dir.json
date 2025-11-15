@@ -1,0 +1,21 @@
+{
+  "exclude_suffixes": [
+    "_g.c", 
+    "_pic.h",
+    "arch/armv8/aarch64/gcc/fboot.h",
+    "sfud_board.h",
+    "fmacro.h",
+    "sdkconfig.h"
+],
+  "exclude_dir_patterns": ["example/system/newlib_test","example/system/gmssl/gmssl_example/demos","example/system/gmssl/gmssl_example/inc","third-party/GmSSL-3.1.1/ports"],
+  "conditional_excludes": [
+    {
+      "required_substring": "third-party/",
+      "exclude_if_missing": ["/port/", "/ports/"]
+    },
+    {
+      "required_substring": "drivers/pcie/device/nvme/",
+      "exclude_if_missing": ["nvme_config.h", "nvme_intr.c","nvme_intr.h"]
+    }
+  ]
+}

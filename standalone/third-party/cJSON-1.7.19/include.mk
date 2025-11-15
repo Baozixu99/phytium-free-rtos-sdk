@@ -1,0 +1,4 @@
+# cJson
+ifdef CONFIG_USE_CJSON
+BUILD_INC_PATH_DIR += $(SDK_DIR)/third-party/cJSON-1.7.19
+endif #CONFIG_USE_CJSON

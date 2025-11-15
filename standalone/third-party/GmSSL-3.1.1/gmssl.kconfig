@@ -1,0 +1,18 @@
+menu "GMSSL Configuration"
+  #  source "$(STANDALONE_DIR)/third-party/lwip-2.1.2/ports/Kconfig"
+    
+
+    config LWIP_NO_SYS
+        bool "gmssl No SYS"
+        default y
+
+    config LWIP_DNS_API_DECLARE_STRUCTS
+        bool "gmssl No LWIP_DNS_API_DECLARE_STRUCTS"
+        default y
+
+    config LWIP_LOCAL_HOSTNAME
+        string "Local netif hostname"
+        default 'phytium'
+        help
+            The default name this device will report to other devices on the network.
+endmenu

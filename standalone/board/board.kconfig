@@ -1,0 +1,131 @@
+menu "Board Configuration"
+
+choice 
+    prompt "Board select"
+	default E2000Q_DEMO_BOARD
+
+    config E2000D_DEMO_BOARD
+        select USE_IOMUX
+        bool
+        prompt "Use E2000D demo board"
+        depends on TARGET_PE2202
+        help
+            select E2000D demo board config
+        if E2000D_DEMO_BOARD
+            config BOARD_NAME
+				string
+				default "demo"
+            source "$SDK_DIR/board/e2000d_demo/e2000d_demo.kconfig"
+        endif
+
+    config E2000Q_DEMO_BOARD
+        select USE_IOMUX
+        bool
+        prompt "Use E2000Q demo board"
+        depends on TARGET_PE2204
+        help
+            select E2000Q demo board config
+        if E2000Q_DEMO_BOARD
+            config BOARD_NAME
+				string
+				default "demo"
+            source "$SDK_DIR/board/e2000q_demo/e2000q_demo.kconfig"
+        endif
+
+    config D2000_TEST_BOARD
+        select USE_IOMUX
+        bool
+        prompt "Use D2000 test board"
+        depends on TARGET_PD2008
+        help
+            select D2000 test board config
+        if D2000_TEST_BOARD
+            config BOARD_NAME
+				string
+				default "test"
+            source "$SDK_DIR/board/d2000_test/d2000_test.kconfig"
+        endif
+
+    config FT2004_DSK_BOARD
+        select USE_IOMUX
+        bool
+        prompt "Use FT2004 dsk board"
+        depends on TARGET_PD1904
+        help
+            select FT2004 dsk board config
+        if FT2004_DSK_BOARD
+            config BOARD_NAME
+				string
+				default "dsk"
+            source "$SDK_DIR/board/ft2004_dsk/ft2004_dsk.kconfig"
+        endif
+        
+    config PHYTIUMPI_FIREFLY_BOARD
+        select USE_IOMUX
+        bool
+        prompt "Use phytiumpi firefly board"
+        depends on TARGET_PE2204
+        help
+            select phytiumpi firefly board config
+        if PHYTIUMPI_FIREFLY_BOARD
+            config BOARD_NAME
+				string
+				default "phytiumpi"
+            source "$SDK_DIR/board/phytiumpi_firefly/firefly.kconfig"
+        endif
+
+    config PD2308_DEMO_BOARD
+        select USE_IOMUX
+        bool
+        prompt "Use PD2308 demo board"
+        depends on TARGET_PD2308
+        help
+            select PD2308 demo board config
+        if PD2308_DEMO_BOARD
+            config BOARD_NAME
+				string
+				default "demo"
+            source "$SDK_DIR/board/pd2308_demo/pd2308_demo.kconfig"
+        endif
+
+    config PD2408_TEST_A_BOARD
+        bool
+        prompt "Use PD2408 test a board"
+        depends on TARGET_PD2408
+        help
+            select PD2408 test a board config
+        if PD2408_TEST_A_BOARD
+            config BOARD_NAME
+				string
+				default "test_a"
+            source "$SDK_DIR/board/pd2408_test_a/pd2408_test_a.kconfig"
+        endif    
+    config PD2408_TEST_B_BOARD
+        bool
+        prompt "Use PD2408 test b board"
+        depends on TARGET_PD2408
+        help
+            select PD2408 test b board config
+        if PD2408_TEST_B_BOARD
+            config BOARD_NAME
+				string
+				default "test_b"
+            source "$SDK_DIR/board/pd2408_test_b/pd2408_test_b.kconfig"
+        endif 
+    config CUS_DEMO_BOARD
+        select USE_IOMUX
+        bool
+        prompt "Use Customization board"
+        help
+            select Customization board config
+        if CUS_DEMO_BOARD
+            config BOARD_NAME
+				string "Write name"
+				default "none" 
+#           source "$SDK_DIR/board/""/"".kconfig"    
+        endif
+endchoice
+
+source "$SDK_DIR/board/user/user.kconfig"
+
+endmenu

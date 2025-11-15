@@ -1,0 +1,7 @@
+menu "Hardware Timer Configuration"
+    config ENABLE_TIMER_TACHO
+        bool
+        prompt "Use Timer Tacho"
+
+        default n
+endmenu

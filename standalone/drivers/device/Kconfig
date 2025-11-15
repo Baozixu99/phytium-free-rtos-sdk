@@ -1,0 +1,20 @@
+menu "DEVICE Configuration"
+    config USE_FDEVICE
+        bool
+        prompt "Use FDEVICE"
+        default n
+
+    if USE_FDEVICE
+        config USE_FES8336
+        bool
+        prompt "Use FES8336"
+        default n
+
+        config USE_FES8388
+        bool
+        prompt "Use FES8388"
+        default n
+        bool
+
+    endif
+endmenu

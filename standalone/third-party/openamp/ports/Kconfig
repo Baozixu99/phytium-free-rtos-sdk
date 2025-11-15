@@ -1,0 +1,33 @@
+
+menu "OpenAmp"
+
+    config USE_OPENAMP
+        bool "OpenAMP Support"
+        select USE_LIBMETAL
+        help
+            This option enables the OpenAMP library
+        if USE_OPENAMP
+            config USE_OPENAMP_IPI
+                bool "Remoteproc use ipi"
+                help
+                    This configuration enables IPI working mode in OpenAMP mode
+            
+            config SKIP_SHBUF_IO_WRITE
+                bool 
+                prompt "Skip local rvdev->shbuf_io"
+                help
+                    rpmsg_virtio_send_offchannel_raw skip rvdev->shbuf_io metal_io_block_write
+                default n
+            
+            config USE_MASTER_VRING_DEFINE
+                bool
+                prompt "Use the Vring definition in the master"
+                default n
+
+            config USE_CACHE_COHERENCY
+                bool
+                prompt "Use cache coherency"
+                default n
+        endif
+
+endmenu

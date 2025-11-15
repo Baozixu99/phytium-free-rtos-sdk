@@ -1,0 +1,23 @@
+menu "LWIP Port Configuration"
+
+    config LWIP_FXMAC
+        select FREERTOS_USE_XMAC
+        bool "FXMAC"
+
+    config LWIP_FXMAC_V2
+        select FREERTOS_USE_XMAC_V2
+        bool "FXMAC_V2"            
+        depends on USE_MSG  
+    
+    config LWIP_FGMAC
+        select FREERTOS_USE_GMAC
+        bool "FGMAC"
+
+    config LWIP_E1000E
+        select FREERTOS_USE_E1000E
+        bool "E1000E"            
+
+    config LWIP_FSDIF
+        bool "FSDIF"
+        
+endmenu
