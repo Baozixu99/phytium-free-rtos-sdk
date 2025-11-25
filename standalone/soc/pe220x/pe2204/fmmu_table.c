@@ -37,6 +37,9 @@ const struct ArmMmuRegion mmu_regions[] = {
     MMU_REGION_FLAT_ENTRY("PCIE_CONFIG_REGION", 0x50000000, 0x30000000,
                           MT_DEVICE_NGNRNE | MT_P_RW_U_NA | MT_NS),
 
+    MMU_REGION_FLAT_ENTRY("DDR_REGION", 0xB0000000, 0x30000000,
+                          MT_NORMAL | MT_P_RW_U_NA | MT_NS),
+
 #ifdef __aarch64__
     MMU_REGION_FLAT_ENTRY("PCIE_MEM64_REGION", 0x1000000000, 0x1000000000,
                           MT_DEVICE_NGNRNE | MT_P_RW_U_NA | MT_NS),

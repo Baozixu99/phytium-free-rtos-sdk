@@ -5,7 +5,9 @@ FREERTOS_SDK_DIR = $(CURDIR)/../..
 # # 设置启动镜像名
 BOOT_IMG_NAME      ?= freertos
 
-USER_CSRC := main.c
+USER_CSRC := main.c \
+			 hyperamp_server.c \
+			 hyperamp_cmd.c
 			
 USER_ASRC :=  #添加汇编代码
 USER_CXXSRC := #添加C++代码

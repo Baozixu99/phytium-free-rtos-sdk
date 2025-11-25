@@ -31,12 +31,30 @@
 #include "ftypes.h"
 #include "shell.h"
 #include "shell_port.h"
+#include "hyperamp_server.h"  /* HyperAMP 服务端 */
 
 int main()
 {
     printf("Hello main func,FT Date: %s, Time: %s\n", __DATE__, __TIME__);
     BaseType_t xReturn = pdPASS;
 
+    /* 初始化 HyperAMP 服务端 */
+    printf("\n=== Initializing HyperAMP Server ===\n");
+    if (HyperAmpServerInit() == 0) {
+        printf("HyperAMP Server initialized successfully\n");
+        
+        /* 创建 HyperAMP 服务端任务 */
+        xReturn = HyperAmpServerCreateTask();
+        if (xReturn != pdPASS) {
+            printf("Failed to create HyperAMP server task\n");
+            goto FAIL_EXIT;
+        }
+    } else {
+        printf("Failed to initialize HyperAMP server\n");
+        goto FAIL_EXIT;
+    }
+
+    /* 创建 Shell 任务 */
     xReturn = LSUserShellTask();
     if (xReturn != pdPASS)
     {
