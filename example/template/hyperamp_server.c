@@ -96,8 +96,34 @@ static void HyperAmpIrqHandler(s32 vector, void *param)
     
     printf("[HyperAMP-IRQ] Interrupt %d triggered!\r\n", vector);
     
-    /* 短暂延迟,给Linux缓存刷新时间 */
-    for (volatile int i = 0; i < 1000; i++);
+    /* ✅ 关键修复:在中断中立即失效缓存,确保任务读取最新数据! */
+    /* 问题根因:任务被唤醒时可能先从缓存读取了旧数据,然后才执行DC IVAC */
+    /* 必须在信号量释放前失效缓存,确保任务调度后读取的是主内存数据 */
+    
+    if (g_root_q_vaddr != NULL && g_data_vaddr != NULL) {
+        /* ✅ 关键修复:失效整个队列区域和数据缓冲区的所有缓存行 */
+        
+        /* 1. 失效队列头 + entries (128字节) */
+        unsigned long queue_start = (unsigned long)g_root_q_vaddr;
+        for (int i = 0; i < 2; i++) {
+            unsigned long addr = queue_start + (i * 64);
+            __asm__ volatile("dc ivac, %0" :: "r"(addr) : "memory");
+        }
+        
+        /* 2. ✅ 新增:失效数据缓冲区前4KB (64个缓存行) */
+        /* 覆盖常用的消息数据区域 */
+        unsigned long data_start = (unsigned long)g_data_vaddr;
+        for (int i = 0; i < 64; i++) {  /* 4KB = 64 * 64字节 */
+            unsigned long addr = data_start + (i * 64);
+            __asm__ volatile("dc ivac, %0" :: "r"(addr) : "memory");
+        }
+        
+        /* 确保失效完成 */
+        __asm__ volatile("dsb sy" ::: "memory");
+        __asm__ volatile("isb" ::: "memory");
+        
+        printf("[HyperAMP-IRQ] Cache invalidated: queue 128B + data 4KB\r\n");
+    }
     
     /* 在中断中释放信号量,唤醒处理任务 */
     if (g_hyperamp_sem != NULL) {
@@ -170,19 +196,8 @@ static int ProcessRootLinuxMessage(void)
         return 0;
     }
     
-    /* 获取当前处理队列头 */
-    unsigned long queue_addr = (unsigned long)g_root_q_vaddr;
-    unsigned long queue_end = queue_addr + sizeof(AmpMsgQueue);
-    
-    /* 刷新整个队列头结构的缓存 */
-    for (unsigned long addr = queue_addr; addr < queue_end; addr += 64) {
-        __asm__ volatile("dc civac, %0" :: "r"(addr) : "memory");
-    }
-    __asm__ volatile("dsb sy" ::: "memory");
-    __asm__ volatile("isb" ::: "memory");
-    
-    /* 延迟,给缓存刷新时间 */
-    for (volatile int i = 0; i < 100; i++);
+    /* ✅ 不再需要失效缓存,中断处理函数已经处理过了 */
+    /* 中断处理函数已经用 DC IVAC 失效了队列头和entry区域 */
     
     u16 current_proc_head = g_root_q_vaddr->proc_ing_h;
     
@@ -200,21 +215,8 @@ static int ProcessRootLinuxMessage(void)
     volatile MsgEntry *msg_entry = &g_root_q_vaddr->entries[current_proc_head];
     volatile Msg *msg = &msg_entry->msg;
     
-    /* 读取消息前刷新消息entry缓存 */
-    unsigned long entry_addr = (unsigned long)msg_entry;
-    unsigned long entry_end = entry_addr + sizeof(MsgEntry);
-    
-    /* 按缓存行对齐刷新整个entry */
-    unsigned long entry_aligned_start = entry_addr & ~0x3FUL;
-    unsigned long entry_aligned_end = (entry_end + 63) & ~0x3FUL;
-    for (unsigned long addr = entry_aligned_start; addr < entry_aligned_end; addr += 64) {
-        __asm__ volatile("dc civac, %0" :: "r"(addr) : "memory");
-    }
-    __asm__ volatile("dsb sy" ::: "memory");
-    __asm__ volatile("isb" ::: "memory");
-    
-    /* 延迟,给缓存刷新时间 */
-    for (volatile int i = 0; i < 100; i++);
+    /* ✅ 不再需要失效entry缓存,中断处理函数已经处理过了 */
+    /* 中断处理函数已经失效了队列头(12B) + 前128字节的entry区域 */
     
     printf("[HyperAMP-DEBUG] Message: length=%u, offset=0x%x, deal_state=%u, service_id=%u\r\n",
            msg->length, msg->offset, msg->flag.deal_state, msg->service_id);
@@ -263,10 +265,12 @@ static int ProcessRootLinuxMessage(void)
     
     /* 检查是否包含结尾符,如果有则忽略 */
     int actual_len = msg->length;
+    //去除结尾符
     if (actual_len > 0 && data_ptr[actual_len - 1] == '\0') {
         actual_len--;
-        printf("[HyperAMP]   WARNING: Message includes null terminator, adjusting length %u -> %u\r\n", 
-               msg->length, actual_len);
+
+        // printf("[HyperAMP]   WARNING: Message includes null terminator, adjusting length %u -> %u\r\n", 
+        //        msg->length, actual_len);
     }
     
     for (int i = 0; i < display_len; i++) {
@@ -356,15 +360,29 @@ static int ProcessRootLinuxMessage(void)
         new_head = (current_proc_head + 1) % g_root_q_vaddr->buf_size;
     }
     
+    /* ✅ 关键修复:避免覆盖Linux的队列头更新 */
+    /* 问题: FreeRTOS缓存中的队列头可能是旧的(buf_size等字段) */
+    /* 解决: 在更新前先失效缓存,重新从主内存读取Linux的最新队列头 */
+    
+    /* 1. 先失效队列头缓存,确保读取Linux的最新数据 */
+    unsigned long queue_addr = (unsigned long)g_root_q_vaddr;
+    __asm__ volatile("dc ivac, %0" :: "r"(queue_addr) : "memory");
+    __asm__ volatile("dsb sy" ::: "memory");
+    
+    /* 2. 重新读取,确保buf_size等字段是最新的 */
+    /* (编译器会重新从主内存加载) */
+    volatile u16 latest_buf_size = g_root_q_vaddr->buf_size;
+    
+    /* 3. 只修改FreeRTOS负责的字段 */
     g_root_q_vaddr->proc_ing_h = new_head;
     g_root_q_vaddr->working_mark = MSG_QUEUE_MARK_IDLE;
     
-    /* 将队列头更新写回主内存 */
+    /* 4. 写回到主内存 */
     __asm__ volatile("dsb sy" ::: "memory");
     __asm__ volatile("dc cvac, %0" :: "r"(queue_addr) : "memory");
     __asm__ volatile("dsb sy" ::: "memory");
     
-    printf("[HyperAMP]   *** Message processed successfully! ***\r\n");
+    printf("[HyperAMP]   *** Message processed successfully! (buf_size=%u) ***\r\n", latest_buf_size);
     
     return 1;
 }
