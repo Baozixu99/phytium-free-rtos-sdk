@@ -38,6 +38,7 @@ extern "C" {
 #define HYPERAMP_SGI_IRQ_ID    74         /* hvisor 发送的软中断 */
 
 /* 消息队列初始化标记 */
+#define MSG_QUEUE_MARK_BUSY     (0xFFFFFFFFU) /* 负责处理该消息队列的核心正在处理（16位） */
 #define INIT_MARK_INITIALIZED  (0xEEEEEEEEU)
 #define MSG_QUEUE_MARK_IDLE    (0xBBBBBBBBU)
 
@@ -61,7 +62,6 @@ extern "C" {
 typedef struct {
     u16 deal_state : 1;      /* 1位: 消息是否被处理 */
     u16 service_result : 2;  /* 2位: 消息对应的服务是否被正确服务 */
-    u16 reserved : 13;       /* 13位: 保留位 */
 } MsgFlag;
 
 /* 消息结构 - 必须与 Linux 端字段顺序和类型完全一致! */

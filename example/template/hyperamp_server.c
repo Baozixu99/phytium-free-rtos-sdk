@@ -103,9 +103,9 @@ static void HyperAmpIrqHandler(s32 vector, void *param)
     if (g_root_q_vaddr != NULL && g_data_vaddr != NULL) {
         /* ✅ 关键修复:失效整个队列区域和数据缓冲区的所有缓存行 */
         
-        /* 1. 失效队列头 + entries (128字节) */
+        /* 1. 失效队列头 + 所有entries (268字节，总共5个缓存行) */
         unsigned long queue_start = (unsigned long)g_root_q_vaddr;
-        for (int i = 0; i < 2; i++) {
+        for (int i = 0; i < 5; i++) {  /* 覆盖整个队列区域 */
             unsigned long addr = queue_start + (i * 64);
             __asm__ volatile("dc ivac, %0" :: "r"(addr) : "memory");
         }
@@ -122,7 +122,7 @@ static void HyperAmpIrqHandler(s32 vector, void *param)
         __asm__ volatile("dsb sy" ::: "memory");
         __asm__ volatile("isb" ::: "memory");
         
-        printf("[HyperAMP-IRQ] Cache invalidated: queue 128B + data 4KB\r\n");
+        printf("[HyperAMP-IRQ] Cache invalidated: queue 268B + data 4KB\r\n");
     }
     
     /* 在中断中释放信号量,唤醒处理任务 */
@@ -211,12 +211,31 @@ static int ProcessRootLinuxMessage(void)
         return 0;
     }
     
-    /* ✅ 正确方式: 直接通过柔性数组访问消息实体 */
+    /* ✅ 关键修复: 在读取entries前再次失效缓存! */
+    /* 问题: 中断处理函数的DC IVAC可能在Linux写入完成前就执行了 */
+    /* 解决: 任务中再次失效,确保读取的是Linux写入后的最新数据 */
+    
+    /* 先读取一次,看看中断后的初始值 */
     volatile MsgEntry *msg_entry = &g_root_q_vaddr->entries[current_proc_head];
     volatile Msg *msg = &msg_entry->msg;
     
-    /* ✅ 不再需要失效entry缓存,中断处理函数已经处理过了 */
-    /* 中断处理函数已经失效了队列头(12B) + 前128字节的entry区域 */
+    printf("[HyperAMP-DEBUG] Before re-invalidate: entry[%u] length=%u, offset=0x%x, service_id=%u\r\n",
+           current_proc_head, msg->length, msg->offset, msg->service_id);
+    
+    /* 失效当前entry所在的所有缓存行 */
+    unsigned long entry_addr = (unsigned long)msg_entry;
+    unsigned long entry_end = entry_addr + sizeof(MsgEntry);
+    for (unsigned long addr = entry_addr & ~0x3FUL; addr < ((entry_end + 63) & ~0x3FUL); addr += 64) {
+        __asm__ volatile("dc ivac, %0" :: "r"(addr) : "memory");
+    }
+    __asm__ volatile("dsb sy" ::: "memory");
+    __asm__ volatile("isb" ::: "memory");
+    
+    /* 重新读取,强制编译器从内存重新加载 */
+    __asm__ volatile("" ::: "memory");  /* 防止编译器优化 */
+    
+    printf("[HyperAMP-DEBUG] After re-invalidate: entry[%u] length=%u, offset=0x%x, service_id=%u\r\n",
+           current_proc_head, msg->length, msg->offset, msg->service_id);
     
     printf("[HyperAMP-DEBUG] Message: length=%u, offset=0x%x, deal_state=%u, service_id=%u\r\n",
            msg->length, msg->offset, msg->flag.deal_state, msg->service_id);
@@ -230,6 +249,16 @@ static int ProcessRootLinuxMessage(void)
         if (msg->offset >= SHM_SIZE_DATA) printf("offset>=SHM_SIZE ");
         if (msg->flag.deal_state == MSG_DEAL_STATE_YES) printf("already_processed ");
         printf("\r\n");
+        
+        /* 添加调试日志：显示前3个entries的内容 */
+        printf("[HyperAMP-DEBUG] Scanning first 3 entries:\r\n");
+        for (int i = 0; i < 3 && i < g_root_q_vaddr->buf_size; i++) {
+            volatile MsgEntry *entry = &g_root_q_vaddr->entries[i];
+            volatile Msg *m = &entry->msg;
+            printf("[HyperAMP-DEBUG]   entries[%d]: length=%u, offset=0x%x, deal_state=%u, service_id=%u\r\n",
+                   i, m->length, m->offset, m->flag.deal_state, m->service_id);
+        }
+        
         return 0;
     }
     
@@ -406,18 +435,17 @@ static void HyperAmpServerTask(void *pvParameters)
         if (xSemaphoreTake(g_hyperamp_sem, portMAX_DELAY) == pdTRUE) {
             printf("[HyperAMP] Semaphore acquired! Processing messages......\r\n");
             
-            /* 收到中断信号,处理所有待处理的消息 */
-            int processed_count = 0;
+            /* ✅ 关键修复: 每个中断只处理一次! */
+            /* 问题: Linux在FreeRTOS处理完后会立即回收entry,如果FreeRTOS */
+            /*       在同一中断中多次循环,会读到Linux正在回收的数据(length=0) */
+            /* 解决: 每个中断只处理一条消息,等待下次中断处理下一条 */
             
-            /* 可能有多个消息排队,全部处理完 */
-            while (ProcessRootLinuxMessage()) {
-                processed_count++;
-            }
+            int result = ProcessRootLinuxMessage();
             
-            if (processed_count > 0) {
-                printf("[HyperAMP] Processed %d message(s) in this interrupt\r\n", processed_count);
+            if (result > 0) {
+                printf("[HyperAMP] Message processed successfully in this interrupt\r\n");
             } else {
-                printf("[HyperAMP] No messages to process (spurious wakeup?)\r\n");
+                printf("[HyperAMP] No valid message to process (spurious wakeup?)\r\n");
             }
         }
     }
