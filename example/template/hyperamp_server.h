@@ -34,6 +34,9 @@ extern "C" {
 #define SHM_PADDR_FREERTOS_Q 0xDE410000UL /* FreeRTOS 队列 (对应 seL4 队列地址) */
 #define SHM_PAGE_SIZE       0x1000UL      /* 4KB */
 
+/* HyperAMP SGI 中断号 */
+#define HYPERAMP_SGI_IRQ_ID    74         /* hvisor 发送的软中断 */
+
 /* 消息队列初始化标记 */
 #define INIT_MARK_INITIALIZED  (0xEEEEEEEEU)
 #define MSG_QUEUE_MARK_IDLE    (0xBBBBBBBBU)
@@ -54,15 +57,6 @@ extern "C" {
 #define SERVICE_ENCRYPT_ID     (1U)
 #define SERVICE_DECRYPT_ID     (2U)
 
-/* AMP 消息队列结构 */
-typedef struct {
-    u32 working_mark;    /* 工作标记 */
-    u16 buf_size;        /* 缓冲区大小 */
-    u16 empty_h;         /* 空闲队列头 */
-    u16 wait_h;          /* 等待队列头 */
-    u16 proc_ing_h;      /* 处理中队列头 */
-} AmpMsgQueue;
-
 /* 消息标志结构 - 必须与 Linux 端完全一致! */
 typedef struct {
     u16 deal_state : 1;      /* 1位: 消息是否被处理 */
@@ -78,11 +72,21 @@ typedef struct {
     u32 length;          /* 数据长度 (4字节) */
 } Msg;
 
-/* 消息实体结构 */
+/* 消息实体结构 - 必须与Linux端完全一致! */
+typedef struct MsgEntry {
+    Msg msg;             /* 消息实体 (12字节) */
+    u16 nxt_idx;         /* 下一个消息的索引 (2字节) */
+} MsgEntry;              /* 总大小: 14字节 - 与seL4/Linux保持一致 */
+
+/* AMP 消息队列结构 - 必须与Linux端完全一致! */
 typedef struct {
-    Msg msg;
-    u16 nxt_idx;         /* 下一个消息的索引 */
-} MsgEntry;
+    volatile u32 working_mark;    /* 工作标记 */
+    u16 buf_size;                 /* 缓冲区大小 */
+    volatile u16 empty_h;         /* 空闲队列头 */
+    volatile u16 wait_h;          /* 等待队列头 */
+    volatile u16 proc_ing_h;      /* 处理中队列头 */
+    MsgEntry entries[0];          /* ✅ 柔性数组 - 实际存放的消息 */
+} AmpMsgQueue;
 
 /**
  * @brief 初始化 HyperAMP 服务端

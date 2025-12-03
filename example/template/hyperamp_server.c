@@ -21,8 +21,10 @@
 #include <string.h>
 #include "FreeRTOS.h"
 #include "task.h"
+#include "semphr.h"
 #include "hyperamp_server.h"
 #include "fcache.h"  /* 用于缓存操作 */
+#include "finterrupt.h"  /* 中断管理,包含 GIC 支持 */
 
 /* 共享内存虚拟地址指针 */
 static volatile char *g_data_vaddr = NULL;
@@ -35,6 +37,9 @@ static int g_message_count = 0;
 
 /* FreeRTOS 任务句柄 */
 static TaskHandle_t g_server_task_handle = NULL;
+
+/* 二值信号量,用于中断和任务之间的同步 */
+static SemaphoreHandle_t g_hyperamp_sem = NULL;
 
 /* 消息缓存失效 - 读取前使缓存失效,确保从主内存读取最新数据 */
 static inline void CacheInvalidateMessage(volatile Msg *msg)
@@ -82,6 +87,29 @@ static int ServiceEncrypt(char *data, int data_len, int buf_size)
 static int ServiceDecrypt(char *data, int data_len, int buf_size)
 {
     return ServiceEncrypt(data, data_len, buf_size);
+}
+
+/* HyperAMP SGI 中断处理函数 */
+static void HyperAmpIrqHandler(s32 vector, void *param)
+{
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+    
+    printf("[HyperAMP-IRQ] Interrupt %d triggered!\r\n", vector);
+    
+    /* 短暂延迟,给Linux缓存刷新时间 */
+    for (volatile int i = 0; i < 1000; i++);
+    
+    /* 在中断中释放信号量,唤醒处理任务 */
+    if (g_hyperamp_sem != NULL) {
+        xSemaphoreGiveFromISR(g_hyperamp_sem, &xHigherPriorityTaskWoken);
+    } else {
+        printf("[HyperAMP-IRQ] ERROR: Semaphore is NULL!\r\n");
+    }
+    
+    printf("[HyperAMP-IRQ] Semaphore released\r\n");
+    
+    /* 如果需要进行上下文切换 */
+    portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 }
 
 /* 初始化 Root Linux 队列 */
@@ -138,37 +166,68 @@ static void InitFreeRTOSQueue(void)
 static int ProcessRootLinuxMessage(void)
 {
     if (!g_root_q_vaddr || !g_data_vaddr) {
+        printf("[HyperAMP-DEBUG] Queue or data not available\r\n");
         return 0;
     }
     
-    /* 获取当前处理队列头 (先使队列头缓存失效) */
+    /* 获取当前处理队列头 */
     unsigned long queue_addr = (unsigned long)g_root_q_vaddr;
-    __asm__ volatile("dc ivac, %0" :: "r"(queue_addr) : "memory");
+    unsigned long queue_end = queue_addr + sizeof(AmpMsgQueue);
+    
+    /* 刷新整个队列头结构的缓存 */
+    for (unsigned long addr = queue_addr; addr < queue_end; addr += 64) {
+        __asm__ volatile("dc civac, %0" :: "r"(addr) : "memory");
+    }
     __asm__ volatile("dsb sy" ::: "memory");
+    __asm__ volatile("isb" ::: "memory");
+    
+    /* 延迟,给缓存刷新时间 */
+    for (volatile int i = 0; i < 100; i++);
     
     u16 current_proc_head = g_root_q_vaddr->proc_ing_h;
     
+    printf("[HyperAMP-DEBUG] proc_ing_h=%u, buf_size=%u, working_mark=0x%x\r\n",
+           current_proc_head, g_root_q_vaddr->buf_size, g_root_q_vaddr->working_mark);
+    
     /* 检查队列头是否有效 */
     if (current_proc_head >= g_root_q_vaddr->buf_size) {
+        printf("[HyperAMP-DEBUG] Invalid proc_ing_h: %u >= %u\r\n", 
+               current_proc_head, g_root_q_vaddr->buf_size);
         return 0;
     }
     
-    /* 计算消息实体的起始地址 */
-    volatile MsgEntry *msg_entries = (volatile MsgEntry *)((char *)g_root_q_vaddr + sizeof(AmpMsgQueue));
-    volatile MsgEntry *msg_entry = &msg_entries[current_proc_head];
+    /* ✅ 正确方式: 直接通过柔性数组访问消息实体 */
+    volatile MsgEntry *msg_entry = &g_root_q_vaddr->entries[current_proc_head];
     volatile Msg *msg = &msg_entry->msg;
     
-    /* 读取消息前先使整个消息实体缓存失效,确保读取到 Linux 写入的最新数据 */
+    /* 读取消息前刷新消息entry缓存 */
     unsigned long entry_addr = (unsigned long)msg_entry;
     unsigned long entry_end = entry_addr + sizeof(MsgEntry);
-    for (unsigned long addr = entry_addr; addr < entry_end; addr += 64) {
-        __asm__ volatile("dc ivac, %0" :: "r"(addr) : "memory");
+    
+    /* 按缓存行对齐刷新整个entry */
+    unsigned long entry_aligned_start = entry_addr & ~0x3FUL;
+    unsigned long entry_aligned_end = (entry_end + 63) & ~0x3FUL;
+    for (unsigned long addr = entry_aligned_start; addr < entry_aligned_end; addr += 64) {
+        __asm__ volatile("dc civac, %0" :: "r"(addr) : "memory");
     }
     __asm__ volatile("dsb sy" ::: "memory");
+    __asm__ volatile("isb" ::: "memory");
+    
+    /* 延迟,给缓存刷新时间 */
+    for (volatile int i = 0; i < 100; i++);
+    
+    printf("[HyperAMP-DEBUG] Message: length=%u, offset=0x%x, deal_state=%u, service_id=%u\r\n",
+           msg->length, msg->offset, msg->flag.deal_state, msg->service_id);
     
     /* 检查是否为有效消息 */
     if (msg->length == 0 || msg->length >= SHM_SIZE_DATA || 
         msg->offset >= SHM_SIZE_DATA || msg->flag.deal_state == MSG_DEAL_STATE_YES) {
+        printf("[HyperAMP-DEBUG] Invalid message: ");
+        if (msg->length == 0) printf("length==0 ");
+        if (msg->length >= SHM_SIZE_DATA) printf("length>=SHM_SIZE ");
+        if (msg->offset >= SHM_SIZE_DATA) printf("offset>=SHM_SIZE ");
+        if (msg->flag.deal_state == MSG_DEAL_STATE_YES) printf("already_processed ");
+        printf("\r\n");
         return 0;
     }
     
@@ -185,13 +244,18 @@ static int ProcessRootLinuxMessage(void)
     /* 获取数据指针 */
     volatile char *data_ptr = g_data_vaddr + msg->offset;
     
-    /* 使数据缓冲区缓存失效,确保读取到 Linux 写入的最新数据 */
+    /* 刷新数据缓冲区缓存 */
     unsigned long data_start = (unsigned long)data_ptr;
     unsigned long data_end = data_start + msg->length;
-    for (unsigned long addr = data_start; addr < data_end; addr += 64) {
-        __asm__ volatile("dc ivac, %0" :: "r"(addr) : "memory");
+    
+    /* 按缓存行对齐刷新数据 */
+    unsigned long data_aligned_start = data_start & ~0x3FUL;
+    unsigned long data_aligned_end = (data_end + 63) & ~0x3FUL;
+    for (unsigned long addr = data_aligned_start; addr < data_aligned_end; addr += 64) {
+        __asm__ volatile("dc civac, %0" :: "r"(addr) : "memory");
     }
     __asm__ volatile("dsb sy" ::: "memory");
+    __asm__ volatile("isb" ::: "memory");
     
     /* 显示接收到的数据 */
     printf("[HyperAMP]   Data: [");
@@ -257,10 +321,10 @@ static int ProcessRootLinuxMessage(void)
     /* 如果数据被修改，显示处理后的结果 */
     if (data_modified) {
         /* 将修改后的数据写回主内存 */
-        data_start = (unsigned long)data_ptr;
-        data_end = data_start + actual_len;
+        unsigned long data_write_start = (unsigned long)data_ptr;
+        unsigned long data_write_end = data_write_start + actual_len;
         __asm__ volatile("dsb sy" ::: "memory");
-        for (unsigned long addr = data_start; addr < data_end; addr += 64) {
+        for (unsigned long addr = data_write_start; addr < data_write_end; addr += 64) {
             __asm__ volatile("dc cvac, %0" :: "r"(addr) : "memory");
         }
         __asm__ volatile("dsb sy" ::: "memory");
@@ -308,36 +372,35 @@ static int ProcessRootLinuxMessage(void)
 /* HyperAMP 服务端任务 */
 static void HyperAmpServerTask(void *pvParameters)
 {
-    printf("\r\n[HyperAMP] === Server Task Started ===\r\n");
-    printf("[HyperAMP] Waiting for messages from Root Linux...\r\n");
+    printf("\r\n[HyperAMP] === Server Task Started (Interrupt-Driven Mode) ===\r\n");
+    printf("[HyperAMP] Waiting for IRQ %d from Root Linux...\r\n", HYPERAMP_SGI_IRQ_ID);
     
     /* 初始化队列 */
     InitRootLinuxQueue();
     InitFreeRTOSQueue();
     
-    int idle_count = 0;
-    int status_report_interval = 10000;  /* 每 10000 次空闲检查报告一次状态 */
+    printf("[HyperAMP] Task entering main loop, waiting for semaphore...\r\n");
     
-    /* 主消息处理循环 */
+    /* 主消息处理循环 - 等待中断触发 */
     while (g_server_running) {
-        /* 尝试处理消息 */
-        int processed = ProcessRootLinuxMessage();
-        
-        if (processed) {
-            /* 处理了消息，重置空闲计数 */
-            idle_count = 0;
-        } else {
-            /* 没有消息，增加空闲计数 */
-            idle_count++;
+        /* 阻塞等待信号量,直到中断触发 */
+        printf("[HyperAMP] Blocking on semaphore (waiting for interrupt)...\r\n");
+        if (xSemaphoreTake(g_hyperamp_sem, portMAX_DELAY) == pdTRUE) {
+            printf("[HyperAMP] Semaphore acquired! Processing messages......\r\n");
             
-            /* 定期显示监控状态 */
-            if (idle_count >= status_report_interval) {
-                printf("[HyperAMP] Monitoring... (processed: %d messages)\r\n", g_message_count);
-                idle_count = 0;
+            /* 收到中断信号,处理所有待处理的消息 */
+            int processed_count = 0;
+            
+            /* 可能有多个消息排队,全部处理完 */
+            while (ProcessRootLinuxMessage()) {
+                processed_count++;
             }
             
-            /* 短暂延时，避免过度占用 CPU */
-            vTaskDelay(pdMS_TO_TICKS(1));  /* 1ms 延时 */
+            if (processed_count > 0) {
+                printf("[HyperAMP] Processed %d message(s) in this interrupt\r\n", processed_count);
+            } else {
+                printf("[HyperAMP] No messages to process (spurious wakeup?)\r\n");
+            }
         }
     }
     
@@ -372,6 +435,43 @@ int HyperAmpServerInit(void)
     
     /* 清空测试区域,避免残留数据干扰 */
     memset((void *)g_data_vaddr, 0, 64);
+    
+    /* 创建二值信号量 */
+    g_hyperamp_sem = xSemaphoreCreateBinary();
+    if (g_hyperamp_sem == NULL) {
+        printf("[HyperAMP] ERROR: Failed to create semaphore\r\n");
+        return -1;
+    }
+    printf("[HyperAMP] Semaphore created\r\n");
+    
+    /* 注册 SGI 中断处理函数 */
+    InterruptInstall(HYPERAMP_SGI_IRQ_ID, 
+                     HyperAmpIrqHandler, 
+                     NULL, 
+                     "HyperAMP-SGI");
+    printf("[HyperAMP] Interrupt handler installed for IRQ %d\r\n", HYPERAMP_SGI_IRQ_ID);
+    
+    /* 设置中断优先级 */
+    InterruptSetPriority(HYPERAMP_SGI_IRQ_ID, 0);  /* 最高优先级 */
+    
+    /* 使能中断 */
+    InterruptUmask(HYPERAMP_SGI_IRQ_ID);
+    printf("[HyperAMP] Interrupt %d enabled\r\n", HYPERAMP_SGI_IRQ_ID);
+    
+    /* 验证结构体大小 */
+    printf("[HyperAMP] Structure size verification:\r\n");
+    printf("[HyperAMP]   sizeof(Msg) = %lu (expected: 12)\r\n", sizeof(Msg));
+    printf("[HyperAMP]   sizeof(MsgEntry) = %lu (expected: 16)\r\n", sizeof(MsgEntry));
+    printf("[HyperAMP]   sizeof(AmpMsgQueue) = %lu (expected: 12)\r\n", sizeof(AmpMsgQueue));
+    
+    /* 验证偏移量 */
+    if (g_root_q_vaddr != NULL) {
+        printf("[HyperAMP] Offset verification:\r\n");
+        printf("[HyperAMP]   &entries[0] offset = %ld (expected: 12)\r\n",
+               (char*)&g_root_q_vaddr->entries[0] - (char*)g_root_q_vaddr);
+        printf("[HyperAMP]   &entries[1] offset = %ld (expected: 28)\r\n",
+               (char*)&g_root_q_vaddr->entries[1] - (char*)g_root_q_vaddr);
+    }
     
     printf("[HyperAMP] Initialization complete\r\n");
     
@@ -450,9 +550,25 @@ void HyperAmpServerStop(void)
     printf("[HyperAMP] Stopping server...\r\n");
     g_server_running = 0;
     
+    /* 释放信号量,让任务退出阻塞状态 */
+    if (g_hyperamp_sem != NULL) {
+        xSemaphoreGive(g_hyperamp_sem);
+    }
+    
     /* 等待任务退出 */
     while (g_server_task_handle != NULL) {
         vTaskDelay(pdMS_TO_TICKS(10));
+    }
+    
+    /* 禁用中断 */
+    InterruptMask(HYPERAMP_SGI_IRQ_ID);
+    printf("[HyperAMP] Interrupt %d disabled\r\n", HYPERAMP_SGI_IRQ_ID);
+    
+    /* 删除信号量 */
+    if (g_hyperamp_sem != NULL) {
+        vSemaphoreDelete(g_hyperamp_sem);
+        g_hyperamp_sem = NULL;
+        printf("[HyperAMP] Semaphore deleted\r\n");
     }
     
     printf("[HyperAMP] Server stopped\r\n");
