@@ -138,29 +138,10 @@ static void HyperAmpIrqHandler(s32 vector, void *param)
     portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 }
 
-/* 初始化 Root Linux 队列 */
-static void InitRootLinuxQueue(void)
-{
-    if (!g_root_q_vaddr) {
-        printf("[HyperAMP] Root queue not available\r\n");
-        return;
-    }
-    
-    printf("[HyperAMP] Checking Root Linux queue...\r\n");
-    
-    /* 如果 Root Linux 队列未初始化，帮助初始化 */
-    if (g_root_q_vaddr->working_mark != INIT_MARK_INITIALIZED) {
-        printf("[HyperAMP] Initializing Root Linux queue\r\n");
-        g_root_q_vaddr->working_mark = MSG_QUEUE_MARK_IDLE;
-        g_root_q_vaddr->buf_size = 16;
-        g_root_q_vaddr->empty_h = 0;
-        g_root_q_vaddr->wait_h = 0;
-        g_root_q_vaddr->proc_ing_h = 0;
-        printf("[HyperAMP] Root Linux queue initialized\r\n");
-    } else {
-        printf("[HyperAMP] Root Linux queue already initialized\r\n");
-    }
-}
+/* ✅ 不再初始化 Root Linux 队列! */
+/* 问题: FreeRTOS 初始化 Linux 队列会导致缓存一致性问题 */
+/* 原因: FreeRTOS 的写操作可能在 Store Buffer 中,覆盖 Linux 的数据 */
+/* 解决: Linux 负责管理自己的队列, FreeRTOS 只读取 */
 
 /* 初始化 FreeRTOS 队列 */
 static void InitFreeRTOSQueue(void)
@@ -211,7 +192,7 @@ static int ProcessRootLinuxMessage(void)
         return 0;
     }
     
-    /* ✅ 关键修复: 在读取entries前再次失效缓存! */
+    /*  在读取entries前再次失效缓存! */
     /* 问题: 中断处理函数的DC IVAC可能在Linux写入完成前就执行了 */
     /* 解决: 任务中再次失效,确保读取的是Linux写入后的最新数据 */
     
@@ -423,7 +404,7 @@ static void HyperAmpServerTask(void *pvParameters)
     printf("[HyperAMP] Waiting for IRQ %d from Root Linux...\r\n", HYPERAMP_SGI_IRQ_ID);
     
     /* 初始化队列 */
-    InitRootLinuxQueue();
+    // InitRootLinuxQueue();
     InitFreeRTOSQueue();
     
     printf("[HyperAMP] Task entering main loop, waiting for semaphore...\r\n");
@@ -479,8 +460,10 @@ int HyperAmpServerInit(void)
     /* 测试访问共享内存 */
     printf("[HyperAMP] Testing shared memory access...\r\n");
     
-    /* 清空测试区域,避免残留数据干扰 */
-    memset((void *)g_data_vaddr, 0, 64);
+    /* ✅ 不要清空数据缓冲区! */
+    /* 问题: memset 的数据可能留在 Store Buffer 中, 覆盖 Linux 的数据 */
+    /* 解决: 让 Linux 负责管理数据缓冲区 */
+    // memset((void *)g_data_vaddr, 0, 64);  // ← 已删除
     
     /* 创建二值信号量 */
     g_hyperamp_sem = xSemaphoreCreateBinary();
