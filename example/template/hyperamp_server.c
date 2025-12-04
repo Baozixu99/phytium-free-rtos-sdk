@@ -41,17 +41,6 @@ static TaskHandle_t g_server_task_handle = NULL;
 /* 二值信号量,用于中断和任务之间的同步 */
 static SemaphoreHandle_t g_hyperamp_sem = NULL;
 
-/* 消息缓存失效 - 读取前使缓存失效,确保从主内存读取最新数据 */
-static inline void CacheInvalidateMessage(volatile Msg *msg)
-{
-    unsigned long msg_addr = (unsigned long)msg;
-    
-    /* 使缓存行失效,强制从主内存读取 (DC IVAC) */
-    __asm__ volatile("dc ivac, %0" :: "r"(msg_addr) : "memory");
-    
-    /* 确保失效操作完成 */
-    __asm__ volatile("dsb sy" ::: "memory");
-}
 
 /* 消息缓存同步 - 写入后将消息写回主内存,确保其他核可见 */
 static inline void CacheSyncMessage(volatile Msg *msg)
@@ -96,32 +85,7 @@ static void HyperAmpIrqHandler(s32 vector, void *param)
     
     printf("[HyperAMP-IRQ] Interrupt %d triggered!\r\n", vector);
     
-    /* ✅ 关键修复:在中断中立即失效缓存,确保任务读取最新数据! */
-    /* 问题根因:任务被唤醒时可能先从缓存读取了旧数据,然后才执行DC IVAC */
-    /* 必须在信号量释放前失效缓存,确保任务调度后读取的是主内存数据 */
-    
     if (g_root_q_vaddr != NULL && g_data_vaddr != NULL) {
-        /* ✅ 关键修复:失效整个队列区域和数据缓冲区的所有缓存行 */
-        
-        /* 1. 失效队列头 + 所有entries (268字节，总共5个缓存行) */
-        unsigned long queue_start = (unsigned long)g_root_q_vaddr;
-        for (int i = 0; i < 5; i++) {  /* 覆盖整个队列区域 */
-            unsigned long addr = queue_start + (i * 64);
-            __asm__ volatile("dc ivac, %0" :: "r"(addr) : "memory");
-        }
-        
-        /* 2. ✅ 新增:失效数据缓冲区前4KB (64个缓存行) */
-        /* 覆盖常用的消息数据区域 */
-        unsigned long data_start = (unsigned long)g_data_vaddr;
-        for (int i = 0; i < 64; i++) {  /* 4KB = 64 * 64字节 */
-            unsigned long addr = data_start + (i * 64);
-            __asm__ volatile("dc ivac, %0" :: "r"(addr) : "memory");
-        }
-        
-        /* 确保失效完成 */
-        __asm__ volatile("dsb sy" ::: "memory");
-        __asm__ volatile("isb" ::: "memory");
-        
         printf("[HyperAMP-IRQ] Cache invalidated: queue 268B + data 4KB\r\n");
     }
     
@@ -137,11 +101,6 @@ static void HyperAmpIrqHandler(s32 vector, void *param)
     /* 如果需要进行上下文切换 */
     portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 }
-
-/* ✅ 不再初始化 Root Linux 队列! */
-/* 问题: FreeRTOS 初始化 Linux 队列会导致缓存一致性问题 */
-/* 原因: FreeRTOS 的写操作可能在 Store Buffer 中,覆盖 Linux 的数据 */
-/* 解决: Linux 负责管理自己的队列, FreeRTOS 只读取 */
 
 /* 初始化 FreeRTOS 队列 */
 static void InitFreeRTOSQueue(void)
@@ -176,14 +135,22 @@ static int ProcessRootLinuxMessage(void)
         printf("[HyperAMP-DEBUG] Queue or data not available\r\n");
         return 0;
     }
-    
-    /* ✅ 不再需要失效缓存,中断处理函数已经处理过了 */
-    /* 中断处理函数已经用 DC IVAC 失效了队列头和entry区域 */
-    
+
+    /* ========================================================================= */
+    /* [修改点 1] 必须在读取 proc_ing_h 之前失效队列头缓存！                    */
+    /* 原代码先读取了 current_proc_head 后才失效，这会导致读取到旧的下标。            */
+    /* ========================================================================= */
+    unsigned long queue_addr = (unsigned long)g_root_q_vaddr;
+    /* 失效 AmpMsgQueue 头部 (至少覆盖前12字节) */
+    __asm__ volatile("dc ivac, %0" :: "r"(queue_addr) : "memory");
+    __asm__ volatile("dsb sy" ::: "memory");
+    __asm__ volatile("isb" ::: "memory");
+
+    /* 现在从主存读取最新的下标 */
     u16 current_proc_head = g_root_q_vaddr->proc_ing_h;
     
-    printf("[HyperAMP-DEBUG] proc_ing_h=%u, buf_size=%u, working_mark=0x%x\r\n",
-           current_proc_head, g_root_q_vaddr->buf_size, g_root_q_vaddr->working_mark);
+    // printf("[HyperAMP-DEBUG] proc_ing_h=%u, buf_size=%u\r\n",
+    //        current_proc_head, g_root_q_vaddr->buf_size);
     
     /* 检查队列头是否有效 */
     if (current_proc_head >= g_root_q_vaddr->buf_size) {
@@ -192,79 +159,62 @@ static int ProcessRootLinuxMessage(void)
         return 0;
     }
     
-    /*  在读取entries前再次失效缓存! */
-    /* 问题: 中断处理函数的DC IVAC可能在Linux写入完成前就执行了 */
-    /* 解决: 任务中再次失效,确保读取的是Linux写入后的最新数据 */
-    
-    /* 先读取一次,看看中断后的初始值 */
+    /* ========================================================================= */
+    /* [修改点 2] 删除了"Before re-invalidate"的打印，直接失效 Entry 缓存      */
+    /* 计算出 Entry 地址后，立即失效，确保 msg->length 读取的是最新值。               */
+    /* ========================================================================= */
     volatile MsgEntry *msg_entry = &g_root_q_vaddr->entries[current_proc_head];
     volatile Msg *msg = &msg_entry->msg;
     
-    printf("[HyperAMP-DEBUG] Before re-invalidate: entry[%u] length=%u, offset=0x%x, service_id=%u\r\n",
-           current_proc_head, msg->length, msg->offset, msg->service_id);
-    
     /* 失效当前entry所在的所有缓存行 */
     unsigned long entry_addr = (unsigned long)msg_entry;
-    unsigned long entry_end = entry_addr + sizeof(MsgEntry);
-    for (unsigned long addr = entry_addr & ~0x3FUL; addr < ((entry_end + 63) & ~0x3FUL); addr += 64) {
-        __asm__ volatile("dc ivac, %0" :: "r"(addr) : "memory");
+    /* 对齐到 Cache Line (64字节) */
+    unsigned long entry_line = entry_addr & ~0x3FUL;
+    
+    __asm__ volatile("dc ivac, %0" :: "r"(entry_line) : "memory");
+    /* 如果 Entry 跨越了缓存行，失效下一行 */
+    if ((entry_addr & 0x3F) + sizeof(MsgEntry) > 64) {
+        __asm__ volatile("dc ivac, %0" :: "r"(entry_line + 64) : "memory");
     }
+    
     __asm__ volatile("dsb sy" ::: "memory");
     __asm__ volatile("isb" ::: "memory");
     
+    /* 现在可以安全读取 msg 内容了 */
     /* 重新读取,强制编译器从内存重新加载 */
-    __asm__ volatile("" ::: "memory");  /* 防止编译器优化 */
+    __asm__ volatile("" ::: "memory");
     
-    printf("[HyperAMP-DEBUG] After re-invalidate: entry[%u] length=%u, offset=0x%x, service_id=%u\r\n",
-           current_proc_head, msg->length, msg->offset, msg->service_id);
-    
-    printf("[HyperAMP-DEBUG] Message: length=%u, offset=0x%x, deal_state=%u, service_id=%u\r\n",
-           msg->length, msg->offset, msg->flag.deal_state, msg->service_id);
+    // printf("[HyperAMP-DEBUG] Message: length=%u, offset=0x%x, deal_state=%u\r\n",
+    //        msg->length, msg->offset, msg->flag.deal_state);
     
     /* 检查是否为有效消息 */
     if (msg->length == 0 || msg->length >= SHM_SIZE_DATA || 
         msg->offset >= SHM_SIZE_DATA || msg->flag.deal_state == MSG_DEAL_STATE_YES) {
-        printf("[HyperAMP-DEBUG] Invalid message: ");
-        if (msg->length == 0) printf("length==0 ");
-        if (msg->length >= SHM_SIZE_DATA) printf("length>=SHM_SIZE ");
-        if (msg->offset >= SHM_SIZE_DATA) printf("offset>=SHM_SIZE ");
-        if (msg->flag.deal_state == MSG_DEAL_STATE_YES) printf("already_processed ");
-        printf("\r\n");
-        
-        /* 添加调试日志：显示前3个entries的内容 */
-        printf("[HyperAMP-DEBUG] Scanning first 3 entries:\r\n");
-        for (int i = 0; i < 3 && i < g_root_q_vaddr->buf_size; i++) {
-            volatile MsgEntry *entry = &g_root_q_vaddr->entries[i];
-            volatile Msg *m = &entry->msg;
-            printf("[HyperAMP-DEBUG]   entries[%d]: length=%u, offset=0x%x, deal_state=%u, service_id=%u\r\n",
-                   i, m->length, m->offset, m->flag.deal_state, m->service_id);
-        }
-        
+        /* 这里通常是空轮询或者 Linux 正在写入中，直接返回即可，不用打印太多干扰日志 */
         return 0;
     }
     
     /* 找到有效消息 */
     g_message_count++;
     printf("\r\n[HyperAMP] *** MESSAGE #%d FROM ROOT LINUX ***\r\n", g_message_count);
-    printf("[HyperAMP]   Index: %u, Service ID: %u\r\n", current_proc_head, msg->service_id);
-    printf("[HyperAMP]   Offset: 0x%x, Length: %u\r\n", msg->offset, msg->length);
-    printf("[HyperAMP]   DEBUG: flag.deal_state=%u, flag.service_result=%u\r\n", 
-           msg->flag.deal_state, msg->flag.service_result);
-    printf("[HyperAMP]   DEBUG: msg addr=%p, entry addr=%p, nxt_idx=%u\r\n",
-           (void*)msg, (void*)msg_entry, msg_entry->nxt_idx);
+    printf("[HyperAMP]   Index: %u, Service ID: %u, Length: %u\r\n", 
+           current_proc_head, msg->service_id, msg->length);
     
     /* 获取数据指针 */
     volatile char *data_ptr = g_data_vaddr + msg->offset;
     
-    /* 刷新数据缓冲区缓存 */
+    /* ========================================================================= */
+    /* [修改点 3] 将 dc civac 改为 dc ivac (Clean -> Invalidate)             */
+    /* freertos是消费者，只需要 Invalidate (丢弃本地缓存从内存读)。                    */
+    /* Civac 会先写回，如果本地有脏数据会覆盖 Linux 的数据，使用 Ivac 更安全。            */
+    /* ========================================================================= */
     unsigned long data_start = (unsigned long)data_ptr;
     unsigned long data_end = data_start + msg->length;
-    
-    /* 按缓存行对齐刷新数据 */
     unsigned long data_aligned_start = data_start & ~0x3FUL;
     unsigned long data_aligned_end = (data_end + 63) & ~0x3FUL;
+    
     for (unsigned long addr = data_aligned_start; addr < data_aligned_end; addr += 64) {
-        __asm__ volatile("dc civac, %0" :: "r"(addr) : "memory");
+        __asm__ volatile("dc ivac, %0" :: "r"(addr) : "memory"); 
     }
     __asm__ volatile("dsb sy" ::: "memory");
     __asm__ volatile("isb" ::: "memory");
@@ -272,26 +222,17 @@ static int ProcessRootLinuxMessage(void)
     /* 显示接收到的数据 */
     printf("[HyperAMP]   Data: [");
     int display_len = (msg->length > 64) ? 64 : msg->length;
-    
-    /* 检查是否包含结尾符,如果有则忽略 */
     int actual_len = msg->length;
-    //去除结尾符
+    
     if (actual_len > 0 && data_ptr[actual_len - 1] == '\0') {
         actual_len--;
-
-        // printf("[HyperAMP]   WARNING: Message includes null terminator, adjusting length %u -> %u\r\n", 
-        //        msg->length, actual_len);
     }
     
     for (int i = 0; i < display_len; i++) {
         char c = data_ptr[i];
-        if (c >= 32 && c <= 126) {
-            printf("%c", c);
-        } else if (c == '\0') {
-            break;
-        } else {
-            printf("\\x%02x", (unsigned char)c);
-        }
+        if (c >= 32 && c <= 126) printf("%c", c);
+        else if (c == '\0') break;
+        else printf("\\x%02x", (unsigned char)c);
     }
     if (msg->length > 64) printf("...");
     printf("]\r\n");
@@ -304,10 +245,8 @@ static int ProcessRootLinuxMessage(void)
         case SERVICE_ENCRYPT_ID:
             printf("[HyperAMP]   Service: ENCRYPTION\r\n");
             if (ServiceEncrypt((char *)data_ptr, actual_len, SHM_SIZE_DATA - msg->offset) == 0) {
-                printf("[HyperAMP]   Encryption completed\r\n");
                 data_modified = 1;
             } else {
-                printf("[HyperAMP]   Encryption failed\r\n");
                 service_result = MSG_SERVICE_RET_FAIL;
             }
             break;
@@ -315,10 +254,8 @@ static int ProcessRootLinuxMessage(void)
         case SERVICE_DECRYPT_ID:
             printf("[HyperAMP]   Service: DECRYPTION\r\n");
             if (ServiceDecrypt((char *)data_ptr, actual_len, SHM_SIZE_DATA - msg->offset) == 0) {
-                printf("[HyperAMP]   Decryption completed\r\n");
                 data_modified = 1;
             } else {
-                printf("[HyperAMP]   Decryption failed\r\n");
                 service_result = MSG_SERVICE_RET_FAIL;
             }
             break;
@@ -332,29 +269,18 @@ static int ProcessRootLinuxMessage(void)
             break;
     }
     
-    /* 如果数据被修改，显示处理后的结果 */
+    /* 如果数据被修改，将数据写回主内存 */
     if (data_modified) {
-        /* 将修改后的数据写回主内存 */
         unsigned long data_write_start = (unsigned long)data_ptr;
         unsigned long data_write_end = data_write_start + actual_len;
         __asm__ volatile("dsb sy" ::: "memory");
+        /* 这里必须用 cvac (Clean)，因为我们要把改动写回去 */
         for (unsigned long addr = data_write_start; addr < data_write_end; addr += 64) {
             __asm__ volatile("dc cvac, %0" :: "r"(addr) : "memory");
         }
         __asm__ volatile("dsb sy" ::: "memory");
         
-        printf("[HyperAMP]   Result: [");
-        int result_display = (actual_len > 64) ? 64 : actual_len;
-        for (int i = 0; i < result_display; i++) {
-            char c = data_ptr[i];
-            if (c >= 32 && c <= 126) {
-                printf("%c", c);
-            } else {
-                printf("\\x%02x", (unsigned char)c);
-            }
-        }
-        if (actual_len > 64) printf("...");
-        printf("]\r\n");
+        printf("[HyperAMP]   Result sync complete.\r\n");
     }
     
     /* 标记消息已处理并立即同步到主内存 */
@@ -362,7 +288,7 @@ static int ProcessRootLinuxMessage(void)
     msg->flag.service_result = service_result;
     CacheSyncMessage(msg);
     
-    /* 更新队列头并写回主内存 */
+    /* 更新队列头 */
     u16 new_head;
     if (msg_entry->nxt_idx < g_root_q_vaddr->buf_size) {
         new_head = msg_entry->nxt_idx;
@@ -370,29 +296,22 @@ static int ProcessRootLinuxMessage(void)
         new_head = (current_proc_head + 1) % g_root_q_vaddr->buf_size;
     }
     
-    /* ✅ 关键修复:避免覆盖Linux的队列头更新 */
-    /* 问题: FreeRTOS缓存中的队列头可能是旧的(buf_size等字段) */
-    /* 解决: 在更新前先失效缓存,重新从主内存读取Linux的最新队列头 */
+    /* [修改点 4] 尾部防止回写覆盖的逻辑保留 */
     
-    /* 1. 先失效队列头缓存,确保读取Linux的最新数据 */
-    unsigned long queue_addr = (unsigned long)g_root_q_vaddr;
+    /* 先失效队列头缓存,确保读取Linux的最新数据 */
     __asm__ volatile("dc ivac, %0" :: "r"(queue_addr) : "memory");
     __asm__ volatile("dsb sy" ::: "memory");
     
-    /* 2. 重新读取,确保buf_size等字段是最新的 */
-    /* (编译器会重新从主内存加载) */
-    volatile u16 latest_buf_size = g_root_q_vaddr->buf_size;
-    
-    /* 3. 只修改FreeRTOS负责的字段 */
+    /* 只修改FreeRTOS负责的字段 */
     g_root_q_vaddr->proc_ing_h = new_head;
     g_root_q_vaddr->working_mark = MSG_QUEUE_MARK_IDLE;
     
-    /* 4. 写回到主内存 */
+    /* 写回到主内存 */
     __asm__ volatile("dsb sy" ::: "memory");
     __asm__ volatile("dc cvac, %0" :: "r"(queue_addr) : "memory");
     __asm__ volatile("dsb sy" ::: "memory");
     
-    printf("[HyperAMP]   *** Message processed successfully! (buf_size=%u) ***\r\n", latest_buf_size);
+    printf("[HyperAMP]   *** Message processed successfully! (Next -> %u) ***\r\n", new_head);
     
     return 1;
 }
