@@ -25,6 +25,7 @@
 #include "hyperamp_server.h"
 #include "fcache.h"  /* 用于缓存操作 */
 #include "finterrupt.h"  /* 中断管理,包含 GIC 支持 */
+#include "precision_timer.h"  /* ARM64 高精度计时器 */
 
 /* 共享内存虚拟地址指针 */
 static volatile char *g_data_vaddr = NULL;
@@ -83,7 +84,11 @@ static void HyperAmpIrqHandler(s32 vector, void *param)
 {
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
     
-    printf("[HyperAMP-IRQ] Interrupt %d triggered!\r\n", vector);
+    /* 读取当前计数器值（用于时间戳） */
+    uint64_t counter = get_cntpct();
+    
+    printf("[HyperAMP-IRQ] Interrupt %d triggered! Counter: 0x%016lx (%lu)\r\n", 
+           vector, (unsigned long)counter, (unsigned long)counter);
     
     if (g_root_q_vaddr != NULL && g_data_vaddr != NULL) {
         printf("[HyperAMP-IRQ] Cache invalidated: queue 268B + data 4KB\r\n");
@@ -362,6 +367,14 @@ static void HyperAmpServerTask(void *pvParameters)
 int HyperAmpServerInit(void)
 {
     printf("[HyperAMP] Initializing server...\r\n");
+    
+    /* 打印计时器信息 */
+    uint64_t freq = get_cntfrq();
+    printf("[HyperAMP] ARM Generic Timer:\r\n");
+    printf("[HyperAMP]   Frequency: %lu Hz (%.2f MHz)\r\n", 
+           (unsigned long)freq, freq / 1000000.0);
+    printf("[HyperAMP]   Precision: %.2f ns per tick\r\n", 
+           get_timer_precision_ns(freq));
     
     /* 映射共享内存到虚拟地址 */
     g_data_vaddr = (volatile char *)SHM_PADDR_DATA;
