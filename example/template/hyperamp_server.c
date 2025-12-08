@@ -228,10 +228,9 @@ static int ProcessRootLinuxMessage(void)
     printf("[HyperAMP]   Data: [");
     int display_len = (msg->length > 64) ? 64 : msg->length;
     int actual_len = msg->length;
-    
-    if (actual_len > 0 && data_ptr[actual_len - 1] == '\0') {
-        actual_len--;
-    }
+    // if (actual_len > 0 && data_ptr[actual_len - 1] == '\0') {
+    //     actual_len--;
+    // }
     
     for (int i = 0; i < display_len; i++) {
         char c = data_ptr[i];
