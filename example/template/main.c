@@ -32,28 +32,44 @@
 #include "shell.h"
 #include "shell_port.h"
 #include "hyperamp_server.h"  /* HyperAMP 服务端 */
+extern int RtismServerInit(void); // RTISM Init
+// extern void RtismCalibrateTauRead(void); // RTISM τ_read Calibration
 
 int main()
 {
     printf("Hello main func,FT Date: %s, Time: %s\n", __DATE__, __TIME__);
     BaseType_t xReturn = pdPASS;
 
-    /* 初始化 HyperAMP 服务端 */
-    printf("\n=== Initializing HyperAMP Server ===\n");
-    if (HyperAmpServerInit() == 0) {
-        printf("HyperAMP Server initialized successfully\n");
-        
-        /* 创建 HyperAMP 服务端任务 */
-        xReturn = HyperAmpServerCreateTask();
-        if (xReturn != pdPASS) {
-            printf("Failed to create HyperAMP server task\n");
-            goto FAIL_EXIT;
-        }
-    } else {
-        printf("Failed to initialize HyperAMP server\n");
-        goto FAIL_EXIT;
-    }
+    /* 初始化 HyperAMP 服务端 (已禁用，避免与 RTISM 冲突) */
+    // printf("\n=== Initializing HyperAMP Server ===\n");
+    // if (HyperAmpServerInit() == 0) {
+    //     printf("HyperAMP Server initialized successfully\n");
+    //     
+    //     /* 创建 HyperAMP 服务端任务 */
+    //     xReturn = HyperAmpServerCreateTask();
+    //     if (xReturn != pdPASS) {
+    //         printf("Failed to create HyperAMP server task\n");
+    //         goto FAIL_EXIT;
+    //     }
+    // } else {
+    //     printf("Failed to initialize HyperAMP server\n");
+    //     goto FAIL_EXIT;
+    // }
+    /* 初始化 HyperAMP完成 */
 
+    /* 初始化 RTISM 服务端 */
+    printf("\n=== Initializing RTISM Server ===\n");
+    if (RtismServerInit() == 0) {
+        printf("RTISM Server initialized successfully\n");
+        
+        // Run τ_read calibration (comment out after getting the value)
+        // printf("\n=== Running τ_read Calibration ===\n");
+        // RtismCalibrateTauRead();
+    } else {
+        printf("Failed to initialize RTISM server\n");
+    }
+    /* RTISM初始化完成 */
+    
     /* 创建 Shell 任务 */
     xReturn = LSUserShellTask();
     if (xReturn != pdPASS)
