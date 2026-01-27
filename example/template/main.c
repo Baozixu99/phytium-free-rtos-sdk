@@ -33,6 +33,7 @@
 #include "shell_port.h"
 #include "hyperamp_server.h"  /* HyperAMP 服务端 */
 extern int RtismServerInit(void); // RTISM Init
+extern void ArtismInit(void);     // ARTISM Init
 // extern void RtismCalibrateTauRead(void); // RTISM τ_read Calibration
 
 int main()
@@ -58,17 +59,24 @@ int main()
     /* 初始化 HyperAMP完成 */
 
     /* 初始化 RTISM 服务端 */
-    printf("\n=== Initializing RTISM Server ===\n");
-    if (RtismServerInit() == 0) {
-        printf("RTISM Server initialized successfully\n");
-        
-        // Run τ_read calibration (comment out after getting the value)
-        // printf("\n=== Running τ_read Calibration ===\n");
-        // RtismCalibrateTauRead();
-    } else {
-        printf("Failed to initialize RTISM server\n");
-    }
+    /* 初始化 RTISM 服务端 (Disabling for ARTISM) */
+    // printf("\n=== Initializing RTISM Server ===\n");
+    // if (RtismServerInit() == 0) {
+    //     printf("RTISM Server initialized successfully\n");
+    //     
+    //     // Run τ_read calibration (comment out after getting the value)
+    //     // printf("\n=== Running τ_read Calibration ===\n");
+    //     // RtismCalibrateTauRead();
+    // } else {
+    //     printf("Failed to initialize RTISM server\n");
+    // }
     /* RTISM初始化完成 */
+
+    /* 初始化 ARTISM 服务端 */
+    printf("\n=== Initializing ARTISM Server ===\n");
+    ArtismInit();
+    printf("ARTISM Server initialized successfully\n");
+    /* ARTISM初始化完成 */
     
     /* 创建 Shell 任务 */
     xReturn = LSUserShellTask();

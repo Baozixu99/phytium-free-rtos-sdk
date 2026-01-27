@@ -8,7 +8,9 @@ BOOT_IMG_NAME      ?= freertos
 USER_CSRC := main.c \
 			 hyperamp_server.c \
 			 hyperamp_cmd.c \
-			 rtism_server.c
+			 rtism_server.c \
+			 artism_server.c \
+			 artism_scheduler.c
 			
 USER_ASRC :=  #添加汇编代码
 USER_CXXSRC := #添加C++代码
