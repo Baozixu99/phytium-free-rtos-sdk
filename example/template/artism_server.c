@@ -66,16 +66,34 @@ static void artism_free_dynamic(uint16_t block_id) {
     printf("[ARTISM-RTOS] Freed Dynamic Block %d\r\n", block_id);
 }
 
-// Processing Logic (with latency recording for EWMA)
+// Processing Logic (with latency recording for EWMA and RTT ACK)
 void ArtismProcessPacket(int prio, EntryDesc *desc, uint64_t recv_time_ns) {
     uint16_t block_id = desc->block_id;
     uint8_t *data = g_data_region + (block_id * ARTISM_BLOCK_SIZE);
     
-    // Log message
+    // Extract seq_id from first 4 bytes (for RTT measurement)
+    uint32_t seq_id = *(uint32_t*)data;
+    
+    // Log message (skip first 4 bytes which is seq_id)
     char tmp[64];
-    strncpy(tmp, (char*)data, 63);
-    tmp[63] = 0;
-    printf("[ARTISM-RTOS] Recv P%d Type%d Block%d: %s\r\n", prio, desc->type, block_id, tmp);
+    strncpy(tmp, (char*)(data + 4), 60);
+    tmp[60] = 0;
+    printf("[ARTISM-RTOS] Recv P%d Type%d Block%d Seq%u: %s\r\n", prio, desc->type, block_id, seq_id, tmp);
+    
+    // Write ACK to ring buffer for RTT measurement
+    if (seq_id != 0) {  // seq_id=0 means no RTT measurement needed
+        uint32_t ack_idx = g_meta->ack_head % ARTISM_ACK_RING_SIZE;
+        g_meta->ack_ring[ack_idx].seq_id = seq_id;
+        g_meta->ack_ring[ack_idx].queue_idx = prio;
+        __asm__ volatile("dmb sy" ::: "memory");
+        g_meta->ack_ring[ack_idx].status = 1;  // Mark as ready
+        g_meta->ack_head++;
+        
+        // Cache clean for ACK visibility to Linux
+        uint64_t addr = (uint64_t)&g_meta->ack_ring[ack_idx];
+        __asm__ volatile("dc cvac, %0" :: "r" (addr) : "memory");
+        __asm__ volatile("dmb sy" ::: "memory");
+    }
     
     // Calculate latency (using local time - simplified, not RTT)
     // For accurate cross-VM latency, use RTT mechanism
