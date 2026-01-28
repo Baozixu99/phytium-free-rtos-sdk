@@ -74,11 +74,16 @@ void ArtismProcessPacket(int prio, EntryDesc *desc, uint64_t recv_time_ns) {
     // Extract seq_id from first 4 bytes (for RTT measurement)
     uint32_t seq_id = *(uint32_t*)data;
     
-    // Log message (skip first 4 bytes which is seq_id)
-    char tmp[64];
-    strncpy(tmp, (char*)(data + 4), 60);
-    tmp[60] = 0;
-    printf("[ARTISM-RTOS] Recv P%d Type%d Block%d Seq%u: %s\r\n", prio, desc->type, block_id, seq_id, tmp);
+    // Log received packet (skip first 4 bytes which is seq_id, read 60 bytes payload)
+    // char tmp[64];
+    // strncpy(tmp, (char*)(data + 4), 60);
+    // tmp[60] = 0;
+    // printf("[ARTISM-RTOS] Recv P%d Type%d Block%d Seq%u: %s\r\n", prio, desc->type, block_id, seq_id, tmp);
+    
+    // [PROFILE] Record packet read time
+    uint64_t t_read;
+    __asm__ volatile("isb; mrs %0, cntvct_el0" : "=r" (t_read));
+    g_meta->prof_packet_read = t_read;
     
     // Write ACK to ring buffer for RTT measurement
     if (seq_id != 0) {  // seq_id=0 means no RTT measurement needed
@@ -89,9 +94,26 @@ void ArtismProcessPacket(int prio, EntryDesc *desc, uint64_t recv_time_ns) {
         g_meta->ack_ring[ack_idx].status = 1;  // Mark as ready
         g_meta->ack_head++;
         
+        // [PROFILE] Record ACK write time
+        uint64_t t_ack;
+        __asm__ volatile("isb; mrs %0, cntvct_el0" : "=r" (t_ack));
+        g_meta->prof_ack_write = t_ack;
+        
         // Cache clean for ACK visibility to Linux
         uint64_t addr = (uint64_t)&g_meta->ack_ring[ack_idx];
         __asm__ volatile("dc cvac, %0" :: "r" (addr) : "memory");
+        __asm__ volatile("dmb sy" ::: "memory");
+        
+        // [PROFILE] Record cache flush time + store metadata
+        uint64_t t_flush;
+        __asm__ volatile("isb; mrs %0, cntvct_el0" : "=r" (t_flush));
+        g_meta->prof_cache_flush = t_flush;
+        g_meta->prof_seq_id = seq_id;
+        
+        // Also flush profile data to ensure visibility
+        for (uint64_t pa = (uint64_t)&g_meta->prof_isr_entry; pa < (uint64_t)&g_meta->prof_seq_id + 4; pa += 64) {
+            __asm__ volatile("dc cvac, %0" :: "r" (pa) : "memory");
+        }
         __asm__ volatile("dmb sy" ::: "memory");
     }
     
@@ -125,6 +147,14 @@ void ArtismServerTask(void *pvParameters) {
     for (;;) {
         // Wait for IRQ (Semaphore given by ISR)
         if (xSemaphoreTake(xArtismIrqSem, portMAX_DELAY) == pdTRUE) {
+            // [PROFILE] Record task wakeup time + timer frequency
+            uint64_t t_wakeup;
+            __asm__ volatile("isb; mrs %0, cntvct_el0" : "=r" (t_wakeup));
+            g_meta->prof_task_wakeup = t_wakeup;
+            uint64_t freq;
+            __asm__ volatile("mrs %0, cntfrq_el0" : "=r" (freq));
+            g_meta->prof_freq = freq;
+            
             uint64_t recv_time_ns = get_current_time_ns();
             
             // FG-WRR: Select queue based on credit and data availability
@@ -168,6 +198,11 @@ void ArtismServerTask(void *pvParameters) {
 // ISR Handler
 // ----------------------------------------------------------------------
 static void ArtismIrqHandler(s32 vector, void *param) {
+    // [PROFILE] Record ISR entry time
+    uint64_t isr_time;
+    __asm__ volatile("isb; mrs %0, cntvct_el0" : "=r" (isr_time));
+    if (g_meta) g_meta->prof_isr_entry = isr_time;
+    
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
     xSemaphoreGiveFromISR(xArtismIrqSem, &xHigherPriorityTaskWoken);
     portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
@@ -177,11 +212,12 @@ static void ArtismIrqHandler(s32 vector, void *param) {
 // Init
 // ----------------------------------------------------------------------
 void ArtismInit(void) {
-    // Map Global State (Already fixed base address)
-    // Invalidate initial state of queues or metadata?
-    // For ARTISM, the Guest (Linux) allocates layout. 
-    // We just point to it. Ideally, we should invalidate cache for metadata region.
-    // InvalidateRange((void*)g_meta, sizeof(ArtismMeta)); // Helper needed
+    // Map Global State (Fixed base address, direct physical mapping)
+    g_meta = &g_artism_shm->meta;
+    g_data_region = (uint8_t*)g_artism_shm + ARTISM_DATA_OFFSET;
+    
+    printf("[ARTISM-RTOS] g_meta=%p, sizeof(ArtismMeta)=%lu\r\n", 
+           g_meta, (unsigned long)sizeof(ArtismMeta));
     
     xArtismIrqSem = xSemaphoreCreateBinary();
     

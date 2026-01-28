@@ -96,6 +96,18 @@ typedef struct {
     volatile uint32_t ack_head;  // FreeRTOS writes (increments)
     volatile uint32_t ack_tail;  // Linux reads (increments)
     
+    // ========================================================================
+    // RTT Profiling: Timestamps at each critical point (FreeRTOS side)
+    // All values are raw counter ticks from cntvct_el0 (50MHz = 20ns/tick)
+    // ========================================================================
+    volatile uint64_t prof_isr_entry;      // When IRQ handler fires
+    volatile uint64_t prof_task_wakeup;    // When server task resumes
+    volatile uint64_t prof_packet_read;    // After reading packet from SHM
+    volatile uint64_t prof_ack_write;      // After writing ACK to ring
+    volatile uint64_t prof_cache_flush;    // After DC CVAC cache clean
+    volatile uint64_t prof_freq;           // Timer frequency for conversion
+    volatile uint32_t prof_seq_id;         // Which seq this profile is for
+    
 } __attribute__((aligned(4096))) ArtismMeta; // 4KB aligned for Metadata
 
 // 5. Root Structure

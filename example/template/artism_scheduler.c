@@ -257,8 +257,9 @@ void artism_adjust_weights(ArtismScheduler *sched) {
             sched->queues[i].cooldown = SCHED_COOLDOWN_CYCLES;
             remaining_boost -= contribution;
             
-            printf("[SCHED] Q%d donated %d weight (now=%d)\r\n", 
-                   i, contribution, sched->queues[i].weight);
+            // [RTT BENCHMARK] Printf disabled
+            // printf("[SCHED] Q%d donated %d weight (now=%d)\r\n", 
+            //        i, contribution, sched->queues[i].weight);
         }
     }
     
@@ -272,8 +273,9 @@ void artism_adjust_weights(ArtismScheduler *sched) {
             sched->queues[i].cooldown = SCHED_COOLDOWN_CYCLES;
             sched->queues[i].bucket_max = sched->queues[i].weight * 8;
             
-            printf("[SCHED] Q%d boosted by %d (now=%d)\r\n",
-                   i, actual_boost, sched->queues[i].weight);
+            // [RTT BENCHMARK] Printf disabled
+            // printf("[SCHED] Q%d boosted by %d (now=%d)\r\n",
+            //        i, actual_boost, sched->queues[i].weight);
         }
     }
     
