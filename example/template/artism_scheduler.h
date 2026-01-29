@@ -7,8 +7,10 @@
 // FG-WRR Scheduler Configuration
 // ============================================================================
 #define SCHED_NUM_QUEUES        8
-#define SCHED_CREDIT_QUANTUM    256     // = ARTISM block size
-#define SCHED_WEIGHT_TOTAL      1600     // Sum of all weights (conserved)
+#define SCHED_CREDIT_QUANTUM    10      // Small quantum for fine-grained byte fairness
+                                        // Weight 400 = 40 packets (if quantum=10)
+                                        // Weight 140 = 14 packets 
+#define SCHED_WEIGHT_TOTAL      1600    // Sum of all weights (conserved)
 #define SCHED_MAX_DYN_BLOCKS    64      // Per-queue dynamic block limit
 #define SCHED_COOLDOWN_CYCLES   10      // Lock period after weight adjustment
 #define SCHED_EWMA_WINDOW       10      // Packets per EWMA update window (Must be < 16 for Q0 static limit)

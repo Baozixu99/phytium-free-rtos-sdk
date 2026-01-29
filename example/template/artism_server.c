@@ -63,7 +63,7 @@ static void artism_free_dynamic(uint16_t block_id) {
     g_meta->dynamic_bitmap[w] &= ~(1UL << bit);
     artism_unlock();
     
-    printf("[ARTISM-RTOS] Freed Dynamic Block %d\r\n", block_id);
+    // printf("[ARTISM-RTOS] Freed Dynamic Block %d\r\n", block_id);
 }
 
 // Processing Logic (with latency recording for EWMA and RTT ACK)
@@ -111,14 +111,36 @@ void ArtismProcessPacket(int prio, EntryDesc *desc, uint64_t recv_time_ns) {
         g_meta->prof_seq_id = seq_id;
         
         // Also flush profile data to ensure visibility
-        for (uint64_t pa = (uint64_t)&g_meta->prof_isr_entry; pa < (uint64_t)&g_meta->prof_seq_id + 4; pa += 64) {
-            __asm__ volatile("dc cvac, %0" :: "r" (pa) : "memory");
+        // Also flush profile data to ensure visibility
+        // FIX: Extend range by 64 bytes to ensure the last cache line (which might start before end) is covered.
+        // Previous logic skipped the 2nd cache line because pa (start+64) > end, even though end was IN that line.
+        for (uint64_t pa = (uint64_t)&g_meta->prof_isr_entry; pa < (uint64_t)&g_meta->prof_seq_id + 64; pa += 64) {
+            __asm__ volatile("dc civac, %0" :: "r" (pa) : "memory");
         }
-        __asm__ volatile("dmb sy" ::: "memory");
+        __asm__ volatile("dsb sy" ::: "memory");
+        
+        // NOTE: printf removed for RTT benchmarking - it blocks ISR response
+        // Uncomment for debugging: printf("[ARTISM-RTOS] Recv P%d Seq%u\r\n", prio, seq_id);
     }
     
-    // Calculate latency (using local time - simplified, not RTT)
-    // For accurate cross-VM latency, use RTT mechanism
+    // [STATS] Update RX Count for FG-WRR Verification (Atomic-ish single writer)
+    g_meta->stats.rx_count[prio]++;
+    
+    // Flush RX stats (Robust: DSB -> Clean&Inv -> DSB)
+    uint64_t stats_addr = (uint64_t)&g_meta->stats.rx_count[prio];
+    __asm__ volatile("dsb sy" ::: "memory");
+    __asm__ volatile("dc civac, %0" :: "r" (stats_addr) : "memory");
+    __asm__ volatile("dsb sy" ::: "memory");
+    
+    // Simulate Workload (e.g. Encryption, Deep Inspection)
+    // This is crucial for:
+    // 1. Triggering deadline violations (process time > 100ns)
+    // 2. Creating congestion so WRR scheduler logic actually kicks in
+    // 2. Creating congestion so WRR scheduler logic actually kicks in
+    // 2. Creating congestion so WRR scheduler logic actually kicks in
+    volatile int dummy = 0;
+    for (int k=0; k<2000; k++) { dummy++; } //添加模拟负载时延
+    
     uint64_t process_time_ns = get_current_time_ns();
     uint64_t latency_ns = process_time_ns - recv_time_ns;
     

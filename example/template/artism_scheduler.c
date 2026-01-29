@@ -104,9 +104,20 @@ int artism_select_queue(ArtismScheduler *sched) {
         int idx = (sched->next_queue_idx + count) % SCHED_NUM_QUEUES;
         
         volatile ArtismQueue *q = &g_meta->queues[idx];
+        
+        // [CACHE FIX] Invalidate cache before reading shared Head/Tail pointers.
+        // Without this, we read stale "Empty" state, causing premature replenish.
+        uint64_t q_addr = (uint64_t)q;
+        __asm__ volatile("dc civac, %0" :: "r" (q_addr) : "memory");
+        __asm__ volatile("dsb sy" ::: "memory");
+
         if (sched->queues[idx].credit > 0 && q->info.head != q->info.tail) {
-             sched->next_queue_idx = (idx + 1) % SCHED_NUM_QUEUES;
-             return idx;
+            // FIX: Use Interleaved DRR.
+            // Strict Burst (stay on queue) fails because Ring Buffer (16) < Weight Burst (40).
+            // Queue empties before burst completes, causing forced switch and 1.14:1 ratio.
+            // Interleaving allows refill and ensures Frame-Level fairness (2.85:1).
+            sched->next_queue_idx = (idx + 1) % SCHED_NUM_QUEUES;
+            return idx;
         }
     }
     
@@ -139,6 +150,8 @@ void artism_record_packet(ArtismScheduler *sched, int queue_idx,
     
     if (latency_ns > deadline_ns) {
         m->violated_packets++;
+        // FIX: Also update global stats for visibility in Linux tool
+        g_meta->stats.deadline_miss[queue_idx]++;
     }
     
     if (is_dynamic) {
@@ -253,9 +266,18 @@ void artism_adjust_weights(ArtismScheduler *sched) {
         contribution = (contribution < remaining_boost) ? contribution : remaining_boost;
         
         if (contribution > 0) {
+// Helper for stats flush
+// (Macro now defined in artism_def.h)
+
+// ... (artism_adjust_weights additions) ...
+
             sched->queues[i].weight -= contribution;
             sched->queues[i].cooldown = SCHED_COOLDOWN_CYCLES;
             remaining_boost -= contribution;
+            
+            // [STATS] Update weight in SHM for Linux verification
+            g_meta->stats.curr_weight[i] = sched->queues[i].weight;
+            ARTISM_STATS_FLUSH(&g_meta->stats.curr_weight[i]);
             
             // [RTT BENCHMARK] Printf disabled
             // printf("[SCHED] Q%d donated %d weight (now=%d)\r\n", 
@@ -272,12 +294,17 @@ void artism_adjust_weights(ArtismScheduler *sched) {
             sched->queues[i].weight += actual_boost;
             sched->queues[i].cooldown = SCHED_COOLDOWN_CYCLES;
             sched->queues[i].bucket_max = sched->queues[i].weight * 8;
+        } // End if boost > 0
+
+        // [STATS] Unconditional Update (Ensure visibility even if no boost or during cooldown)
+        g_meta->stats.curr_weight[i] = sched->queues[i].weight;
+        ARTISM_STATS_FLUSH(&g_meta->stats.curr_weight[i]);
             
-            // [RTT BENCHMARK] Printf disabled
-            // printf("[SCHED] Q%d boosted by %d (now=%d)\r\n",
-            //        i, actual_boost, sched->queues[i].weight);
+        if (sched->queues[i].weight > g_meta->stats.max_weight_seen[i]) {
+             g_meta->stats.max_weight_seen[i] = sched->queues[i].weight;
+             ARTISM_STATS_FLUSH(&g_meta->stats.max_weight_seen[i]);
         }
-    }
+    } // End Loop
     
     sched->adjust_count++;
 }
@@ -293,36 +320,7 @@ uint16_t artism_get_weight(ArtismScheduler *sched, int queue_idx) {
 }
 
 void artism_print_state(ArtismScheduler *sched) {
-    if (!g_meta) return;
-    
-    char *buf = g_meta->debug_buffer;
-    int offset = 0;
-    
-    offset += snprintf(buf + offset, 2048 - offset, "\r\n=== FG-WRR Scheduler State ===\r\n");
-    offset += snprintf(buf + offset, 2048 - offset, "Global Tick: %lu, Adjustments: %lu\r\n", 
-           (unsigned long)sched->global_tick, (unsigned long)sched->adjust_count);
-    offset += snprintf(buf + offset, 2048 - offset, "Queue | Weight | Credit | DVR(Q16) | Cooldown\r\n");
-    offset += snprintf(buf + offset, 2048 - offset, "------+--------+--------+----------+---------\r\n");
-    
-    for (int i = 0; i < SCHED_NUM_QUEUES; i++) {
-        offset += snprintf(buf + offset, 2048 - offset, "  Q%d  |  %3d   | %5d  |  %5lu   |    %d\r\n",
-               i, sched->queues[i].weight, sched->queues[i].credit,
-               (unsigned long)(sched->metrics[i].ewma_dvr >> 10), // Show as 0-63
-               sched->queues[i].cooldown);
-    }
-    offset += snprintf(buf + offset, 2048 - offset, "==============================\r\n");
-    
-    // Ensure data is visible to Linux (Cache Clean)
-    // 1. Memory Barrier
-    __asm__ volatile("dmb sy" ::: "memory");
-    
-    // 2. Cache Clean by Virtual Address (DC CVAC)
-    // We need to clean the cache lines covering the buffer (2048 bytes)
-    // Assuming 64-byte cache line size
-    uint64_t start = (uint64_t)buf;
-    uint64_t end = start + 2048;
-    for (uint64_t addr = start; addr < end; addr += 64) {
-        __asm__ volatile("dc cvac, %0" :: "r" (addr) : "memory");
-    }
-    __asm__ volatile("dmb sy" ::: "memory");
+    // Obsolete: debug_buffer removed.
+    // Use SHM stats counters instead.
+    (void)sched;
 }

@@ -79,6 +79,19 @@ typedef struct {
     volatile uint32_t status;     // 0=empty, 1=ready to read
 } ArtismAck;
 
+// Debug Statistics Structure (Telemetry)
+// Aligned to 64 bytes to prevent false sharing and ensure atomic updates visibility
+typedef struct {
+    volatile uint32_t rx_count[ARTISM_NUM_QUEUES];      // Packets received successfully
+    volatile uint32_t drop_count[ARTISM_NUM_QUEUES];    // Packets dropped (for BE test)
+    volatile uint32_t block_count[ARTISM_NUM_QUEUES];   // Times blocked (for HR test)
+    volatile uint32_t curr_weight[ARTISM_NUM_QUEUES];   // Current scheduler weight
+    volatile uint32_t deadline_miss[ARTISM_NUM_QUEUES]; // Deadline violations
+    volatile uint32_t max_weight_seen[ARTISM_NUM_QUEUES]; // Max weight reached (for Adaptive test)
+    
+    uint32_t _padding[10]; // Pad to align struct size to cache line multiple
+} __attribute__((aligned(64))) ArtismDebugStats;
+
 // 4. Global Manager (Metadata Region)
 typedef struct {
     // Shared Dynamic Pool Management
@@ -88,8 +101,9 @@ typedef struct {
     // Per-Queue Management
     ArtismQueue queues[ARTISM_NUM_QUEUES];
     
-    // Debug Buffer for FG-WRR verification
-    char debug_buffer[2048];
+    // Debug Statistics for Verification (Telemetry)
+    // Aligned to 64 bytes to prevent false sharing
+    ArtismDebugStats stats;
     
     // ACK Ring Buffer for RTT Measurement
     ArtismAck ack_ring[ARTISM_ACK_RING_SIZE];
@@ -126,5 +140,15 @@ typedef struct {
 
 // Function Prototypes for Server
 void ArtismInit(void);
+
+// 5. Cache Maintenance Macro (For Coherency with Linux)
+// This is critical when SHM is mapped as Normal Cacheable.
+// Usage: ARTISM_STATS_FLUSH(&address_to_flush);
+#define ARTISM_STATS_FLUSH(addr) do { \
+    uint64_t __addr = (uint64_t)(addr); \
+    __asm__ volatile("dsb sy" ::: "memory"); \
+    __asm__ volatile("dc civac, %0" :: "r" (__addr) : "memory"); \
+    __asm__ volatile("dsb sy" ::: "memory"); \
+} while(0)
 
 #endif // _ARTISM_DEF_H_
