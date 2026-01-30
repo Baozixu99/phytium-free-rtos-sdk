@@ -22,6 +22,9 @@
 // Weight adjustment step (Increased to 40 for visibility and 10x scaling match)
 #define SCHED_WEIGHT_STEP       40
 
+// Maximum weight per queue (prevents explosion, e.g., 2x initial max weight)
+#define SCHED_MAX_WEIGHT        800
+
 // ============================================================================
 // RTT-Based Latency Measurement (Cross-VM Clock Sync Solution)
 // ============================================================================
@@ -71,6 +74,12 @@ typedef struct {
     uint32_t     adjust_count;  // Total weight adjustments made
     uint32_t     next_queue_idx; // Round Robin state
     uint64_t     timer_freq;    // ARM timer frequency (cached)
+    
+    // Debug: Selection phase counters
+    uint32_t     select_phase1[SCHED_NUM_QUEUES];  // Selected in Phase 1
+    uint32_t     select_phase4[SCHED_NUM_QUEUES];  // Selected in Phase 4
+    uint32_t     select_phase5[SCHED_NUM_QUEUES];  // Selected in Phase 5 (fallback)
+    uint32_t     replenish_count;                  // Total replenish calls
 } ArtismScheduler;
 
 // ============================================================================
@@ -93,7 +102,8 @@ typedef struct {
 // Total: 1600
 static const uint16_t DEFAULT_WEIGHTS[SCHED_NUM_QUEUES] = {400, 300, 240, 180, 140, 120, 80, 140};
 static const uint16_t DEFAULT_MIN_WEIGHTS[SCHED_NUM_QUEUES] = {200, 150, 120, 80, 60, 60, 40, 40};
-static const uint8_t  DEFAULT_ALPHA_SHIFTS[SCHED_NUM_QUEUES] = {0, 4, 4, 3, 3, 3, 2, 2};
+// FIX: alpha_shift=0 means α=100% (no smoothing). Use 2 for Q0 (α=25% = faster response for RT)
+static const uint8_t  DEFAULT_ALPHA_SHIFTS[SCHED_NUM_QUEUES] = {2, 3, 3, 3, 3, 3, 2, 2};
 static const uint8_t  DEFAULT_CRITICAL[SCHED_NUM_QUEUES] = {1, 1, 1, 0, 0, 0, 0, 0};
 
 // ============================================================================
@@ -102,6 +112,9 @@ static const uint8_t  DEFAULT_CRITICAL[SCHED_NUM_QUEUES] = {1, 1, 1, 0, 0, 0, 0,
 
 // Initialize scheduler with default weights
 void artism_scheduler_init(ArtismScheduler *sched);
+
+// Sync initial weights to SHM (call after g_meta is valid)
+void artism_scheduler_sync_to_shm(ArtismScheduler *sched);
 
 // Select next queue to service (returns queue index, or -1 if all empty)
 // Complexity: O(8), Expected time: <200ns

@@ -71,6 +71,15 @@ void ArtismProcessPacket(int prio, EntryDesc *desc, uint64_t recv_time_ns) {
     uint16_t block_id = desc->block_id;
     uint8_t *data = g_data_region + (block_id * ARTISM_BLOCK_SIZE);
     
+    // [CACHE FIX] Invalidate data block to read fresh data from Linux
+    uint64_t data_addr = (uint64_t)data;
+    __asm__ volatile("dsb sy" ::: "memory");
+    // Invalidate the entire block (256 bytes = 4 cache lines)
+    for (uint64_t addr = data_addr; addr < data_addr + ARTISM_BLOCK_SIZE; addr += 64) {
+        __asm__ volatile("dc civac, %0" :: "r" (addr) : "memory");
+    }
+    __asm__ volatile("dsb sy" ::: "memory");
+    
     // Extract seq_id from first 4 bytes (for RTT measurement)
     uint32_t seq_id = *(uint32_t*)data;
     
@@ -132,14 +141,9 @@ void ArtismProcessPacket(int prio, EntryDesc *desc, uint64_t recv_time_ns) {
     __asm__ volatile("dc civac, %0" :: "r" (stats_addr) : "memory");
     __asm__ volatile("dsb sy" ::: "memory");
     
-    // Simulate Workload (e.g. Encryption, Deep Inspection)
-    // This is crucial for:
-    // 1. Triggering deadline violations (process time > 100ns)
-    // 2. Creating congestion so WRR scheduler logic actually kicks in
-    // 2. Creating congestion so WRR scheduler logic actually kicks in
-    // 2. Creating congestion so WRR scheduler logic actually kicks in
-    volatile int dummy = 0;
-    for (int k=0; k<2000; k++) { dummy++; } //添加模拟负载时延
+    // NOTE: Simulated workload removed - it doesn't help create congestion because
+    // the scheduler runs in a tight while loop after each IRQ, draining all queues.
+    // Instead, we increased ARTISM_DESC_PER_Q to 64 so WRR has more packets to work with.
     
     uint64_t process_time_ns = get_current_time_ns();
     uint64_t latency_ns = process_time_ns - recv_time_ns;
@@ -164,12 +168,15 @@ void ArtismServerTask(void *pvParameters) {
     // Initialize FG-WRR scheduler
     artism_scheduler_init(&g_scheduler);
     
+    // Sync initial weights to SHM (so Linux can read correct values)
+    artism_scheduler_sync_to_shm(&g_scheduler);
+    
     uint32_t msg_count = 0;
     
     for (;;) {
-        // Wait for IRQ (Semaphore given by ISR)
-        if (xSemaphoreTake(xArtismIrqSem, portMAX_DELAY) == pdTRUE) {
-            // [PROFILE] Record task wakeup time + timer frequency
+        // Wait for IRQ (Semaphore given by ISR) - use timeout to allow reset check
+        if (xSemaphoreTake(xArtismIrqSem, pdMS_TO_TICKS(10)) == pdTRUE) {
+            // [PROFILE] Record task wakeup time IMMEDIATELY after semaphore take
             uint64_t t_wakeup;
             __asm__ volatile("isb; mrs %0, cntvct_el0" : "=r" (t_wakeup));
             g_meta->prof_task_wakeup = t_wakeup;
@@ -179,8 +186,77 @@ void ArtismServerTask(void *pvParameters) {
             
             uint64_t recv_time_ns = get_current_time_ns();
             
-            // FG-WRR: Select queue based on credit and data availability
+            // ============================================================
+            // Check sync/reset flags (always check, for all tests)
+            // ============================================================
+            // [RTT优化建议] 如需降低 RTT 时延（当前 ~12μs），可以注释掉以下 3 个检查（约可降低 1-2μs）
+            // 但这会影响系统的统一性和可解释性
+            // 当前架构保证了所有测试（RTT/WRR/Adaptive）使用完全相同的处理路径。
+            // ============================================================
+            
+            // Clock Sync Test (simple)
+            uint64_t sync_addr = (uint64_t)&g_meta->sync_test_flag;
+            __asm__ volatile("dc civac, %0" :: "r" (sync_addr) : "memory");
+            __asm__ volatile("dsb sy" ::: "memory");
+            
+            if (g_meta->sync_test_flag == 1) {
+                uint64_t t2;
+                __asm__ volatile("isb; mrs %0, cntvct_el0" : "=r" (t2));
+                g_meta->sync_freertos_t2 = t2;
+                __asm__ volatile("dc cvac, %0" :: "r" (&g_meta->sync_freertos_t2) : "memory");
+                __asm__ volatile("dsb sy" ::: "memory");
+                g_meta->sync_test_flag = 2;
+                __asm__ volatile("dc cvac, %0" :: "r" (sync_addr) : "memory");
+                __asm__ volatile("dsb sy" ::: "memory");
+                continue;
+            }
+            
+            // Four-Message Exchange (NTP-style)
+            uint64_t phase_addr = (uint64_t)&g_meta->sync_phase;
+            __asm__ volatile("dc civac, %0" :: "r" (phase_addr) : "memory");
+            __asm__ volatile("dsb sy" ::: "memory");
+            
+            if (g_meta->sync_phase == 1) {
+                uint64_t t2;
+                __asm__ volatile("isb; mrs %0, cntvct_el0" : "=r" (t2));
+                g_meta->sync_t2 = t2;
+                uint64_t t3;
+                __asm__ volatile("isb; mrs %0, cntvct_el0" : "=r" (t3));
+                g_meta->sync_t3 = t3;
+                __asm__ volatile("dc cvac, %0" :: "r" (&g_meta->sync_t2) : "memory");
+                __asm__ volatile("dc cvac, %0" :: "r" (&g_meta->sync_t3) : "memory");
+                __asm__ volatile("dsb sy" ::: "memory");
+                g_meta->sync_phase = 2;
+                __asm__ volatile("dc cvac, %0" :: "r" (phase_addr) : "memory");
+                __asm__ volatile("dsb sy" ::: "memory");
+                continue;
+            }
+            
+            // Weight reset request
+            uint64_t reset_addr = (uint64_t)&g_meta->stats.reset_weights_request;
+            __asm__ volatile("dc civac, %0" :: "r" (reset_addr) : "memory");
+            __asm__ volatile("dsb sy" ::: "memory");
+            
+            if (g_meta->stats.reset_weights_request == 1) {
+                artism_scheduler_init(&g_scheduler);
+                artism_scheduler_sync_to_shm(&g_scheduler);
+                for (int i = 0; i < 8; i++) {
+                    g_meta->stats.rx_count[i] = 0;
+                    __asm__ volatile("dc cvac, %0" :: "r" (&g_meta->stats.rx_count[i]) : "memory");
+                }
+                __asm__ volatile("dsb sy" ::: "memory");
+                g_meta->stats.reset_weights_request = 0;
+                __asm__ volatile("dc cvac, %0" :: "r" (reset_addr) : "memory");
+                __asm__ volatile("dsb sy" ::: "memory");
+            }
+            
+            // ============================================================
+            // Unified FG-WRR Scheduling Path
+            // All tests (RTT, WRR, Adaptive) use the same scheduler
+            // This ensures consistency and explainability for publication
+            // ============================================================
             int selected_queue;
+            int processed_any = 0;
             while ((selected_queue = artism_select_queue(&g_scheduler)) >= 0) {
                 volatile ArtismQueue *q = &g_meta->queues[selected_queue];
                 
@@ -199,19 +275,16 @@ void ArtismServerTask(void *pvParameters) {
                     __asm__ volatile("dmb sy" ::: "memory");
                     q->info.tail = (idx + 1) % ARTISM_DESC_PER_Q;
                     
+                    // [CACHE FIX] Clean tail pointer so Linux sees updated queue state
+                    uint64_t tail_addr = (uint64_t)&q->info;
+                    __asm__ volatile("dsb sy" ::: "memory");
+                    __asm__ volatile("dc cvac, %0" :: "r" (tail_addr) : "memory");
+                    __asm__ volatile("dsb sy" ::: "memory");
+                    
                     msg_count++;
+                    processed_any = 1;
                 }
             }
-            
-            // Periodic debug print
-            if (msg_count % 10 == 0 && msg_count > 0) {
-                artism_print_state(&g_scheduler);
-            }
-        }
-        
-        // Force print at end of batch to ensure visibility
-        if (msg_count > 0) {
-             artism_print_state(&g_scheduler);
         }
     }
 }
