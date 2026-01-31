@@ -94,6 +94,47 @@ void ArtismProcessPacket(int prio, EntryDesc *desc, uint64_t recv_time_ns) {
     __asm__ volatile("isb; mrs %0, cntvct_el0" : "=r" (t_read));
     g_meta->prof_packet_read = t_read;
     
+    // ========================================================================
+    // Latency Test: 检测特殊 seq_id (0xFFFF0000 + n) 表示单向时延测量包
+    // 直接计算 t2 - t1 得到真实单向时延 (因为时钟已同步)
+    // 通信时延分解: t1 -> 数据复制 -> IPI注入 -> 中断处理 -> t2
+    // ========================================================================
+    if ((seq_id & 0xFFFF0000) == 0xFFFF0000) {
+        // 从 payload 读取 Linux 发送时间戳 t1
+        // 数据包格式: [seq_id: 4B][t1: 8B][padding: 52B]
+        uint64_t t1_linux = *(uint64_t*)(data + 4);
+        
+        // 记录 t2 (接收完成时间戳)
+        uint64_t t2_freertos;
+        __asm__ volatile("isb; mrs %0, cntvct_el0" : "=r" (t2_freertos));
+        
+        // 计算单向时延: t2 - t1 (ticks -> ns)
+        uint64_t freq;
+        __asm__ volatile("mrs %0, cntfrq_el0" : "=r" (freq));
+        uint64_t latency_ns_val = ((t2_freertos - t1_linux) * 1000000000ULL) / freq;
+        
+        // 写入结果到 SHM (只保留必要字段)
+        g_meta->latency_t2 = t2_freertos;
+        g_meta->latency_ns = latency_ns_val;
+        g_meta->latency_count++;
+        
+        // Flush 结果到共享内存
+        __asm__ volatile("dc cvac, %0" :: "r" (&g_meta->latency_t2) : "memory");
+        __asm__ volatile("dc cvac, %0" :: "r" (&g_meta->latency_ns) : "memory");
+        __asm__ volatile("dc cvac, %0" :: "r" (&g_meta->latency_count) : "memory");
+        __asm__ volatile("dsb sy" ::: "memory");
+        
+        // 更新统计并释放资源
+        g_meta->stats.rx_count[prio]++;
+        __asm__ volatile("dc civac, %0" :: "r" (&g_meta->stats.rx_count[prio]) : "memory");
+        __asm__ volatile("dsb sy" ::: "memory");
+        
+        if (desc->flags & 1) {
+            artism_free_dynamic(block_id);
+        }
+        return;
+    }
+    
     // Write ACK to ring buffer for RTT measurement
     if (seq_id != 0) {  // seq_id=0 means no RTT measurement needed
         uint32_t ack_idx = g_meta->ack_head % ARTISM_ACK_RING_SIZE;
