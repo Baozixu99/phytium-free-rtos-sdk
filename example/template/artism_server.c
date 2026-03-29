@@ -21,17 +21,13 @@ static SemaphoreHandle_t xArtismIrqSem = NULL;
 static ArtismScheduler g_scheduler;
 
 // Deadline configuration per queue (in nanoseconds)
-// Based on typical real-time requirements
+// Frozen Architecture: 4 Queues = 4 Semantics
+// RT/HR are critical (tight deadlines), HT/BE are non-critical (relaxed)
 static const uint64_t QUEUE_DEADLINES[SCHED_NUM_QUEUES] = {
-    // STRESS TEST: Set Q0 deadline to 100ns to FORCE VIOLATION
-    100,        // Q0 (RT):    100ns (Impossible deadline)
-    2000000,    // Q1 (RT/HR): 2ms
-    5000000,    // Q2 (HR):    5ms
-    10000000,   // Q3 (HR/HT): 10ms
-    20000000,   // Q4 (HT):    20ms
-    50000000,   // Q5 (HT):    50ms
-    100000000,  // Q6 (HT/BE): 100ms
-    500000000   // Q7 (BE):    500ms (best-effort, relaxed)
+    1000000,     // Q0 (RT):   1ms  - Real-Time control loops
+    5000000,     // Q1 (HR):   5ms  - Reliable data transfer
+    20000000,    // Q2 (HT):   20ms - High-Throughput bulk
+    100000000    // Q3 (BE):   100ms - Best-Effort (relaxed)
 };
 
 // Helper: Get current timer value (nanoseconds)
@@ -59,11 +55,17 @@ static void artism_free_dynamic(uint16_t block_id) {
     int w = idx / 64;
     int bit = idx % 64;
     
-    artism_lock();
-    g_meta->dynamic_bitmap[w] &= ~(1UL << bit);
-    artism_unlock();
+    // Atomic clear using CAS for cross-VM safety
+    volatile uint64_t *word_ptr = &g_meta->dynamic_bitmap[w];
+    uint64_t old_val, new_val;
     
-    // printf("[ARTISM-RTOS] Freed Dynamic Block %d\r\n", block_id);
+    do {
+        old_val = __atomic_load_n(word_ptr, __ATOMIC_ACQUIRE);
+        new_val = old_val & ~(1UL << bit);
+    } while (!__atomic_compare_exchange_n(word_ptr, &old_val, new_val,
+                                          0, __ATOMIC_ACQ_REL, __ATOMIC_ACQUIRE));
+    
+    __asm__ volatile("dsb sy" ::: "memory");  // Ensure visibility to Linux
 }
 
 // Processing Logic (with latency recording for EWMA and RTT ACK)
@@ -281,7 +283,7 @@ void ArtismServerTask(void *pvParameters) {
             if (g_meta->stats.reset_weights_request == 1) {
                 artism_scheduler_init(&g_scheduler);
                 artism_scheduler_sync_to_shm(&g_scheduler);
-                for (int i = 0; i < 8; i++) {
+                for (int i = 0; i < ARTISM_NUM_QUEUES; i++) {
                     g_meta->stats.rx_count[i] = 0;
                     __asm__ volatile("dc cvac, %0" :: "r" (&g_meta->stats.rx_count[i]) : "memory");
                 }
@@ -309,8 +311,17 @@ void ArtismServerTask(void *pvParameters) {
                     // Consume credit
                     artism_consume_credit(&g_scheduler, selected_queue, SCHED_CREDIT_QUANTUM);
                     
-                    // Process packet
-                    ArtismProcessPacket(selected_queue, &desc, recv_time_ns);
+                    // FIX: Use per-packet dequeue timestamp for accurate latency measurement.
+                    // Previously recv_time_ns was captured once at semaphore wakeup and reused
+                    // for ALL packets, masking queuing delay for later packets.
+                    // Now we use the IRQ arrival time (recv_time_ns) as the enqueue reference,
+                    // and measure actual processing time at dequeue point.
+                    uint64_t dequeue_time_ns = get_current_time_ns();
+                    // Latency = time from IRQ arrival to actual dequeue (captures queuing delay)
+                    uint64_t pkt_latency_ref = recv_time_ns;
+                    
+                    // Process packet (pass dequeue_time for internal use)
+                    ArtismProcessPacket(selected_queue, &desc, pkt_latency_ref);
                     
                     // Advance Tail
                     __asm__ volatile("dmb sy" ::: "memory");

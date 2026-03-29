@@ -49,8 +49,8 @@ void artism_scheduler_sync_to_shm(ArtismScheduler *sched) {
         ARTISM_STATS_FLUSH(&g_meta->stats.curr_weight[i]);
         ARTISM_STATS_FLUSH(&g_meta->stats.max_weight_seen[i]);
     }
-    printf("[SCHED] Synced weights to SHM: Q0=%u, Q7=%u\r\n", 
-           sched->queues[0].weight, sched->queues[7].weight);
+    printf("[SCHED] Synced weights to SHM: Q0=%u, Q%d=%u\r\n", 
+           sched->queues[0].weight, SCHED_NUM_QUEUES-1, sched->queues[SCHED_NUM_QUEUES-1].weight);
 }
 
 // ============================================================================
@@ -58,6 +58,10 @@ void artism_scheduler_sync_to_shm(ArtismScheduler *sched) {
 // ============================================================================
 void artism_replenish_credits(ArtismScheduler *sched) {
     for (int i = 0; i < SCHED_NUM_QUEUES; i++) {
+        // RISK-05 FIX: Skip critical queues (RT/HR) - they don't use credit
+        // Layer 1 scheduling bypasses credit check entirely
+        if (sched->queues[i].is_critical) continue;
+        
         sched->queues[i].credit += sched->queues[i].weight;
         if (sched->queues[i].credit > (int32_t)sched->queues[i].bucket_max) {
             sched->queues[i].credit = sched->queues[i].bucket_max;
@@ -79,52 +83,51 @@ void artism_consume_credit(ArtismScheduler *sched, int queue_idx, int packet_siz
 }
 
 // ============================================================================
-// Queue Selection (Deadline-Aware WRR - ARTISM Innovation)
+// Queue Selection: Two-Layer Scheduling (ARTISM Core Architecture)
 // ============================================================================
-// Key Innovation: WRR with deadline-aware priority boost
-// - Normal case: Follow WRR credit-based scheduling
-// - Urgent case: If a queue's oldest packet is near deadline, boost priority
-// This combines WRR fairness with real-time deadline guarantees.
+// Layer 1: Criticality-First
+//   - High-critical queues (RT/HR) have ABSOLUTE priority
+//   - No credit limit, no WRR - just process if data exists
+//   - Guarantees: "High-critical flows are NEVER blocked by low-critical"
+//
+// Layer 2: WRR for Low-Criticality
+//   - Only entered when ALL high-critical queues are empty
+//   - Low-critical queues (HT/BE) share remaining bandwidth via WRR
+//   - Adaptive feedback only affects this layer
 // ============================================================================
 int artism_select_queue(ArtismScheduler *sched) {
-    // --------------------------------------------------------
-    // Phase 0: URGENT CHECK - Any queue has near-deadline packet?
-    // This is the key innovation: deadline-aware priority boost
-    // --------------------------------------------------------
-    // Check critical queues for urgency (based on queue depth as proxy)
-    // If a critical queue has many pending packets, it's likely urgent.
-    // More sophisticated: could embed timestamp in packet and check deadline.
+    // ================================================================
+    // LAYER 1: Criticality-First (RT/HR - Absolute Priority)
+    // ================================================================
+    // 遍历高关键队列，有数据就立即处理，无视 credit
     for (int i = 0; i < SCHED_NUM_QUEUES; i++) {
-        if (!sched->queues[i].is_critical) continue;
+        if (!sched->queues[i].is_critical) continue;  // Skip low-critical
         
         volatile ArtismQueue *q = &g_meta->queues[i];
+        
+        // Cache invalidate for fresh data
         uint64_t q_addr = (uint64_t)&q->info;
         __asm__ volatile("dc civac, %0" :: "r" (q_addr) : "memory");
         __asm__ volatile("dsb sy" ::: "memory");
         
-        if (q->info.head == q->info.tail) continue;  // Empty
-        
-        // Calculate queue depth (pending packets)
-        uint16_t head = q->info.head;
-        uint16_t tail = q->info.tail;
-        uint16_t depth = (head >= tail) ? (head - tail) : (ARTISM_DESC_PER_Q - tail + head);
-        
-        // URGENCY THRESHOLD: If queue depth > 50% capacity, consider urgent
-        // This is a heuristic - packets waiting longer = more urgent
-        // Can be refined with actual timestamp checking
-        if (depth > (ARTISM_DESC_PER_Q / 2)) {
-            // Urgent! Process this queue even if out of credit (credit borrowing)
+        if (q->info.head != q->info.tail) {
+            // High-critical queue has data - process immediately!
             sched->select_phase1[i]++;
             return i;
         }
     }
     
-    // --------------------------------------------------------
-    // Phase 1: Normal WRR - Credit-based selection
-    // Try all queues (critical and non-critical) with credit
-    // --------------------------------------------------------
+    // ================================================================
+    // LAYER 2: WRR for Low-Criticality (HT/BE)
+    // Only reached when ALL high-critical queues are empty
+    // ================================================================
+    
+    // Phase 2.1: Try low-critical queues with credit
     for (int count = 0; count < SCHED_NUM_QUEUES; count++) {
         int idx = (sched->next_queue_idx + count) % SCHED_NUM_QUEUES;
+        
+        // Skip high-critical (already handled in Layer 1)
+        if (sched->queues[idx].is_critical) continue;
         
         volatile ArtismQueue *q = &g_meta->queues[idx];
         
@@ -138,13 +141,12 @@ int artism_select_queue(ArtismScheduler *sched) {
         }
     }
     
-    // --------------------------------------------------------
-    // Phase 2: All queues out of credit. Check if any has data.
-    // --------------------------------------------------------
+    // Phase 2.2: Check if any low-critical queue has data
     int pending_data = 0;
     for (int i = 0; i < SCHED_NUM_QUEUES; i++) {
-        volatile ArtismQueue *q = &g_meta->queues[i];
+        if (sched->queues[i].is_critical) continue;
         
+        volatile ArtismQueue *q = &g_meta->queues[i];
         uint64_t q_addr = (uint64_t)&q->info;
         __asm__ volatile("dc civac, %0" :: "r" (q_addr) : "memory");
         __asm__ volatile("dsb sy" ::: "memory");
@@ -156,24 +158,21 @@ int artism_select_queue(ArtismScheduler *sched) {
     }
     
     if (!pending_data) {
-        return -1; // No data at all, sleep
+        return -1;  // All queues empty, sleep
     }
     
-    // --------------------------------------------------------
-    // Phase 3: Replenish credits for new round
-    // --------------------------------------------------------
+    // Phase 2.3: Replenish credits for low-critical queues
     artism_replenish_credits(sched);
     sched->replenish_count++;
     
-    // --------------------------------------------------------
-    // Phase 4: Retry selection after replenish
-    // --------------------------------------------------------
+    // Phase 2.4: Retry low-critical selection after replenish
     for (int count = 0; count < SCHED_NUM_QUEUES; count++) {
         int idx = (sched->next_queue_idx + count) % SCHED_NUM_QUEUES;
         
-        volatile ArtismQueue *q = &g_meta->queues[idx];
+        if (sched->queues[idx].is_critical) continue;
         
-        uint64_t q_addr = (uint64_t)q;
+        volatile ArtismQueue *q = &g_meta->queues[idx];
+        uint64_t q_addr = (uint64_t)&q->info;
         __asm__ volatile("dc civac, %0" :: "r" (q_addr) : "memory");
         __asm__ volatile("dsb sy" ::: "memory");
 
@@ -183,11 +182,12 @@ int artism_select_queue(ArtismScheduler *sched) {
         }
     }
     
-    // --------------------------------------------------------
-    // Phase 5: Work-Conserving Fallback
-    // --------------------------------------------------------
+    // Phase 2.5: Work-Conserving Fallback (any low-critical with data)
     for (int count = 0; count < SCHED_NUM_QUEUES; count++) {
         int idx = (sched->next_queue_idx + count) % SCHED_NUM_QUEUES;
+        
+        if (sched->queues[idx].is_critical) continue;
+        
         volatile ArtismQueue *q = &g_meta->queues[idx];
         if (q->info.head != q->info.tail) {
             sched->next_queue_idx = (idx + 1) % SCHED_NUM_QUEUES;
@@ -222,8 +222,13 @@ void artism_record_packet(ArtismScheduler *sched, int queue_idx,
         m->dynamic_blocks++;
     }
     
-    // Trigger EWMA update after window size
-    if (m->total_packets >= SCHED_EWMA_WINDOW) {
+    // FIX: Only non-critical queues (HT/BE) trigger EWMA updates.
+    // Critical queues (RT/HR) use Layer 1 absolute priority and bypass WRR,
+    // so their packet metrics should not drive weight redistribution.
+    // Previously, RT's high-frequency packet processing triggered EWMA updates
+    // thousands of times, causing Q2 to be repeatedly used as a donor before
+    // Q2's own EWMA DVR could accumulate above the threshold.
+    if (!sched->queues[queue_idx].is_critical && m->total_packets >= SCHED_EWMA_WINDOW) {
         artism_update_ewma(sched);
     }
 }
@@ -270,9 +275,16 @@ void artism_adjust_weights(ArtismScheduler *sched) {
     int total_donor_capacity = 0;
     
     // Phase 1: Identify queues needing boost (DVR exceeds high threshold)
+    // FIX: Only non-critical queues (HT/BE) participate in adaptive weight adjustment.
+    // Critical queues (RT/HR) use Layer 1 absolute priority and bypass WRR entirely,
+    // so adjusting their WRR weight is meaningless and causes harmful side effects:
+    // RT would steal weight from HT/BE as a "boost recipient", leaving HT/BE starved.
     for (int i = 0; i < SCHED_NUM_QUEUES; i++) {
         QueueState *q = &sched->queues[i];
         QueueMetrics *m = &sched->metrics[i];
+        
+        // Skip critical queues - they don't use WRR
+        if (q->is_critical) continue;
         
         // Skip if in cooldown
         if (q->cooldown > 0) {
@@ -281,7 +293,7 @@ void artism_adjust_weights(ArtismScheduler *sched) {
         }
         
         // Check if needs boost (DVR > 0.9 * deadline threshold)
-        if (m->ewma_dvr > SCHED_DVR_HIGH_THRESH && q->is_critical) {
+        if (m->ewma_dvr > SCHED_DVR_HIGH_THRESH) {
             boost_requests[i] = SCHED_WEIGHT_STEP;
             total_boost_needed += SCHED_WEIGHT_STEP;
         }
@@ -297,9 +309,10 @@ void artism_adjust_weights(ArtismScheduler *sched) {
     if (total_boost_needed <= 0) return; // No boost needed
     
     // Phase 2: Identify donors (exclude queues requesting boost)
-    // First, calculate total available donor capacity
+    // FIX: Also exclude critical queues from donor pool
     for (int i = SCHED_NUM_QUEUES - 1; i >= 0; i--) {
         QueueState *q = &sched->queues[i];
+        if (q->is_critical) continue;  // Critical queues don't participate
         if (q->cooldown > 0) continue;
         
         // Skip if this queue is requesting a boost (can't donate to itself)
@@ -411,33 +424,31 @@ void artism_print_state(ArtismScheduler *sched) {
     if (print_count % 1000 != 0) return;
     
     printf("[SCHED] Phase Stats (replenish=%u):\r\n", sched->replenish_count);
-    printf("  Q0: P1=%u, P4=%u, P5=%u, credit=%d\r\n", 
-           sched->select_phase1[0], sched->select_phase4[0], sched->select_phase5[0],
-           sched->queues[0].credit);
-    printf("  Q7: P1=%u, P4=%u, P5=%u, credit=%d\r\n", 
-           sched->select_phase1[7], sched->select_phase4[7], sched->select_phase5[7],
-           sched->queues[7].credit);
     
-    // Calculate SELECTION ratio (NOT rx_count ratio!)
-    uint32_t total_q0 = sched->select_phase1[0] + sched->select_phase4[0] + sched->select_phase5[0];
-    uint32_t total_q7 = sched->select_phase1[7] + sched->select_phase4[7] + sched->select_phase5[7];
-    
-    // Also show rx_count for comparison
-    uint32_t rx0 = g_meta->stats.rx_count[0];
-    uint32_t rx7 = g_meta->stats.rx_count[7];
-    
-    if (total_q7 > 0) {
-        printf("  Selection Ratio Q0/Q7: %u/%u = %.2f\r\n", total_q0, total_q7, (float)total_q0 / total_q7);
+    // Print all queues dynamically (4 queues in frozen architecture)
+    for (int i = 0; i < SCHED_NUM_QUEUES; i++) {
+        printf("  Q%d: P1=%u, P4=%u, P5=%u, credit=%d, critical=%d\r\n", 
+               i, sched->select_phase1[i], sched->select_phase4[i], sched->select_phase5[i],
+               sched->queues[i].credit, sched->queues[i].is_critical);
     }
-    if (rx7 > 0) {
-        printf("  RX Count Ratio Q0/Q7: %u/%u = %.2f\r\n", rx0, rx7, (float)rx0 / rx7);
+    
+    // Calculate SELECTION ratio for critical vs non-critical
+    uint32_t total_critical = 0, total_non_critical = 0;
+    for (int i = 0; i < SCHED_NUM_QUEUES; i++) {
+        uint32_t total = sched->select_phase1[i] + sched->select_phase4[i] + sched->select_phase5[i];
+        if (sched->queues[i].is_critical) {
+            total_critical += total;
+        } else {
+            total_non_critical += total;
+        }
     }
+    
+    printf("  Selection: Critical=%u, NonCritical=%u\r\n", total_critical, total_non_critical);
     
     // Key metric: Average selections per replenish cycle
-    // This should be ~40 for Q0 and ~14 for Q7 in sustained overload
     if (sched->replenish_count > 0) {
-        float avg_q0 = (float)total_q0 / sched->replenish_count;
-        float avg_q7 = (float)total_q7 / sched->replenish_count;
-        printf("  Avg per replenish: Q0=%.1f (expect 40), Q7=%.1f (expect 14)\r\n", avg_q0, avg_q7);
+        float avg_critical = (float)total_critical / sched->replenish_count;
+        float avg_non_critical = (float)total_non_critical / sched->replenish_count;
+        printf("  Avg per replenish: Critical=%.1f, NonCritical=%.1f\r\n", avg_critical, avg_non_critical);
     }
 }

@@ -4,26 +4,28 @@
 #include <stdint.h>
 
 // ============================================================================
-// FG-WRR Scheduler Configuration
+// ARTISM Two-Layer Scheduler Configuration (Frozen Architecture)
 // ============================================================================
-#define SCHED_NUM_QUEUES        8
-#define SCHED_CREDIT_QUANTUM    10      // Small quantum for fine-grained byte fairness
-                                        // Weight 400 = 40 packets (if quantum=10)
-                                        // Weight 140 = 14 packets 
-#define SCHED_WEIGHT_TOTAL      1600    // Sum of all weights (conserved)
-#define SCHED_MAX_DYN_BLOCKS    64      // Per-queue dynamic block limit
-#define SCHED_COOLDOWN_CYCLES   10      // Lock period after weight adjustment
-#define SCHED_EWMA_WINDOW       10      // Packets per EWMA update window (Must be < 16 for Q0 static limit)
+// Layer 1: Criticality-First (RT/HR have absolute priority)
+// Layer 2: WRR for Low-Criticality (HT/BE share remaining bandwidth)
+// ============================================================================
+#define SCHED_NUM_QUEUES        4           // 4 Semantic Queues
+#define SCHED_CREDIT_QUANTUM    10          // Credit consumed per packet
+#define SCHED_WEIGHT_TOTAL      1000        // Sum of all weights
 
-// Hysteresis thresholds (Q16.16 fixed-point, 0.9 and 0.7)
-#define SCHED_DVR_HIGH_THRESH   58982   // 0.9 * 65536
-#define SCHED_DVR_LOW_THRESH    45875   // 0.7 * 65536
+// Queue Indices (Must match artism_def.h)
+#define SCHED_Q_RT              0
+#define SCHED_Q_HR              1
+#define SCHED_Q_HT              2
+#define SCHED_Q_BE              3
 
-// Weight adjustment step (Increased to 40 for visibility and 10x scaling match)
-#define SCHED_WEIGHT_STEP       40
-
-// Maximum weight per queue (prevents explosion, e.g., 2x initial max weight)
-#define SCHED_MAX_WEIGHT        800
+// Adaptive Feedback Configuration
+#define SCHED_COOLDOWN_CYCLES   10          // Lock period after weight adjustment
+#define SCHED_EWMA_WINDOW       20          // Packets per EWMA update window
+#define SCHED_DVR_HIGH_THRESH   58982       // 0.9 * 65536 (Q16.16)
+#define SCHED_DVR_LOW_THRESH    45875       // 0.7 * 65536 (Q16.16)
+#define SCHED_WEIGHT_STEP       50          // Weight adjustment step
+#define SCHED_MAX_WEIGHT        600         // Maximum weight per queue
 
 // ============================================================================
 // RTT-Based Latency Measurement (Cross-VM Clock Sync Solution)
@@ -83,28 +85,22 @@ typedef struct {
 } ArtismScheduler;
 
 // ============================================================================
-// Default Weight Configuration
-// Based on discussion: High-crit uses smaller α (more stable),
-// Low-crit uses larger α (faster response)
+// Default Weight Configuration (4 Queues - Frozen Architecture)
 // ============================================================================
-// Queue | Type      | Weight | Min | α_shift | Critical
-// ------+-----------+--------+-----+---------+----------
-//   0   | RT        |   40   | 20  |    4    |    1
-//   1   | RT/HR     |   30   | 15  |    4    |    1
-//   2   | HR        |   24   | 12  |    4    |    1
-//   3   | HR/HT     |   18   |  8  |    3    |    0
-//   4   | HT        |   14   |  6  |    3    |    0
-//   5   | HT        |   12   |  6  |    3    |    0
-//   6   | HT/BE     |    8   |  4  |    2    |    0
-//   7   | BE        |   14   |  4  |    2    |    0
-// Total: 160
+// Queue | Semantic  | Weight | Min | α_shift | Critical | Resource Policy
+// ------+-----------+--------+-----+---------+----------+----------------
+//   0   | RT        |   400  | 200 |    2    |    1     | Overwrite (Static Only)
+//   1   | HR        |   300  | 150 |    3    |    1     | Block (Static Only)
+//   2   | HT        |   200  | 100 |    3    |    0     | Borrow (Static + Dynamic)
+//   3   | BE        |   100  |  50 |    2    |    0     | Drop (Static + Dynamic)
+// Total: 1000
+// Note: RT/HR (Critical) use Layer 1 absolute priority, HT/BE use Layer 2 WRR
+// ============================================================================
 
-// Total: 1600
-static const uint16_t DEFAULT_WEIGHTS[SCHED_NUM_QUEUES] = {400, 300, 240, 180, 140, 120, 80, 140};
-static const uint16_t DEFAULT_MIN_WEIGHTS[SCHED_NUM_QUEUES] = {200, 150, 120, 80, 60, 60, 40, 40};
-// FIX: alpha_shift=0 means α=100% (no smoothing). Use 2 for Q0 (α=25% = faster response for RT)
-static const uint8_t  DEFAULT_ALPHA_SHIFTS[SCHED_NUM_QUEUES] = {2, 3, 3, 3, 3, 3, 2, 2};
-static const uint8_t  DEFAULT_CRITICAL[SCHED_NUM_QUEUES] = {1, 1, 1, 0, 0, 0, 0, 0};
+static const uint16_t DEFAULT_WEIGHTS[SCHED_NUM_QUEUES] = {400, 300, 200, 100};
+static const uint16_t DEFAULT_MIN_WEIGHTS[SCHED_NUM_QUEUES] = {200, 150, 100, 50};
+static const uint8_t  DEFAULT_ALPHA_SHIFTS[SCHED_NUM_QUEUES] = {2, 3, 3, 2};
+static const uint8_t  DEFAULT_CRITICAL[SCHED_NUM_QUEUES] = {1, 1, 0, 0};
 
 // ============================================================================
 // Function Prototypes
@@ -117,7 +113,8 @@ void artism_scheduler_init(ArtismScheduler *sched);
 void artism_scheduler_sync_to_shm(ArtismScheduler *sched);
 
 // Select next queue to service (returns queue index, or -1 if all empty)
-// Complexity: O(8), Expected time: <200ns
+// Two-Layer: Layer 1 checks RT/HR first, Layer 2 uses WRR for HT/BE
+// Complexity: O(4), Expected time: <200ns
 int artism_select_queue(ArtismScheduler *sched);
 
 // Replenish credits for all queues (called each scheduling tick)

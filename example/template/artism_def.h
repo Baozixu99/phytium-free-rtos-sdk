@@ -10,14 +10,29 @@
 #define ARTISM_BLOCK_SIZE       256         // 256 Bytes per Block
 #define ARTISM_TOTAL_BLOCKS     256         // 64KB / 256B = 256 Blocks
 
+// ============================================================================
+// ARTISM Architecture (Frozen): 4 Queues = 4 Semantics
+// ============================================================================
+// Q0 = RT (Real-Time):      Overwrite策略 + 最高调度优先级
+// Q1 = HR (High-Reliability): Block策略 + 高调度优先级  
+// Q2 = HT (High-Throughput):  Borrow策略 + WRR公平调度
+// Q3 = BE (Best-Effort):      Drop策略 + WRR公平调度
+// ============================================================================
+#define ARTISM_NUM_QUEUES       4           // 4 Semantic Queues (Frozen Architecture)
+#define ARTISM_BLOCKS_PER_Q     32          // 128 / 4 = 32 Blocks (8KB) per Queue
+
+// Queue Index Constants (Semantic Binding)
+#define ARTISM_Q_RT             0           // Real-Time Queue
+#define ARTISM_Q_HR             1           // High-Reliability Queue
+#define ARTISM_Q_HT             2           // High-Throughput Queue
+#define ARTISM_Q_BE             3           // Best-Effort Queue
+
 // Layer 1: Static Reserve (50%)
 #define ARTISM_STATIC_BLOCKS    128         // 32KB Total Static
-#define ARTISM_NUM_QUEUES       8           // 8 Priority Queues
-#define ARTISM_BLOCKS_PER_Q     16          // 128 / 8 = 16 Blocks (4KB) per Queue
 
 // Layer 2: Dynamic Shared Pool (Remaining after static)
 // 64KB total - 16KB meta = 48KB data = 192 blocks
-// Static: 8Q * 16 = 128 blocks
+// Static: 4Q * 32 = 128 blocks (Frozen Architecture)
 // Dynamic: 192 - 128 = 64 blocks
 #define ARTISM_DYNAMIC_BLOCKS   64          // 16KB Dynamic Shared (Corrected)
 #define ARTISM_DYNAMIC_START_ID 128         // Dynamic blocks are IDs 128-191
@@ -27,11 +42,14 @@
 // We use the same base, assuming ARTISM replaces RTISM in usage
 #define ARTISM_SHM_BASE_PADDR   0xDE400000UL 
 
-// Traffic Types for Semantic Mapping
-#define ARTISM_TRAFFIC_RT       0  // Real-Time (Overwrite)
-#define ARTISM_TRAFFIC_HR       1  // High-Reliability (Blocking)
-#define ARTISM_TRAFFIC_HT       2  // High-Throughput (Borrowing)
-#define ARTISM_TRAFFIC_BE       3  // Best-Effort (Drop)
+// Traffic Types for Semantic Mapping (Must match Queue Index for simplicity)
+#define ARTISM_TRAFFIC_RT       0  // Real-Time (Overwrite) - Queue 0
+#define ARTISM_TRAFFIC_HR       1  // High-Reliability (Blocking) - Queue 1
+#define ARTISM_TRAFFIC_HT       2  // High-Throughput (Borrowing) - Queue 2
+#define ARTISM_TRAFFIC_BE       3  // Best-Effort (Drop) - Queue 3
+
+// Criticality Classification
+#define ARTISM_IS_CRITICAL(q)   ((q) <= ARTISM_Q_HR)  // RT and HR are critical
 
 // ============================================================================
 // Data Structures
