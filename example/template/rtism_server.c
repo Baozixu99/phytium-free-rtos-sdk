@@ -69,7 +69,8 @@ void RtismServerTask(void* params) {
             u16 head = q->proc_ing_h; // Consumer Head
             
             if (head != tail) {
-                printf("[RTISM] Prio %d: Found New Msg! (Head: %d, Tail: %d)\r\n", p, head, tail);
+                //影响时延测试
+                // printf("[RTISM] Prio %d: Found New Msg! (Head: %d, Tail: %d)\r\n", p, head, tail);
                 
                 // Process Item at 'head'
                 volatile MsgEntry* entry = &q->entries[head];
@@ -78,11 +79,20 @@ void RtismServerTask(void* params) {
                 // Read Data
                 char* data_ptr = (char*)(SHM_PADDR_DATA + entry->msg.offset); // Global Data Pool
                 InvalidateRange(data_ptr, entry->msg.length);
-                
-                printf("[RTISM]   Msg Content: %s\r\n", data_ptr);
+                //影响时延测试
+                // printf("[RTISM]   Msg Content: %s\r\n", data_ptr);
                 
                 // "Process" it (Echo/Service)
-                // ...
+                // If it's a 64-byte probe, we assume it's for RTT benchmarking.
+                // The first 4 bytes are the sequence ID. We echo this back via SHM.
+                // If it's a probe (starts with seq_id), we echo this back via SHM.
+                // We now support all lengths (64, 256, 512, 1024, 4096) for scalability tests.
+                if (entry->msg.length >= 4) {
+                    uint32_t seq_id = *(uint32_t*)data_ptr;
+                    volatile uint32_t* ack_seq = (volatile uint32_t*)(RTISM_BASE_PADDR + 0x10000);
+                    *ack_seq = seq_id;
+                    CleanRange((void*)ack_seq, 64); // Flush to memory so Linux sees it
+                }
                 
                 // Update Head
                 q->proc_ing_h = (head + 1) % q->buf_size;
@@ -116,6 +126,11 @@ int RtismServerInit() {
         // Invalidate initial state
         InvalidateRange((void*)rtism_qs[i], 64);
     }
+    
+    // Initialize the ACK sequence register
+    volatile uint32_t* ack_seq = (volatile uint32_t*)(RTISM_BASE_PADDR + 0x10000);
+    *ack_seq = 0;
+    CleanRange((void*)ack_seq, 64);
     
     g_rtism_sem = xSemaphoreCreateBinary();
     

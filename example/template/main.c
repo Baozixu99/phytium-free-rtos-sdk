@@ -76,7 +76,12 @@ int main()
     printf("\n=== Initializing ARTISM Server ===\n");
     ArtismInit();
     printf("ARTISM Server initialized successfully\n");
-    /* ARTISM初始化完成 */
+
+    // RTISM Baseline
+    // printf("\n=== Initializing RTISM Server ===\n");
+    // RtismServerInit();
+    // printf("RTISM Server initialized successfully\n");
+    
     
     /* 创建 Shell 任务 */
     xReturn = LSUserShellTask();

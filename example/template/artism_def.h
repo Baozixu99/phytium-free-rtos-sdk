@@ -6,9 +6,9 @@
 // ============================================================================
 // ARTISM Memory Constants (Fair Comparison to RTISM)
 // ============================================================================
-#define ARTISM_TOTAL_SIZE       0x10000     // 64KB Total (Same as RTISM)
-#define ARTISM_BLOCK_SIZE       256         // 256 Bytes per Block
-#define ARTISM_TOTAL_BLOCKS     256         // 64KB / 256B = 256 Blocks
+#define ARTISM_TOTAL_SIZE       0x100000    // 1MB Total (Fair Comparison to RTISM)
+#define ARTISM_BLOCK_SIZE       4096        // 4KB per Block
+#define ARTISM_TOTAL_BLOCKS     240         // 960KB Data (Fits in 1MB total with Meta)
 
 // ============================================================================
 // ARTISM Architecture (Frozen): 4 Queues = 4 Semantics
@@ -19,7 +19,7 @@
 // Q3 = BE (Best-Effort):      Drop策略 + WRR公平调度
 // ============================================================================
 #define ARTISM_NUM_QUEUES       4           // 4 Semantic Queues (Frozen Architecture)
-#define ARTISM_BLOCKS_PER_Q     32          // 128 / 4 = 32 Blocks (8KB) per Queue
+#define ARTISM_BLOCKS_PER_Q     30          // 120 / 4 = 30 Blocks per Queue
 
 // Queue Index Constants (Semantic Binding)
 #define ARTISM_Q_RT             0           // Real-Time Queue
@@ -28,14 +28,11 @@
 #define ARTISM_Q_BE             3           // Best-Effort Queue
 
 // Layer 1: Static Reserve (50%)
-#define ARTISM_STATIC_BLOCKS    128         // 32KB Total Static
+#define ARTISM_STATIC_BLOCKS    120         // 30 Blocks per Queue
 
 // Layer 2: Dynamic Shared Pool (Remaining after static)
-// 64KB total - 16KB meta = 48KB data = 192 blocks
-// Static: 4Q * 32 = 128 blocks (Frozen Architecture)
-// Dynamic: 192 - 128 = 64 blocks
-#define ARTISM_DYNAMIC_BLOCKS   64          // 16KB Dynamic Shared (Corrected)
-#define ARTISM_DYNAMIC_START_ID 128         // Dynamic blocks are IDs 128-191
+#define ARTISM_DYNAMIC_BLOCKS   120         // 240 - 120 = 120 blocks
+#define ARTISM_DYNAMIC_START_ID 120         // Dynamic blocks are IDs 120-239
 #define ARTISM_BITMAP_WORDS     1           // 64 bits / 64 bits = 1 word
 
 // Base Address (Partitioned from RTISM/HyperAMP region)
@@ -63,7 +60,7 @@ typedef struct {
 // 1. Memory Block (The actual data unit)
 typedef struct {
     uint8_t data[ARTISM_BLOCK_SIZE];
-} __attribute__((aligned(256), packed)) ArtismBlock;
+} __attribute__((aligned(4096), packed)) ArtismBlock;
 
 // 2. Queue Header (Static Cyclic Buffer Metadata)
 typedef struct {
